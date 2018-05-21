@@ -19,6 +19,6 @@
   "dependencies": {
     "amqp": "^0.2.6",
     "amqplib": "^0.5.2",
-    "hashtable": "^2.0.2"
+    "hashtable": "git+https://github.com/fabrice102/node-hashtable.git"
   }
 }
