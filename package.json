@@ -1,5 +1,5 @@
 {
-  "name": "blockchain-explorer-pubsub",
+  "name": "pillar-bcx-pubsub",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pillarwallet/blockchain-explorer-pubsub.git"
+    "url": "git+https://github.com/pillarwallet/pillar-bcx-pubsub.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/pillarwallet/blockchain-explorer-pubsub/issues"
+    "url": "https://github.com/pillarwallet/pillar-bcx-pubsub/issues"
   },
-  "homepage": "https://github.com/pillarwallet/blockchain-explorer-pubsub#readme",
+  "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
     "amqp": "^0.2.6",
     "amqplib": "^0.5.2"
