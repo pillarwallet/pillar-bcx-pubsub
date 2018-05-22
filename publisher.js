@@ -59,6 +59,7 @@ const initialize = () => new Promise(((resolve) => {
 
               /* SUBSCRIBE TO GETH NODE EVENTS */
               const gethSubscribe = require('./src/services/gethSubscribe.js');
+
               const notif = require('./src/services/notifications.js');
               const processTx = require('./src/services/processTx.js');
               const abiDecoder = require('abi-decoder');

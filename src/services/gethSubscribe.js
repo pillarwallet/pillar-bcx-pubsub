@@ -1,7 +1,7 @@
 const logger = require('../utils/logger.js');
 const colors = require('colors');
 
-const ERC20ABI require('./ERC20ABI.json')
+const ERC20ABI = require('./ERC20ABI.json')
 
 
 function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue) {

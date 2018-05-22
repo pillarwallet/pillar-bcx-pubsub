@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
+    "abi-decoder": "^1.1.0",
     "amqp": "^0.2.6",
     "amqplib": "^0.5.2",
-    "hashtable": "git+https://github.com/fabrice102/node-hashtable.git",
     "arraybuffer-to-string": "^1.0.2",
     "bignumber.js": "^5.0.0",
     "body-parser": "~1.18.2",
@@ -40,6 +40,7 @@
     "ethereumjs-util": "^5.1.5",
     "express": "^4.16.3",
     "has-to-string-tag-x": "^1.4.1",
+    "hashtable": "git+https://github.com/fabrice102/node-hashtable.git",
     "hdkey": "^0.8.0",
     "jade": "~1.11.0",
     "json-rpc-client": "^0.2.2",

@@ -38,7 +38,6 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
           // Display accounts
           dbCollections.ethAddresses.listAll()
             .then((ethAddressesArray) => {
-              console.log("OK1")
               dbCollections.smartContracts.listAll()
                 .then((smartContractsAddressesArray) => {
                   logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
