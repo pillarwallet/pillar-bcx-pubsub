@@ -38,7 +38,7 @@ app.use((err, req, res, next) => {
 
 const initialize = () => new Promise(((resolve) => {
   /* CONNECT TO GETH NODE */
-  require('./pubServices/gethConnect.js').gethConnectDisplay()
+  require('./src/pubServices/gethConnect.js').gethConnectDisplay()
     .then((web3) => {
 	    /* CONNECT TO DATABASE */
 	    const mongoUser = process.env.MONGO_USER;
@@ -51,15 +51,15 @@ const initialize = () => new Promise(((resolve) => {
 	    dbServices.dbConnectDisplayAccounts(url)
 	    .then((dbCollections) => {
         /* CONNECT TO MESSAGE QUEUE CHANNEL */
-        require('./pubServices/messageQueue.js').connect()
+        require('./src/pubServices/messageQueue.js').connect()
           .then(({ channel, queue }) => {
             /* LOAD BCX SERVICES */
-            const bcx = require('./pubServices/bcx.js');
+            const bcx = require('./src/pubServices/bcx.js');
 
             /* SUBSCRIBE TO GETH NODE EVENTS */
-            const gethSubscribe = require('./pubServices/gethSubscribe.js');
-            const notif = require('./pubServices/notifications.js');
-            const processTx = require('./pubServices/processTx.js');
+            const gethSubscribe = require('./src/pubServices/gethSubscribe.js');
+            const notif = require('./src/pubServices/notifications.js');
+            const processTx = require('./src/pubServices/processTx.js');
             const abiDecoder = require('abi-decoder');
 
             gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue);
