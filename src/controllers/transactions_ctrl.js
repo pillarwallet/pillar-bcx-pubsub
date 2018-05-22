@@ -1,9 +1,9 @@
-const ethTransactions = require('../models/ethTransactions_model');
+const transactions = require('../models/transactions_model');
 
 function listAll() {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.find((err, result) => {
+      transactions.Transactions.find((err, result) => {
         if (err) {
           console.log(`ethTransactions.listAll DB controller ERROR: ${err}`);
           reject(err);
@@ -18,7 +18,7 @@ module.exports.listAll = listAll;
 function listPending() {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.find({ status: 'pending' }, (err, result) => {
+	    transactions.Transactions.find({ status: 'pending' }, (err, result) => {
         if (err) {
           console.log(`ethTransactions.listPending DB controller ERROR: ${err}`);
           reject(err);
@@ -33,7 +33,7 @@ module.exports.listPending = listPending;
 function listHistory() {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.find({ status: 'history' }, (err, result) => {
+	    transactions.Transactions.find({ status: 'history' }, (err, result) => {
         if (err) {
           console.log(`ethTransactions.listHistory DB controller ERROR: ${err}`);
           reject(err);
@@ -48,7 +48,7 @@ module.exports.listHistory = listHistory;
 function listDbZeroConfTx() {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.find({ nbConfirmations: 0, status: 'pending' }, (err, result) => {
+	    transactions.Transactions.find({ nbConfirmations: 0, status: 'pending' }, (err, result) => {
         if (err) {
           console.log(`ethTransactions.listDBZeroConfTx DB controller ERROR: ${err}`);
           reject(err);
@@ -63,7 +63,7 @@ module.exports.listDbZeroConfTx = listDbZeroConfTx;
 function findById(id) {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.findOne({ _id: id }, (err, result) => {
+	    transactions.Transactions.findOne({ _id: id }, (err, result) => {
         if (err) {
           console.log(`ethTransactions.findById DB controller ERROR: ${err}`);
           reject(err);
@@ -78,7 +78,7 @@ module.exports.findById = findById;
 function findByTxHash(txHash) {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.findOne({ hash: txHash }, (err, result) => {
+	    transactions.Transactions.findOne({ hash: txHash }, (err, result) => {
         if (err) {
           console.log(`ethTransactions.findByTxHash DB controller ERROR: ${err}`);
           reject(err);
@@ -95,11 +95,11 @@ function addTx(to, from, asset, contractAddress, tmstmp, value, hash, nbConf, hi
     try {
       let ethTx;
       if (history) {
-        ethTx = new ethTransactions.EthTransactions({
+        ethTx = new transactions.Transactions({
           to, from, asset, contractAddress, timestamp: tmstmp, value, status: 'history', hash, gasUsed: null, nbConfirmations: nbConf,
         });
       } else {
-        ethTx = new ethTransactions.EthTransactions({
+        ethTx = new transactions.Transactions({
           to, from, asset, contractAddress, timestamp: tmstmp, value, status: 'pending', hash, gasUsed: null, nbConfirmations: nbConf,
         });
       }
@@ -124,7 +124,7 @@ function updateTx(id, txInfo, receipt, nbConf, status) {
       } else {
         gasUsed = -999;
       }
-      ethTransactions.EthTransactions.update(
+	    transactions.Transactions.update(
         { _id: id },
         { nbConfirmations: nbConf, status, gasUsed },
         (err) => {
@@ -143,7 +143,7 @@ module.exports.updateTx = updateTx;
 function txFailed(id, failureStatus) {
   return new Promise((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.update(
+	    transactions.Transactions.update(
         { _id: id },
         { status: failureStatus },
         (err) => {
@@ -162,7 +162,7 @@ module.exports.txFailed = txFailed;
 function emptyCollection() {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.remove((err, countremoved) => {
+	    transactions.Transactions.remove((err, countremoved) => {
         if (err) {
           console.log(`ethTransactions.emptyCollection DB controller ERROR: ${err}`);
           reject(err);
@@ -178,7 +178,7 @@ module.exports.emptyCollection = emptyCollection;
 function addZeroTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      const txHistHeight = new ethTransactions.EthTransactions({ nbConfirmations: 2693500, status: 'nbConfirmations = highest block number for tx history' });
+      const txHistHeight = new transactions.Transactions({ nbConfirmations: 2693500, status: 'nbConfirmations = highest block number for tx history' });
       txHistHeight.save((err) => {
         if (err) {
           console.log(`ethTransactions.addZeroTxHistoryHeight DB controller ERROR: ${err}`);
@@ -194,7 +194,7 @@ module.exports.addZeroTxHistoryHeight = addZeroTxHistoryHeight;
 function updateTxHistoryHeight(blockNb) {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.update({ status: 'nbConfirmations = highest block number for tx history' }, { nbConfirmations: blockNb }, (err) => {
+	    transactions.Transactions.update({ status: 'nbConfirmations = highest block number for tx history' }, { nbConfirmations: blockNb }, (err) => {
         if (err) {
           console.log(`ethTransactions.updateTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
@@ -209,7 +209,7 @@ module.exports.updateTxHistoryHeight = updateTxHistoryHeight;
 function findTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      ethTransactions.EthTransactions.find({ status: 'nbConfirmations = highest block number for tx history' }, (err, result) => {
+	    transactions.Transactions.find({ status: 'nbConfirmations = highest block number for tx history' }, (err, result) => {
         if (err) {
           console.log(`ethTransactions.findTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
@@ -230,7 +230,7 @@ function getBalance(address, asset) {
     let toBalance = 0;
     let fromBalance = 0;
     try {
-      ethTransactions.EthTransactions.aggregate([
+	    transactions.Transactions.aggregate([
         {
           $match: {
             to: address.toUpperCase(),
@@ -251,7 +251,7 @@ function getBalance(address, asset) {
         if (result[0]) {
           toBalance = result[0].balance;
         }
-        ethTransactions.EthTransactions.aggregate([
+		    transactions.Transactions.aggregate([
           {
             $match: {
               $or: [{
@@ -294,13 +294,13 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
       let txHistory;
       // console.log('ETHTRANSACTIONS CTRL GET TX HISTORY')
       if (address2 === 'ALL' && asset === 'ALL') {
-        ethTransactions.EthTransactions.find({ to: address1 }, (err, result) => {
+	      transactions.Transactions.find({ to: address1 }, (err, result) => {
           if (err) {
             console.log(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
             reject(err);
           } else {
             txHistoryTo = result;
-            ethTransactions.EthTransactions.find({ from: address1 }, (e, res) => {
+	          transactions.Transactions.find({ from: address1 }, (e, res) => {
               if (e) {
                 console.log(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
                 reject(e);
@@ -315,13 +315,13 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
           }
         });
       } else if (address2 === 'ALL' && asset !== 'ALL') {
-        ethTransactions.EthTransactions.find({ to: address1, asset }, (err, result) => {
+	      transactions.Transactions.find({ to: address1, asset }, (err, result) => {
           if (err) {
             console.log(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
             reject(err);
           } else {
             txHistoryTo = result;
-            ethTransactions.EthTransactions.find({ from: address1, asset }, (e, res) => {
+	          transactions.Transactions.find({ from: address1, asset }, (e, res) => {
               if (e) {
                 console.log(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
                 reject(e);
@@ -337,13 +337,13 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
         });
       } else if (address2 !== 'ALL') {
         if (asset === 'ALL') {
-          ethTransactions.EthTransactions.find({ to: address1, from: address2 }, (err, result) => {
+	        transactions.Transactions.find({ to: address1, from: address2 }, (err, result) => {
             if (err) {
               console.log(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
               reject(err);
             } else {
               txHistoryTo = result;
-              ethTransactions.EthTransactions.find({ to: address2, from: address1 }, (e, res) => {
+	            transactions.Transactions.find({ to: address2, from: address1 }, (e, res) => {
                 if (err) {
                   console.log(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
                   reject(e);
@@ -358,7 +358,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
             }
           });
         } else {
-          ethTransactions.EthTransactions.find(
+	        transactions.Transactions.find(
             { to: address1, from: address2, asset },
             (err, result) => {
               if (err) {
@@ -366,7 +366,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                 reject(err);
               } else {
                 txHistoryTo = result;
-                ethTransactions.EthTransactions.find(
+	              transactions.Transactions.find(
                   { to: address2, from: address1, asset },
                   (e, res) => {
                     if (e) {

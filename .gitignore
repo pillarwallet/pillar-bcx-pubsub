@@ -1,2 +1,8 @@
-node_modules/
-.vscode
+/bcx_log.txt
+/reports
+/.env
+/.idea
+/node_modules
+/.DS_Store
+/.npmrc
+/bin/logs
