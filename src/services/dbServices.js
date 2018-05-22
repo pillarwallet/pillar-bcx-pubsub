@@ -1,7 +1,7 @@
 const colors = require('colors');
 const logger = require('../utils/logger.js');
 
-const ERC20ABI = require('../src/pubServices/ERC20ABI.json');
+const ERC20ABI = require("./ERC20ABI.json")
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
   const mongoose = require('mongoose');
@@ -155,7 +155,176 @@ function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif,
 }
 module.exports.updateTxHistory = updateTxHistory;
 
+function initDB(accountsArray, contractsArray) {
+  return new Promise(((resolve, reject) => {
+    try {
+      logger.info(colors.yellow.bold('INITIALIZING DATABASE ADDRESSES COLLECTIONS...\n'));
+      if (accountsArray.length === 0 && contractsArray.length === 0) {
+        logger.info(colors.yellow.bold('DONE\n'));
+        resolve();
+      } else if (accountsArray.length === 0) {
+        const smartContracts = require('../controllers/smartContracts_ctrl.js');
+        smartContracts.addContract(
+          contractsArray[0].address, contractsArray[0].name,
+          contractsArray[0].ticker, contractsArray[0].decimals,
+        )
+          .then(() => {
+            contractsArray.splice(0, 1);
+            resolve(initDB(accountsArray, contractsArray));
+          })
+          .catch((e) => { reject(e); });
+      } else {
+        const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+        ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID)
+          .then(() => {
+            accountsArray.splice(0, 1);
+            resolve(initDB(accountsArray, contractsArray));
+          })
+          .catch((e) => { reject(e); });
+      }
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.initDB = initDB;
 
+function initDBTxHistory() {
+  return new Promise(((resolve, reject) => {
+    try {
+      logger.info(colors.yellow.bold('INITIALIZING TX HISTORY DATABASE ...\n'));
+      const txHistory = require('../controllers/ethTransactions_ctrl.js');
+      txHistory.findTxHistoryHeight()
+        .then((result) => {
+          if (result === 'NO_TX_HSTORY_HEIGHT') {
+            txHistory.addZeroTxHistoryHeight()
+              .then(() => {
+                logger.info(colors.yellow('-->Highest Block Number for ERC20 Tx History: 0\n'));
+                logger.info(colors.yellow.bold('TX HISTORY DATABASE INITIALIZED\n'));
+                resolve();
+              })
+              .catch((e) => { reject(e); });
+          } else {
+            logger.info(colors.yellow(`-->Highest Block Number for Tx History: ${result}\n`));
+            logger.info(colors.yellow.bold('TX HISTORY DATABASE INITIALIZED\n'));
+            resolve();
+          }
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.initDBTxHistory = initDBTxHistory;
+
+function resetDBTxHistory() {
+  return new Promise(((resolve, reject) => {
+    module.exports.emptyDBTxHistory()
+      .then(() => {
+        module.exports.initDBTxHistory()
+          .then(() => {
+            resolve();
+          })
+          .catch((e) => { reject(e); });
+      })
+      .catch((e) => { reject(e); });
+  }));
+}
+module.exports.resetDBTxHistory = resetDBTxHistory;
+
+function initDBERC20SmartContracts() {
+  return new Promise(((resolve, reject) => {
+    try {
+      logger.info(colors.yellow.bold('INITIALIZING ERC20 SMART CONTRACTS DATABASE...\n'));
+      const smartContracts = require('../controllers/smartContracts_ctrl.js');
+      smartContracts.findERC20SmartContractsHistoryHeight()
+        .then((result) => {
+          if (result === 'NO_ERC20_CONTRACTS_HISTORY_HEIGHT') {
+            smartContracts.addZeroSmartContractsCreationHistoryHeight()
+              .then((zeroHeight) => {
+                logger.info(colors.yellow(`-->Highest Block Number for ERC20 Smart Contracts:${zeroHeight}\n`));
+                logger.info(colors.yellow.bold('ERC20 SMART CONTRACTS DATABASE INITIALIZED\n'));
+                resolve();
+              })
+              .catch((e) => { reject(e); });
+          } else {
+            logger.info(colors.yellow(`-->Highest Block Number for ERC20 Smart Contracts: ${result}\n`));
+            logger.info(colors.yellow.bold('ERC20 SMART CONTRACTS DATABASE INITIALIZED\n'));
+            resolve();
+          }
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.initDBERC20SmartContracts = initDBERC20SmartContracts;
+
+function resetDBERC20SmartContracts() {
+  return new Promise(((resolve, reject) => {
+    module.exports.emptyDBERC20SmartContracts()
+      .then(() => {
+        module.exports.initDBERC20SmartContracts()
+          .then(() => {
+            resolve();
+          })
+          .catch((e) => { reject(e); });
+      })
+      .catch((e) => { reject(e); });
+  }));
+}
+module.exports.resetDBERC20SmartContracts = resetDBERC20SmartContracts;
+
+function emptyDB() {
+  return new Promise(((resolve, reject) => {
+    try {
+      const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+      ethAddresses.emptyCollection()
+        .then(() => {
+          const smartContracts = require('../controllers/smartContracts_ctrl.js');
+          smartContracts.emptyCollection()
+            .then(() => {
+              const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+              ethTransactions.emptyCollection()
+                .then(() => {
+                  logger.info(colors.red.bold('DATABASE IS NOW EMPTY\n'));
+                  resolve();
+                })
+                .catch((e) => { reject(e); });
+            })
+            .catch((e) => { reject(e); });
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.emptyDB = emptyDB;
+
+function emptyDBTxHistory() {
+  return new Promise(((resolve, reject) => {
+    try {
+      const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+      ethTransactions.emptyCollection()
+        .then(() => {
+          logger.info(colors.red.bold('DATABASE TRANSACTION HISTORY IS NOW EMPTY\n'));
+          resolve();
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.emptyDBTxHistory = emptyDBTxHistory;
+
+function emptyDBERC20SmartContracts() {
+  return new Promise(((resolve, reject) => {
+    try {
+      const smartContracts = require('../controllers/smartContracts_ctrl.js');
+      smartContracts.emptyCollection()
+        .then(() => {
+          logger.info(colors.red.bold('SMART CONTRACTS DATABASE IS NOW EMPTY\n'));
+          resolve();
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.emptyDBERC20SmartContracts = emptyDBERC20SmartContracts;
 
 function getTxHistory(address1, fromtmstmp, address2, asset) {
   return new Promise(((resolve, reject) => {

@@ -47,7 +47,7 @@ describe('Test ethAddresses.listAll function', () => {
   /*
 describe('Test ethAddresses.addAddress function', () => {
     test("add function should create an ethAddresses.ethAdresses instance once and save it", (done) => {
-        let dbServices=require('../pubServices/dbServices.js')
+        let dbServices=require('../services/dbServices.js')
         let url='mongodb://127.0.0.1:27017/PillarBCX'
         jest.mock('mongoose')
         var mongoose = require('mongoose');

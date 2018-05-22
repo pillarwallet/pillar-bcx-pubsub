@@ -88,7 +88,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   // ISSUE WITH MOCKING CONSTRUCTOR AND SPYING ON THE INSTANCE
   /*
     test("addTx function ", (done) => {
-        let dbServices=require('../pubServices/dbServices.js')
+        let dbServices=require('../services/dbServices.js')
         let url='mongodb://127.0.0.1:27017/PillarBCX'
         jest.mock('mongoose')
         var mongoose = require('mongoose');

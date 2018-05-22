@@ -37,7 +37,7 @@ describe('Test dlTxHistory function', () => {
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
     const dbCollections = { ethAddresses, smartContracts, ethTransactions };
 
-    const bcx = require('../src/pubServices/bcx');
+    const bcx = require('./bcx');
     const stub1 = sinon.stub(bcx, 'getBlockTx');
     stub1.resolves(txHistoryArray);
     const dbServices = require('./dbServices');
@@ -45,7 +45,7 @@ describe('Test dlTxHistory function', () => {
     stub2.resolves(17);
     const stub3 = sinon.stub(ethTransactions, 'listHistory');
     stub3.resolves(txHistoryArray);
-    const processTx = require('../src/pubServices/processTx');
+    const processTx = require('./processTx');
     const stub4 = sinon.stub(processTx, 'checkPendingTx');
     stub4.resolves();
     const maxBlock = web3.blockNumber + 1;
@@ -74,7 +74,7 @@ describe('Test dlTxHistory function', () => {
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
     const dbCollections = { ethTransactions };
 
-    const bcx = require('../src/pubServices/bcx');
+    const bcx = require('./bcx');
     const stub1 = sinon.stub(bcx, 'getBlockTx');
     stub1.resolves(txHistoryArray);
     const dbServices = require('./dbServices');
@@ -82,7 +82,7 @@ describe('Test dlTxHistory function', () => {
     stub2.resolves(17);
     const stub3 = sinon.stub(ethTransactions, 'listHistory');
     stub3.resolves(txHistoryArray);
-    const processTx = require('../src/pubServices/processTx');
+    const processTx = require('./processTx');
     const stub4 = sinon.stub(processTx, 'checkPendingTx');
     stub4.resolves();
     const maxBlock = web3.blockNumber - 1;
@@ -110,7 +110,7 @@ describe('Test processTxHistory function', () => {
     const web3 = require('web3');
     const dbServices = require('./dbServices.js');
     const txHistoryArray = web3.txHistory;
-    const processTx = require('../src/pubServices/processTx');
+    const processTx = require('./processTx');
     const stub = sinon.stub(processTx, 'newPendingTx');
     stub.resolves(true);
     let dbCollections;
@@ -344,7 +344,7 @@ describe('Test dlERC20SmartContracts function', () => {
   test('Should call web3.eth.getBlock, bcx.getBlockSmartContractsAddressesArray and dbServices.processSmartContractsAddressesArray 10 times, then return 10', (done) => {
     jest.mock('web3');
     const web3 = require('web3');
-    const bcx = require('../src/pubServices/bcx.js');
+    const bcx = require('./bcx.js');
     const dbServices = require('./dbServices.js');
     let dbCollections;
     const stub = sinon.stub(web3.eth, 'getBlock');
@@ -394,7 +394,7 @@ describe('Test updateERC20SmartContracts function', () => {
   test('Should call smartContracts.findERC20SmartContractsHistoryHeight once and dbServices.dlERC20SmartContracts once', (done) => {
     jest.mock('web3');
     const web3 = require('web3');
-    const bcx = require('../src/pubServices/bcx.js');
+    const bcx = require('./bcx.js');
     const dbServices = require('./dbServices.js');
     jest.mock('../controllers/smartContracts_ctrl.js');
     const smartContracts = require('../controllers/smartContracts_ctrl.js');

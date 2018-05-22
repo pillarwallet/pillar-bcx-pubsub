@@ -38,7 +38,7 @@ app.use((err, req, res, next) => {
 
 const initialize = () => new Promise(((resolve) => {
   /* CONNECT TO GETH NODE */
-  require('./src/pubServices/gethConnect.js').gethConnectDisplay()
+  require('./src/services/gethConnect.js').gethConnectDisplay()
     .then((web3) => {
 	    /* CONNECT TO DATABASE */
 	    const mongoUser = process.env.MONGO_USER;
@@ -47,19 +47,19 @@ const initialize = () => new Promise(((resolve) => {
 	    const dbName = process.env.DBNAME;
 	    const url = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 
-	    const dbServices = require('./src/subServices/dbServices.js');
+	    const dbServices = require('./src/services/dbServices.js');
 	    dbServices.dbConnectDisplayAccounts(url)
 	    .then((dbCollections) => {
         /* CONNECT TO MESSAGE QUEUE CHANNEL */
-          require('./src/pubServices/pubQueue.js').connect()
+          require('./src/services/pubQueue.js').connect()
             .then(({ channel, queue }) => {
             /* LOAD BCX SERVICES */
-              const bcx = require('./src/pubServices/bcx.js');
+              const bcx = require('./src/services/bcx.js');
 
               /* SUBSCRIBE TO GETH NODE EVENTS */
-              const gethSubscribe = require('./src/pubServices/gethSubscribe.js');
-              const notif = require('./src/pubServices/notifications.js');
-              const processTx = require('./src/pubServices/processTx.js');
+              const gethSubscribe = require('./src/services/gethSubscribe.js');
+              const notif = require('./src/services/notifications.js');
+              const processTx = require('./src/services/processTx.js');
               const abiDecoder = require('abi-decoder');
 
               gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue);

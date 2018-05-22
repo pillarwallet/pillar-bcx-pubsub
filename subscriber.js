@@ -44,11 +44,11 @@ const initialize = () => new Promise(((resolve) => {
   const dbName = process.env.DBNAME;
   const url = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 
-  const dbServices = require('./src/subServices/dbServices.js');
+  const dbServices = require('./src/services/dbServices.js');
   dbServices.dbConnectDisplayAccounts(url)
     .then(() => {
       /* MANUALLY ADD ACCOUNTS AND ERC20 SMART-CONTRACTS TO DATABASE */
-      // var accounts = require('./pubServices/accounts.js') //Load dummy accounts
+      // var accounts = require('./services/accounts.js') //Load dummy accounts
       // dbServices.initDB(accounts.accountsArray,accounts.contractsArray)
 
       /* INITIALIZE DATABASE */
@@ -60,7 +60,7 @@ const initialize = () => new Promise(((resolve) => {
           // dbServices.resetDBERC20SmartContracts()
             .then(() => {
               /* CONNECT TO MESSAGE QUEUE CHANNEL */
-              const messageQueue = require('./src/pubServices/pubQueue.js')
+              const messageQueue = require('./src/services/pubQueue.js')
 	            messageQueue.connect();
 
               resolve();
