@@ -10,7 +10,7 @@ const connect = () => {
 		amqp.connect('amqp://localhost', (err, conn) => {
 			if (err) {
 				console.error('[AMQP]', err.message);
-				resolve(setTimeout(module.exports.connect, 1000));
+				resolve(setTimeout(connect, 1000));
 			}
 			conn.on('error', (err) => {
 				if (err.message !== 'Connection closing') {
@@ -20,7 +20,7 @@ const connect = () => {
 			});
 			conn.on('close', () => {
 				console.error('[AMQP] reconnecting');
-				resolve(setTimeout(module.exports.connect, 1000));
+				resolve(setTimeout(connect, 1000));
 			});
 			console.log('[AMQP] connected');
 			amqpConn = conn;
@@ -66,7 +66,7 @@ var publish = (exchange, routingKey, content) => {
   }
 };
 
-const startSub = () => {
+const startSubscriber = () => {
   amqpConn.createChannel((err, ch) => {
     if (closeOnErr(err)) return;
     ch.on('error', (err) => {
@@ -114,7 +114,7 @@ module.exports = {
   connect,
   startPublisher,
   publish,
-  startSub,
+	startSubscriber,
   processMsg,
   work,
   closeOnErr,
