@@ -1,55 +1,10 @@
 const logger = require('../utils/logger.js');
 const colors = require('colors');
 
-const ERC20ABI = [
-  {
-    constant: true, inputs: [], name: 'name', outputs: [{ name: '', type: 'string' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: '_spender', type: 'address' }, { name: '_amount', type: 'uint256' }], name: 'approve', outputs: [{ name: 'success', type: 'bool' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'totalSupply', outputs: [{ name: 'totalSupply', type: 'uint256' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: '_from', type: 'address' }, { name: '_to', type: 'address' }, { name: '_amount', type: 'uint256' }], name: 'transferFrom', outputs: [{ name: 'success', type: 'bool' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'decimals', outputs: [{ name: '', type: 'uint8' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [{ name: '_owner', type: 'address' }], name: 'balanceOf', outputs: [{ name: 'balance', type: 'uint256' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'owner', outputs: [{ name: '', type: 'address' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'symbol', outputs: [{ name: '', type: 'string' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: '_to', type: 'address' }, { name: '_amount', type: 'uint256' }], name: 'transfer', outputs: [{ name: 'success', type: 'bool' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [{ name: '_owner', type: 'address' }, { name: '_spender', type: 'address' }], name: 'allowance', outputs: [{ name: 'remaining', type: 'uint256' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: 'ethers', type: 'uint256' }], name: 'withdrawEthers', outputs: [{ name: 'ok', type: 'bool' }], payable: false, type: 'function',
-  },
-  { inputs: [{ name: '_name', type: 'string' }, { name: '_symbol', type: 'string' }, { name: '_decimals', type: 'uint8' }], payable: false, type: 'constructor' },
-  { payable: true, type: 'fallback' },
-  {
-    anonymous: false, inputs: [{ indexed: true, name: '_owner', type: 'address' }, { indexed: false, name: '_amount', type: 'uint256' }], name: 'TokensCreated', type: 'event',
-  },
-  {
-    anonymous: false, inputs: [{ indexed: true, name: '_from', type: 'address' }, { indexed: true, name: '_to', type: 'address' }, { indexed: false, name: '_value', type: 'uint256' }], name: 'Transfer', type: 'event',
-  },
-  {
-    anonymous: false, inputs: [{ indexed: true, name: '_owner', type: 'address' }, { indexed: true, name: '_spender', type: 'address' }, { indexed: false, name: '_value', type: 'uint256' }], name: 'Approval', type: 'event',
-  },
-];
+const ERC20ABI require('./ERC20ABI.json')
 
 
-function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif) {
+function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue) {
   const subscribePromise = new Promise(((resolve, reject) => {
     web3.eth.subscribe('pendingTransactions', (err, res) => {})
       .on('data', (txHash) => {
@@ -57,7 +12,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, not
           bcx.getTxInfo(web3, txHash)
             .then((txInfo) => {
               if (txInfo != null) {
-                processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, notif);
+                processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, notif, channel, queue);
               }
             })
             .catch((e) => { reject(e); });
@@ -87,7 +42,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, not
                 unknownPendingTxArray.push(pendingTx);
               }
             });
-            processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, notif, 0)
+            processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, notif, channel, queue, 0)
               .then((nbTxFound) => {
                 logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
               });
@@ -98,7 +53,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, not
 }
 module.exports.subscribePendingTx = subscribePendingTx;
 
-function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, notif, updateTxHistory = true, updateERC20SmartContracts = true) {
+function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, notif, channel, queue, updateTxHistory = true, updateERC20SmartContracts = true) {
   const subscribePromise = new Promise(((resolve, reject) => {
     let nbBlocksReceived = -1;
     web3.eth.subscribe('newBlockHeaders', (err, res) => {})
@@ -133,7 +88,7 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
           // Check for pending tx in database and update their status
           dbCollections.ethTransactions.listPending()
             .then((pendingTxArray) => {
-              processTx.checkPendingTx(web3, bcx, dbCollections, pendingTxArray, blockHeader.number, notif)
+              processTx.checkPendingTx(web3, bcx, dbCollections, pendingTxArray, blockHeader.number, notif, channel, queue)
                 .then(() => {
                   dbCollections.ethTransactions.updateTxHistoryHeight(blockHeader.number)
                     .then(() => {

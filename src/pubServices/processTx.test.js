@@ -434,7 +434,7 @@ describe('Test checkPendingTx function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/ethTransactions_ctrl.js');
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
     stub2.onSecondCall().resolves(web3.transactions[1]);
@@ -476,7 +476,7 @@ describe('Test checkPendingTx function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/ethTransactions_ctrl.js');
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
     stub2.onSecondCall().resolves(web3.transactions[1]);
@@ -518,7 +518,7 @@ describe('Test checkPendingTx function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/ethTransactions_ctrl.js');
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
     stub2.onSecondCall().resolves(web3.transactions[1]);
@@ -560,7 +560,7 @@ describe('Test checkPendingTx function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/ethTransactions_ctrl.js');
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
     stub2.onSecondCall().resolves(web3.transactions[1]);
@@ -602,7 +602,7 @@ describe('Test checkPendingTx function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/ethTransactions_ctrl.js');
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
     stub2.onSecondCall().resolves(web3.transactions[1]);
@@ -645,7 +645,7 @@ describe('Test checkPendingTx function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/ethTransactions_ctrl.js');
     const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.poolTransactions[0]);
     stub2.onSecondCall().resolves(web3.poolTransactions[1]);

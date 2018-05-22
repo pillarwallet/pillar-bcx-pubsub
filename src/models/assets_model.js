@@ -1,4 +1,4 @@
-const Mongoose = require('../services/dbServices.js').mongoose;
+const Mongoose = require('../../subServices/dbServices.js').mongoose;
 
 const assetsSchema = Mongoose.Schema({
   protocol: { type: String, required: true },

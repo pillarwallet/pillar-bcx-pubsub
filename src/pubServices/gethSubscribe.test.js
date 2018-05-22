@@ -5,7 +5,7 @@ describe('Test subscribePendingTx funtion', () => {
   test("subscribePendingTx function should call bcx.getTxInfo and processTx.newPendingTx once (because of a mocked 'new pending transaction' event being fired by web3 mock)", (done) => {
     jest.mock('web3');
     const web3 = require('web3');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const processTx = require('./processTx');
     let ethAddresses;
     let smartContracts;
@@ -48,9 +48,9 @@ describe('Test subscribeBlockHeaders function', () => {
     jest.mock('../controllers/ethAddresses_ctrl.js');
     jest.mock('../controllers/smartContracts_ctrl.js');
     const web3 = require('web3');
-    const bcx = require('../services/bcx.js');
+    const bcx = require('.//bcx.js');
     const processTx = require('./processTx');
-    const dbServices = require('../services/dbServices.js');
+    const dbServices = require('.//dbServices.js');
 
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
 

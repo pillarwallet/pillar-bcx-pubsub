@@ -1,4 +1,4 @@
-const Mongoose = require('../services/dbServices.js').mongoose;
+const Mongoose = require('../../subServices/dbServices.js').mongoose;
 
 const accountsSchema = Mongoose.Schema({
   pillarId: { type: Number, required: true },
