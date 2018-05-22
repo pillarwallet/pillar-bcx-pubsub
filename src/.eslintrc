@@ -1,0 +1,16 @@
+{
+  "extends": "airbnb-base",
+  "plugins": [
+    "jest"
+  ],
+  "env": {
+    "es6": true,
+    "jest/globals": true
+  },
+  "rules": {
+    "no-plusplus": [2, {
+      "allowForLoopAfterthoughts": true
+    }
+    ]
+  }
+}
