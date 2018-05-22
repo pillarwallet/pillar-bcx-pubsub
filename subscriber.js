@@ -60,7 +60,7 @@ const initialize = () => new Promise(((resolve) => {
           // dbServices.resetDBERC20SmartContracts()
             .then(() => {
               /* CONNECT TO MESSAGE QUEUE CHANNEL */
-              const messageQueue = require('./src/pubServices/messageQueue.js')
+              const messageQueue = require('./src/pubServices/pubQueue.js')
 	            messageQueue.connect();
 
               resolve();

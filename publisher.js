@@ -51,7 +51,7 @@ const initialize = () => new Promise(((resolve) => {
 	    dbServices.dbConnectDisplayAccounts(url)
 	    .then((dbCollections) => {
         /* CONNECT TO MESSAGE QUEUE CHANNEL */
-          require('./src/pubServices/messageQueue.js').connect()
+          require('./src/pubServices/pubQueue.js').connect()
             .then(({ channel, queue }) => {
             /* LOAD BCX SERVICES */
               const bcx = require('./src/pubServices/bcx.js');
