@@ -51,9 +51,10 @@ const initialize = () => new Promise(((resolve) => {
 	    dbServices.dbConnectDisplayAccounts(url)
 	    .then((dbCollections) => {
         /* CONNECT TO MESSAGE QUEUE CHANNEL */
-          require('./src/services/pubQueue.js').connect()
-            .then(({ channel, queue }) => {
-            /* LOAD BCX SERVICES */
+          const rmqServices = require('./src/services/rmqServices.js');
+		      rmqServices.connect()
+            .then(() => {
+              /* LOAD BCX SERVICES */
               const bcx = require('./src/services/bcx.js');
 
               /* SUBSCRIBE TO GETH NODE EVENTS */
@@ -62,12 +63,12 @@ const initialize = () => new Promise(((resolve) => {
               const processTx = require('./src/services/processTx.js');
               const abiDecoder = require('abi-decoder');
 
-              gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue);
+              gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, rmqServices);
               gethSubscribe.subscribeBlockHeaders(
                 web3, gethSubscribe, bcx, processTx, dbServices,
-                dbCollections, abiDecoder, notif, channel, queue, true, true,
+                dbCollections, abiDecoder, notif, rmqServices, true, true,
               );
-              gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif, channel, queue);
+              gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif, rmqServices);
               resolve();
             });
 	    });
