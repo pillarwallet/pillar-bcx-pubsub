@@ -3,13 +3,11 @@ var amqpConn = null;
 var pubChannel = null;
 var offlinePubQueue = [];
 
-module.exports = {
-    
-    connect: () => {
+    var connect = () => {
         amqp.connect("amqp://localhost", function(err, conn) {
         if (err) {
             console.error("[AMQP]", err.message);
-            return setTimeout(start, 1000);
+            return setTimeout(connect, 1000);
         }
         conn.on("error", function(err) {
             if (err.message !== "Connection closing") {
@@ -18,14 +16,14 @@ module.exports = {
         });
         conn.on("close", function() {
             console.error("[AMQP] reconnecting");
-            return setTimeout(start, 1000);
+            return setTimeout(connect, 1000);
         });
         console.log("[AMQP] connected");
         amqpConn = conn;
         });
-    },
+    }
 
-    startPublisher: () => {
+    var startPub = () => {
         amqpConn.createConfirmChannel(function(err, ch) {
           if (closeOnErr(err)) return;
             ch.on("error", function(err) {
@@ -42,9 +40,9 @@ module.exports = {
             publish(m[0], m[1], m[2]);
           }
         });
-      },
-
-      publish: (exchange, routingKey, content) => {
+      }
+      
+      var publish = (exchange, routingKey, content) => {
         try {
           pubChannel.publish(exchange, routingKey, content, { persistent: true },
                             function(err, ok) {
@@ -58,9 +56,8 @@ module.exports = {
           console.error("[AMQP] publish", e.message);
           offlinePubQueue.push([exchange, routingKey, content]);
         }
-      },
-
-      startWorker: () => {
+      }
+      var startSub = () => {
         amqpConn.createChannel(function(err, ch) {
           if (closeOnErr(err)) return;
           ch.on("error", function(err) {
@@ -77,9 +74,9 @@ module.exports = {
             console.log("Worker is started");
           });
         });
-      },
+      }
 
-      processMsg: (msg) => {
+      var processMsg = (msg) => {
         work(msg, function(ok) {
           try {
             if (ok)
@@ -92,14 +89,27 @@ module.exports = {
         });
       },
 
-      closeOnErr: (err) => {
+      var work = (msg, cb) => {
+        console.log("PDF processing of ", msg.content.toString());
+        cb(true);
+      },
+
+      var closeOnErr = (err) => {
         if (!err) return false;
         console.error("[AMQP] error", err);
         amqpConn.close();
         return true;
-      },
+      }
 
-      amqpConn,
-      pubChannel,
-      offlinePubQueue
+module.exports = {
+    amqpConn,
+    pubChannel,
+    offlinePubQueue,
+    connect,
+    startPub,
+    publish,
+    startSub,
+    processMsg,
+    work,
+    closeOnErr
 }
