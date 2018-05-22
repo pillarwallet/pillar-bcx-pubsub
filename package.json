@@ -19,6 +19,9 @@
   "dependencies": {
     "amqp": "^0.2.6",
     "amqplib": "^0.5.2",
-    "hashtable": "git+https://github.com/fabrice102/node-hashtable.git"
+    "hashtable": "git+https://github.com/fabrice102/node-hashtable.git",
+    "node-ipc": "^9.1.1",
+    "winston": "^2.4.2",
+    "winston-syslog": "^2.0.0"
   }
 }
