@@ -47,7 +47,7 @@ const initialize = () => new Promise(((resolve) => {
   const dbServices = require('./src/services/dbServices.js');
   dbServices.dbConnectDisplayAccounts(url)
     .then(() => {
-      console.log("DONE")
+      console.log('DONE');
       /* MANUALLY ADD ACCOUNTS AND ERC20 SMART-CONTRACTS TO DATABASE */
       // var accounts = require('./services/accounts.js') //Load dummy accounts
       // dbServices.initDB(accounts.accountsArray,accounts.contractsArray)
@@ -60,12 +60,11 @@ const initialize = () => new Promise(((resolve) => {
           dbServices.initDBERC20SmartContracts()
           // dbServices.resetDBERC20SmartContracts()
             .then(() => {
-              /* CONNECT TO MESSAGE QUEUE CHANNEL */
-              const messageQueue = require('./src/services/subQueue.js')
-	            messageQueue.connect();
+	            /* CONNECT TO MESSAGE QUEUE CHANNEL */
+	            const rmqServices = require('./src/services/rmqServices.js');
+	            rmqServices.connect();
 
               resolve();
-
             });
         });
     });
