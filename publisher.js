@@ -3,7 +3,7 @@ const path = require('path');
 const morganLogger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const logger = require('./utils/logger.js');
+const logger = require('./src/utils/logger.js');
 require('dotenv').config();
 
 const app = express();
@@ -47,29 +47,29 @@ const initialize = () => new Promise(((resolve) => {
 	    const dbName = process.env.DBNAME;
 	    const url = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 
-	    const dbServices = require("./subServices/dbServices.js");
+	    const dbServices = require('./src/subServices/dbServices.js');
 	    dbServices.dbConnectDisplayAccounts(url)
 	    .then((dbCollections) => {
         /* CONNECT TO MESSAGE QUEUE CHANNEL */
-        require('./src/pubServices/messageQueue.js').connect()
-          .then(({ channel, queue }) => {
+          require('./src/pubServices/messageQueue.js').connect()
+            .then(({ channel, queue }) => {
             /* LOAD BCX SERVICES */
-            const bcx = require('./src/pubServices/bcx.js');
+              const bcx = require('./src/pubServices/bcx.js');
 
-            /* SUBSCRIBE TO GETH NODE EVENTS */
-            const gethSubscribe = require('./src/pubServices/gethSubscribe.js');
-            const notif = require('./src/pubServices/notifications.js');
-            const processTx = require('./src/pubServices/processTx.js');
-            const abiDecoder = require('abi-decoder');
+              /* SUBSCRIBE TO GETH NODE EVENTS */
+              const gethSubscribe = require('./src/pubServices/gethSubscribe.js');
+              const notif = require('./src/pubServices/notifications.js');
+              const processTx = require('./src/pubServices/processTx.js');
+              const abiDecoder = require('abi-decoder');
 
-            gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue);
-            gethSubscribe.subscribeBlockHeaders(
-              web3, gethSubscribe, bcx, processTx, dbServices,
-              dbCollections, abiDecoder, notif,, channel, queue, true, true,
-            );
-            gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif, channel, queue);
-            resolve();
-          });
+              gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue);
+              gethSubscribe.subscribeBlockHeaders(
+                web3, gethSubscribe, bcx, processTx, dbServices,
+                dbCollections, abiDecoder, notif, channel, queue, true, true,
+              );
+              gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif, channel, queue);
+              resolve();
+            });
 	    });
     });
 }));

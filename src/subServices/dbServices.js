@@ -1,7 +1,7 @@
 const colors = require('colors');
 const logger = require('../utils/logger.js');
 
-const ERC20ABI = require('../src/pubServices/ERC20ABI.json');
+const ERC20ABI = require('../pubServices/ERC20ABI.json');
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
   const mongoose = require('mongoose');

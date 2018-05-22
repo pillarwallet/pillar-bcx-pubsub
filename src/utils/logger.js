@@ -1,7 +1,7 @@
 const { createLogger, format, transports } = require('winston');
 require('winston-syslog').Syslog; // eslint-disable-line no-unused-expressions
 const path = require('path');
-const packageJson = require('../package.json');
+const packageJson = require('../../package.json');
 
 const appDir = path.dirname(require.main.filename);
 

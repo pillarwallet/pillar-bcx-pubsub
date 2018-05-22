@@ -3,7 +3,7 @@ var path = require('path');
 var morganLogger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-const logger = require('./utils/logger.js');
+const logger = require('./src/utils/logger.js');
 require('dotenv').config();
 
 const app = express();

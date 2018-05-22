@@ -3,7 +3,7 @@ const path = require('path');
 const morganLogger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const logger = require('./utils/logger.js');
+const logger = require('./src/utils/logger.js');
 require('dotenv').config();
 
 const app = express();
@@ -44,7 +44,7 @@ const initialize = () => new Promise(((resolve) => {
   const dbName = process.env.DBNAME;
   const url = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 
-  const dbServices = require('./subServices/dbServices.js');
+  const dbServices = require('./src/subServices/dbServices.js');
   dbServices.dbConnectDisplayAccounts(url)
     .then(() => {
       /* MANUALLY ADD ACCOUNTS AND ERC20 SMART-CONTRACTS TO DATABASE */
