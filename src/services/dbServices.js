@@ -1,7 +1,7 @@
 const colors = require('colors');
 const logger = require('../utils/logger.js');
 
-const ERC20ABI = require("./ERC20ABI.json")
+const ERC20ABI = require('./ERC20ABI.json');
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
   const mongoose = require('mongoose');
@@ -17,12 +17,14 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
         logger.info(colors.green.bold('Established connection to database!\n'));
         resolve({ ethAddresses, smartContracts, ethTransactions });
       });
-      // Connect to database
-      module.exports.mongoose.connect(url, $arg);
+
       // Import DB controllers
-      var ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-      var smartContracts = require('../controllers/smartContracts_ctrl.js');
-      var ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+      var ethAddresses = require('../controllers/accounts_ctrl.js');
+      var smartContracts = require('../controllers/assets_ctrl.js');
+      var ethTransactions = require('../controllers/transactions_ctrl.js');
+
+	    // Connect to database
+	    module.exports.mongoose.connect(url, $arg);
     } catch (e) { reject(e); }
   }));
 }
@@ -36,6 +38,7 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
           // Display accounts
           dbCollections.ethAddresses.listAll()
             .then((ethAddressesArray) => {
+              console.log("OK1")
               dbCollections.smartContracts.listAll()
                 .then((smartContractsAddressesArray) => {
                   logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
@@ -163,7 +166,7 @@ function initDB(accountsArray, contractsArray) {
         logger.info(colors.yellow.bold('DONE\n'));
         resolve();
       } else if (accountsArray.length === 0) {
-        const smartContracts = require('../controllers/smartContracts_ctrl.js');
+        const smartContracts = require('../controllers/assets_ctrl.js');
         smartContracts.addContract(
           contractsArray[0].address, contractsArray[0].name,
           contractsArray[0].ticker, contractsArray[0].decimals,
@@ -174,7 +177,7 @@ function initDB(accountsArray, contractsArray) {
           })
           .catch((e) => { reject(e); });
       } else {
-        const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+        const ethAddresses = require('../controllers/accounts_ctrl.js');
         ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID)
           .then(() => {
             accountsArray.splice(0, 1);
@@ -191,7 +194,7 @@ function initDBTxHistory() {
   return new Promise(((resolve, reject) => {
     try {
       logger.info(colors.yellow.bold('INITIALIZING TX HISTORY DATABASE ...\n'));
-      const txHistory = require('../controllers/ethTransactions_ctrl.js');
+      const txHistory = require('../controllers/transactions_ctrl.js');
       txHistory.findTxHistoryHeight()
         .then((result) => {
           if (result === 'NO_TX_HSTORY_HEIGHT') {
@@ -233,7 +236,7 @@ function initDBERC20SmartContracts() {
   return new Promise(((resolve, reject) => {
     try {
       logger.info(colors.yellow.bold('INITIALIZING ERC20 SMART CONTRACTS DATABASE...\n'));
-      const smartContracts = require('../controllers/smartContracts_ctrl.js');
+      const smartContracts = require('../controllers/assets_ctrl.js');
       smartContracts.findERC20SmartContractsHistoryHeight()
         .then((result) => {
           if (result === 'NO_ERC20_CONTRACTS_HISTORY_HEIGHT') {
@@ -274,13 +277,13 @@ module.exports.resetDBERC20SmartContracts = resetDBERC20SmartContracts;
 function emptyDB() {
   return new Promise(((resolve, reject) => {
     try {
-      const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+      const ethAddresses = require('../controllers/accounts_ctrl.js');
       ethAddresses.emptyCollection()
         .then(() => {
-          const smartContracts = require('../controllers/smartContracts_ctrl.js');
+          const smartContracts = require('../controllers/assets_ctrl.js');
           smartContracts.emptyCollection()
             .then(() => {
-              const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+              const ethTransactions = require('../controllers/transactions_ctrl.js');
               ethTransactions.emptyCollection()
                 .then(() => {
                   logger.info(colors.red.bold('DATABASE IS NOW EMPTY\n'));
@@ -299,7 +302,7 @@ module.exports.emptyDB = emptyDB;
 function emptyDBTxHistory() {
   return new Promise(((resolve, reject) => {
     try {
-      const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+      const ethTransactions = require('../controllers/transactions_ctrl.js');
       ethTransactions.emptyCollection()
         .then(() => {
           logger.info(colors.red.bold('DATABASE TRANSACTION HISTORY IS NOW EMPTY\n'));
@@ -314,7 +317,7 @@ module.exports.emptyDBTxHistory = emptyDBTxHistory;
 function emptyDBERC20SmartContracts() {
   return new Promise(((resolve, reject) => {
     try {
-      const smartContracts = require('../controllers/smartContracts_ctrl.js');
+      const smartContracts = require('../controllers/assets_ctrl.js');
       smartContracts.emptyCollection()
         .then(() => {
           logger.info(colors.red.bold('SMART CONTRACTS DATABASE IS NOW EMPTY\n'));
@@ -329,7 +332,7 @@ module.exports.emptyDBERC20SmartContracts = emptyDBERC20SmartContracts;
 function getTxHistory(address1, fromtmstmp, address2, asset) {
   return new Promise(((resolve, reject) => {
     try {
-      const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+      const ethTransactions = require('../controllers/transactions_ctrl.js');
       logger.info('DB SERVICES GET TX HISTORY');
       ethTransactions.getTxHistory(address1.toUpperCase(), fromtmstmp, address2.toUpperCase(), asset)
         .then((txHistory) => {
@@ -343,7 +346,7 @@ module.exports.getTxHistory = getTxHistory;
 function listPendingTx(address, asset) {
   return new Promise(((resolve, reject) => {
     try {
-      const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+      const ethTransactions = require('../controllers/transactions_ctrl.js');
       ethTransactions.listPending()
         .then((pendingTxArray) => {
           const addressAssetPendingTxArray = [];

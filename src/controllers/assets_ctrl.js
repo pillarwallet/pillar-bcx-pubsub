@@ -1,10 +1,10 @@
 const colors = require('colors');
-const smartContracts = require('../models/smartContracts_model');
+const assets = require('../models/assets_model');
 
 function listAll() {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.find((err, result) => {
+      assets.Assets.find((err, result) => {
         if (err) {
           console.log(`smartContracts.listAll DB controller ERROR: ${err}`);
           reject(err);
@@ -20,11 +20,11 @@ module.exports.listAll = listAll;
 function addContract(address, name, ticker, decimals) {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.find({
+	    assets.Assets.find({
         address, name, ticker, decimals,
       }, (err, result) => {
         if (result.length === 0) {
-          const smartContract = new smartContracts.SmartContracts({
+          const smartContract = new assets.Assets({
             address, name, ticker, decimals,
           });
           smartContract.save((e) => {
@@ -49,7 +49,7 @@ module.exports.addContract = addContract;
 function emptyCollection() {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.remove((err, countremoved) => {
+	    assets.Assets.remove((err, countremoved) => {
         if (err) console.log(`smartContracts.emptyCollection DB controller ERROR: ${err}`);
         console.log(`Removed ${countremoved.result.n} documents from smartContracts database...\n`);
         resolve();
@@ -62,7 +62,7 @@ module.exports.emptyCollection = emptyCollection;
 function findByAddress(address) {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.findOne({ address }, (err, result) => {
+	    assets.Assets.findOne({ address }, (err, result) => {
         if (err) {
           console.log(`smartContracts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -77,7 +77,7 @@ module.exports.findByAddress = findByAddress;
 function findByTicker(ticker) {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.findOne({ ticker }, (err, result) => {
+	    assets.Assets.findOne({ ticker }, (err, result) => {
         if (err) {
           console.log(`smartContracts.findByTicker DB controller ERROR: ${err}`);
           reject(err);
@@ -93,7 +93,7 @@ function addZeroSmartContractsCreationHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
       const zeroHeight = 2644980;
-      const smartContractsCreationHistoryHeight = new smartContracts.SmartContracts({
+      const smartContractsCreationHistoryHeight = new assets.Assets({
         address: 'address', name: 'name', ticker: 'decimals = highest block number for ERC20 smart contracts creation history', decimals: zeroHeight,
       });
       smartContractsCreationHistoryHeight.save((err) => {
@@ -111,7 +111,7 @@ module.exports.addZeroSmartContractsCreationHistoryHeight = addZeroSmartContract
 function updateERC20SmartContractsHistoryHeight(blockNb) {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.update({ ticker: 'decimals = highest block number for ERC20 smart contracts creation history' }, { decimals: blockNb }, (err) => {
+	    assets.Assets.update({ ticker: 'decimals = highest block number for ERC20 smart contracts creation history' }, { decimals: blockNb }, (err) => {
         if (err) {
           console.log(`smartContracts.updateSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
@@ -127,7 +127,7 @@ module.exports.updateERC20SmartContractsHistoryHeight = updateERC20SmartContract
 function findERC20SmartContractsHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      smartContracts.SmartContracts.find({ ticker: 'decimals = highest block number for ERC20 smart contracts creation history' }, (err, result) => {
+	    assets.Assets.find({ ticker: 'decimals = highest block number for ERC20 smart contracts creation history' }, (err, result) => {
         if (err) {
           console.log(`smartContracts.findSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
