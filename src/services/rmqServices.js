@@ -96,7 +96,7 @@ var processMsg = (msg) => {
 };
 
 var work = (msg, cb) => {
-  console.log('PDF processing of ', msg.content.toString());
+  console.log(msg.content.toString());
   cb(true);
 };
 
