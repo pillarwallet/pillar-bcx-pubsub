@@ -4,6 +4,7 @@ const morganLogger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('./src/utils/logger.js');
+var amqp = require('amqplib/callback_api');
 require('dotenv').config();
 
 const app = express();
@@ -60,9 +61,18 @@ const initialize = () => new Promise(((resolve) => {
           dbServices.initDBERC20SmartContracts()
           // dbServices.resetDBERC20SmartContracts()
             .then(() => {
-	            /* CONNECT TO MESSAGE QUEUE CHANNEL */
-	            const rmqServices = require('./src/services/rmqServices.js');
-	            rmqServices.connect();
+              /* CONNECT TO MESSAGE QUEUE CHANNEL */
+              
+              amqp.connect('amqp://localhost', function(err, conn) {
+              conn.createChannel(function(err, ch) {
+                var q = 'bcx';
+
+                ch.assertQueue(q, {durable: false});
+                ch.consume(q, function(msg) {
+                  console.log(msg.content.toString());
+                }, {noAck: true});
+              });
+            });
 
               resolve();
             });

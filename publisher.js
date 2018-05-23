@@ -4,6 +4,7 @@ const morganLogger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('./src/utils/logger.js');
+var amqp = require('amqplib/callback_api');
 require('dotenv').config();
 
 const app = express();
@@ -46,32 +47,39 @@ const initialize = () => new Promise(((resolve) => {
 	    const serverIP = process.env.SERVER;
 	    const dbName = process.env.DBNAME;
 	    const url = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
-
 	    const dbServices = require('./src/services/dbServices.js');
 	    dbServices.dbConnectDisplayAccounts(url)
 	    .then((dbCollections) => {
         /* CONNECT TO MESSAGE QUEUE CHANNEL */
-          const rmqServices = require('./src/services/rmqServices.js');
-		      rmqServices.connect()
-            .then(() => {
-              /* LOAD BCX SERVICES */
-              const bcx = require('./src/services/bcx.js');
 
-              /* SUBSCRIBE TO GETH NODE EVENTS */
-              const gethSubscribe = require('./src/services/gethSubscribe.js');
+        /* LOAD BCX SERVICES */
+        const bcx = require('./src/services/bcx.js');
 
-              const notif = require('./src/services/notifications.js');
-              const processTx = require('./src/services/processTx.js');
-              const abiDecoder = require('abi-decoder');
+        /* SUBSCRIBE TO GETH NODE EVENTS */
+        const gethSubscribe = require('./src/services/gethSubscribe.js');
 
-              gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif, rmqServices);
-              gethSubscribe.subscribeBlockHeaders(
-                web3, gethSubscribe, bcx, processTx, dbServices,
-                dbCollections, abiDecoder, notif, rmqServices, true, true,
-              );
-              gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif, rmqServices);
-              resolve();
-            });
+        const notif = require('./src/services/notifications.js');
+        const processTx = require('./src/services/processTx.js');
+        const abiDecoder = require('abi-decoder');
+
+        gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif);
+        gethSubscribe.subscribeBlockHeaders(
+          web3, gethSubscribe, bcx, processTx, dbServices,
+          dbCollections, abiDecoder, notif, true, true,
+        );
+
+        gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif);
+
+        amqp.connect('amqp://localhost', function(err, conn) {
+        conn.createChannel(function(err, ch) {
+          var q = 'bcx';
+          var msg = 'Hello World!';
+          ch.assertQueue(q, {durable: false});
+          ch.sendToQueue(q, new Buffer(msg));
+        });
+        setTimeout(function() { conn.close(); process.exit(0) }, 500);
+      });
+
 	    });
     });
 }));
