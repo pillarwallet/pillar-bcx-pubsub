@@ -5,7 +5,7 @@
 const ipc = require('node-ipc');
 const logger = require('./utils/logger');
 const mongoose = require('mongoose');
-const spawn = require('child_process').spawn;
+const fork = require('child_process').fork;
 const ethAddresses = require('../src/models/accounts_model').Accounts;
 require('dotenv').config();
 const maxWalletsPerPub = 500000;
@@ -31,7 +31,7 @@ exports.init = function() {
                     function(data,socket) {
                         ipc.log('Received wallet.request from ', (data.id));
                         logger.info('Received ' +  (data.message) + ' from ' + (data.id));
-                        this.notify();
+                        exports.notify();
                     }
                 );
         

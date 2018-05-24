@@ -7,6 +7,7 @@ const ipc = require('node-ipc');
 const logger = require('./utils/logger');
 const mongoose = require('mongoose');
 const ethAddresses = require('../src/models/accounts_model').Accounts;
+var manager;
 require('dotenv').config();
 
 
@@ -23,11 +24,11 @@ exports.init = function() {
       process.env.SERVER_ADDRESS,
       process.env.SERVER_PORT,
       function() {
-        console.log(this.of);
         ipc.of.manager.on(
           'connect',
           function() {
             ipc.log('## connected to manager ##', ipc.config.delay);
+            exports.poll();
           }
         );
     
@@ -39,21 +40,36 @@ exports.init = function() {
           }
         );
     
-        ipc.of.manager(
+        ipc.of.manager.on(
           'wallet.receive',
           function(data) {
             logger.info('Received ',data);
           }
         );
+
+        exports.manager = ipc.of.manager;
       }
     );
-    setTimeout(this.poll(),5000);
+    setTimeout(function() {
+      exports.poll()
+    },500);
   } catch(err) {
     logger.error('Publisher.init() failed: ',err.message);
     throw err;
   } finally {
     logger.info('Exited publisher.init()');
   }
+};
+
+exports.poll = function() {
+    logger.info('Requesting new wallet ');
+    exports.manager.emit(
+      'wallet.request',
+      {
+        id : ipc.config.id,
+        message : 'wallet.request'
+      }
+    );
 };
 
 exports.configure = function() {
@@ -82,23 +98,6 @@ exports.configure = function() {
     logger.error('Publisher.configure() failed: ',err.message);
   } finally {
     logger.info('Exited publisher.configure()');
-  }
-};
-
-exports.poll = function () {
-  try {
-    logger.info('Started executing publisher.poll()');
-    ipc.of.manager.emit(
-      'wallet.request',
-      {
-        id : ipc.config.id,
-        message : 'wallet.request'
-      }
-    );   
-  } catch(err) {
-    logger.error('Publisher.poll() failed: ',err.message);
-  } finally {
-    logger.info('Exited publisher.poll()');
   }
 };
 
