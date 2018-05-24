@@ -4,29 +4,25 @@ let amqpConn = null;
 let pubChannel = null;
 const offlinePubQueue = [];
 
-
 const connect = () => {
-  return new Promise((resolve, reject) => {
-		amqp.connect('amqp://localhost', (err, conn) => {
-			if (err) {
-				console.error('[AMQP]', err.message);
-				resolve(setTimeout(connect, 1000));
-			}
-			conn.on('error', (err) => {
-				if (err.message !== 'Connection closing') {
-					console.error('[AMQP] conn error', err.message);
-					reject();
-				}
-			});
-			conn.on('close', () => {
-				console.error('[AMQP] reconnecting');
-				resolve(setTimeout(connect, 1000));
-			});
-			console.log('[AMQP] connected');
-			amqpConn = conn;
-			resolve();
-		});
-	});
+  amqp.connect("amqp://localhost", function(err, conn) {
+    if (err) {
+      console.error("[AMQP]", err.message);
+      return setTimeout(start, 1000);
+    }
+    conn.on("error", function(err) {
+      if (err.message !== "Connection closing") {
+        console.error("[AMQP] conn error", err.message);
+      }
+    });
+    conn.on("close", function() {
+      console.error("[AMQP] reconnecting");
+      return setTimeout(start, 1000);
+    });
+    console.log("[AMQP] connected");
+    amqpConn = conn;
+    startPublisher();
+  });
 }
 
 const startPublisher = () => {
@@ -103,7 +99,7 @@ var work = (msg, cb) => {
 var closeOnErr = (err) => {
   if (!err) return false;
   console.error('[AMQP] error', err);
-  amqpConn.close();
+  this.amqpConn.close();
   return true;
 };
 
