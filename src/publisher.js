@@ -39,7 +39,7 @@ exports.init = function() {
           }
         );
     
-        ipc.of.manager(
+        ipc.of.manager.on(
           'wallet.receive',
           function(data) {
             logger.info('Received ',data);
@@ -47,7 +47,7 @@ exports.init = function() {
         );
       }
     );
-    setTimeout(this.poll(),5000);
+    setTimeout(this.poll , 5000)
   } catch(err) {
     logger.error('Publisher.init() failed: ',err.message);
     throw err;
