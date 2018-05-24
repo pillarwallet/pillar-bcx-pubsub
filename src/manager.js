@@ -3,63 +3,56 @@
 /*  Pub-Sub Manager that is used to spawn new instances of publishers and subscribers  */
 /***************************************************************************************/
 const ipc = require('node-ipc');
-const logger = require('./utils/managerLogger');
+const logger = require('./utils/logger');
 const mongoose = require('mongoose');
 const spawn = require('child_process').spawn;
-const ethAddresses = require('../models/ethAddresses_model');
+const ethAddresses = require('../src/models/accounts_model').Accounts;
 require('dotenv').config();
 const maxWalletsPerPub = 500000;
 var latestId;
 
-exports.init = function init() {
+exports.init = function() {
     try {
         logger.info('Started executing manager.init()');
 
         //read the wallet address model and bring up multiple publishers
 
         //start of an ipc server which will be used to notify any new publisher of new registrations
-        ipc.config.id = 'bcx-manager';
+        ipc.config.id = 'manager';
         ipc.config.retry = 1500;
+        ipc.config.networkPort = process.env.SERVER_PORT;
+        ipc.config.networkHost = process.env.SERVER_ADDRESS;
         ipc.serveNet(
             process.env.SERVER_ADDRESS,
             process.env.SERVER_PORT,
-            start()
-        );
-        ipc.server.start();
-    } catch(err) {
-        logger.error(err.mesasage);
-    } finally {
-        logger.info('Exited manager.init()');
-    }
-};
-
-exports.start = function() {
-    try {
-        logger.info('Started executing manager.start()');
-
-        ipc.server.on(
-            'wallet.request',
-            function(data,socket) {
-                ipc.log('Received wallet.request from ', (data.id));
-                logger.info('Received ' +  (data.message) + ' from ' + (data.id));
-                notify();
+            function() {
+                ipc.server.on(
+                    'wallet.request',
+                    function(data,socket) {
+                        ipc.log('Received wallet.request from ', (data.id));
+                        logger.info('Received ' +  (data.message) + ' from ' + (data.id));
+                        this.notify();
+                    }
+                );
+        
+                ipc.server.on(
+                    'queue.full',
+                    function(data,socket) {
+                        ipc.log('Received queue.full from ', (data.id));
+                        logger.info('Received ' + (data.message) + ' from ' + (data.id));
+                        //launch a new publisher
+                        this.launch();
+                    }  
+                );
             }
         );
-
-        ipc.server.on(
-            'queue.full',
-            function(data,socket) {
-                ipc.log('Received queue.full from ', (data.id));
-                logger.info('Received ' + (data.message) + ' from ' + (data.id));
-                //launch a new publisher
-                launch();
-            }  
-        );
-
-    }catch(err) {
-        logger.error(err.mesasage);
+        ipc.server.start();
+        //console.log(JSON.stringify(ipc));
+    } catch(err) {
+        logger.error('Manager.init() failed: ', err.mesasage);
+        throw err;
     } finally {
-        logger.info('Exited manager.start()');
+        logger.info('Exited manager.init()');
     }
 };
 
@@ -96,3 +89,4 @@ exports.launch = function() {
         logger.info('Exited manager.launch()');
     }
 };
+this.init();

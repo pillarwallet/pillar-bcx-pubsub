@@ -1,4 +1,4 @@
-const Mongoose = require('../services/dbServices.js').mongoose;
+const Mongoose = require('../services/dbServices').mongoose;
 
 
 /* NEW SCHEMA NOT YET IMPLEMENTED

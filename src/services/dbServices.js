@@ -2,10 +2,11 @@ const colors = require('colors');
 const logger = require('../utils/logger.js');
 
 const ERC20ABI = require('./ERC20ABI.json');
+const mongoose = require('mongoose');
+module.exports.mongoose = mongoose;
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
-  const mongoose = require('mongoose');
-  module.exports.mongoose = mongoose;
+
   return new Promise(((resolve, reject) => {
     try {
       // Setting up listeners
