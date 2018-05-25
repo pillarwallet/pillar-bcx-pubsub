@@ -50,9 +50,9 @@ exports.init = function() {
         exports.manager = ipc.of.manager;
       }
     );
-    setTimeout(function() {
+    setInterval(function() {
       exports.poll()
-    },500);
+    },5000);
   } catch(err) {
     logger.error('Publisher.init() failed: ',err.message);
     throw err;
@@ -62,7 +62,7 @@ exports.init = function() {
 };
 
 exports.poll = function() {
-    logger.info('Requesting new wallet ');
+    logger.info('Requesting new wallet :');
     exports.manager.emit(
       'wallet.request',
       {
