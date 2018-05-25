@@ -32,6 +32,6 @@ const transactionsSchema = Mongoose.Schema({
 
 transactionsSchema.index({ to: 1, from: 1 });
 
-const transactions = Mongoose.model('Transactions', transactionsSchema);
+const Transactions = Mongoose.model('Transactions', transactionsSchema);
 
-module.exports.Transactions = transactions;
+module.exports.Transactions = Transactions;

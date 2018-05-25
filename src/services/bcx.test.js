@@ -128,7 +128,7 @@ describe('Test getBalance function', () => {
   test('getBalance call for ERC20 token should call smartContracts.findByTicker once, web3.eth.call once , web3.utils.fromWei once and web3.utils.toBN once', (done) => {
     jest.mock('web3');
     const web3 = require('web3');
-    jest.mock('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
     const spy2 = sinon.spy(web3.eth, 'call');
     // stub1.resolves(100000000000000000)
     const stub1 = sinon.stub(web3.utils, 'fromWei');

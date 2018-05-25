@@ -9,8 +9,8 @@ describe('Test subscribePendingTx funtion', () => {
     const processTx = require('./processTx');
     let ethAddresses;
     let smartContracts;
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     let abiDecoder;
     let circuitBreaker;
     const stub1 = sinon.stub(bcx, 'getTxInfo');
@@ -44,9 +44,9 @@ describe('Test subscribePendingTx funtion', () => {
 describe('Test subscribeBlockHeaders function', () => {
   test('subscribeBlockHeaders function should call bcx.getBlockTx, dbCollections.ethTransactions.listDbZeroConfTx, dbCollections.ethTransactions.listPending dbCollections.ethTransactions.updateTxHistoryHeight, processTx.checkBlockTx and processTx.checkPendingTx thrice, and call dbServices.updateTxHistory once', (done) => {
     jest.mock('web3');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
     jest.mock('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
     const web3 = require('web3');
     const bcx = require('.//bcx.js');
     const processTx = require('./processTx');
@@ -54,9 +54,9 @@ describe('Test subscribeBlockHeaders function', () => {
 
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
 
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
 
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const dbCollections = { ethAddresses, ethTransactions, smartContracts };
     const spy3 = sinon.spy(dbCollections.ethTransactions, 'listPending');
     const spy4 = sinon.spy(dbCollections.ethTransactions, 'updateTxHistoryHeight');
@@ -92,8 +92,8 @@ describe('Test subscribeBlockHeaders function', () => {
 });
 describe('Test subscribeAllDBERC20SmartContracts function', () => {
   test('subscribeAllDBERC20SmartContracts Should call dbCollections.smartContracts.listAll() once and subscribeERC20SmartContract thrice', (done) => {
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const dbCollections = { smartContracts };
     const stub1 = sinon.stub(dbCollections.smartContracts, 'listAll');
     stub1.resolves(['smaco1', 'smaco2', 'smaco3']);

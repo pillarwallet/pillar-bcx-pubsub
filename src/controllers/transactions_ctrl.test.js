@@ -3,7 +3,7 @@ const sinon = require('sinon');
 describe('Test ethTransactions_ctrl functions', () => {
   test('listAll function should call ethTransactionsModel.EthTransactions.find once and return mocked list of transactions', (done) => {
     jest.mock('../models/ethTransactions_model.js');
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
     return ethTransactionsCtrl.listAll()
@@ -16,7 +16,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('listPending function should call ethTransactionsModel.EthTransactions.find once and return mocked list of transactions', (done) => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -30,7 +30,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('listHistory function should call ethTransactionsModel.EthTransactions.find once and return mocked list of transactions', (done) => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -44,7 +44,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('listDbZeroConfTx function should call ethTransactionsModel.EthTransactions.find once and return mocked list of transactions', (done) => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -58,7 +58,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('findById function should call ethTransactionsModel.EthTransactions.findOne once and return mocked list of transactions', (done) => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'findOne');
@@ -72,7 +72,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('findByTxHash function should call ethTransactionsModel.EthTransactions.findOne once and return mocked list of transactions', (done) => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'findOne');
@@ -95,7 +95,7 @@ describe('Test ethTransactions_ctrl functions', () => {
         dbServices.dbConnect(url)
         .then(function(){
             //console.log('ok')
-            let ethTransactions = require('./ethTransactions_ctrl.js');
+            let ethTransactions = require('./transactions_ctrl.js');
             jest.mock('../models/ethTransactions_model.js')
             let ethTransactionsModel=require('../models/ethTransactions_model.js')
 
@@ -114,7 +114,7 @@ describe('Test ethTransactions_ctrl functions', () => {
     */
 
   test('updateTx function should call ethTransactionsModel.EthTransactions.update once', () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
 	  const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'update');
@@ -124,7 +124,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('txFailed function should call ethTransactionsModel.EthTransactions.update once', () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'update');
@@ -134,7 +134,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test('emptyCollection function should call ethTransactionsModel.EthTransactions.remove', () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'remove');
@@ -149,7 +149,7 @@ describe('Test ethTransactions_ctrl functions', () => {
      });
   */
   test('updateTxHistoryHeight function should call ethTransactionsModel.EthTransactions.update once', () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'update');
@@ -159,7 +159,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test("findTxHistoryHeight function should call ethTransactionsModel.EthTransactions.find once'", () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -169,7 +169,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test("getTxHistory('address1', 'address2', 'ALL', 0) should call ethTransactionsModel.EthTransactions.find twice'", () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -180,7 +180,7 @@ describe('Test ethTransactions_ctrl functions', () => {
 
 
   test("getTxHistory('address1', 'fromtmstmp', 'address2', 'ALL') should call ethTransactionsModel.EthTransactions.find twice'", () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -190,7 +190,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test("getTxHistory('address1', 'fromtmstmp', 'All', 'asset') function should call ethTransactionsModel.EthTransactions.find twice'", () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');
@@ -200,7 +200,7 @@ describe('Test ethTransactions_ctrl functions', () => {
   });
 
   test("getTxHistory('address1', 'fromtmstmp', 'All', 'ALL') function should call ethTransactionsModel.EthTransactions.find twice'", () => {
-    const ethTransactionsCtrl = require('./ethTransactions_ctrl.js');
+    const ethTransactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/ethTransactions_model.js');
     const ethTransactionsModel = require('../models/ethTransactions_model.js');
     const spy = sinon.spy(ethTransactionsModel.EthTransactions, 'find');

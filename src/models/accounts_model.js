@@ -7,7 +7,7 @@ const accountsSchema = Mongoose.Schema({
   addresses: [
     {
       protocol: String,
-      walletId: String 
+      walletId: String
     }
   ]
 });
@@ -19,6 +19,6 @@ const accountsSchema = Mongoose.Schema({
   FCMIID: { type: String, required: true },
 });
 
-const accounts = Mongoose.model('Accounts', accountsSchema);
+const Accounts = Mongoose.model('Accounts', accountsSchema);
 
-module.exports.Accounts = accounts;
+module.exports.Accounts = Accounts;

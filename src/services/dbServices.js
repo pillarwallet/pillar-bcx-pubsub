@@ -9,20 +9,22 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
 
   return new Promise(((resolve, reject) => {
     try {
+
       // Setting up listeners
       module.exports.mongoose.connection.on('error', () => {
         logger.info(colors.red.bold("ERROR: Couldn't establish connection to database :(\n"));
         reject(new Error("ERROR: Couldn't establish connection to database"));
       });
+
       module.exports.mongoose.connection.on('open', () => {
         logger.info(colors.green.bold('Established connection to database!\n'));
         resolve({ ethAddresses, smartContracts, ethTransactions });
       });
 
       // Import DB controllers
-      var ethAddresses = require('../controllers/accounts_ctrl.js');
-      var smartContracts = require('../controllers/assets_ctrl.js');
-      var ethTransactions = require('../controllers/transactions_ctrl.js');
+      const ethAddresses = require('../controllers/accounts_ctrl.js');
+      const smartContracts = require('../controllers/assets_ctrl.js');
+      const ethTransactions = require('../controllers/transactions_ctrl.js');
 
 	    // Connect to database
 	    module.exports.mongoose.connect(url, $arg);

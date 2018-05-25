@@ -1,5 +1,5 @@
 const logger = require('../utils/logger.js');
-const ethTransactionsController = require('../controllers/ethTransactions_ctrl.js');
+const ethTransactionsController = require('./transactions_ctrl.js');
 const { exitRequestError } = require('../utils/routingHelpers');
 const bcx = require('../services/bcx.js');
 

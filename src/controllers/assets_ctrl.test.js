@@ -3,7 +3,7 @@ const sinon = require('sinon');
 describe('Test smartContracts_ctrl', () => {
   test('listAll function should call smartContractsModel.SmartContracts.find once and return mocked list of smart contracts', (done) => {
     jest.mock('../models/smartContracts_model.js');
-    const smartContractsCtrl = require('./smartContracts_ctrl.js');
+    const smartContractsCtrl = require('./assets_ctrl.js');
     const smartContractsModel = require('../models/smartContracts_model.js');
     const spy = sinon.spy(smartContractsModel.SmartContracts, 'find');
     return smartContractsCtrl.listAll()
@@ -17,7 +17,7 @@ describe('Test smartContracts_ctrl', () => {
 
   test('emptyCollection function should call smartContractsModel.SmartContracts.remove once', () => {
     jest.mock('../models/smartContracts_model.js');
-    const smartContractsCtrl = require('./smartContracts_ctrl.js');
+    const smartContractsCtrl = require('./assets_ctrl.js');
     const smartContractsModel = require('../models/smartContracts_model.js');
     const spy = sinon.spy(smartContractsModel.SmartContracts, 'remove');
     smartContractsCtrl.emptyCollection();
@@ -35,7 +35,7 @@ describe('Test smartContracts_ctrl', () => {
         dbServices.dbConnect(url)
         .then(function(){
             //console.log('ok')
-            let smartContracts = require('./smartContracts_ctrl.js');
+            let smartContracts = require('./assets_ctrl.js');
             jest.mock('../models/smartContracts_model.js')
             let smartContractsModel=require('../models/smartContracts_model.js')
             console.log('loaded')
@@ -53,7 +53,7 @@ describe('Test smartContracts_ctrl', () => {
     */
 
   test('findByTicker function should call smartContractsModel.SmartContracts.findOne once and return mocked smart contract', (done) => {
-    const smartContractsCtrl = require('./smartContracts_ctrl.js');
+    const smartContractsCtrl = require('./assets_ctrl.js');
     jest.mock('../models/smartContracts_model.js');
     const smartContractsModel = require('../models/smartContracts_model.js');
     const spy = sinon.spy(smartContractsModel.SmartContracts, 'findOne');
@@ -67,7 +67,7 @@ describe('Test smartContracts_ctrl', () => {
   });
 
   test('findByAddress function should call smartContractsModel.SmartContracts.findOne once', (done) => {
-    const smartContractsCtrl = require('./smartContracts_ctrl.js');
+    const smartContractsCtrl = require('./assets_ctrl.js');
     jest.mock('../models/smartContracts_model.js');
     const smartContractsModel = require('../models/smartContracts_model.js');
     const spy = sinon.spy(smartContractsModel.SmartContracts, 'findOne');
@@ -82,7 +82,7 @@ describe('Test smartContracts_ctrl', () => {
   /*
     test("addZeroSmartContractsCreationHistoryHeight function should call smartContracts.save once", (done) => {
 
-        let smartContractsCtrl = require('./smartContracts_ctrl.js');
+        let smartContractsCtrl = require('./assets_ctrl.js');
         jest.mock('../models/smartContracts_model.js')
         let smartContractsModel=require('../models/smartContracts_model.js')
         let spy=sinon.spy(smartContractsModel.smartContracts,"save")
@@ -96,7 +96,7 @@ describe('Test smartContracts_ctrl', () => {
     });
 */
   test('updateERC20SmartContractsHistoryHeight function should call smartContractsModel.SmartContracts.update once', (done) => {
-    const smartContractsCtrl = require('./smartContracts_ctrl.js');
+    const smartContractsCtrl = require('./assets_ctrl.js');
     jest.mock('../models/smartContracts_model.js');
     const smartContractsModel = require('../models/smartContracts_model.js');
     const spy = sinon.spy(smartContractsModel.SmartContracts, 'update');
@@ -109,7 +109,7 @@ describe('Test smartContracts_ctrl', () => {
   });
 
   test('findERC20SmartContractsHistoryHeight function should call smartContractsModel.SmartContracts.find once', (done) => {
-    const smartContractsCtrl = require('./smartContracts_ctrl.js');
+    const smartContractsCtrl = require('./assets_ctrl.js');
     jest.mock('../models/smartContracts_model.js');
     const smartContractsModel = require('../models/smartContracts_model.js');
     const spy = sinon.spy(smartContractsModel.SmartContracts, 'find');

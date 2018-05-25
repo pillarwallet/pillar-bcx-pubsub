@@ -31,10 +31,10 @@ describe('Test dlTxHistory function', () => {
     const txHistoryArray = web3.txHistory;
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const dbCollections = { ethAddresses, smartContracts, ethTransactions };
 
     const bcx = require('./bcx');
@@ -70,8 +70,8 @@ describe('Test dlTxHistory function', () => {
     jest.mock('web3');
     const web3 = require('web3');
     const txHistoryArray = web3.txHistory;
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const dbCollections = { ethTransactions };
 
     const bcx = require('./bcx');
@@ -128,8 +128,8 @@ describe('Test processTxHistory function', () => {
 
 describe('Test updateTxHistory function', () => {
   test('Should call dbCollections.ethTransactions.findTxHistoryHeight once and call dlTxHistory  once', (done) => {
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const dbCollections = { ethTransactions };
     const dbServices = require('./dbServices.js');
     const spy1 = sinon.spy(ethTransactions, 'findTxHistoryHeight');
@@ -155,8 +155,8 @@ describe('Test updateTxHistory function', () => {
 describe('Test getTxHistory function', () => {
   test('Should call ethTransactions.getTxHistory once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub = sinon.stub(ethTransactions, 'getTxHistory');
     stub.resolves({ TxHist: 'TxHistory' });
     return dbServices.getTxHistory('address1', 'fromtmstmp', 'address2', 'asset')
@@ -171,8 +171,8 @@ describe('Test getTxHistory function', () => {
 describe('Test listPendingTx function', () => {
   test('listPendingTx called for ETH should call ethTransactions.listPending once and return one mocked pending transaction', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const spy = sinon.spy(ethTransactions, 'listPending');
     return dbServices.listPendingTx('0x81b7E08F65Bdf5648606c89998A9CC8164397647', 'ETH')
       .then((result) => {
@@ -184,8 +184,8 @@ describe('Test listPendingTx function', () => {
   });
   test('listPendingTx called for BOKKY token should call ethTransactions.listPending once and return one mocked pending tx', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const spy = sinon.spy(ethTransactions, 'listPending');
     return dbServices.listPendingTx('0x81b7E08F65Bdf5648606c89998A9CC8164397647', 'BOKKY')
       .then((result) => {
@@ -199,8 +199,8 @@ describe('Test listPendingTx function', () => {
 describe('Test initDBTxHistoryfunction', () => {
   test('When NO_TX_HISTORY_HEIGHT is returned by findTxHistoryHeight, initDBTxHistory should call  txHistory.addZeroTxHistoryHeight() once and txHistory.findTxHistoryHeight once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const txHistory = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const txHistory = require('../controllers/transactions_ctrl.js');
     const stub = sinon.stub(txHistory, 'addZeroTxHistoryHeight');
     stub.resolves();
     const stub2 = sinon.stub(txHistory, 'findTxHistoryHeight');
@@ -217,8 +217,8 @@ describe('Test initDBTxHistoryfunction', () => {
 
   test('When blockNb is returned by findTxHistoryHeight, initDBTxHistory should NOT call txHistory.addZeroTxHistoryHeight() and call txHistory.findTxHistoryHeight once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const txHistory = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const txHistory = require('../controllers/transactions_ctrl.js');
     const stub = sinon.stub(txHistory, 'addZeroTxHistoryHeight');
     stub.resolves();
     const stub2 = sinon.stub(txHistory, 'findTxHistoryHeight');
@@ -237,8 +237,8 @@ describe('Test initDBTxHistoryfunction', () => {
 describe('Test emptyDBTxHistory function', () => {
   test('Should call  ethTransactions.emptyCollection() once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const txHistory = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const txHistory = require('../controllers/transactions_ctrl.js');
     const stub = sinon.stub(txHistory, 'emptyCollection');
     stub.resolves();
     return dbServices.emptyDBTxHistory()
@@ -271,8 +271,8 @@ describe('Test resetDBTxHistory function', () => {
 describe('Test initDBERC20SmartContracts function', () => {
   test('When NO_ERC20_CONTRACTS_HISTORY_HEIGHT is returned by findERC20SmartContractsHistoryHeight, initDBERC20SmartContracts should call  smartContracts.addZeroSmartContractsCreationHistoryHeight() once and smartContracts.findERC20SmartContractsHistoryHeight once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const stub = sinon.stub(smartContracts, 'addZeroSmartContractsCreationHistoryHeight');
     stub.resolves();
     const stub2 = sinon.stub(smartContracts, 'findERC20SmartContractsHistoryHeight');
@@ -289,8 +289,8 @@ describe('Test initDBERC20SmartContracts function', () => {
 
   test('When blockNb is returned by findERC20SmartContractsHistoryHeight, initDBERC20SmartContracts should NOT call smartContracts.addZeroSmartContractsCreationHistoryHeight() and call smartContracts.findERC20SmartContractsHistoryHeight once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const stub = sinon.stub(smartContracts, 'addZeroSmartContractsCreationHistoryHeight');
     stub.resolves();
     const stub2 = sinon.stub(smartContracts, 'findERC20SmartContractsHistoryHeight');
@@ -309,8 +309,8 @@ describe('Test initDBERC20SmartContracts function', () => {
 describe('Test emptyDBERC20SmartContracts function', () => {
   test('Should call  smartContracts.emptyCollection() once', (done) => {
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const stub = sinon.stub(smartContracts, 'emptyCollection');
     stub.resolves();
     return dbServices.emptyDBERC20SmartContracts()
@@ -375,8 +375,8 @@ describe('Test processSmartContractsAddressesArray function', function() {
     test('Should call smartContracts.addContract once', function(done) {
         jest.mock('web3')
         let web3 = require('web3');
-        jest.mock('../controllers/smartContracts_ctrl.js')
-        let smartContracts = require('../controllers/smartContracts_ctrl.js')
+        jest.mock('../controllers/assets_ctrl.js')
+        let smartContracts = require('../controllers/assets_ctrl.js')
         stub = sinon.stub(smartContracts,'addContract')
         stub.resolves()
 
@@ -396,8 +396,8 @@ describe('Test updateERC20SmartContracts function', () => {
     const web3 = require('web3');
     const bcx = require('./bcx.js');
     const dbServices = require('./dbServices.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const stub = sinon.stub(smartContracts, 'findERC20SmartContractsHistoryHeight');
     const dbCollections = { smartContracts };
     stub.resolves(0);
