@@ -33,9 +33,9 @@ exports.initServices = function () {
               });
             });
           } catch (err) {
-            logger.error('subscriber.configure() failed: ', err.message);
+            logger.error('subscriber.initServices() failed: ', err.message);
           } finally {
-            logger.info('Exited subscriber.initMQ()');
+            logger.info('Exited subscriber.initServices()');
           }
         });
 };
