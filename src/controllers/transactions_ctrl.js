@@ -90,17 +90,18 @@ function findByTxHash(txHash) {
   }));
 }
 module.exports.findByTxHash = findByTxHash;
-function addTx(pillarId, protocol, fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber, value, gasUsed, history =  false) {
+
+function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, nbConf, history = false) {
   return new Promise(((resolve, reject) => {
     try {
       let tx;
       if (history) {
-        tx = new transactions.Transactions({
-          pillarId, protocol, fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber, value, status: "history", gasUsed
+        ethTx = new transactions.Transactions({
+          pillarId, protocol: 'Ethereum', fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber: null, value, status: 'history', gasUsed: null,
         });
       } else {
-        tx = new transactions.Transactions({
-          pillarId, protocol, fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber, value, status: "pending", gasUsed
+        ethTx = new transactions.Transactions({
+          pillarId, protocol: 'Ethereum', fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber: null, value, status: 'pending', gasUsed: null,
         });
       }
       tx.save((err) => {
@@ -178,7 +179,7 @@ module.exports.emptyCollection = emptyCollection;
 function addZeroTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      const txHistHeight = new transactions.Transactions({ nbConfirmations: 2693500, status: 'nbConfirmations = highest block number for tx history' });
+      const txHistHeight = new transactions.Transactions({ nbConfirmations: 3333207, status: 'blockNumber = highest block number for tx history' });
       txHistHeight.save((err) => {
         if (err) {
           logger.info(`transactions.addZeroTxHistoryHeight DB controller ERROR: ${err}`);
@@ -194,7 +195,7 @@ module.exports.addZeroTxHistoryHeight = addZeroTxHistoryHeight;
 function updateTxHistoryHeight(blockNb) {
   return new Promise(((resolve, reject) => {
     try {
-	    transactions.Transactions.update({ status: 'nbConfirmations = highest block number for tx history' }, { nbConfirmations: blockNb }, (err) => {
+	    transactions.Transactions.update({ status: 'blockNumber = highest block number for tx history' }, { blockNumber: blockNb }, (err) => {
         if (err) {
           logger.info(`transactions.updateTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
@@ -209,13 +210,13 @@ module.exports.updateTxHistoryHeight = updateTxHistoryHeight;
 function findTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-	    transactions.Transactions.find({ status: 'nbConfirmations = highest block number for tx history' }, (err, result) => {
+	    transactions.Transactions.find({ status: 'blockNumber = highest block number for tx history' }, (err, result) => {
         if (err) {
           logger.info(`transactions.findTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
         }
         if (result.length > 0) {
-          resolve(result[0].nbConfirmations);
+          resolve(result[0].blockNumber);
         } else {
           resolve('NO_TX_HSTORY_HEIGHT');
         }

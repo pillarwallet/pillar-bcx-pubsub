@@ -32,7 +32,12 @@ function getBlockTx(web3, blockNumber) {
       web3.eth.getBlock(blockNumber, true)
         .then((result) => {
           // logger.info(result.transactions)
-          resolve(result.transactions);
+          if(result) {
+	          resolve(result.transactions);
+          } else {
+            reject('bcx.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED');
+          }
+
         })
         .catch((e) => { reject(e); });
     } catch (e) { reject(e); }
