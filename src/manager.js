@@ -7,9 +7,15 @@ const logger = require('./utils/logger');
 const mongoose = require('mongoose');
 const fork = require('child_process').fork;
 const ethAddresses = require('../src/models/accounts_model').Accounts;
+const dbServices = require('../src/services/dbServices');
 require('dotenv').config();
 const maxWalletsPerPub = 500000;
 var latestId;
+const mongoUser = process.env.MONGO_USER;
+const mongoPwd = process.env.MONGO_PWD;
+const serverIP = process.env.SERVER;
+const dbName = process.env.DBNAME;
+const mongoUrl = 'mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}';
 
 exports.init = function() {
     try {
@@ -31,7 +37,7 @@ exports.init = function() {
                     function(data,socket) {
                         ipc.log('Received wallet.request from ', (data.id));
                         logger.info('Received ' +  (data.message) + ' from ' + (data.id));
-                        exports.notify();
+                        exports.notify(data.message);
                     }
                 );
         
@@ -56,14 +62,14 @@ exports.init = function() {
     }
 };
 
-exports.notify = function() {
+exports.notify = function(idFrom) {
     try {
         logger.info('Started executing manager.notify()');
 
         //read the wallet address model and bring up multiple publishers
-        var latest = ethAddresses.find().sort({$natural: -1}).limit(1);
-        if(latest > latestId) {
-            var theWallets = ethAddresses.find({_id : {$gt: latestId}});
+        var theWallets = dbServices.recentAccounts(idFrom);
+        console.log('~Fetched data from: ',theWallets);
+        if(theWallets !== undefined) {
             ipc.server.emit(
                 socket,
                 'wallet.receive',

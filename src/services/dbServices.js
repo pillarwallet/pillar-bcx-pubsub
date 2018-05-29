@@ -68,6 +68,7 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
 module.exports.dbConnectDisplayAccounts = dbConnectDisplayAccounts;
 
 function recentAccounts(
+  url,
   idFrom,
   protocol,
   $arg = { useMongoClient: true }
