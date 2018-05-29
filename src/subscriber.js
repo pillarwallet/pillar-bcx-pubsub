@@ -27,7 +27,7 @@ exports.initServices = function () {
 
                 dbCollections.transactions.addTx(entry.pillarId,entry.protocol,entry.fromAddress,entry.toAddress,entry.txHash,entry.asset,entry.contractAddress, entry.timestamp,entry.blockNumber,entry.value,entry.status,entry.gasUsed)
                 .then(() =>{
-                  logger.info("Transaction inserted: " + entry.txHash)
+                  logger.info("Transaction inserted: " + entry.txHash);
                 })
                 }, {noAck: true});
               });
@@ -41,12 +41,12 @@ exports.initServices = function () {
 };
 
 var validate = (payload) => {
-  var checksum = payload.checksum
+  var checksum = payload.checksum;
   delete payload.checksum;
-  if (md5.hex(JSON.stringify(payload)) ===checksum) {
-    return true
+  if (md5.hex(JSON.stringify(payload)) === checksum) {
+    return true;
   } else {
-    return false
+    return false;
   }
 }
 
