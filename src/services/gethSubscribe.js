@@ -134,8 +134,8 @@ module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContr
 function subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, notif, ERC20SmartContract) {
   // var subscribePromise = new Promise(function(resolve,reject){
   try {
-    if (ERC20SmartContract.address != 'address') {
-      const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, ERC20SmartContract.address);
+    if (ERC20SmartContract.contractAddress !== 'address') {
+      const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
           processTx.checkTokenTransferEvent(web3, bcx, dbCollections, notif, result, ERC20SmartContract);

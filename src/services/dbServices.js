@@ -3,13 +3,12 @@ const logger = require('../utils/logger.js');
 
 const ERC20ABI = require('./ERC20ABI.json');
 const mongoose = require('mongoose');
+
 module.exports.mongoose = mongoose;
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
-
   return new Promise(((resolve, reject) => {
     try {
-
       // Setting up listeners
       module.exports.mongoose.connection.on('error', () => {
         logger.info(colors.red.bold("ERROR: Couldn't establish connection to database :(\n"));
@@ -46,14 +45,14 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
                   logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
                   let i = 0;
                   ethAddressesArray.forEach((item) => {
-                    logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.address}\n`));
+                    logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
                     i += 1;
                   });
                   logger.info(colors.cyan.bold.underline('MONITORED SMART CONTRACTS:\n'));
                   i = 0;
                   smartContractsAddressesArray.forEach((item) => {
                     if (item.address !== 'address') {
-                      logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.ticker}    ADDRESS = ${item.address}\n`));
+                      logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.symbol}    ADDRESS = ${item.contractAddress}\n`));
                     }
                     i += 1;
                   });
@@ -71,29 +70,31 @@ module.exports.dbConnectDisplayAccounts = dbConnectDisplayAccounts;
 
 function dlTxHistory(
   web3, bcx, processTx, dbCollections, abiDecoder,
-  notif, startBlock, maxBlock, nbTx, checkAddress = null,
+  notif, channel, queue, startBlock, maxBlock, nbTx, checkAddress = null,
 ) {
   return new Promise(((resolve, reject) => {
     try {
       if (startBlock > maxBlock) {
         resolve(nbTx);
       } else {
-        logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
+        // logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
+        console.log(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
         bcx.getBlockTx(web3, startBlock)
           .then((txArray) => {
             module.exports.processTxHistory(
               web3, processTx, txArray, dbCollections,
-              abiDecoder, notif, 0, 0, null,
+              abiDecoder, notif, channel, queue, 0, 0, null,
             )
               .then((nbBlockTx) => {
-                nbTx += nbBlockTx;
+	              nbTx += nbBlockTx;
                 dbCollections.ethTransactions.listHistory()
                   .then((historyTxArray) => {
                     processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, notif, false)
                       .then(() => {
-                        resolve(dlTxHistory(
+	                      dbCollections.ethTransactions.updateTxHistoryHeight(startBlock);
+	                      resolve(dlTxHistory(
                           web3, bcx, processTx, dbCollections, abiDecoder,
-                          notif, startBlock + 1, maxBlock, nbTx, checkAddress,
+                          notif, channel, queue, startBlock + 1, maxBlock, nbTx, checkAddress,
                         ));
                       })
                       .catch((e) => { reject(e); });
@@ -111,7 +112,7 @@ module.exports.dlTxHistory = dlTxHistory;
 
 function processTxHistory(
   web3, processTx, txArray, dbCollections, abiDecoder,
-  notif, nbTx, index, checkAddress = null,
+  notif, channel, queue, nbTx, index, checkAddress = null,
 ) {
   return new Promise(((resolve, reject) => {
     try {
@@ -120,7 +121,7 @@ function processTxHistory(
       } else {
         processTx.newPendingTx(
           web3, txArray[index], dbCollections, abiDecoder,
-          notif, false, true, checkAddress,
+          notif, channel, queue, false, true, checkAddress,
         )
           .then((pillarWalletTx) => {
             if (pillarWalletTx) {
@@ -128,7 +129,7 @@ function processTxHistory(
             }
             resolve(processTxHistory(
               web3, processTx, txArray, dbCollections, abiDecoder,
-              notif, nbTx, index + 1, checkAddress,
+              notif, channel, queue, nbTx, index + 1, checkAddress,
             ));
           });
       }
@@ -137,15 +138,15 @@ function processTxHistory(
 }
 module.exports.processTxHistory = processTxHistory;
 
-function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, maxBlock) {
+function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
       dbCollections.ethTransactions.findTxHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-          module.exports.dlTxHistory(
+          this.dlTxHistory(
             web3, bcx, processTx, dbCollections, abiDecoder,
-            notif, startBlock, maxBlock, 0,
+            notif, channel, queue, startBlock, maxBlock, 0,
           )
             .then((nbTxFound) => {
               logger.info(colors.red.bold('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!\n'));
@@ -169,23 +170,30 @@ function initDB(accountsArray, contractsArray) {
         resolve();
       } else if (accountsArray.length === 0) {
         const smartContracts = require('../controllers/assets_ctrl.js');
-        smartContracts.addContract(
-          contractsArray[0].address, contractsArray[0].name,
-          contractsArray[0].ticker, contractsArray[0].decimals,
-        )
-          .then(() => {
-            contractsArray.splice(0, 1);
-            resolve(initDB(accountsArray, contractsArray));
-          })
-          .catch((e) => { reject(e); });
+        smartContracts.findByAddress(contractsArray[0].address)
+          .then((result) => {
+            if (result.length === 0) {
+	          smartContracts.addContract(
+		          contractsArray[0].address, contractsArray[0].name,
+		          contractsArray[0].ticker, contractsArray[0].decimals,
+		          'Ethereum',
+	          );
+            }
+          }).catch((e) => { reject(e); });
+
+        contractsArray.splice(0, 1);
+        resolve(initDB(accountsArray, contractsArray));
       } else {
         const ethAddresses = require('../controllers/accounts_ctrl.js');
-        ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID)
-          .then(() => {
-            accountsArray.splice(0, 1);
-            resolve(initDB(accountsArray, contractsArray));
-          })
-          .catch((e) => { reject(e); });
+	      ethAddresses.findByAddress(accountsArray[0].publicAddress)
+          .then((result) => {
+	          if (result.length === 0) {
+		          ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID);
+	          }
+          }).catch((e) => { reject(e); });
+
+	      accountsArray.splice(0, 1);
+	      resolve(initDB(accountsArray, contractsArray));
       }
     } catch (e) { reject(e); }
   }));

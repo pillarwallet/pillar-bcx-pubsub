@@ -1,55 +1,10 @@
 const colors = require('colors');
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
-const ERC20ABI = [
-  {
-    constant: true, inputs: [], name: 'name', outputs: [{ name: '', type: 'string' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: '_spender', type: 'address' }, { name: '_amount', type: 'uint256' }], name: 'approve', outputs: [{ name: 'success', type: 'bool' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'totalSupply', outputs: [{ name: 'totalSupply', type: 'uint256' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: '_from', type: 'address' }, { name: '_to', type: 'address' }, { name: '_amount', type: 'uint256' }], name: 'transferFrom', outputs: [{ name: 'success', type: 'bool' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'decimals', outputs: [{ name: '', type: 'uint8' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [{ name: '_owner', type: 'address' }], name: 'balanceOf', outputs: [{ name: 'balance', type: 'uint256' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'owner', outputs: [{ name: '', type: 'address' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [], name: 'symbol', outputs: [{ name: '', type: 'string' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: '_to', type: 'address' }, { name: '_amount', type: 'uint256' }], name: 'transfer', outputs: [{ name: 'success', type: 'bool' }], payable: false, type: 'function',
-  },
-  {
-    constant: true, inputs: [{ name: '_owner', type: 'address' }, { name: '_spender', type: 'address' }], name: 'allowance', outputs: [{ name: 'remaining', type: 'uint256' }], payable: false, type: 'function',
-  },
-  {
-    constant: false, inputs: [{ name: 'ethers', type: 'uint256' }], name: 'withdrawEthers', outputs: [{ name: 'ok', type: 'bool' }], payable: false, type: 'function',
-  },
-  { inputs: [{ name: '_name', type: 'string' }, { name: '_symbol', type: 'string' }, { name: '_decimals', type: 'uint8' }], payable: false, type: 'constructor' },
-  { payable: true, type: 'fallback' },
-  {
-    anonymous: false, inputs: [{ indexed: true, name: '_owner', type: 'address' }, { indexed: false, name: '_amount', type: 'uint256' }], name: 'TokensCreated', type: 'event',
-  },
-  {
-    anonymous: false, inputs: [{ indexed: true, name: '_from', type: 'address' }, { indexed: true, name: '_to', type: 'address' }, { indexed: false, name: '_value', type: 'uint256' }], name: 'Transfer', type: 'event',
-  },
-  {
-    anonymous: false, inputs: [{ indexed: true, name: '_owner', type: 'address' }, { indexed: true, name: '_spender', type: 'address' }, { indexed: false, name: '_value', type: 'uint256' }], name: 'Approval', type: 'event',
-  },
-];
+const ERC20ABI = require('./ERC20ABI');
 
 
-function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, notif, nbTxFound, checkAddress = null) {
+function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, notif, channel, queue, nbTxFound, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (txArray.length === 0) {
@@ -61,7 +16,7 @@ function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, noti
             txArray.splice(0, 1);
             resolve(processNewPendingTxArray(
               web3, txArray, dbCollections, abiDecoder,
-              notif, nbTxFound, checkAddress,
+              notif, channel, queue, nbTxFound, checkAddress,
             ));
           })
           .catch((e) => { reject(e); });
@@ -72,7 +27,7 @@ function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, noti
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
 function newPendingTx(
-  web3, tx, dbCollections, abiDecoder, notif,
+  web3, tx, dbCollections, abiDecoder, notif, channel, queue,
   sendNotif = true, history = false, checkAddress = null,
 ) {
   return new Promise(((resolve, reject) => {
@@ -102,6 +57,7 @@ function newPendingTx(
                   .then(() => {
                     if (fromPillarAccount) {
                       logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
+                      /*
                       if (sendNotif) {
                         dbCollections.ethAddresses.getFCMIID(tx.to)
                           .then((FCMIID) => {
@@ -111,9 +67,11 @@ function newPendingTx(
                             reject(e);
                           });
                       }
+                      */
                       resolve(true);
                     } else {
                       logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: EXTERNAL ETH ACCOUNT ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
+                      /*
                       if (sendNotif) {
                         dbCollections.ethAddresses.getFCMIID(tx.to)
                           .then((FCMIID) => {
@@ -123,6 +81,7 @@ function newPendingTx(
                             reject(e);
                           });
                       }
+                      */
                       resolve(true);
                     }
                   })
@@ -170,6 +129,7 @@ function newPendingTx(
                                 toPillarAccount = result3.isPillarAddress;
                                 if (toPillarAccount) {
                                   logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
+                                  /*
                                   if (sendNotif) {
                                     dbCollections.ethAddresses.getFCMIID(to)
                                       .then((FCMIID) => {
@@ -179,6 +139,7 @@ function newPendingTx(
                                         reject(e);
                                       });
                                   }
+                                  */
                                   resolve(true);
                                 } else {
                                   logger.info(colors.cyan.bold(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO EXTERNAL ETH ACCOUNT: ${to}\n`));
@@ -208,6 +169,7 @@ function newPendingTx(
                             )
                               .then(() => {
                                 logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM EXTERNAL ETH ACCOUNT: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
+                                /*
                                 if (sendNotif) {
                                   dbCollections.ethAddresses.getFCMIID(to)
                                     .then((FCMIID) => {
@@ -217,6 +179,7 @@ function newPendingTx(
                                       reject(e);
                                     });
                                 }
+                                */
                                 resolve(true);
                               })
                               .catch((e) => {

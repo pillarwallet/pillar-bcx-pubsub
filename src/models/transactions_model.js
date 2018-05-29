@@ -1,6 +1,6 @@
 const Mongoose = require('../services/dbServices.js').mongoose;
 
-/* NEW SCHEMA NOT YET IMPLEMENTED
+// NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
   pillarId: Number,
   protocol: String,
@@ -12,11 +12,11 @@ const transactionsSchema = Mongoose.Schema({
   timestamp: Number,
   blockNumber: Number,
   value: Number,
-  status: Number,
-  gasUsed: Number
+  status: String,
+  gasUsed: Number,
 });
-*/
 
+/* OLD DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
   to: String,
   from: String,
@@ -29,7 +29,7 @@ const transactionsSchema = Mongoose.Schema({
   gasUsed: Number,
   nbConfirmations: Number,
 });
-
+*/
 transactionsSchema.index({ to: 1, from: 1 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
