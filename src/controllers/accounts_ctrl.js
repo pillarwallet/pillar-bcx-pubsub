@@ -13,13 +13,8 @@ function listAll() {
         }
         resolve(result);
       });
-<<<<<<< HEAD
-    } catch (e) { reject(e); 
-  }}));
-=======
     } catch (e) { reject(e); }
   });
->>>>>>> origin/subscriber
 }
 module.exports.listAll = listAll;
 
