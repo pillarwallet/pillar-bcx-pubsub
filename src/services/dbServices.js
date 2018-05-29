@@ -18,13 +18,13 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
 
       module.exports.mongoose.connection.on('open', () => {
         logger.info(colors.green.bold('Established connection to database!\n'));
-        resolve({ ethAddresses, smartContracts, ethTransactions });
+        resolve({ accounts, assets, transactions });
       });
 
       // Import DB controllers
-      const ethAddresses = require('../controllers/accounts_ctrl.js');
-      const smartContracts = require('../controllers/assets_ctrl.js');
-      const ethTransactions = require('../controllers/transactions_ctrl.js');
+      const accounts = require('../controllers/accounts_ctrl.js');
+      const assets = require('../controllers/assets_ctrl.js');
+      const transactions = require('../controllers/transactions_ctrl.js');
 
 	    // Connect to database
 	    module.exports.mongoose.connect(url, $arg);
