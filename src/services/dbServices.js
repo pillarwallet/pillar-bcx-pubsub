@@ -67,6 +67,34 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
 }
 module.exports.dbConnectDisplayAccounts = dbConnectDisplayAccounts;
 
+function recentAccounts(
+  idFrom,
+  protocol,
+  $arg = { useMongoClient: true }
+) {
+  return new Promise(((resolve, reject) => {
+    try {
+      module.exports.dbConnect(url, $arg)
+        .then((dbCollections) => {
+          // fetch accounts registered after a given Id
+          dbCollections.ethAddresses.recentAccounts(idFrom)
+            .then((ethAddressesArray) => {
+              logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
+              let i = 0;
+              ethAddressesArray.forEach((item) => {
+                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.address}\n`));
+                i += 1;
+              });
+            })
+            .catch((e) => { reject(e); });
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.recentAccounts = recentAccounts;
+
+
 function dlTxHistory(
   web3, bcx, processTx, dbCollections, abiDecoder,
   notif, startBlock, maxBlock, nbTx, checkAddress = null,

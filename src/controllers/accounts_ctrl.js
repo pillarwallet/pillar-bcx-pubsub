@@ -14,9 +14,24 @@ function listAll() {
         resolve(result);
       });
     } catch (e) { reject(e); 
-  }));
+  }}));
 }
 module.exports.listAll = listAll;
+
+function listRecent(idFrom) {
+  return new Promise(((resolve, reject) => {
+    try {
+      accounts.accounts.find({_id : {$gt: ObjectId(idFrom)}}, (err, result) => {
+        if(err) {
+          logger.info(`accounts.listRecent DB controller ERROR: ${err}`);
+          reject(err);
+        }
+        resolve(result);
+      });
+    } catch(e) {
+      reject(e);
+  }}));
+}
 
 function findByAddress(address) {
   return new Promise(((resolve, reject) => {
