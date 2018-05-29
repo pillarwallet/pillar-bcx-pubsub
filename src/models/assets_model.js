@@ -18,6 +18,6 @@ const assetsSchema = Mongoose.Schema({
   decimals: { type: Number, required: true },
 });
 
-const assets = Mongoose.model('Assets', assetsSchema);
+const Assets = Mongoose.model('Assets', assetsSchema);
 
-module.exports.Assets = assets;
+module.exports.Assets = Assets;

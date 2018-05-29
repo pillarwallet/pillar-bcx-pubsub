@@ -5,8 +5,8 @@ describe('Test filterAddress function', () => {
   test("When a Pillar wallet address is passed, filterAddress should call ethAddresses.findByAddress once then NOT call smartContracts.findByAddress and return {'isPillarAddress' : true, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}", (done) => {
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     jest.mock('web3');
     const web3 = require('web3');
     const spy1 = sinon.spy(ethAddresses, 'findByAddress');
@@ -26,8 +26,8 @@ describe('Test filterAddress function', () => {
   test("When a smart contract address is passed, filterAddress should call ethAddresses.findByAddress once then call smartContracts.findByAddress once and return {'isPillarAddress' : false, 'isERC20SmartContract' : true, 'ERC20SmartContractTicker': 'ticker'}", (done) => {
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     jest.mock('web3');
     const web3 = require('web3');
     const stub1 = sinon.stub(ethAddresses, 'findByAddress');
@@ -51,8 +51,8 @@ describe('Test filterAddress function', () => {
   test("When an unknown address is passed, filterAddress should call ethAddresses.findByAddress once then call smartContracts.findByAddress once and return {'isPillarAddress' : false, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}", (done) => {
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     jest.mock('web3');
     const stub1 = sinon.stub(ethAddresses, 'findByAddress');
     stub1.resolves();
@@ -80,14 +80,14 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const tx = web3.transactions[0];
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.onFirstCall().resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     stub1.onSecondCall().resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -113,14 +113,14 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const tx = web3.transactions[0];
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.onFirstCall().resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     stub1.onSecondCall().resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -146,14 +146,14 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const tx = web3.transactions[0];
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.onFirstCall().resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     stub1.onSecondCall().resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -179,14 +179,14 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const tx = web3.transactions[0];
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.onFirstCall().resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     stub1.onSecondCall().resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -212,14 +212,14 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const tx = web3.transactions[0];
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.onFirstCall().resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     stub1.onSecondCall().resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -248,8 +248,8 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const spy1 = sinon.spy(abiDecoder, 'addABI');
     const spy2 = sinon.spy(abiDecoder, 'decodeMethod');
     const stub1 = sinon.stub(processTx, 'filterAddress');
@@ -259,8 +259,8 @@ describe('Test newPendingTx function', () => {
     stub1.onSecondCall().resolves({
       isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '',
     });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub2 = sinon.stub(ethTransactions, 'addTx');
     stub2.resolves();
     const notif = require('./notifications.js');
@@ -293,8 +293,8 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const spy1 = sinon.spy(abiDecoder, 'addABI');
     const spy2 = sinon.spy(abiDecoder, 'decodeMethod');
     const stub1 = sinon.stub(processTx, 'filterAddress');
@@ -304,8 +304,8 @@ describe('Test newPendingTx function', () => {
     stub1.onSecondCall().resolves({
       isPillarAddress: false, isERC20SmartContract: false,
     });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -338,8 +338,8 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const spy1 = sinon.spy(abiDecoder, 'addABI');
     const stub2 = sinon.stub(abiDecoder, 'decodeMethod');
     stub2.returns({ name: 'transfer', params: [{ value: '0x4e4eeACA5BE6B0fd8B5c83470AbB4A996B7d289C' }, { value: '10000000000' }] });
@@ -353,8 +353,8 @@ describe('Test newPendingTx function', () => {
     stub1.onThirdCall().resolves({
       isPillarAddress: true, isERC20SmartContract: false,
     });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -386,8 +386,8 @@ describe('Test newPendingTx function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const spy1 = sinon.spy(abiDecoder, 'addABI');
     const stub2 = sinon.stub(abiDecoder, 'decodeMethod');
     stub2.returns({ name: 'transfer', params: [{ value: '0x4e4eeACA5BE6B0fd8B5c83470AbB4A996B7d289C' }, { value: '10000000000' }] });
@@ -401,8 +401,8 @@ describe('Test newPendingTx function', () => {
     stub1.onThirdCall().resolves({
       isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '',
     });
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const stub3 = sinon.stub(ethTransactions, 'addTx');
     stub3.resolves();
     const notif = require('./notifications.js');
@@ -432,8 +432,8 @@ describe('Test checkPendingTx function', () => {
     const web3 = require('web3');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
@@ -474,8 +474,8 @@ describe('Test checkPendingTx function', () => {
     const web3 = require('web3');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
@@ -516,8 +516,8 @@ describe('Test checkPendingTx function', () => {
     const web3 = require('web3');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
@@ -558,8 +558,8 @@ describe('Test checkPendingTx function', () => {
     const web3 = require('web3');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
@@ -600,8 +600,8 @@ describe('Test checkPendingTx function', () => {
     const web3 = require('web3');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.transactions[0]);
@@ -643,8 +643,8 @@ describe('Test checkPendingTx function', () => {
     const web3 = require('web3');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const bcx = require('.//bcx.js');
     const stub2 = sinon.stub(bcx, 'getTxInfo');
     stub2.onFirstCall().resolves(web3.poolTransactions[0]);
@@ -690,11 +690,11 @@ describe('Test processNewPendingTxArray function', () => {
     const abiDecoder = require('abi-decoder');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
-    jest.mock('../controllers/smartContracts_ctrl.js');
-    const smartContracts = require('../controllers/smartContracts_ctrl.js');
+    jest.mock('../controllers/assets_ctrl.js');
+    const smartContracts = require('../controllers/assets_ctrl.js');
     const tx = [web3.transactions[0], web3.transactions[1]];
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     const dbCollections = { ethAddresses, smartContracts, ethTransactions };
 
     const stub1 = sinon.stub(processTx, 'newPendingTx');
@@ -714,8 +714,8 @@ describe('Test checkTokenTransferEvent function', () => {
     stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     let web3;
     const bcx = require('./bcx.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     const dbCollections = { ethTransactions, ethAddresses };
@@ -758,8 +758,8 @@ describe('Test checkTokenTransferEvent function', () => {
     stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     let web3;
     const bcx = require('./bcx.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     const dbCollections = { ethTransactions, ethAddresses };
@@ -802,8 +802,8 @@ describe('Test checkTokenTransferEvent function', () => {
     stub1.resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     let web3;
     const bcx = require('./bcx.js');
-    jest.mock('../controllers/ethTransactions_ctrl.js');
-    const ethTransactions = require('../controllers/ethTransactions_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
     jest.mock('../controllers/ethAddresses_ctrl.js');
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     const dbCollections = { ethTransactions, ethAddresses };

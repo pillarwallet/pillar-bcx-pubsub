@@ -4,17 +4,22 @@ const logger = require('../utils/logger.js');
 const accounts = require('../models/accounts_model');
 
 function listAll() {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      accounts.accounts.find((err, result) => {
+      accounts.Accounts.find((err, result) => {
         if (err) {
           logger.info(`accounts.listAll DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
       });
+<<<<<<< HEAD
     } catch (e) { reject(e); 
   }}));
+=======
+    } catch (e) { reject(e); }
+  });
+>>>>>>> origin/subscriber
 }
 module.exports.listAll = listAll;
 
@@ -36,7 +41,7 @@ function listRecent(idFrom) {
 function findByAddress(address) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.findOne({ address }, (err, result) => {
+      accounts.Accounts.findOne({ address }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -51,7 +56,7 @@ module.exports.findByAddress = findByAddress;
 function findByWalletId(walletId) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.findOne({ walletID: walletId }, (err, result) => {
+      accounts.Accounts.findOne({ walletID: walletId }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByWalletId DB controller ERROR: ${err}`);
           reject(err);
@@ -67,7 +72,7 @@ function addAddress(walletID, address, FCMIID) {
   return new Promise(((resolve, reject) => {
     try {
       const ethAddress
-        = new accounts.accounts({ walletID, address: address.toUpperCase(), FCMIID });
+        = new accounts.Accounts({ walletID, address: address.toUpperCase(), FCMIID });
       ethAddress.save((err) => {
         if (err) {
           logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
@@ -84,7 +89,7 @@ module.exports.addAddress = addAddress;
 function removeAddress(walletID) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.remove({ walletID }, (err) => {
+      accounts.Accounts.remove({ walletID }, (err) => {
         if (err) {
           logger.info(`accounts.removeAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -101,7 +106,7 @@ module.exports.removeAddress = removeAddress;
 function updateFCMIID(walletID, newFCMIID) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.find({ walletID }, (err, result) => {
+      accounts.Accounts.find({ walletID }, (err, result) => {
         if (err) {
           logger.info(`accounts.updateFCMIID DB controller ERROR: ${err}`);
           reject(err);
@@ -132,7 +137,7 @@ module.exports.updateFCMIID = updateFCMIID;
 function emptyCollection() {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.remove((err, result) => {
+      accounts.Accounts.remove((err, result) => {
         if (err) {
           logger.info(`accounts.emptyCollection DB controller ERROR: ${err}`);
           reject(err);
@@ -149,7 +154,7 @@ module.exports.emptyCollection = emptyCollection;
 function getFCMIID(publicAddress) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.find({ address: publicAddress.toUpperCase() }, (err, result) => {
+      accounts.Accounts.find({ address: publicAddress.toUpperCase() }, (err, result) => {
         if (err) {
           logger.info(`accounts.getFCMIID DB controller ERROR: ${err}`);
           reject(err);

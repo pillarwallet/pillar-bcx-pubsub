@@ -23,6 +23,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, not
         resolve();
       });
     logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
+/*
     // At connection time: Check for pending Tx in TX pool which are not in DB and would not be added in TX History by dbServices.updateTxHistory
     logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...\n'));
     bcx.getPendingTxArray(web3)
@@ -48,6 +49,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, not
               });
           });
       });
+      */
   }));
   return (subscribePromise);
 }
@@ -55,24 +57,26 @@ module.exports.subscribePendingTx = subscribePendingTx;
 
 function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, notif, channel, updateTxHistory = true, updateERC20SmartContracts = true) {
   const subscribePromise = new Promise(((resolve, reject) => {
-    let nbBlocksReceived = -1;
+   // let nbBlocksReceived = -1;
     web3.eth.subscribe('newBlockHeaders', (err, res) => {})
       .on('data', (blockHeader) => {
         if (blockHeader != null) {
-          nbBlocksReceived++;
+        //  nbBlocksReceived++;
           logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
+          /*
           if (nbBlocksReceived == 0) {
             if (updateTxHistory == true) {
               // Update tx History at connection time
               dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, blockHeader.number - 1);
             }
-            /*
+
                     if(updateERC20SmartContracts==true){
                         //Update ERC20 smart contracts at connection time
                         dbServices.updateERC20SmartContracts(web3,gethSubscribe,bcx,processTx,notif,dbCollections,blockHeader.number-1)
                     }
-                    */
+
           }
+          */
           /*
                 //NOW, @ EACH NEW BLOCK MINED:
                 //Check for newly created ERC20 smart contracts

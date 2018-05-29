@@ -1,37 +1,22 @@
 const Mongoose = require('../services/dbServices.js').mongoose;
 
-/* NEW SCHEMA NOT YET IMPLEMENTED
 const transactionsSchema = Mongoose.Schema({
-  pillarId: Number,
+  pillarId: String,
   protocol: String,
   fromAddress: String,
   toAddress: String,
   txHash: String,
   asset: String,
   contractAddress: String,
-  timestamp: Number,
-  blockNumber: Number,
-  value: Number,
-  status: Number,
-  gasUsed: Number
-});
-*/
-
-const transactionsSchema = Mongoose.Schema({
-  to: String,
-  from: String,
-  asset: String,
-  contractAddress: String,
-  timestamp: Number,
-  value: Number,
+  timestamp: String,
+  blockNumber: String,
+  value: String,
   status: String,
-  hash: String,
-  gasUsed: Number,
-  nbConfirmations: Number,
+  gasUsed: String
 });
 
 transactionsSchema.index({ to: 1, from: 1 });
 
-const transactions = Mongoose.model('Transactions', transactionsSchema);
+const Transactions = Mongoose.model('Transactions', transactionsSchema);
 
-module.exports.Transactions = transactions;
+module.exports.Transactions = Transactions;
