@@ -85,7 +85,7 @@ exports.poll = function() {
     );
 };
 
-exports.initMQ = function () {
+exports.initBCXMQ = function () {
   try {
     logger.info('Started executing publisher.initMQ()');
     amqp.connect('amqp://localhost', (err, conn) => {
@@ -105,6 +105,28 @@ exports.initMQ = function () {
   } finally {
     logger.info('Exited publisher.initMQ()');
   }
+};
+
+exports.initCWBMQ = function () {
+	try {
+		logger.info('Started executing publisher.initMQ()');
+		amqp.connect('amqp://localhost', (err, conn) => {
+			conn.createChannel((err, ch) => {
+				const q = 'bcx-pubsub';
+				const msg = 'Initialized CORE WALLET BACKEND message queue!';
+
+				ch.assertQueue(q, { durable: false });
+				// Note: on Node 6 Buffer.from(msg) should be used
+				ch.sendToQueue(q, Buffer.from(msg));
+				console.log(' [x] Sent %s', msg);
+			});
+			// setTimeout(() => { conn.close(); process.exit(0); }, 500);
+		});
+	} catch (err) {
+		logger.error('Publisher.configure() failed: ', err.message);
+	} finally {
+		logger.info('Exited publisher.initMQ()');
+	}
 };
 
 exports.initSubscriptions = function () {

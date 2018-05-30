@@ -93,9 +93,9 @@ module.exports.findByTicker = findByTicker;
 function addZeroSmartContractsCreationHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      const zeroHeight = 2644980;
+      const zeroHeight = 3339557;
       const smartContractsCreationHistoryHeight = new assets.Assets({
-        contractAddress: 'contractAddress', name: 'name', symbol: 'decimals = highest block number for ERC20 smart contracts creation history', decimals: zeroHeight,
+        protocol: 'protocol', contractAddress: 'contractAddress', name: 'name', symbol: 'decimals = highest block number for ERC20 smart contracts creation history', decimals: zeroHeight,
       });
       smartContractsCreationHistoryHeight.save((err) => {
         if (err) {
