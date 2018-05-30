@@ -152,5 +152,5 @@ exports.walletReceived = function () {
 };
 
 // this.initIPC();
-this.initMQ();
+this.initBCXMQ();
 this.initSubscriptions();

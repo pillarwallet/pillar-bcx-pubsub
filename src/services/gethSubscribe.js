@@ -31,18 +31,16 @@ module.exports.subscribePendingTx = subscribePendingTx;
 function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, notif, channel) {
   const subscribePromise = new Promise((resolve, reject) => {
   	web3.eth.subscribe('newBlockHeaders', (err, res) => {})
-	  on('data', (blockHeader) => {
+	  .on('data', (blockHeader) => {
 		  if (blockHeader != null) {
 			  //  nbBlocksReceived++;
 			  logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
-
-
 			  // Check for pending tx in database and update their status
-			  dbCollections.ethTransactions.listPending()
+			  dbCollections.transactions.listPending()
 			  .then((pendingTxArray) => {
 				  processTx.checkPendingTx(web3, bcx, dbCollections, pendingTxArray, blockHeader.number, notif, channel)
 				  .then(() => {
-					  dbCollections.ethTransactions.updateTxHistoryHeight(blockHeader.number)
+					  dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
 					  .then(() => {
 						  // logger.info(colors.green.bold('Highest Block Number for Tx History: '+blockHeader.number+'\n'))
 					  })
@@ -76,7 +74,7 @@ function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServ
           dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, notif, blockHeader.number, blockHeader.number, dbCollections, false)
             .then(() => {
               // Update
-              dbCollections.smartContracts.updateERC20SmartContractsHistoryHeight(blockHeader.number)
+              dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
                 .then(() => {
                   // logger.info(colors.green.bold('Highest Block Number for ERC20 Smart Contracts: '+blockHeader.number+'\n'))
                 });
@@ -95,7 +93,7 @@ module.exports.checkNewERC20SmartContracts = checkNewERC20SmartContracts;
 
 function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif) {
   const subscribePromise = new Promise(((resolve, reject) => {
-    dbCollections.smartContracts.listAll()
+    dbCollections.assets.listAll()
       .then((smartContractsArray) => {
         smartContractsArray.forEach((ERC20SmartContract) => {
           module.exports.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, notif, ERC20SmartContract);
@@ -112,7 +110,7 @@ module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContr
 function subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, notif, ERC20SmartContract) {
 // var subscribePromise = new Promise(function(resolve,reject){
   try {
-    if (ERC20SmartContract.contractAddress !== 'address') {
+    if (ERC20SmartContract.contractAddress !== 'contractAddress') {
       const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {

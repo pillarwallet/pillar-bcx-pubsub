@@ -17,13 +17,13 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
 
       module.exports.mongoose.connection.on('open', () => {
         logger.info(colors.green.bold('Established connection to database!\n'));
-        resolve({ ethAddresses, smartContracts, ethTransactions });
+        resolve({ accounts, assets, transactions });
       });
 
       // Import DB controllers
-      const ethAddresses = require('../controllers/accounts_ctrl.js');
-      const smartContracts = require('../controllers/assets_ctrl.js');
-      const ethTransactions = require('../controllers/transactions_ctrl.js');
+      const accounts = require('../controllers/accounts_ctrl.js');
+      const assets = require('../controllers/assets_ctrl.js');
+      const transactions = require('../controllers/transactions_ctrl.js');
 
 	    // Connect to database
 	    module.exports.mongoose.connect(url, $arg);
@@ -38,19 +38,19 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
       module.exports.dbConnect(url, $arg)
         .then((dbCollections) => {
           // Display accounts
-          dbCollections.ethAddresses.listAll()
-            .then((ethAddressesArray) => {
-              dbCollections.smartContracts.listAll()
-                .then((smartContractsAddressesArray) => {
+          dbCollections.accounts.listAll()
+            .then((accountsArray) => {
+              dbCollections.assets.listAll()
+                .then((assetsArray) => {
                   logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
                   let i = 0;
-                  ethAddressesArray.forEach((item) => {
+                  accountsArray.forEach((item) => {
                     logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
                     i += 1;
                   });
                   logger.info(colors.cyan.bold.underline('MONITORED SMART CONTRACTS:\n'));
                   i = 0;
-                  smartContractsAddressesArray.forEach((item) => {
+                  assetsArray.forEach((item) => {
                     if (item.address !== 'address') {
                       logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.symbol}    ADDRESS = ${item.contractAddress}\n`));
                     }
@@ -79,11 +79,11 @@ function recentAccounts(
       module.exports.dbConnect(url, $arg)
         .then((dbCollections) => {
           // fetch accounts registered after a given Id
-          dbCollections.ethAddresses.recentAccounts(idFrom)
-            .then((ethAddressesArray) => {
+          dbCollections.accounts.recentAccounts(idFrom)
+            .then((accountsArray) => {
               logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
               let i = 0;
-              ethAddressesArray.forEach((item) => {
+              accountsArray.forEach((item) => {
                 logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.address}\n`));
                 i += 1;
               });
@@ -114,11 +114,11 @@ function dlTxHistory(
             )
               .then((nbBlockTx) => {
                 nbTx += nbBlockTx;
-                dbCollections.ethTransactions.listHistory()
+                dbCollections.transactions.listHistory()
                   .then((historyTxArray) => {
                     processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, notif, false)
                       .then(() => {
-                        dbCollections.ethTransactions.updateTxHistoryHeight(startBlock)
+                        dbCollections.transactions.updateTxHistoryHeight(startBlock)
                           .then(() => {
                             resolve(dlTxHistory(
                               web3, bcx, processTx, dbCollections, abiDecoder,
@@ -171,7 +171,7 @@ module.exports.processTxHistory = processTxHistory;
 function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
-      dbCollections.ethTransactions.findTxHistoryHeight()
+      dbCollections.transactions.findTxHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
           this.dlTxHistory(
@@ -191,28 +191,28 @@ function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif,
 }
 module.exports.updateTxHistory = updateTxHistory;
 
-function initDB(accountsArray, contractsArray) {
+function initDB(accountsArray, assetsArray) {
   return new Promise(((resolve, reject) => {
     try {
       logger.info(colors.yellow.bold('INITIALIZING DATABASE ADDRESSES COLLECTIONS...\n'));
-      if (accountsArray.length === 0 && contractsArray.length === 0) {
+      if (accountsArray.length === 0 && assetsArray.length === 0) {
         logger.info(colors.yellow.bold('DONE\n'));
         resolve();
       } else if (accountsArray.length === 0) {
         const smartContracts = require('../controllers/assets_ctrl.js');
-        smartContracts.findByAddress(contractsArray[0].address)
+        smartContracts.findByAddress(assetsArray[0].address)
           .then((result) => {
             if (result.length === 0) {
               smartContracts.addContract(
-                contractsArray[0].address, contractsArray[0].name,
-                contractsArray[0].ticker, contractsArray[0].decimals,
+                assetsArray[0].address, assetsArray[0].name,
+                assetsArray[0].ticker, assetsArray[0].decimals,
                 'Ethereum',
               );
             }
           }).catch((e) => { reject(e); });
 
-        contractsArray.splice(0, 1);
-        resolve(initDB(accountsArray, contractsArray));
+        assetsArray.splice(0, 1);
+        resolve(initDB(accountsArray, assetsArray));
       } else {
         const ethAddresses = require('../controllers/accounts_ctrl.js');
         ethAddresses.findByAddress(accountsArray[0].publicAddress)
@@ -222,7 +222,7 @@ function initDB(accountsArray, contractsArray) {
             }
           }).catch((e) => { reject(e); });
         accountsArray.splice(0, 1);
-        resolve(initDB(accountsArray, contractsArray));
+        resolve(initDB(accountsArray, assetsArray));
       }
     } catch (e) { reject(e); }
   }));
@@ -315,14 +315,14 @@ module.exports.resetDBERC20SmartContracts = resetDBERC20SmartContracts;
 function emptyDB() {
   return new Promise(((resolve, reject) => {
     try {
-      const ethAddresses = require('../controllers/accounts_ctrl.js');
-      ethAddresses.emptyCollection()
+      const accounts = require('../controllers/accounts_ctrl.js');
+      accounts.emptyCollection()
         .then(() => {
-          const smartContracts = require('../controllers/assets_ctrl.js');
-          smartContracts.emptyCollection()
+          const assets = require('../controllers/assets_ctrl.js');
+          assets.emptyCollection()
             .then(() => {
-              const ethTransactions = require('../controllers/transactions_ctrl.js');
-              ethTransactions.emptyCollection()
+              const transactions = require('../controllers/transactions_ctrl.js');
+              transactions.emptyCollection()
                 .then(() => {
                   logger.info(colors.red.bold('DATABASE IS NOW EMPTY\n'));
                   resolve();
@@ -340,8 +340,8 @@ module.exports.emptyDB = emptyDB;
 function emptyDBTxHistory() {
   return new Promise(((resolve, reject) => {
     try {
-      const ethTransactions = require('../controllers/transactions_ctrl.js');
-      ethTransactions.emptyCollection()
+      const transactions = require('../controllers/transactions_ctrl.js');
+	    transactions.emptyCollection()
         .then(() => {
           logger.info(colors.red.bold('DATABASE TRANSACTION HISTORY IS NOW EMPTY\n'));
           resolve();
@@ -355,8 +355,8 @@ module.exports.emptyDBTxHistory = emptyDBTxHistory;
 function emptyDBERC20SmartContracts() {
   return new Promise(((resolve, reject) => {
     try {
-      const smartContracts = require('../controllers/assets_ctrl.js');
-      smartContracts.emptyCollection()
+      const assets = require('../controllers/assets_ctrl.js');
+	    assets.emptyCollection()
         .then(() => {
           logger.info(colors.red.bold('SMART CONTRACTS DATABASE IS NOW EMPTY\n'));
           resolve();
@@ -370,9 +370,9 @@ module.exports.emptyDBERC20SmartContracts = emptyDBERC20SmartContracts;
 function getTxHistory(address1, fromtmstmp, address2, asset) {
   return new Promise(((resolve, reject) => {
     try {
-      const ethTransactions = require('../controllers/transactions_ctrl.js');
+      const transactions = require('../controllers/transactions_ctrl.js');
       logger.info('DB SERVICES GET TX HISTORY');
-      ethTransactions.getTxHistory(address1.toUpperCase(), fromtmstmp, address2.toUpperCase(), asset)
+      transactions.getTxHistory(address1.toUpperCase(), fromtmstmp, address2.toUpperCase(), asset)
         .then((txHistory) => {
           resolve(txHistory);
         });
@@ -384,8 +384,8 @@ module.exports.getTxHistory = getTxHistory;
 function listPendingTx(address, asset) {
   return new Promise(((resolve, reject) => {
     try {
-      const ethTransactions = require('../controllers/transactions_ctrl.js');
-      ethTransactions.listPending()
+      const transactions = require('../controllers/transactions_ctrl.js');
+      transactions.listPending()
         .then((pendingTxArray) => {
           const addressAssetPendingTxArray = [];
           pendingTxArray.forEach((item) => {
@@ -430,7 +430,7 @@ function dlERC20SmartContracts(
                 )
                   .then((nbFound) => {
                     nbERC20Found += nbFound;
-                    dbCollections.smartContracts.updateERC20SmartContractsHistoryHeight(startBlock)
+                    dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
                       .then(() => {
                         resolve(dlERC20SmartContracts(
                           web3, gethSubscribe, bcx, processTx, notif, startBlock + 1,
@@ -478,7 +478,7 @@ function processSmartContractsAddressesArray(
                         logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
                         if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
                           nbERC20Found += 1;
-                          dbCollections.smartContracts.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
+                          dbCollections.assets.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
                             .then(() => {
                               ERC20SmartContract = {
                                 address: smartContractsAddressesArray[index],
@@ -541,7 +541,7 @@ module.exports.processSmartContractsAddressesArray = processSmartContractsAddres
 function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, notif, dbCollections, channel, queue, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
-      dbCollections.smartContracts.findERC20SmartContractsHistoryHeight()
+      dbCollections.assets.findERC20SmartContractsHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
           module.exports.dlERC20SmartContracts(

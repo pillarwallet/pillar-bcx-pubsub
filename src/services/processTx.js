@@ -39,18 +39,18 @@ function newPendingTx(
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
     } else {
-      module.exports.filterAddress(tx.to, dbCollections.ethAddresses, dbCollections.smartContracts, checkAddress)
+      module.exports.filterAddress(tx.to, dbCollections.accounts, dbCollections.assets, checkAddress)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
           toERC20SmartContract = result.isERC20SmartContract;
           ticker = result.ERC20SmartContractTicker;
-          module.exports.filterAddress(tx.from, dbCollections.ethAddresses, dbCollections.smartContracts, checkAddress)
+          module.exports.filterAddress(tx.from, dbCollections.accounts, dbCollections.assets, checkAddress)
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
               let value = tx.value * (10 ** -18);
               if (toPillarAccount) {
                 const asset = 'ETH';
-                dbCollections.ethTransactions.addTx(
+                dbCollections.transactions.addTx(
                   tx.to.toUpperCase(), tx.from.toUpperCase(),
                   asset, null, tmstmp, value, tx.hash, 0, history,
                 )
@@ -98,7 +98,7 @@ function newPendingTx(
                   if (value !== 0) {
                     const asset = 'ETH';
                     if (fromPillarAccount) {
-                      dbCollections.ethTransactions.addTx(
+                      dbCollections.transactions.addTx(
                         tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
                         contractAddress, tmstmp, value, tx.hash, 0, history,
                       )
@@ -119,12 +119,12 @@ function newPendingTx(
                       if (data.name === 'transfer') {
                         value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
                         const to = data.params[0].value;
-                        dbCollections.ethTransactions.addTx(
+                        dbCollections.transactions.addTx(
                           tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
                           contractAddress, tmstmp, value, tx.hash, 0, history,
                         )
                           .then(() => {
-                            module.exports.filterAddress(to, dbCollections.ethAddresses, dbCollections.smartContracts)
+                            module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
                               .then((result3) => {
                                 toPillarAccount = result3.isPillarAddress;
                                 if (toPillarAccount) {
@@ -159,11 +159,11 @@ function newPendingTx(
                     } else if (data.name === 'transfer') {
                       value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
                       const to = data.params[0].value;
-                      module.exports.filterAddress(to, dbCollections.ethAddresses, dbCollections.smartContracts)
+                      module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
                           if (toPillarAccount) {
-                            dbCollections.ethTransactions.addTx(
+                            dbCollections.transactions.addTx(
                               tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
                               contractAddress, tmstmp, value, tx.hash, 0, history,
                             )
@@ -198,7 +198,7 @@ function newPendingTx(
                   }
                 } else if (fromPillarAccount) {
                   const asset = 'ETH';
-                  dbCollections.ethTransactions.addTx(
+                  dbCollections.transactions.addTx(
                     tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
                     contractAddress, tmstmp, value, tx.hash, 0, history,
                   )
@@ -214,7 +214,7 @@ function newPendingTx(
                 }
               } else if (fromPillarAccount) {
                 const asset = 'ETH';
-                dbCollections.ethTransactions.addTx(
+                dbCollections.transactions.addTx(
                   tx.to.toUpperCase(), tx.from.toUpperCase(),
                   asset, null, tmstmp, value, tx.hash, 0, history,
                 )
@@ -268,7 +268,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                           if (receipt.gasUsed < txInfo.gas) { // TX MINED
                             const nbConf = 1 + (blockNumber - confBlockNb);
                             if (nbConf < 5 && nbConf >= 0) {
-                              dbCollections.ethTransactions.updateTx(item._id, txInfo, receipt, nbConf, 'pending')
+                              dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'pending')
                                 .then(() => {
                                   logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
                                   resolve(checkPendingTx(
@@ -278,16 +278,16 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                                 })
                                 .catch((e) => { reject(e); });
                             } else if (nbConf >= 5) {
-                              dbCollections.ethTransactions.updateTx(item._id, txInfo, receipt, nbConf, 'confirmed')
+                              dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'confirmed')
                                 .then(() => {
                                   logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
                                   logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
                                   if (sendNotif) {
-                                    dbCollections.ethAddresses.getFCMIID(item.to)
+                                    dbCollections.accounts.getFCMIID(item.to)
                                       .then((toFCMIID) => {
                                         notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, toFCMIID)
                                           .then(() => {
-                                            dbCollections.ethAddresses.getFCMIID(item.from)
+                                            dbCollections.accounts.getFCMIID(item.from)
                                               .then((fromFCMIID) => {
                                                 notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, fromFCMIID)
                                                   .then(() => {
@@ -319,15 +319,15 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                               ));
                             }
                           } else { // OUT OF GAS
-                            dbCollections.ethTransactions.txFailed(item._id, 'out of gas')
+                            dbCollections.transactions.txFailed(item._id, 'out of gas')
                               .then(() => {
                                 logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
                                 if (sendNotif) {
-                                  dbCollections.ethAddresses.getFCMIID(item.to)
+                                  dbCollections.accounts.getFCMIID(item.to)
                                     .then((toFCMIID) => {
                                       notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: out of gas', 0, toFCMIID)
                                         .then(() => {
-                                          dbCollections.ethAddresses.getFCMIID(item.from)
+                                          dbCollections.accounts.getFCMIID(item.from)
                                             .then((fromFCMIID) => {
                                               notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: out of gas', 0, fromFCMIID)
                                                 .then(() => {
@@ -355,7 +355,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         } else { // REGULAR ETH TX
                           const nbConf = 1 + (blockNumber - confBlockNb);
                           if (nbConf < 5 && nbConf >= 0) {
-                            dbCollections.ethTransactions.updateTx(item._id, txInfo, receipt, nbConf, 'pending')
+                            dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'pending')
                               .then(() => {
                                 logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
                                 resolve(checkPendingTx(
@@ -365,16 +365,16 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                               })
                               .catch((e) => { reject(e); });
                           } else if (nbConf >= 5) {
-                            dbCollections.ethTransactions.updateTx(item._id, txInfo, receipt, nbConf, 'confirmed')
+                            dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'confirmed')
                               .then(() => {
                                 logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
                                 logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
                                 if (sendNotif) {
-                                  dbCollections.ethAddresses.getFCMIID(item.to)
+                                  dbCollections.accounts.getFCMIID(item.to)
                                     .then((toFCMIID) => {
                                       notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, toFCMIID)
                                         .then(() => {
-                                          dbCollections.ethAddresses.getFCMIID(item.from)
+                                          dbCollections.accounts.getFCMIID(item.from)
                                             .then((fromFCMIID) => {
                                               notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, fromFCMIID)
                                                 .then(() => {
@@ -409,15 +409,15 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                       })
                       .catch((e) => { reject(e); });
                   } else { // TX RECEIPT NOT FOUND
-                    dbCollections.ethTransactions.txFailed(item._id, 'tx receipt not found') // SHOULD WE WAIT A CERTAIN NUMBER OF BLOCKS BEFORE DECLARING TX FAILED?
+                    dbCollections.transactions.txFailed(item._id, 'tx receipt not found') // SHOULD WE WAIT A CERTAIN NUMBER OF BLOCKS BEFORE DECLARING TX FAILED?
                       .then(() => {
                         logger.info(colors.red.bold(`TRANSACTION ${item.hash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
                         if (sendNotif) {
-                          dbCollections.ethAddresses.getFCMIID(item.to)
+                          dbCollections.accounts.getFCMIID(item.to)
                             .then((toFCMIID) => {
                               notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx receipt not found', 0, toFCMIID)
                                 .then(() => {
-                                  dbCollections.ethAddresses.getFCMIID(item.from)
+                                  dbCollections.accounts.getFCMIID(item.from)
                                     .then((fromFCMIID) => {
                                       notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx receipt not found', 0, fromFCMIID)
                                         .then(() => {
@@ -445,7 +445,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 })
                 .catch((e) => { reject(e); });
             } else {
-              dbCollections.ethTransactions.updateTx(item._id, txInfo, null, 0, 'pending')
+              dbCollections.transactions.updateTx(item._id, txInfo, null, 0, 'pending')
                 .then(() => {
                   logger.info(`TX ${item.hash} STILL PENDING (IN TX POOL)...\n`);
                   resolve(checkPendingTx(
@@ -456,15 +456,15 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 .catch((e) => { reject(e); });
             }
           } else { // TX NOT FOUND
-            dbCollections.ethTransactions.txFailed(item._id, 'tx info not found') // SHOULD WE WAIT A CERTAIN NUMBER OF BLOCKS BEFORE DECLARING TX FAILED?
+            dbCollections.transactions.txFailed(item._id, 'tx info not found') // SHOULD WE WAIT A CERTAIN NUMBER OF BLOCKS BEFORE DECLARING TX FAILED?
               .then(() => {
                 logger.info(colors.red.bold(`TRANSACTION ${item.hash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
                 if (sendNotif) {
-                  dbCollections.ethAddresses.getFCMIID(item.to)
+                  dbCollections.accounts.getFCMIID(item.to)
                     .then((toFCMIID) => {
                       notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx info not found', 0, toFCMIID)
                         .then(() => {
-                          dbCollections.ethAddresses.getFCMIID(item.from)
+                          dbCollections.accounts.getFCMIID(item.from)
                             .then((fromFCMIID) => {
                               notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx info not found', 0, fromFCMIID)
                                 .then(() => {
@@ -499,7 +499,7 @@ module.exports.checkPendingTx = checkPendingTx;
 
 function filterAddress(
   /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
-  address, ethAddresses, smartContracts, checkAddress = null) {
+  address, accounts, assets, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       const ADDRESS = address.toUpperCase();
@@ -507,12 +507,12 @@ function filterAddress(
       if (checkAddress && ADDRESS === checkAddress.toUpperCase()) {
         resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
       } else {
-        ethAddresses.findByAddress(ADDRESS)
+        accounts.findByAddress(ADDRESS)
           .then((result) => {
             if (result) {
               resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
             } else {
-              smartContracts.findByAddress(ADDRESS)
+              assets.findByAddress(ADDRESS)
                 .then((result2) => {
                   if (result2) {
                     const ticker = result2.ticker;
@@ -549,7 +549,7 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, notif, eventInfo, ERC
   return new Promise(((resolve, reject) => {
     try {
       logger.info(eventInfo);
-      module.exports.filterAddress(eventInfo.returnValues._to, dbCollections.ethAddresses, dbCollections.smartContracts) // check if token transfer destination address is pillar wallet
+      module.exports.filterAddress(eventInfo.returnValues._to, dbCollections.accounts, dbCollections.assets) // check if token transfer destination address is pillar wallet
         .then((result) => {
           if (result.isPillarAddress === true) {
             dbCollections.ethTransactions.findByTxHash(eventInfo.transactionHash)
@@ -562,7 +562,7 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, notif, eventInfo, ERC
                   logger.info(colors.red(`${value} ${ERC20SmartcContractInfo.ticker}\n`));
                   logger.info(colors.red(`FROM: ${ERC20SmartcContractInfo.ticker} SMART CONTRACT ${ERC20SmartcContractInfo.address}\n`));
                   logger.info(colors.red(`TO: PILLAR WALLET ${eventInfo.returnValues._to}\n`));
-                  dbCollections.ethTransactions.addTx(
+                  dbCollections.transactions.addTx(
                   	eventInfo.returnValues._to.toUpperCase(),
 	                  ERC20SmartcContractInfo.address.toUpperCase(),
                     ERC20SmartcContractInfo.ticker,
@@ -574,7 +574,7 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, notif, eventInfo, ERC
                     false,
                   )
                     .then(() => {
-                      dbCollections.ethAddresses.getFCMIID(eventInfo.returnValues._to)
+                      dbCollections.accounts.getFCMIID(eventInfo.returnValues._to)
                         .then((toFCMIID) => {
                           notif.sendNotification(
                             tx.hash,
