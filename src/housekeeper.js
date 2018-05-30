@@ -8,6 +8,7 @@ const processTx = require('./services/processTx.js');
 const colors = require('colors');
 const notif = require('./services/notifications.js');
 const accounts = require('./services/accounts.js');
+const gethSubscribe = require('./services/gethSubscribe');
 const abiDecoder = require('abi-decoder');
 require('dotenv').config();
 
@@ -24,18 +25,21 @@ exports.init = function () {
       gethConnect.gethConnectDisplay()
         .then((web3) => {
           /* CONNECT TO DATABASE */
-          console.log(mongoUrl)
+          console.log(mongoUrl);
           dbServices.dbConnectDisplayAccounts(mongoUrl)
             .then((dbCollections) => {
-	            dbServices.initDB(accounts.accountsArray, accounts.contractsArray)
-              .then(() => {
-                dbServices.initDBTxHistory()
+              dbServices.initDB(accounts.accountsArray, accounts.contractsArray)
                 .then(() => {
-	                resolve({ web3, dbCollections });
-                })
-              })
-            });
-        });
+                  dbServices.initDBTxHistory()
+                    .then(() => {
+                      dbServices.initDBERC20SmartContracts()
+                        .then(() => {
+                          resolve({ web3, dbCollections });
+                        }).catch((e) => { reject(e); });
+                    }).catch((e) => { reject(e); });
+                }).catch((e) => { reject(e); });
+            }).catch((e) => { reject(e); });
+        }).catch((e) => { reject(e); });
     } catch (e) { reject(e); }
   });
 };
@@ -62,57 +66,74 @@ exports.initMQ = function () {
       logger.error('Publisher.configure() failed: ', err.message);
       reject();
     }// finally {
-     // logger.info('Exited publisher.initMQ()');
+    // logger.info('Exited publisher.initMQ()');
     // }
   });
 };
 
 
 exports.checkTxPool = function (web3, dbCollections, channel, queue) {
-  // At connection time: Check for pending Tx in TX pool which are not in DB and would not be added in TX History by dbServices.updateTxHistory
-  logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...\n'));
-  bcx.getPendingTxArray(web3)
-    .then((pendingTxArray) => {
-      // CHECK IF TX ALREADY IN DB
-      const unknownPendingTxArray = [];
-      dbCollections.ethTransactions.listDbZeroConfTx()
-        .then((dbPendingTxArray) => {
-          pendingTxArray.forEach((pendingTx) => {
-            let isDbPendingTx = false;
-            dbPendingTxArray.forEach((dbPendingTx) => {
-              if (pendingTx === dbPendingTx) {
-                isDbPendingTx = true;
-              }
-            });
-            if (isDbPendingTx === false) {
-              unknownPendingTxArray.push(pendingTx);
-            }
-          });
-          processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, notif, channel, queue, 0)
-            .then((nbTxFound) => {
-              logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
-            });
-        });
-    });
+  // At connection time: Check for pending Tx in TX pool which are not in DB
+  // and would not be added in TX History by dbServices.updateTxHistory
+  return new Promise((resole, reject) => {
+    try {
+      logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...\n'));
+      bcx.getPendingTxArray(web3)
+        .then((pendingTxArray) => {
+          // CHECK IF TX ALREADY IN DB
+          const unknownPendingTxArray = [];
+          dbCollections.ethTransactions.listDbZeroConfTx()
+            .then((dbPendingTxArray) => {
+              pendingTxArray.forEach((pendingTx) => {
+                let isDbPendingTx = false;
+                dbPendingTxArray.forEach((dbPendingTx) => {
+                  if (pendingTx === dbPendingTx) {
+                    isDbPendingTx = true;
+                  }
+                });
+                if (isDbPendingTx === false) {
+                  unknownPendingTxArray.push(pendingTx);
+                }
+              });
+              processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, notif, channel, queue, 0)
+                .then((nbTxFound) => {
+                  logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
+                }).catch((e) => { reject(e); });
+            }).catch((e) => { reject(e); });
+        }).catch((e) => { reject(e); });
+    } catch (err) { reject(err); }
+  });
 };
+
 
 exports.updateTxHistory = function (web3, dbCollections, channel, queue) {
   // Update tx History at connection time
   bcx.getLastBlockNumber(web3)
     .then((blockNumber) => {
-	  logger.info(colors.green.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
-	  dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, blockNumber);
-    });
+      logger.info(colors.green.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
+      dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, blockNumber);
+    }).catch((e) => { reject(e); });
 };
 
+exports.updateERC20SmartContracts = function (web3, dbCollections, channel, queue) {
+  // Update ERC20 Smart Contracts collection at connection time
+  bcx.getLastBlockNumber(web3)
+    .then((blockNumber) => {
+      logger.info(colors.green.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
+      dbServices.updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, notif, dbCollections, channel, queue, blockNumber);
+    }).catch((e) => { reject(e); });
+};
+
+
 this.initMQ()
-.then((mqParams) => {
-    const channel = '';//mqParams.ch;
-    const queue = '';//mqParams.q;
+  .then((mqParams) => {
+    const channel = '';// mqParams.ch;
+    const queue = '';// mqParams.q;
     this.init()
       .then((result) => {
         this.checkTxPool(result.web3, result.dbCollections, channel, queue);
         this.updateTxHistory(result.web3, result.dbCollections, channel, queue);
+        this.updateERC20SmartContracts(result.web3, result.dbCollections, channel, queue);
       });
-});
+  });
 

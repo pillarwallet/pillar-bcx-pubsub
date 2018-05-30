@@ -77,8 +77,7 @@ function dlTxHistory(
       if (startBlock > maxBlock) {
         resolve(nbTx);
       } else {
-        // logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
-        console.log(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
+        logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
         bcx.getBlockTx(web3, startBlock)
           .then((txArray) => {
             module.exports.processTxHistory(
@@ -86,16 +85,19 @@ function dlTxHistory(
               abiDecoder, notif, channel, queue, 0, 0, null,
             )
               .then((nbBlockTx) => {
-	              nbTx += nbBlockTx;
+                nbTx += nbBlockTx;
                 dbCollections.ethTransactions.listHistory()
                   .then((historyTxArray) => {
                     processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, notif, false)
                       .then(() => {
-	                      dbCollections.ethTransactions.updateTxHistoryHeight(startBlock);
-	                      resolve(dlTxHistory(
-                          web3, bcx, processTx, dbCollections, abiDecoder,
-                          notif, channel, queue, startBlock + 1, maxBlock, nbTx, checkAddress,
-                        ));
+                        dbCollections.ethTransactions.updateTxHistoryHeight(startBlock)
+                          .then(() => {
+                            resolve(dlTxHistory(
+                              web3, bcx, processTx, dbCollections, abiDecoder,
+                              notif, channel, queue, startBlock + 1, maxBlock, nbTx, checkAddress,
+                            ));
+                          })
+                          .catch((e) => { reject(e); });
                       })
                       .catch((e) => { reject(e); });
                   })
@@ -173,11 +175,11 @@ function initDB(accountsArray, contractsArray) {
         smartContracts.findByAddress(contractsArray[0].address)
           .then((result) => {
             if (result.length === 0) {
-	          smartContracts.addContract(
-		          contractsArray[0].address, contractsArray[0].name,
-		          contractsArray[0].ticker, contractsArray[0].decimals,
-		          'Ethereum',
-	          );
+              smartContracts.addContract(
+                contractsArray[0].address, contractsArray[0].name,
+                contractsArray[0].ticker, contractsArray[0].decimals,
+                'Ethereum',
+              );
             }
           }).catch((e) => { reject(e); });
 
@@ -185,15 +187,14 @@ function initDB(accountsArray, contractsArray) {
         resolve(initDB(accountsArray, contractsArray));
       } else {
         const ethAddresses = require('../controllers/accounts_ctrl.js');
-	      ethAddresses.findByAddress(accountsArray[0].publicAddress)
+        ethAddresses.findByAddress(accountsArray[0].publicAddress)
           .then((result) => {
-	          if (result.length === 0) {
-		          ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID);
-	          }
+            if (result.length === 0) {
+              ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID);
+            }
           }).catch((e) => { reject(e); });
-
-	      accountsArray.splice(0, 1);
-	      resolve(initDB(accountsArray, contractsArray));
+        accountsArray.splice(0, 1);
+        resolve(initDB(accountsArray, contractsArray));
       }
     } catch (e) { reject(e); }
   }));
@@ -213,8 +214,7 @@ function initDBTxHistory() {
                 logger.info(colors.yellow('-->Highest Block Number for ERC20 Tx History: 0\n'));
                 logger.info(colors.yellow.bold('TX HISTORY DATABASE INITIALIZED\n'));
                 resolve();
-              })
-              .catch((e) => { reject(e); });
+              }).catch((e) => { reject(e); });
           } else {
             logger.info(colors.yellow(`-->Highest Block Number for Tx History: ${result}\n`));
             logger.info(colors.yellow.bold('TX HISTORY DATABASE INITIALIZED\n'));
@@ -402,10 +402,14 @@ function dlERC20SmartContracts(
                 )
                   .then((nbFound) => {
                     nbERC20Found += nbFound;
-                    resolve(dlERC20SmartContracts(
-                      web3, gethSubscribe, bcx, processTx, notif, startBlock + 1,
-                      endBlock, dbCollections, nbERC20Found, logs,
-                    ));
+                    dbCollections.smartContracts.updateERC20SmartContractsHistoryHeight(startBlock)
+                      .then(() => {
+                        resolve(dlERC20SmartContracts(
+                          web3, gethSubscribe, bcx, processTx, notif, startBlock + 1,
+                          endBlock, dbCollections, nbERC20Found, logs,
+                        ));
+                      })
+                      .catch((e) => { reject(e); });
                   })
                   .catch((e) => { reject(e); });
               })
@@ -506,7 +510,7 @@ function processSmartContractsAddressesArray(
 }
 module.exports.processSmartContractsAddressesArray = processSmartContractsAddressesArray;
 
-function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, notif, dbCollections, maxBlock) {
+function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, notif, dbCollections, channel, queue, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
       dbCollections.smartContracts.findERC20SmartContractsHistoryHeight()
