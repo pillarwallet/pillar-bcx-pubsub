@@ -129,6 +129,6 @@ exports.walletReceived = function () {
 
 };
 
-// this.initIPC();
-this.initMQ();
-this.initSubscriptions();
+this.initIPC();
+//this.initMQ();
+//this.initSubscriptions();

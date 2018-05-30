@@ -21,7 +21,7 @@ module.exports.listAll = listAll;
 function listRecent(idFrom) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.accounts.find({_id : {$gt: ObjectId(idFrom)}}, (err, result) => {
+      accounts.Accounts.find({_id : {$gt: ObjectId(idFrom)}}, (err, result) => {
         if(err) {
           logger.info(`accounts.listRecent DB controller ERROR: ${err}`);
           reject(err);
@@ -32,6 +32,7 @@ function listRecent(idFrom) {
       reject(e);
   }}));
 }
+module.exports.listRecent = listRecent;
 
 function findByAddress(address) {
   return new Promise(((resolve, reject) => {

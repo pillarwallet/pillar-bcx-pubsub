@@ -2,7 +2,7 @@ const Mongoose = require('../services/dbServices.js').mongoose;
 
 // NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
-  pillarId: String,
+  pillarId: Number,
   protocol: String,
   fromAddress: String,
   toAddress: String,
@@ -25,7 +25,9 @@ const transactionsSchema = Mongoose.Schema({
   timestamp: Number,
   value: Number,
   status: String,
-  gasUsed: String
+  hash: String,
+  gasUsed: Number,
+  nbConfirmations: Number,
 });
 */
 transactionsSchema.index({ to: 1, from: 1 });
