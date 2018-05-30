@@ -125,6 +125,7 @@ exports.updateERC20SmartContracts = function (web3, dbCollections, channel, queu
 };
 
 
+
 this.initMQ()
   .then((mqParams) => {
     const channel = '';// mqParams.ch;
@@ -134,6 +135,7 @@ this.initMQ()
         this.checkTxPool(result.web3, result.dbCollections, channel, queue);
         this.updateTxHistory(result.web3, result.dbCollections, channel, queue);
         this.updateERC20SmartContracts(result.web3, result.dbCollections, channel, queue);
+	      gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections, abiDecoder, notif);
       });
   });
 
