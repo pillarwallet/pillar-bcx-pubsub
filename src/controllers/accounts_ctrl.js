@@ -2,6 +2,7 @@
 const logger = require('../utils/logger.js');
 
 const accounts = require('../models/accounts_model');
+const mongoose = require('mongoose');
 
 function listAll() {
   return new Promise((resolve, reject) => {
@@ -21,7 +22,8 @@ module.exports.listAll = listAll;
 function listRecent(idFrom) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.find({_id : {$gt: ObjectId(idFrom)}}, (err, result) => {
+      oId = mongoose.Types.ObjectId(idFrom);
+      accounts.Accounts.find({_id : {$gt: oId}}, (err, result) => {
         if(err) {
           logger.info(`accounts.listRecent DB controller ERROR: ${err}`);
           reject(err);

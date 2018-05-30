@@ -80,7 +80,7 @@ exports.poll = function() {
       'wallet.request',
       {
         id : ipc.config.id,
-        message : '<last-received-id'
+        message : '5b0eaf63715078cbab42df8b'
       }
     );
 };

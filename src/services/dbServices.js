@@ -115,19 +115,11 @@ function dlTxHistory(
             )
               .then((nbBlockTx) => {
                 nbTx += nbBlockTx;
-<<<<<<< HEAD
-                dbCollections.ethTransactions.listHistory()
-                  .then((historyTxArray) => {
-                    processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, notif, false)
-                      .then(() => {
-                        dbCollections.ethTransactions.updateTxHistoryHeight(startBlock)
-=======
                 dbCollections.transactions.listHistory()
                   .then((historyTxArray) => {
                     processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, notif, false)
                       .then(() => {
                         dbCollections.transactions.updateTxHistoryHeight(startBlock)
->>>>>>> origin/housekeeper-publisher-logic
                           .then(() => {
                             resolve(dlTxHistory(
                               web3, bcx, processTx, dbCollections, abiDecoder,
@@ -213,13 +205,8 @@ function initDB(accountsArray, assetsArray) {
           .then((result) => {
             if (result.length === 0) {
               smartContracts.addContract(
-<<<<<<< HEAD
-                contractsArray[0].address, contractsArray[0].name,
-                contractsArray[0].ticker, contractsArray[0].decimals,
-=======
                 assetsArray[0].address, assetsArray[0].name,
                 assetsArray[0].ticker, assetsArray[0].decimals,
->>>>>>> origin/housekeeper-publisher-logic
                 'Ethereum',
               );
             }
@@ -236,11 +223,7 @@ function initDB(accountsArray, assetsArray) {
             }
           }).catch((e) => { reject(e); });
         accountsArray.splice(0, 1);
-<<<<<<< HEAD
-        resolve(initDB(accountsArray, contractsArray));
-=======
         resolve(initDB(accountsArray, assetsArray));
->>>>>>> origin/housekeeper-publisher-logic
       }
     } catch (e) { reject(e); }
   }));
@@ -448,11 +431,7 @@ function dlERC20SmartContracts(
                 )
                   .then((nbFound) => {
                     nbERC20Found += nbFound;
-<<<<<<< HEAD
-                    dbCollections.smartContracts.updateERC20SmartContractsHistoryHeight(startBlock)
-=======
                     dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
->>>>>>> origin/housekeeper-publisher-logic
                       .then(() => {
                         resolve(dlERC20SmartContracts(
                           web3, gethSubscribe, bcx, processTx, notif, startBlock + 1,
