@@ -11,7 +11,6 @@ const gethConnect = require('./services/gethConnect.js');
 const dbServices = require('./services/dbServices.js');
 const bcx = require('./services/bcx.js');
 const gethSubscribe = require('./services/gethSubscribe.js');
-const notif = require('./services/notifications.js');
 const processTx = require('./services/processTx.js');
 const abiDecoder = require('abi-decoder');
 require('dotenv').config();
