@@ -27,26 +27,26 @@ exports.initServices = function () {
 
                 dbCollections.transactions.addTx(entry.pillarId,entry.protocol,entry.fromAddress,entry.toAddress,entry.txHash,entry.asset,entry.contractAddress, entry.timestamp,entry.blockNumber,entry.value,entry.status,entry.gasUsed)
                 .then(() =>{
-                  logger.info("Transaction inserted: " + entry.txHash)
+                  logger.info("Transaction inserted: " + entry.txHash);
                 })
                 }, {noAck: true});
               });
             });
           } catch (err) {
-            logger.error('subscriber.configure() failed: ', err.message);
+            logger.error('subscriber.initServices() failed: ', err.message);
           } finally {
-            logger.info('Exited subscriber.initMQ()');
+            logger.info('Exited subscriber.initServices()');
           }
         });
 };
 
 var validate = (payload) => {
-  var checksum = payload.checksum
+  var checksum = payload.checksum;
   delete payload.checksum;
-  if (md5.hex(JSON.stringify(payload)) ===checksum) {
-    return true
+  if (md5.hex(JSON.stringify(payload)) === checksum) {
+    return true;
   } else {
-    return false
+    return false;
   }
 }
 
