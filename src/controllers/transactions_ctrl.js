@@ -90,19 +90,13 @@ function findByTxHash(txHash) {
   }));
 }
 module.exports.findByTxHash = findByTxHash;
-function addTx(pillarId, protocol, fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber, value, gasUsed, history =  false) {
+
+function addTx(transactionObject) { 
   return new Promise(((resolve, reject) => {
     try {
-      let tx;
-      if (history) {
-        tx = new transactions.Transactions({
-          pillarId, protocol, fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber, value, status: "history", gasUsed
-        });
-      } else {
-        tx = new transactions.Transactions({
-          pillarId, protocol, fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber, value, status: "pending", gasUsed
-        });
-      }
+      
+      let tx = new transactions.Transactions(transactionObject);
+
       tx.save((err) => {
         if (err) {
           logger.info(`transactions.addTx DB controller ERROR: ${err}`);
