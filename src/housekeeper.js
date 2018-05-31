@@ -93,8 +93,6 @@ exports.initCWBMQ = function () {
 };
 
 
-
-
 exports.checkTxPool = function (web3, dbCollections, channel, queue) {
   // At connection time: Check for pending Tx in TX pool which are not in DB
   // and would not be added in TX History by dbServices.updateTxHistory
