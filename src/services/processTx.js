@@ -4,20 +4,17 @@ const logger = require('../utils/logger.js');
 const ERC20ABI = require('./ERC20ABI');
 
 
-function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, notif, channel, queue, nbTxFound, checkAddress = null) {
+function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, channel, queue, nbTxFound, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (txArray.length === 0) {
         resolve(nbTxFound);
       } else {
-        module.exports.newPendingTx(web3, txArray[0], dbCollections, abiDecoder, notif, true, false, checkAddress)
+        module.exports.newPendingTx(web3, txArray[0], dbCollections, abiDecoder, channel, queue, true, false, checkAddress)
           .then((isMonitoredAccoutnTx) => {
             if (isMonitoredAccoutnTx) { nbTxFound += 1; }
             txArray.splice(0, 1);
-            resolve(processNewPendingTxArray(
-              web3, txArray, dbCollections, abiDecoder,
-              notif, channel, queue, nbTxFound, checkAddress,
-            ));
+            resolve(processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, channel, queue, nbTxFound, checkAddress));
           })
           .catch((e) => { reject(e); });
       }
@@ -26,10 +23,7 @@ function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, noti
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
-function newPendingTx(
-  web3, tx, dbCollections, abiDecoder, notif, channel, queue,
-  sendNotif = true, history = false, checkAddress = null,
-) {
+function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendNotif = true, history = false, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
     let toERC20SmartContract;
@@ -50,39 +44,33 @@ function newPendingTx(
               let value = tx.value * (10 ** -18);
               if (toPillarAccount) {
                 const asset = 'ETH';
-                dbCollections.transactions.addTx(
-                  tx.to.toUpperCase(), tx.from.toUpperCase(),
-                  asset, null, tmstmp, value, tx.hash, 0, history,
-                )
+                const txMsg = {
+                  type: 'newTx',
+                };
+	              channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
                   .then(() => {
                     if (fromPillarAccount) {
-                      logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
-                      /*
+                      logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
                       if (sendNotif) {
-                        dbCollections.ethAddresses.getFCMIID(tx.to)
-                          .then((FCMIID) => {
-                            notif.sendNotification(tx.hash, tx.from, tx.to, value, asset, null, 'pending', 0, FCMIID);
-                          })
-                          .catch((e) => {
-                            reject(e);
-                          });
+                        const notifMsg = {
+                          type: 'pendingTx',
+                          destination: 'tx.to',
+                        };
+                        channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
                       }
-                      */
                       resolve(true);
                     } else {
-                      logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: EXTERNAL ETH ACCOUNT ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
-                      /*
-                      if (sendNotif) {
-                        dbCollections.ethAddresses.getFCMIID(tx.to)
-                          .then((FCMIID) => {
-                            notif.sendNotification(tx.hash, tx.from, tx.to, value, asset, null, 'pending', 0, FCMIID);
-                          })
-                          .catch((e) => {
-                            reject(e);
-                          });
-                      }
-                      */
-                      resolve(true);
+	                    logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: EXTERNAL ETH ACCOUNT ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
+
+	                    if (sendNotif) {
+		                    const notifMsg = {
+			                    type: 'pendingTx',
+			                    destination: 'tx.to',
+		                    };
+		                    channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+	                    }
+
+	                    resolve(true);
                     }
                   })
                   .catch((e) => {
@@ -92,17 +80,15 @@ function newPendingTx(
                 const contractAddress = tx.to;
                 abiDecoder.addABI(ERC20ABI);
                 const data = abiDecoder.decodeMethod(tx.input);
-                // logger.info(tx)
-                // logger.info(data)
                 if (data !== undefined) {
                   if (value !== 0) {
                     const asset = 'ETH';
                     if (fromPillarAccount) {
-                      dbCollections.transactions.addTx(
-                        tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
-                        contractAddress, tmstmp, value, tx.hash, 0, history,
-                      )
-                        .then(() => {
+	                    const txMsg = {
+		                    type: 'newTx',
+	                    };
+	                    channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+	                    .then(() => {
                           logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${tx.to}\nDATA:\n`));
                           resolve(true);
                         })
@@ -119,27 +105,23 @@ function newPendingTx(
                       if (data.name === 'transfer') {
                         value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
                         const to = data.params[0].value;
-                        dbCollections.transactions.addTx(
-                          tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
-                          contractAddress, tmstmp, value, tx.hash, 0, history,
-                        )
-                          .then(() => {
+	                      const txMsg = {
+		                      type: 'newTx',
+	                      };
+	                      channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+	                      .then(() => {
                             module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
                               .then((result3) => {
                                 toPillarAccount = result3.isPillarAddress;
                                 if (toPillarAccount) {
                                   logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
-                                  /*
-                                  if (sendNotif) {
-                                    dbCollections.ethAddresses.getFCMIID(to)
-                                      .then((FCMIID) => {
-                                        notif.sendNotification(tx.hash, tx.from, to, value, asset, tx.to, 'pending', 0, FCMIID);
-                                      })
-                                      .catch((e) => {
-                                        reject(e);
-                                      });
-                                  }
-                                  */
+	                                if (sendNotif) {
+		                                const notifMsg = {
+			                                type: 'pendingTx',
+			                                destination: 'to',
+		                                };
+		                                channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+	                                }
                                   resolve(true);
                                 } else {
                                   logger.info(colors.cyan.bold(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO EXTERNAL ETH ACCOUNT: ${to}\n`));
@@ -163,24 +145,20 @@ function newPendingTx(
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
                           if (toPillarAccount) {
-                            dbCollections.transactions.addTx(
-                              tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
-                              contractAddress, tmstmp, value, tx.hash, 0, history,
-                            )
-                              .then(() => {
+	                          const txMsg = {
+		                          type: 'newTx',
+	                          };
+	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+	                          .then(() => {
                                 logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM EXTERNAL ETH ACCOUNT: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
-                                /*
-                                if (sendNotif) {
-                                  dbCollections.ethAddresses.getFCMIID(to)
-                                    .then((FCMIID) => {
-                                      notif.sendNotification(tx.hash, tx.from, to, value, asset, tx.to, 'pending', 0, FCMIID);
-                                    })
-                                    .catch((e) => {
-                                      reject(e);
-                                    });
-                                }
-                                */
-                                resolve(true);
+		                          if (sendNotif) {
+			                          const notifMsg = {
+				                          type: 'pendingTx',
+				                          destination: 'tx.to',
+			                          };
+			                          channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+		                          }
+		                          resolve(true);
                               })
                               .catch((e) => {
                                 reject(e);
@@ -198,11 +176,11 @@ function newPendingTx(
                   }
                 } else if (fromPillarAccount) {
                   const asset = 'ETH';
-                  dbCollections.transactions.addTx(
-                    tx.to.toUpperCase(), tx.from.toUpperCase(), asset,
-                    contractAddress, tmstmp, value, tx.hash, 0, history,
-                  )
-                    .then(() => {
+	                const txMsg = {
+		                type: 'newTx',
+	                };
+	                channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+	                .then(() => {
                       logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ERC20 SMART CONTRACT ${tx.to}\n`));
                       resolve(true);
                     })
@@ -214,11 +192,11 @@ function newPendingTx(
                 }
               } else if (fromPillarAccount) {
                 const asset = 'ETH';
-                dbCollections.transactions.addTx(
-                  tx.to.toUpperCase(), tx.from.toUpperCase(),
-                  asset, null, tmstmp, value, tx.hash, 0, history,
-                )
-                  .then(() => {
+	              const txMsg = {
+		              type: 'newTx',
+	              };
+	              channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+	              .then(() => {
                     logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: EXTERNAL ETH ACCOUNT OR SMART CONTRACT ${tx.to}\n`));
                     resolve(true);
                   })
@@ -241,7 +219,7 @@ function newPendingTx(
 }
 module.exports.newPendingTx = newPendingTx;
 
-function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber, notif, sendNotif = true) {
+function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber, channel, queue, sendNotif = true) {
   return new Promise(((resolve, reject) => {
     if (dbPendingTxArray.length === 0) {
       resolve();
@@ -268,77 +246,43 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                           if (receipt.gasUsed < txInfo.gas) { // TX MINED
                             const nbConf = 1 + (blockNumber - confBlockNb);
                             if (nbConf < 5 && nbConf >= 0) {
-                              dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'pending')
+	                            const txMsg = {
+		                            type: 'updateTx',
+	                            };
+	                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
                                 .then(() => {
                                   logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
                                   resolve(checkPendingTx(
                                     web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, notif, sendNotif,
+                                    blockNumber, channel, queue, sendNotif,
                                   ));
                                 })
                                 .catch((e) => { reject(e); });
                             } else if (nbConf >= 5) {
-                              dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'confirmed')
-                                .then(() => {
-                                  logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
-                                  logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
-                                  if (sendNotif) {
-                                    dbCollections.accounts.getFCMIID(item.to)
-                                      .then((toFCMIID) => {
-                                        notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, toFCMIID)
-                                          .then(() => {
-                                            dbCollections.accounts.getFCMIID(item.from)
-                                              .then((fromFCMIID) => {
-                                                notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, fromFCMIID)
-                                                  .then(() => {
-                                                    resolve(checkPendingTx(
-                                                      web3, bcx, dbCollections, dbPendingTxArray,
-                                                      blockNumber, notif, sendNotif,
-                                                    ));
-                                                  })
-                                                  .catch((e) => { reject(e); });
-                                              })
-                                              .catch((e) => { reject(e); });
-                                          })
-                                          .catch((e) => { reject(e); });
-                                      })
-                                      .catch((e) => { reject(e); });
-                                  } else {
-                                    resolve(checkPendingTx(
-                                      web3, bcx, dbCollections, dbPendingTxArray,
-                                      blockNumber, notif, sendNotif,
-                                    ));
-                                  }
-                                })
-                                .catch((e) => { reject(e); });
-                            } else {
-                              logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
-                              resolve(checkPendingTx(
-                                web3, bcx, dbCollections, dbPendingTxArray,
-                                blockNumber, notif, sendNotif,
-                              ));
-                            }
-                          } else { // OUT OF GAS
-                            dbCollections.transactions.txFailed(item._id, 'out of gas')
-                              .then(() => {
-                                logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+	                            const txMsg = {
+		                            type: 'updateTx',
+	                            };
+	                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg)).then(() => {
+                                logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
+                                logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
+
                                 if (sendNotif) {
-                                  dbCollections.accounts.getFCMIID(item.to)
-                                    .then((toFCMIID) => {
-                                      notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: out of gas', 0, toFCMIID)
+                                  const notifMsgTo = {
+                                    type: 'confirmedTx',
+                                    destination: 'item.to',
+                                  };
+                                  channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
+                                    .then(() => {
+                                      const notifMsgFrom = {
+                                        type: 'confirmedTx',
+                                        destination: 'item.from',
+                                      };
+                                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
                                         .then(() => {
-                                          dbCollections.accounts.getFCMIID(item.from)
-                                            .then((fromFCMIID) => {
-                                              notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: out of gas', 0, fromFCMIID)
-                                                .then(() => {
-                                                  resolve(checkPendingTx(
-                                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                                    blockNumber, notif, sendNotif,
-                                                  ));
-                                                })
-                                                .catch((e) => { reject(e); });
-                                            })
-                                            .catch((e) => { reject(e); });
+                                          resolve(checkPendingTx(
+                                            web3, bcx, dbCollections, dbPendingTxArray,
+                                            blockNumber, channel, queue, sendNotif,
+                                          ));
                                         })
                                         .catch((e) => { reject(e); });
                                     })
@@ -346,7 +290,50 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                                 } else {
                                   resolve(checkPendingTx(
                                     web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, notif, sendNotif,
+                                    blockNumber, channel, queue, sendNotif,
+                                  ));
+                                }
+                              })
+                                .catch((e) => { reject(e); });
+                            } else {
+                              logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
+                              resolve(checkPendingTx(
+                                web3, bcx, dbCollections, dbPendingTxArray,
+                                blockNumber, channel, queue, sendNotif,
+                              ));
+                            }
+                          } else { // OUT OF GAS
+	                          const txMsg = {
+		                          type: 'updateTx',
+	                          };
+	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+                              .then(() => {
+                                logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+                                if (sendNotif) {
+                                  const notifMsgTo = {
+                                    type: 'outOfGasFailedTx',
+                                    destination: 'item.to',
+                                  };
+                                  channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
+                                    .then(() => {
+                                      const notifMsgFrom = {
+                                        type: 'outOfGasFailedTx',
+                                        destination: 'item.from',
+                                      };
+                                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
+                                        .then(() => {
+                                          resolve(checkPendingTx(
+                                            web3, bcx, dbCollections, dbPendingTxArray,
+                                            blockNumber, channel, queue, sendNotif,
+                                          ));
+                                        })
+                                        .catch((e) => { reject(e); });
+                                    })
+                                    .catch((e) => { reject(e); });
+                                } else {
+                                  resolve(checkPendingTx(
+                                    web3, bcx, dbCollections, dbPendingTxArray,
+                                    blockNumber, channel, queue, sendNotif,
                                   ));
                                 }
                               })
@@ -355,37 +342,42 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         } else { // REGULAR ETH TX
                           const nbConf = 1 + (blockNumber - confBlockNb);
                           if (nbConf < 5 && nbConf >= 0) {
-                            dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'pending')
-                              .then(() => {
-                                logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
-                                resolve(checkPendingTx(
-                                  web3, bcx, dbCollections, dbPendingTxArray,
-                                  blockNumber, notif, sendNotif,
-                                ));
-                              })
+	                          const txMsg = {
+		                          type: 'updateTx',
+	                          };
+	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg)).then(() => {
+                              logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
+                              resolve(checkPendingTx(
+                                web3, bcx, dbCollections, dbPendingTxArray,
+                                blockNumber, channel, queue, sendNotif,
+                              ));
+                            })
                               .catch((e) => { reject(e); });
                           } else if (nbConf >= 5) {
-                            dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, 'confirmed')
+	                          const txMsg = {
+		                          type: 'updateTx',
+	                          };
+	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
                               .then(() => {
                                 logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
                                 logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
-                                if (sendNotif) {
-                                  dbCollections.accounts.getFCMIID(item.to)
-                                    .then((toFCMIID) => {
-                                      notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, toFCMIID)
-                                        .then(() => {
-                                          dbCollections.accounts.getFCMIID(item.from)
-                                            .then((fromFCMIID) => {
-                                              notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'confirmed', nbConf, fromFCMIID)
-                                                .then(() => {
-                                                  resolve(checkPendingTx(
-                                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                                    blockNumber, notif, sendNotif,
-                                                  ));
-                                                })
-                                                .catch((e) => { reject(e); });
-                                            })
-                                            .catch((e) => { reject(e); });
+	                              if (sendNotif) {
+		                              const notifMsgTo = {
+			                              type: 'confirmedTx',
+			                              destination: 'item.to',
+		                              };
+		                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
+		                              .then(() => {
+			                              const notifMsgFrom = {
+				                              type: 'confirmedTx',
+				                              destination: 'item.from',
+			                              };
+			                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
+			                                .then(() => {
+                                          resolve(checkPendingTx(
+                                            web3, bcx, dbCollections, dbPendingTxArray,
+                                            blockNumber, channel, queue, sendNotif,
+                                          ));
                                         })
                                         .catch((e) => { reject(e); });
                                     })
@@ -393,7 +385,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                                 } else {
                                   resolve(checkPendingTx(
                                     web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, notif, sendNotif,
+                                    blockNumber, channel, queue, sendNotif,
                                   ));
                                 }
                               })
@@ -402,33 +394,36 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                             logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
                             resolve(checkPendingTx(
                               web3, bcx, dbCollections, dbPendingTxArray,
-                              blockNumber, notif, sendNotif,
+                              blockNumber, channel, queue, sendNotif,
                             ));
                           }
                         }
                       })
                       .catch((e) => { reject(e); });
                   } else { // TX RECEIPT NOT FOUND
-                    dbCollections.transactions.txFailed(item._id, 'tx receipt not found') // SHOULD WE WAIT A CERTAIN NUMBER OF BLOCKS BEFORE DECLARING TX FAILED?
+	                  const txMsg = {
+		                  type: 'updateTx',
+	                  };
+	                  channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
                       .then(() => {
                         logger.info(colors.red.bold(`TRANSACTION ${item.hash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
-                        if (sendNotif) {
-                          dbCollections.accounts.getFCMIID(item.to)
-                            .then((toFCMIID) => {
-                              notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx receipt not found', 0, toFCMIID)
-                                .then(() => {
-                                  dbCollections.accounts.getFCMIID(item.from)
-                                    .then((fromFCMIID) => {
-                                      notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx receipt not found', 0, fromFCMIID)
-                                        .then(() => {
-                                          resolve(checkPendingTx(
-                                            web3, bcx, dbCollections, dbPendingTxArray,
-                                            blockNumber, notif, sendNotif,
-                                          ));
-                                        })
-                                        .catch((e) => { reject(e); });
-                                    })
-                                    .catch((e) => { reject(e); });
+	                      if (sendNotif) {
+		                      const notifMsgTo = {
+			                      type: 'txReceiptNotFoundFailedTx',
+			                      destination: 'item.to',
+		                      };
+		                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
+		                      .then(() => {
+			                      const notifMsgFrom = {
+				                      type: 'txReceiptNotFoundFailedTx',
+				                      destination: 'item.from',
+			                      };
+			                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
+			                      .then(() => {
+                                  resolve(checkPendingTx(
+                                    web3, bcx, dbCollections, dbPendingTxArray,
+                                    blockNumber, channel, queue, sendNotif,
+                                  ));
                                 })
                                 .catch((e) => { reject(e); });
                             })
@@ -436,7 +431,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         } else {
                           resolve(checkPendingTx(
                             web3, bcx, dbCollections, dbPendingTxArray,
-                            blockNumber, notif, sendNotif,
+                            blockNumber, channel, queue, sendNotif,
                           ));
                         }
                       })
@@ -445,37 +440,43 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 })
                 .catch((e) => { reject(e); });
             } else {
-              dbCollections.transactions.updateTx(item._id, txInfo, null, 0, 'pending')
+	            const txMsg = {
+		            type: 'updateTx',
+	            };
+	            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
                 .then(() => {
                   logger.info(`TX ${item.hash} STILL PENDING (IN TX POOL)...\n`);
                   resolve(checkPendingTx(
                     web3, bcx, dbCollections, dbPendingTxArray,
-                    blockNumber, notif, sendNotif,
+                    blockNumber, channel, queue, sendNotif,
                   ));
                 })
                 .catch((e) => { reject(e); });
             }
           } else { // TX NOT FOUND
-            dbCollections.transactions.txFailed(item._id, 'tx info not found') // SHOULD WE WAIT A CERTAIN NUMBER OF BLOCKS BEFORE DECLARING TX FAILED?
+	          const txMsg = {
+		          type: 'updateTx',
+	          };
+	          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
               .then(() => {
                 logger.info(colors.red.bold(`TRANSACTION ${item.hash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
-                if (sendNotif) {
-                  dbCollections.accounts.getFCMIID(item.to)
-                    .then((toFCMIID) => {
-                      notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx info not found', 0, toFCMIID)
-                        .then(() => {
-                          dbCollections.accounts.getFCMIID(item.from)
-                            .then((fromFCMIID) => {
-                              notif.sendNotification(item.hash, item.from, item.to, item.value, item.asset, contractAddress, 'failed: tx info not found', 0, fromFCMIID)
-                                .then(() => {
-                                  resolve(checkPendingTx(
-                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, notif, sendNotif,
-                                  ));
-                                })
-                                .catch((e) => { reject(e); });
-                            })
-                            .catch((e) => { reject(e); });
+	              if (sendNotif) {
+		              const notifMsgTo = {
+			              type: 'txInfoNotFoundFailedTx',
+			              destination: 'item.to',
+		              };
+		              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
+		                .then(() => {
+			              const notifMsgFrom = {
+				              type: 'txInfoNotFoundFailedTx',
+				              destination: 'item.from',
+			              };
+			              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
+			                .then(() => {
+                          resolve(checkPendingTx(
+                            web3, bcx, dbCollections, dbPendingTxArray,
+                            blockNumber, channel, queue, sendNotif,
+                          ));
                         })
                         .catch((e) => { reject(e); });
                     })
@@ -483,7 +484,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 } else {
                   resolve(checkPendingTx(
                     web3, bcx, dbCollections, dbPendingTxArray,
-                    blockNumber, notif, sendNotif,
+                    blockNumber, channel, queue, sendNotif,
                   ));
                 }
               })
@@ -545,7 +546,7 @@ function filterAddress(
 }
 module.exports.filterAddress = filterAddress;
 
-function checkTokenTransferEvent(web3, bcx, dbCollections, notif, eventInfo, ERC20SmartcContractInfo) {
+function checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, eventInfo, ERC20SmartcContractInfo) {
   return new Promise(((resolve, reject) => {
     try {
       logger.info(eventInfo);
@@ -574,6 +575,7 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, notif, eventInfo, ERC
                     false,
                   )
                     .then(() => {
+                      /*
                       dbCollections.accounts.getFCMIID(eventInfo.returnValues._to)
                         .then((toFCMIID) => {
                           notif.sendNotification(
@@ -586,13 +588,19 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, notif, eventInfo, ERC
                             1,
                             toFCMIID,
                           )
-                            .then(() => {
-                              resolve();
-                            });
-                        })
-                        .catch((e) => { reject(e); });
+                          */
+	                        const notifMsgTo = {
+		                        type: 'txInfoNotFoundFailedTx',
+		                        destination: 'item.to',
+	                        };
+	                        channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
+                        .then(() => {
+                          resolve();
+                        });
                     })
                     .catch((e) => { reject(e); });
+                  // })
+                  // catch((e) => { reject(e); });
                 } else {
                   resolve();
                 }

@@ -108,28 +108,28 @@ exports.initBCXMQ = function () {
 };
 
 exports.initCWBMQ = function () {
-	try {
-		logger.info('Started executing publisher.initMQ()');
-		amqp.connect('amqp://localhost', (err, conn) => {
-			conn.createChannel((err, ch) => {
-				const q = 'bcx-pubsub';
-				const msg = 'Initialized CORE WALLET BACKEND message queue!';
+  try {
+    logger.info('Started executing publisher.initMQ()');
+    amqp.connect('amqp://localhost', (err, conn) => {
+      conn.createChannel((err, ch) => {
+        const q = 'bcx-notifications';
+        const msg = 'Initialized CORE WALLET BACKEND message queue for BCX notifications!';
 
-				ch.assertQueue(q, { durable: false });
-				// Note: on Node 6 Buffer.from(msg) should be used
-				ch.sendToQueue(q, Buffer.from(msg));
-				console.log(' [x] Sent %s', msg);
-			});
-			// setTimeout(() => { conn.close(); process.exit(0); }, 500);
-		});
-	} catch (err) {
-		logger.error('Publisher.configure() failed: ', err.message);
-	} finally {
-		logger.info('Exited publisher.initMQ()');
-	}
+        ch.assertQueue(q, { durable: false });
+        // Note: on Node 6 Buffer.from(msg) should be used
+        ch.sendToQueue(q, Buffer.from(msg));
+        console.log(' [x] Sent %s', msg);
+      });
+      // setTimeout(() => { conn.close(); process.exit(0); }, 500);
+    });
+  } catch (err) {
+    logger.error('Publisher.configure() failed: ', err.message);
+  } finally {
+    logger.info('Exited publisher.initMQ()');
+  }
 };
 
-exports.initSubscriptions = function () {
+exports.initSubscriptions = function (channel, queue) {
   /* CONNECT TO GETH NODE */
   gethConnect.gethConnectDisplay()
     .then((web3) => {
@@ -137,12 +137,12 @@ exports.initSubscriptions = function () {
       dbServices.dbConnectDisplayAccounts(mongoUrl)
         .then((dbCollections) => {
           /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif);
+          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue);
           gethSubscribe.subscribeBlockHeaders(
             web3, gethSubscribe, bcx, processTx, dbServices,
-            dbCollections, abiDecoder, notif, true, true,
+            dbCollections, abiDecoder, channel, queue,
           );
-          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif);
+          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue);
         });
     });
 };
