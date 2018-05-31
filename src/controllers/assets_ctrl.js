@@ -18,15 +18,15 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function addContract(address, name, ticker, decimals) {
+function addContract(contractAddress, name, symbol, decimals, protocol) {
   return new Promise(((resolve, reject) => {
     try {
 	    assets.Assets.find({
-        address, name, ticker, decimals,
+		    contractAddress, name, symbol, decimals, protocol,
       }, (err, result) => {
         if (result.length === 0) {
           const smartContract = new assets.Assets({
-            address, name, ticker, decimals,
+	          contractAddress, name, symbol, decimals, protocol,
           });
           smartContract.save((e) => {
             if (e) {
@@ -60,10 +60,10 @@ function emptyCollection() {
 }
 module.exports.emptyCollection = emptyCollection;
 
-function findByAddress(address) {
+function findByAddress(contractAddress) {
   return new Promise(((resolve, reject) => {
     try {
-	    assets.Assets.findOne({ address }, (err, result) => {
+	    assets.Assets.findOne({ contractAddress }, (err, result) => {
         if (err) {
           logger.info(`smartContracts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -78,7 +78,7 @@ module.exports.findByAddress = findByAddress;
 function findByTicker(ticker) {
   return new Promise(((resolve, reject) => {
     try {
-	    assets.Assets.findOne({ ticker }, (err, result) => {
+	    assets.Assets.findOne({ symbol: ticker }, (err, result) => {
         if (err) {
           logger.info(`smartContracts.findByTicker DB controller ERROR: ${err}`);
           reject(err);
@@ -93,9 +93,9 @@ module.exports.findByTicker = findByTicker;
 function addZeroSmartContractsCreationHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      const zeroHeight = 2644980;
+      const zeroHeight = 3339557;
       const smartContractsCreationHistoryHeight = new assets.Assets({
-        address: 'address', name: 'name', ticker: 'decimals = highest block number for ERC20 smart contracts creation history', decimals: zeroHeight,
+        protocol: 'protocol', contractAddress: 'contractAddress', name: 'name', symbol: 'decimals = highest block number for ERC20 smart contracts creation history', decimals: zeroHeight,
       });
       smartContractsCreationHistoryHeight.save((err) => {
         if (err) {
@@ -112,7 +112,7 @@ module.exports.addZeroSmartContractsCreationHistoryHeight = addZeroSmartContract
 function updateERC20SmartContractsHistoryHeight(blockNb) {
   return new Promise(((resolve, reject) => {
     try {
-	    assets.Assets.update({ ticker: 'decimals = highest block number for ERC20 smart contracts creation history' }, { decimals: blockNb }, (err) => {
+	    assets.Assets.update({ symbol: 'decimals = highest block number for ERC20 smart contracts creation history' }, { decimals: blockNb }, (err) => {
         if (err) {
           logger.info(`smartContracts.updateSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
@@ -128,7 +128,7 @@ module.exports.updateERC20SmartContractsHistoryHeight = updateERC20SmartContract
 function findERC20SmartContractsHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-	    assets.Assets.find({ ticker: 'decimals = highest block number for ERC20 smart contracts creation history' }, (err, result) => {
+	    assets.Assets.find({ symbol: 'decimals = highest block number for ERC20 smart contracts creation history' }, (err, result) => {
         if (err) {
           logger.info(`smartContracts.findSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
           reject(err);

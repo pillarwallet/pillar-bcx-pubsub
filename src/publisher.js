@@ -15,13 +15,13 @@ const notif = require('./services/notifications.js');
 const processTx = require('./services/processTx.js');
 const abiDecoder = require('abi-decoder');
 require('dotenv').config();
+
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 let manager;
-
 
 
 exports.initIPC = function () {
@@ -63,42 +63,42 @@ exports.initIPC = function () {
         exports.manager = ipc.of.manager;
       },
     );
-    setTimeout(() => {
-      exports.poll();
-    }, 500);
-  } catch (err) {
-    logger.error('Publisher.initIPC() failed: ', err.message);
+    setInterval(function() {
+      exports.poll()
+    },5000);
+  } catch(err) {
+    logger.error('Publisher.init() failed: ',err.message);
     throw err;
   } finally {
     logger.info('Exited publisher.initIPC()');
   }
 };
 
-exports.poll = function () {
-  logger.info('Requesting new wallet ');
-  exports.manager.emit(
-    'wallet.request',
-    {
-      id: ipc.config.id,
-      message: 'wallet.request',
-    },
-  );
+exports.poll = function() {
+    logger.info('Requesting new wallet :');
+    exports.manager.emit(
+      'wallet.request',
+      {
+        id : ipc.config.id,
+        message : '5b0eaf63715078cbab42df8b'
+      }
+    );
 };
 
-exports.initMQ = function () {
+exports.initBCXMQ = function () {
   try {
     logger.info('Started executing publisher.initMQ()');
     amqp.connect('amqp://localhost', (err, conn) => {
       conn.createChannel((err, ch) => {
-        const q = 'hello';
-        const msg = 'Hello!';
+        const q = 'bcx-pubsub';
+        const msg = 'Initialized BCX pubsub message queue!';
 
         ch.assertQueue(q, { durable: false });
         // Note: on Node 6 Buffer.from(msg) should be used
-        ch.sendToQueue(q, new Buffer(msg));
+        ch.sendToQueue(q, Buffer.from(msg));
         console.log(' [x] Sent %s', msg);
       });
-      setTimeout(() => { conn.close(); process.exit(0); }, 500);
+      // setTimeout(() => { conn.close(); process.exit(0); }, 500);
     });
   } catch (err) {
     logger.error('Publisher.configure() failed: ', err.message);
@@ -107,7 +107,29 @@ exports.initMQ = function () {
   }
 };
 
-exports.initServices = function () {
+exports.initCWBMQ = function () {
+  try {
+    logger.info('Started executing publisher.initMQ()');
+    amqp.connect('amqp://localhost', (err, conn) => {
+      conn.createChannel((err, ch) => {
+        const q = 'bcx-notifications';
+        const msg = 'Initialized CORE WALLET BACKEND message queue for BCX notifications!';
+
+        ch.assertQueue(q, { durable: false });
+        // Note: on Node 6 Buffer.from(msg) should be used
+        ch.sendToQueue(q, Buffer.from(msg));
+        console.log(' [x] Sent %s', msg);
+      });
+      // setTimeout(() => { conn.close(); process.exit(0); }, 500);
+    });
+  } catch (err) {
+    logger.error('Publisher.configure() failed: ', err.message);
+  } finally {
+    logger.info('Exited publisher.initMQ()');
+  }
+};
+
+exports.initSubscriptions = function (channel, queue) {
   /* CONNECT TO GETH NODE */
   gethConnect.gethConnectDisplay()
     .then((web3) => {
@@ -115,12 +137,12 @@ exports.initServices = function () {
       dbServices.dbConnectDisplayAccounts(mongoUrl)
         .then((dbCollections) => {
           /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, notif);
+          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue);
           gethSubscribe.subscribeBlockHeaders(
             web3, gethSubscribe, bcx, processTx, dbServices,
-            dbCollections, abiDecoder, notif, true, true,
+            dbCollections, abiDecoder, channel, queue,
           );
-          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, notif);
+          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue);
         });
     });
 };
@@ -129,6 +151,6 @@ exports.walletReceived = function () {
 
 };
 
-// this.initIPC();
-// this.initMQ();
-this.initServices();
+this.initIPC();
+//this.initMQ();
+//this.initSubscriptions();

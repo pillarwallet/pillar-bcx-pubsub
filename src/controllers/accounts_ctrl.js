@@ -2,6 +2,7 @@
 const logger = require('../utils/logger.js');
 
 const accounts = require('../models/accounts_model');
+const mongoose = require('mongoose');
 
 function listAll() {
   return new Promise((resolve, reject) => {
@@ -18,10 +19,27 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
+function listRecent(idFrom) {
+  return new Promise(((resolve, reject) => {
+    try {
+      oId = mongoose.Types.ObjectId(idFrom);
+      accounts.Accounts.find({_id : {$gt: oId}}, (err, result) => {
+        if(err) {
+          logger.info(`accounts.listRecent DB controller ERROR: ${err}`);
+          reject(err);
+        }
+        resolve(result);
+      });
+    } catch(e) {
+      reject(e);
+  }}));
+}
+module.exports.listRecent = listRecent;
+
 function findByAddress(address) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ address }, (err, result) => {
+      accounts.Accounts.findOne({ addresses: { $elemMatch: { protocol: 'Ethereum', address } } }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -33,10 +51,10 @@ function findByAddress(address) {
 }
 module.exports.findByAddress = findByAddress;
 
-function findByWalletId(walletId) {
+function findByWalletId(pillarId) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ walletID: walletId }, (err, result) => {
+      accounts.Accounts.findOne({ walletID: pillarId }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByWalletId DB controller ERROR: ${err}`);
           reject(err);
@@ -48,11 +66,11 @@ function findByWalletId(walletId) {
 }
 module.exports.findByWalletId = findByWalletId;
 
-function addAddress(walletID, address, FCMIID) {
+function addAddress(pillarId, address) {
   return new Promise(((resolve, reject) => {
     try {
       const ethAddress
-        = new accounts.Accounts({ walletID, address: address.toUpperCase(), FCMIID });
+        = new accounts.Accounts({ pillarId, addresses: { protocol: 'Ethereum', address: address.toUpperCase() } });
       ethAddress.save((err) => {
         if (err) {
           logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
@@ -66,15 +84,15 @@ function addAddress(walletID, address, FCMIID) {
 module.exports.addAddress = addAddress;
 
 
-function removeAddress(walletID) {
+function removeAddress(pillarId) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.remove({ walletID }, (err) => {
+      accounts.Accounts.remove({ pillarId }, (err) => {
         if (err) {
           logger.info(`accounts.removeAddress DB controller ERROR: ${err}`);
           reject(err);
         }
-        logger.info(`REMOVED ACCOUNT ${walletID}\n`);
+        logger.info(`REMOVED ACCOUNT ${pillarId}\n`);
         resolve();
       });
     } catch (e) { reject(e); }
@@ -82,8 +100,8 @@ function removeAddress(walletID) {
 }
 module.exports.removeAddress = removeAddress;
 
-
-function updateFCMIID(walletID, newFCMIID) {
+/*
+function updateFCMIID(pwalletID, newFCMIID) {
   return new Promise(((resolve, reject) => {
     try {
       accounts.Accounts.find({ walletID }, (err, result) => {
@@ -112,7 +130,7 @@ function updateFCMIID(walletID, newFCMIID) {
   }));
 }
 module.exports.updateFCMIID = updateFCMIID;
-
+*/
 
 function emptyCollection() {
   return new Promise(((resolve, reject) => {
@@ -130,7 +148,7 @@ function emptyCollection() {
 }
 module.exports.emptyCollection = emptyCollection;
 
-
+/*
 function getFCMIID(publicAddress) {
   return new Promise(((resolve, reject) => {
     try {
@@ -145,4 +163,4 @@ function getFCMIID(publicAddress) {
   }));
 }
 module.exports.getFCMIID = getFCMIID;
-
+*/
