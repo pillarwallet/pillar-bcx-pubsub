@@ -44,32 +44,55 @@ exports.init = function () {
   });
 };
 
-exports.initMQ = function () {
+exports.initBCXMQ = function () {
   return new Promise((resolve, reject) => {
     try {
-      logger.info('Started executing publisher.initMQ()');
-
+      logger.info('Started executing publisher.initBCXMQ()');
       amqp.connect('amqp://localhost', (err, conn) => {
         conn.createChannel((err, ch) => {
           const q = 'bcx-pubsub';
-          const msg = 'Initialized BCX housekeeper message queue!';
-
+          const msg = 'Initialized BCX pubsub message queue!';
           ch.assertQueue(q, { durable: false });
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
+          console.log(' [x] Sent %s', msg)
+          resolve({ ch, q });
+        });
+        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
+        });
+    } catch (err) {
+      logger.error('Publisher.configure() failed: ', err.message);
+    } finally {
+      logger.info('Exited publisher.initMQ()');
+    }
+  });
+};
+
+exports.initCWBMQ = function () {
+  return new Promise((resolve, reject) => {
+    try {
+      logger.info('Started executing publisher.initCWBMQ()');
+      amqp.connect('amqp://localhost', (err, conn) => {
+        conn.createChannel((err, ch) => {
+          const q = 'bcx-notifications';
+          const msg = 'Initialized CORE WALLET BACKEND message queue for BCX notifications!';
+          ch.assertQueue(q, { durable: false });
+          // Note: on Node 6 Buffer.from(msg) should be used
+          ch.sendToQueue(q, Buffer.from(msg));
+          console.log(' [x] Sent %s', msg)
           resolve({ ch, q });
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
       });
     } catch (err) {
       logger.error('Publisher.configure() failed: ', err.message);
-      reject();
-    }// finally {
-    // logger.info('Exited publisher.initMQ()');
-    // }
+    } finally {
+      logger.info('Exited publisher.initMQ()');
+    }
   });
 };
+
+
 
 
 exports.checkTxPool = function (web3, dbCollections, channel, queue) {
@@ -110,32 +133,38 @@ exports.updateTxHistory = function (web3, dbCollections, channel, queue) {
   // Update tx History at connection time
   bcx.getLastBlockNumber(web3)
     .then((blockNumber) => {
-      logger.info(colors.green.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
+      logger.info(colors.red.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
       dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, blockNumber);
-    }).catch((e) => { reject(e); });
+    });
 };
 
 exports.updateERC20SmartContracts = function (web3, dbCollections, channel, queue) {
   // Update ERC20 Smart Contracts collection at connection time
   bcx.getLastBlockNumber(web3)
     .then((blockNumber) => {
-      logger.info(colors.green.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
-      dbServices.updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, notif, dbCollections, channel, queue, blockNumber);
-    }).catch((e) => { reject(e); });
+      logger.info(colors.blue.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
+      dbServices.updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections, blockNumber);
+    });
 };
 
 
-
-this.initMQ()
-  .then((mqParams) => {
-    const channel = '';// mqParams.ch;
-    const queue = '';// mqParams.q;
-    this.init()
-      .then((result) => {
-        this.checkTxPool(result.web3, result.dbCollections, channel, queue);
-        this.updateTxHistory(result.web3, result.dbCollections, channel, queue);
-        this.updateERC20SmartContracts(result.web3, result.dbCollections, channel, queue);
-	      gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections, abiDecoder, notif);
+this.initBCXMQ()
+  .then((BCXMQParams) => {
+    const bcxChannel = BCXMQParams.ch;
+    const bcxQueue = BCXMQParams.q;
+    this.initCWBMQ()
+      .then((CWBMQParams) => {
+        const cwbChannel = CWBMQParams.ch;
+        const cwbQueue = CWBMQParams.q;
+        const channel = { bcxChannel, cwbChannel };
+        const queue = { bcxQueue, cwbQueue };
+        this.init()
+          .then((result) => {
+            this.checkTxPool(result.web3, result.dbCollections, channel, queue);
+            this.updateTxHistory(result.web3, result.dbCollections, channel, queue);
+            this.updateERC20SmartContracts(result.web3, result.dbCollections, channel, queue);
+            gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections, abiDecoder, channel, queue);
+          });
       });
   });
 
