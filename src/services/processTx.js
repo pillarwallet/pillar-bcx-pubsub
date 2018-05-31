@@ -63,7 +63,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
 
                 if (sendNotif) {
                   // SEND PENDING TX NOTIFICATION TO CORE WALLET BACKEND
-                  const notifMsg = {
+                  const notifMsg = JSON.stringify({
                     type: 'bcxTxNotification',
                     status: 'pending',
                     pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
@@ -73,7 +73,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
                     asset,
                     timestamp: tmstmp,
                     value: value,
-                  };
+                  });
                   channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
                   if (fromPillarAccount) { // TRANSACTION SENDER ADDRESS === PILLAR WALLET ADDRESS
                     // SEND NEW TX DATA TO SUBSCRIBER
@@ -169,7 +169,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
 
                               if (sendNotif) {
                                 // SEND PENDING TX NOTIFICATION TO CORE WALLET BACKEND MSG QUEUE
-                                const notifMsg = {
+                                const notifMsg = JSON.stringify({
                                   type: 'bcxTxNotification',
                                   status: 'pending',
                                   pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
@@ -179,7 +179,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
                                   asset,
                                   timestamp: tmstmp,
                                   value,
-                                };
+                                });
                                 channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
                               }
                               logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
@@ -233,7 +233,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
 
                             if (sendNotif) {
                               // SEND PENDING TX NOTIFICATION TO CORE WALLET BACKEND MSG QUEUE
-                              const notifMsg = {
+                              const notifMsg = JSON.stringify({
                                 type: 'bcxTxNotification',
                                 status: 'pending',
                                 pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
@@ -243,7 +243,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
                                 asset,
                                 timestamp: tmstmp,
                                 value,
-                              };
+                              });
                               channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
                             }
                             logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM EXTERNAL ETH ACCOUNT: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
@@ -616,7 +616,7 @@ function filterAddress(
               assets.findByAddress(ADDRESS)
                 .then((result2) => {
                   if (result2) {
-                    const ticker = result2.ticker;
+                    const ticker = result2.symbol;
                     resolve({
                       isPillarAddress: false,
                       isERC20SmartContract: true,
