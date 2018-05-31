@@ -43,6 +43,7 @@
     "hashtable": "git+https://github.com/fabrice102/node-hashtable.git",
     "hdkey": "^0.8.0",
     "jade": "~1.11.0",
+    "jshashes": "^1.0.7",
     "json-rpc-client": "^0.2.2",
     "json-rpc2": "^1.0.2",
     "localstorage": "^0.1.0",

@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 module.exports.mongoose = mongoose;
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
+  console.log("URL: ",url)
   return new Promise(((resolve, reject) => {
     try {
       // Setting up listeners
@@ -79,11 +80,11 @@ function recentAccounts(
       module.exports.dbConnect(url, $arg)
         .then((dbCollections) => {
           // fetch accounts registered after a given Id
-          dbCollections.accounts.recentAccounts(idFrom)
-            .then((accountsArray) => {
+          dbCollections.accounts.listRecent(idFrom)
+            .then((ethAddressesArray) => {
               logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
               let i = 0;
-              accountsArray.forEach((item) => {
+              ethAddressesArray.forEach((item) => {
                 logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.address}\n`));
                 i += 1;
               });

@@ -6,7 +6,7 @@ function listAll() {
     try {
 	    transactions.Transactions.find((err, result) => {
         if (err) {
-          logger.info(`ethTransactions.listAll DB controller ERROR: ${err}`);
+          logger.info(`transactions.listAll DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -21,7 +21,7 @@ function listPending() {
     try {
 	    transactions.Transactions.find({ status: 'pending' }, (err, result) => {
         if (err) {
-          logger.info(`ethTransactions.listPending DB controller ERROR: ${err}`);
+          logger.info(`transactions.listPending DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -36,7 +36,7 @@ function listHistory() {
     try {
 	    transactions.Transactions.find({ status: 'history' }, (err, result) => {
         if (err) {
-          logger.info(`ethTransactions.listHistory DB controller ERROR: ${err}`);
+          logger.info(`transactions.listHistory DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -51,7 +51,7 @@ function listDbZeroConfTx() {
     try {
 	    transactions.Transactions.find({ nbConfirmations: 0, status: 'pending' }, (err, result) => {
         if (err) {
-          logger.info(`ethTransactions.listDBZeroConfTx DB controller ERROR: ${err}`);
+          logger.info(`transactions.listDBZeroConfTx DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -66,7 +66,7 @@ function findById(id) {
     try {
 	    transactions.Transactions.findOne({ _id: id }, (err, result) => {
         if (err) {
-          logger.info(`ethTransactions.findById DB controller ERROR: ${err}`);
+          logger.info(`transactions.findById DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -81,7 +81,7 @@ function findByTxHash(txHash) {
     try {
 	    transactions.Transactions.findOne({ hash: txHash }, (err, result) => {
         if (err) {
-          logger.info(`ethTransactions.findByTxHash DB controller ERROR: ${err}`);
+          logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -94,7 +94,7 @@ module.exports.findByTxHash = findByTxHash;
 function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, nbConf, history = false) {
   return new Promise(((resolve, reject) => {
     try {
-      let ethTx;
+      let tx;
       if (history) {
         ethTx = new transactions.Transactions({
           pillarId, protocol: 'Ethereum', fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber: null, value, status: 'history', gasUsed: null,
@@ -104,9 +104,9 @@ function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timesta
           pillarId, protocol: 'Ethereum', fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber: null, value, status: 'pending', gasUsed: null,
         });
       }
-      ethTx.save((err) => {
+      tx.save((err) => {
         if (err) {
-          logger.info(`ethTransactions.addTx DB controller ERROR: ${err}`);
+          logger.info(`transactions.addTx DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve();
@@ -130,7 +130,7 @@ function updateTx(id, txInfo, receipt, nbConf, status) {
         { nbConfirmations: nbConf, status, gasUsed },
         (err) => {
           if (err) {
-            logger.info(`ethTransactions.updateTx DB controller ERROR: ${err}`);
+            logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
             reject(err);
           }
           resolve();
@@ -149,7 +149,7 @@ function txFailed(id, failureStatus) {
         { status: failureStatus },
         (err) => {
           if (err) {
-            logger.info(`ethTransactions.txFailed DB controller ERROR: ${err}`);
+            logger.info(`transactions.txFailed DB controller ERROR: ${err}`);
             reject(err);
           }
           resolve();
@@ -165,10 +165,10 @@ function emptyCollection() {
     try {
 	    transactions.Transactions.remove((err, countremoved) => {
         if (err) {
-          logger.info(`ethTransactions.emptyCollection DB controller ERROR: ${err}`);
+          logger.info(`transactions.emptyCollection DB controller ERROR: ${err}`);
           reject(err);
         }
-        logger.info(`Removed ${countremoved.result.n} documents from ethTransactions database...\n`);
+        logger.info(`Removed ${countremoved.result.n} documents from transactions database...\n`);
         resolve();
       });
     } catch (e) { reject(e); }
@@ -182,7 +182,7 @@ function addZeroTxHistoryHeight() {
       const txHistHeight = new transactions.Transactions({ nbConfirmations: 3333207, status: 'blockNumber = highest block number for tx history' });
       txHistHeight.save((err) => {
         if (err) {
-          logger.info(`ethTransactions.addZeroTxHistoryHeight DB controller ERROR: ${err}`);
+          logger.info(`transactions.addZeroTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve();
@@ -197,7 +197,7 @@ function updateTxHistoryHeight(blockNb) {
     try {
 	    transactions.Transactions.update({ status: 'blockNumber = highest block number for tx history' }, { blockNumber: blockNb }, (err) => {
         if (err) {
-          logger.info(`ethTransactions.updateTxHistoryHeight DB controller ERROR: ${err}`);
+          logger.info(`transactions.updateTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve();
@@ -212,7 +212,7 @@ function findTxHistoryHeight() {
     try {
 	    transactions.Transactions.find({ status: 'blockNumber = highest block number for tx history' }, (err, result) => {
         if (err) {
-          logger.info(`ethTransactions.findTxHistoryHeight DB controller ERROR: ${err}`);
+          logger.info(`transactions.findTxHistoryHeight DB controller ERROR: ${err}`);
           reject(err);
         }
         if (result.length > 0) {
@@ -293,17 +293,17 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
       let txHistoryTo;
       let txHistoryFrom;
       let txHistory;
-      // logger.info('ETHTRANSACTIONS CTRL GET TX HISTORY')
+      // logger.info('transactions CTRL GET TX HISTORY')
       if (address2 === 'ALL' && asset === 'ALL') {
 	      transactions.Transactions.find({ to: address1 }, (err, result) => {
           if (err) {
-            logger.info(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
+            logger.info(`transactions.getTxHistory DB controller ERROR (1): ${err}`);
             reject(err);
           } else {
             txHistoryTo = result;
 	          transactions.Transactions.find({ from: address1 }, (e, res) => {
               if (e) {
-                logger.info(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
+                logger.info(`transactions.getTxHistory DB controller ERROR (2): ${e}`);
                 reject(e);
               } else {
                 txHistoryFrom = res;
@@ -318,13 +318,13 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
       } else if (address2 === 'ALL' && asset !== 'ALL') {
 	      transactions.Transactions.find({ to: address1, asset }, (err, result) => {
           if (err) {
-            logger.info(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
+            logger.info(`transactions.getTxHistory DB controller ERROR (1): ${err}`);
             reject(err);
           } else {
             txHistoryTo = result;
 	          transactions.Transactions.find({ from: address1, asset }, (e, res) => {
               if (e) {
-                logger.info(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
+                logger.info(`transactions.getTxHistory DB controller ERROR (2): ${e}`);
                 reject(e);
               } else {
                 txHistoryFrom = res;
@@ -340,13 +340,13 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
         if (asset === 'ALL') {
 	        transactions.Transactions.find({ to: address1, from: address2 }, (err, result) => {
             if (err) {
-              logger.info(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
+              logger.info(`transactions.getTxHistory DB controller ERROR (1): ${err}`);
               reject(err);
             } else {
               txHistoryTo = result;
 	            transactions.Transactions.find({ to: address2, from: address1 }, (e, res) => {
                 if (err) {
-                  logger.info(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
+                  logger.info(`transactions.getTxHistory DB controller ERROR (2): ${e}`);
                   reject(e);
                 } else {
                   txHistoryFrom = res;
@@ -363,7 +363,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
             { to: address1, from: address2, asset },
             (err, result) => {
               if (err) {
-                logger.info(`ethTransactions.getTxHistory DB controller ERROR (1): ${err}`);
+                logger.info(`transactions.getTxHistory DB controller ERROR (1): ${err}`);
                 reject(err);
               } else {
                 txHistoryTo = result;
@@ -371,7 +371,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                   { to: address2, from: address1, asset },
                   (e, res) => {
                     if (e) {
-                      logger.info(`ethTransactions.getTxHistory DB controller ERROR (2): ${e}`);
+                      logger.info(`transactions.getTxHistory DB controller ERROR (2): ${e}`);
                       reject(e);
                     } else {
                       txHistoryFrom = res;

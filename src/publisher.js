@@ -63,26 +63,26 @@ exports.initIPC = function () {
         exports.manager = ipc.of.manager;
       },
     );
-    setTimeout(() => {
-      exports.poll();
-    }, 500);
-  } catch (err) {
-    logger.error('Publisher.initIPC() failed: ', err.message);
+    setInterval(function() {
+      exports.poll()
+    },5000);
+  } catch(err) {
+    logger.error('Publisher.init() failed: ',err.message);
     throw err;
   } finally {
     logger.info('Exited publisher.initIPC()');
   }
 };
 
-exports.poll = function () {
-  logger.info('Requesting new wallet ');
-  exports.manager.emit(
-    'wallet.request',
-    {
-      id: ipc.config.id,
-      message: 'wallet.request',
-    },
-  );
+exports.poll = function() {
+    logger.info('Requesting new wallet :');
+    exports.manager.emit(
+      'wallet.request',
+      {
+        id : ipc.config.id,
+        message : '5b0eaf63715078cbab42df8b'
+      }
+    );
 };
 
 exports.initBCXMQ = function () {
