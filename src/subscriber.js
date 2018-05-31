@@ -15,7 +15,7 @@ var connection;
 exports.initServices = function () {
       dbServices.dbConnect(mongoUrl)
       .then((dbCollections) => {
-        initRabbitMQ();
+        initRabbitMQ(dbCollections);
       });
     };
 
@@ -29,7 +29,7 @@ var validate = (payload) => {
   }
 }
 
-var initRabbitMQ = () => {
+var initRabbitMQ = (dbCollections) => {
   try {
           logger.info('Started executing connect()');
           amqp.connect('amqp://localhost', (err, conn) => {
@@ -60,24 +60,29 @@ var initRabbitMQ = () => {
             ch.assertQueue(q, {durable: false});
             ch.consume(q, function(msg) {          
             var entry = JSON.parse(msg.content);
+            var type = entry.type;
+            delete entry.type;
 
             switch(type) {
-            case 'pending':
-                dbCollections.transactions.addTx(entry.pillarId,entry.protocol,entry.fromAddress,entry.toAddress,entry.txHash,entry.asset,entry.contractAddress, entry.timestamp,entry.blockNumber,entry.value,entry.status,entry.gasUsed)
+            case 'newPendingTx':
+                entry['gasUsed'] = '';
+                entry['blockNumber'] = '';
+                entry['status'] = 'pending'
+                dbCollections.transactions.addTx(entry)
                 .then(() => {
                   logger.info("Transaction inserted: " + entry.txHash);
                 });
             break;
-            case 'mined':
-                dbCollections.transactions.addTx(entry.pillarId,entry.protocol,entry.fromAddress,entry.toAddress,entry.txHash,entry.asset,entry.contractAddress, entry.timestamp,entry.blockNumber,entry.value,entry.status,entry.gasUsed)
+            case 'newMinedTx':              
+                dbCollections.transactions.addTx(entry)
                 .then(() => {
                   logger.info("Transaction inserted: " + entry.txHash);
                 });
             break;
-            case 'update':
-                dbCollections.transactions.addTx(entry.pillarId,entry.protocol,entry.fromAddress,entry.toAddress,entry.txHash,entry.asset,entry.contractAddress, entry.timestamp,entry.blockNumber,entry.value,entry.status,entry.gasUsed)
+            case 'updateTx':
+                dbCollections.transactions.updateTx(entry)
                 .then(() => {
-                  logger.info("Transaction inserted: " + entry.txHash);
+                  logger.info("Transaction updated: " + entry.txHash);
                 });
             break;
               }

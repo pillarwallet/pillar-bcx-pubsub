@@ -79,7 +79,7 @@ module.exports.findById = findById;
 function findByTxHash(txHash) {
   return new Promise(((resolve, reject) => {
     try {
-	    transactions.Transactions.findOne({ hash: txHash }, (err, result) => {
+	    transactions.Transactions.findOne({ txHash: txHash }, (err, result) => {
         if (err) {
           logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
           reject(err);
@@ -91,19 +91,10 @@ function findByTxHash(txHash) {
 }
 module.exports.findByTxHash = findByTxHash;
 
-function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, nbConf, history = false) {
+function addTx(txObject) {
   return new Promise(((resolve, reject) => {
     try {
-      let tx;
-      if (history) {
-        ethTx = new transactions.Transactions({
-          pillarId, protocol: 'Ethereum', fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber: null, value, status: 'history', gasUsed: null,
-        });
-      } else {
-        ethTx = new transactions.Transactions({
-          pillarId, protocol: 'Ethereum', fromAddress, toAddress, txHash, asset, contractAddress, timestamp, blockNumber: null, value, status: 'pending', gasUsed: null,
-        });
-      }
+      var tx = new transactions.Transactions(txObject);
       tx.save((err) => {
         if (err) {
           logger.info(`transactions.addTx DB controller ERROR: ${err}`);
@@ -116,26 +107,25 @@ function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timesta
 }
 module.exports.addTx = addTx;
 
-function updateTx(id, txInfo, receipt, nbConf, status) {
+function updateTx(txUpdatedKeys) {
   return new Promise(((resolve, reject) => {
     try {
-      let gasUsed;
-      if (receipt) {
-        gasUsed = receipt.gasUsed * txInfo.gasPrice * (10 ** -18);
-      } else {
-        gasUsed = -999;
-      }
-	    transactions.Transactions.update(
-        { _id: id },
-        { nbConfirmations: nbConf, status, gasUsed },
-        (err) => {
-          if (err) {
-            logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
-            reject(err);
-          }
-          resolve();
-        },
-      );
+      findByTxHash(txUpdatedKeys.txHash).then(txObject => {
+
+        transactions.Transactions.update(
+          { _id: txObject._id },
+          txUpdatedKeys,
+          (err) => {
+            if (err) {
+              logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
+              reject(err);
+            }
+            resolve();
+          },
+        );
+
+      });
+
     } catch (e) { reject(e); }
   }));
 }

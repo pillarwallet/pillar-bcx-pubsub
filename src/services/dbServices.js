@@ -7,7 +7,6 @@ const mongoose = require('mongoose');
 module.exports.mongoose = mongoose;
 
 function dbConnect(url, $arg = { useMongoClient: true }) {
-  console.log("URL: ",url)
   return new Promise(((resolve, reject) => {
     try {
       // Setting up listeners
