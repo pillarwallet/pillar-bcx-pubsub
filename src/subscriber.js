@@ -15,8 +15,12 @@ var connection;
 exports.initServices = function () {
       dbServices.dbConnect(mongoUrl)
       .then((dbCollections) => {
+        logger.info("Connected to database")
         initRabbitMQ(dbCollections);
-      });
+      })
+      .catch(err =>{
+        logger.error(err.message);
+      })
     };
 
 var validate = (payload) => {
@@ -31,7 +35,7 @@ var validate = (payload) => {
 
 var initRabbitMQ = (dbCollections) => {
   try {
-          logger.info('Started executing connect()');
+          logger.info('Started executing initRabbitMQ()');
           amqp.connect('amqp://localhost', (err, conn) => {
             if (err) {
               logger.error(err.message);
