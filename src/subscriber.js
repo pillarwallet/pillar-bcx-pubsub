@@ -71,19 +71,28 @@ var initRabbitMQ = (dbCollections) => {
                 dbCollections.transactions.addTx(entry)
                 .then(() => {
                   logger.info("Transaction inserted: " + entry.txHash);
-                });
+                })
+                .catch(err =>{
+                  logger.error(err.message)
+                })
             break;
             case 'newMinedTx':              
                 dbCollections.transactions.addTx(entry)
                 .then(() => {
                   logger.info("Transaction inserted: " + entry.txHash);
-                });
+                })
+                .catch(err =>{
+                  logger.error(err.message)
+                })
             break;
             case 'updateTx':
                 dbCollections.transactions.updateTx(entry)
                 .then(() => {
                   logger.info("Transaction updated: " + entry.txHash);
-                });
+                })
+                .catch(err =>{
+                  logger.error(err.message)
+                })
             break;
               }
             }, {noAck: true});
