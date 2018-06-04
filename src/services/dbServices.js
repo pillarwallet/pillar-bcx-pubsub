@@ -83,11 +83,12 @@ function recentAccounts(
             .then((ethAddressesArray) => {
               logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
               let i = 0;
-              console.log(JSON.stringify(ethAddressesArray));
+              //console.log(JSON.stringify(ethAddressesArray));
               ethAddressesArray.forEach((item) => {
-                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.address}\n`));
+                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
                 i += 1;
               });
+              resolve(ethAddressesArray);
             })
             .catch((e) => { reject(e); });
         })

@@ -63,7 +63,7 @@ exports.initIPC = function () {
               var obj = data[i];
               if(!wallets.has(obj.walletId)) {
                 wallets.set(obj.walletId,obj.pillarId);
-                logger.log('Manager, received a new wallet to monitor: ' + obj.walletId);
+                logger.info('Manager, received a new wallet to monitor: ' + obj.walletId);
               }
             }
           }

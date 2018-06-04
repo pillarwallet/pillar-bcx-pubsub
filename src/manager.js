@@ -16,7 +16,7 @@ const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 //protocol has to be setup during init, we will have one manager per protocol
-const protocol = 'ethereum';
+const protocol = 'Ethereum';
 
 exports.init = function() {
     try {
@@ -38,7 +38,7 @@ exports.init = function() {
                     function(data,socket) {
                         ipc.log('Received wallet.request from ', (data.id));
                         logger.info('Received ' +  (data.message) + ' from ' + (data.id));
-                        exports.notify(data.message);
+                        exports.notify(data.message,socket);
                     }
                 );
         
@@ -63,7 +63,7 @@ exports.init = function() {
     }
 };
 
-exports.notify = async function(idFrom) {
+exports.notify = async function(idFrom,socket) {
     try {
         logger.info('Started executing manager.notify()');
 
@@ -89,7 +89,7 @@ exports.notify = async function(idFrom) {
             }
         }
     } catch(err) {
-        logger.error(err.mesasage);
+        logger.error(`Manager.notify() failed: ${err}`);
     } finally {
         logger.info('Exited manager.notify()');
     }
