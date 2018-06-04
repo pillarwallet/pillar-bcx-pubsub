@@ -23,11 +23,13 @@ const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 let manager;
 
+var HashMap = require('hashmap');
+var wallets;
 
 exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
-
+    wallets = new HashMap();
     ipc.config.id = `publisher${process.pid}`;
     ipc.config.retry = 1500;
     ipc.config.maxRetries = 10;
@@ -57,7 +59,14 @@ exports.initIPC = function () {
           'wallet.receive',
           (data) => {
             logger.info('Received ', data);
-          },
+            for(var i=0;i<data.length;i++) {
+              var obj = data[i];
+              if(!wallets.has(obj.walletId)) {
+                wallets.set(obj.walletId,obj.pillarId);
+                logger.log('Manager, received a new wallet to monitor: ' + obj.walletId);
+              }
+            }
+          }
         );
 
         exports.manager = ipc.of.manager;
@@ -80,7 +89,7 @@ exports.poll = function() {
       'wallet.request',
       {
         id : ipc.config.id,
-        message : '5b0eaf63715078cbab42df8b'
+        message : '5b0eabed715078cbab42df87'
       }
     );
 };

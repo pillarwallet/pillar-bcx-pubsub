@@ -10,13 +10,13 @@ const fork = require('child_process').fork;
 const dbServices = require('./services/dbServices');
 require('dotenv').config();
 const maxWalletsPerPub = 500000;
-var latestId;
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
-let manager;
+//protocol has to be setup during init, we will have one manager per protocol
+const protocol = 'ethereum';
 
 exports.init = function() {
     try {
@@ -63,19 +63,30 @@ exports.init = function() {
     }
 };
 
-exports.notify = function(idFrom) {
+exports.notify = async function(idFrom) {
     try {
         logger.info('Started executing manager.notify()');
 
         //read the wallet address model and bring up multiple publishers
-        var theWallets = dbServices.recentAccounts(mongoUrl,idFrom);
+        var theWallets = await dbServices.recentAccounts(mongoUrl,idFrom);
         console.log('Fetched data from: ',theWallets);
         if(theWallets !== undefined) {
-            ipc.server.emit(
-                socket,
-                'wallet.receive',
-                theWallets
-            );
+            var message = [];
+            for(var i=0;i<theWallets.length;i++) {
+                for(var j=0;j<theWallets[i].addresses.length;j++) {
+                    if(theWallets[i].addresses[j].protocol == protocol) {
+                        message.push({walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
+                    }
+                }
+            }
+            if(message.length > 0) {
+                logger.info('Manager.notify: Sending IPC notification to monitor ' + message.length + ' wallets.'); 
+                ipc.server.emit(
+                    socket,
+                    'wallet.receive',
+                    message
+                );
+            }
         }
     } catch(err) {
         logger.error(err.mesasage);
