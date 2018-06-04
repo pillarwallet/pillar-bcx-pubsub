@@ -163,7 +163,7 @@ module.exports.txFailed = txFailed;
 function emptyCollection() {
   return new Promise(((resolve, reject) => {
     try {
-	    transactions.Transactions.remove((err, countremoved) => {
+      transactions.Transactions.remove((err, countremoved) => {
         if (err) {
           logger.info(`transactions.emptyCollection DB controller ERROR: ${err}`);
           reject(err);
@@ -179,7 +179,9 @@ module.exports.emptyCollection = emptyCollection;
 function addZeroTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
-      const txHistHeight = new transactions.Transactions({ nbConfirmations: 3333207, status: 'blockNumber = highest block number for tx history' });
+      const txHistHeight = new transactions.Transactions({
+        pillarId: '', protocol: '', txHash: '', blockNumber: 3333207, status: 'blockNumber = highest block number for tx history',
+      });
       txHistHeight.save((err) => {
         if (err) {
           logger.info(`transactions.addZeroTxHistoryHeight DB controller ERROR: ${err}`);
