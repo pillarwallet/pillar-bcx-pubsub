@@ -57,7 +57,7 @@ exports.init = function() {
         //console.log(JSON.stringify(ipc));
     } catch(err) {
         logger.error('Manager.init() failed: ', err.mesasage);
-        throw err;
+        //throw err;
     } finally {
         logger.info('Exited manager.init()');
     }

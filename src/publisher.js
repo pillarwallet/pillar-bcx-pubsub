@@ -21,10 +21,10 @@ const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
-let manager;
 
 var HashMap = require('hashmap');
 var wallets;
+var latestId = '5b0eabed715078cbab42df87';
 
 exports.initIPC = function () {
   try {
@@ -65,6 +65,7 @@ exports.initIPC = function () {
                 wallets.set(obj.walletId,obj.pillarId);
                 logger.info('Manager, received a new wallet to monitor: ' + obj.walletId);
               }
+              latestId = obj.walletId;
             }
           }
         );
@@ -89,7 +90,7 @@ exports.poll = function() {
       'wallet.request',
       {
         id : ipc.config.id,
-        message : '5b0eabed715078cbab42df87'
+        message : latestId
       }
     );
 };
