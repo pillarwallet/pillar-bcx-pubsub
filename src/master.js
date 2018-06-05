@@ -25,12 +25,10 @@ const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}
 //protocol has to be setup during init, we will have one master per protocol
 var protocol = 'Ethereum';
 var maxWalletsPerPub = 500000;
-var pubs = [];
-var subs = [];
-var index = 1;
 
-exports.pubs = pubs;
-exports.index = index;
+exports.pubs = [];
+exports.subs = [];
+exports.index = 1;
 
 exports.init = function() {
     try {
@@ -57,7 +55,6 @@ exports.init = function() {
         this.launch();
     } catch(err) {
         logger.error('master.init() failed: '+ err.message);
-        //throw err;
     } finally {
         logger.info('Exited master.init()');
     }
@@ -75,12 +72,12 @@ exports.notify = async function(idFrom,socket) {
             for(var i=0;i<theWallets.length;i++) {
                 for(var j=0;j<theWallets[i].addresses.length;j++) {
                     if(theWallets[i].addresses[j].protocol == protocol) {
-                        message.push({walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
+                        message.push({id: theWallets[i]._id, walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
                     }
                 }
             }
             if(message.length > 0) {
-                logger.info('master.notify: Sending IPC notification to monitor ' + message.length + ' wallets.'); 
+                logger.info('master.notify(): Sending IPC notification to monitor ' + message.length + ' wallets.'); 
                 socket.send({message});
             }
         }
@@ -96,11 +93,10 @@ exports.launch = function() {
         logger.info('Started executing master.launch()');
 
         //start the first program pair of publisher and subscribers
-        pubs[index] = fork(`${__dirname}/publisher.js`);
+        exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
         //subs[index] = fork(`${__dirname}/subscriber.js`);
 
-
-        pubs[index].on('message',(data) => {
+        exports.pubs[exports.index].on('message',(data) => {
             logger.info('Master received message : ' + JSON.stringify(data) + ' from publisher');
             if(data.type == 'wallet.request') {
                 logger.info('Received ' +  (data.message) + ' from ' + (data.id));

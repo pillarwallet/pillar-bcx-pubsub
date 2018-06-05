@@ -29,59 +29,21 @@ var latestId = '5b0eabed715078cbab42df87';
 
 process.on('message',(data) => {
   console.log('Publisher received message: ' + JSON.stringify(data));
+  var message = data.message;
+  for(var i=0;i<message.length;i++) {
+    var obj = message[i];
+    logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
+    wallets.set(obj.walletId,obj.pillarId);
+    latestId = obj.id;
+  }
 });
 
 exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
 
-    
     wallets = new HashMap();
-    /*
-    ipc.config.id = `publisher${process.pid}`;
-    ipc.config.retry = 1500;
-    ipc.config.maxRetries = 10;
 
-    ipc.connectToNet(
-      'master',
-      process.env.SERVER_ADDRESS,
-      process.env.SERVER_PORT,
-      () => {
-        ipc.of.master.on(
-          'connect',
-          () => {
-            ipc.log('## connected to master ##', ipc.config.delay);
-            exports.poll();
-          },
-        );
-
-        ipc.of.master.on(
-          'disconnect',
-          () => {
-            ipc.log('disconnected from master');
-            // clean up task
-          },
-        );
-
-        ipc.of.master.on(
-          'wallet.receive',
-          (data) => {
-            logger.info('Received ', data);
-            for(var i=0;i<data.length;i++) {
-              var obj = data[i];
-              if(!wallets.has(obj.walletId)) {
-                wallets.set(obj.walletId,obj.pillarId);
-                logger.info('master, received a new wallet to monitor: ' + obj.walletId);
-              }
-              latestId = obj.walletId;
-            }
-          }
-        );
-
-        exports.master = ipc.of.master;
-      },
-    );
-    */
     setInterval(function() {
       exports.poll()
     },5000);
@@ -94,17 +56,9 @@ exports.initIPC = function () {
 };
 
 exports.poll = function() {
-    logger.info('Requesting new wallet :');
-    /*
-    exports.master.emit(
-      'wallet.request',
-      {
-        id : ipc.config.id,
-        message : latestId
-      }
-    );
-    */
-   process.send({
+  logger.info('Requesting new wallet :');
+
+  process.send({
     type: 'wallet.request',
     message : latestId
   });
@@ -123,7 +77,6 @@ exports.initBCXMQ = function () {
         ch.sendToQueue(q, Buffer.from(msg));
         console.log(' [x] Sent %s', msg);
       });
-      // setTimeout(() => { conn.close(); process.exit(0); }, 500);
     });
   } catch (err) {
     logger.error('Publisher.configure() failed: ', err.message);
