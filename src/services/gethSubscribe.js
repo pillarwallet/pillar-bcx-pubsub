@@ -4,7 +4,7 @@ const colors = require('colors');
 const ERC20ABI = require('./ERC20ABI.json');
 
 
-function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue) {
+function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue, rmqServices) {
   const subscribePromise = new Promise(((resolve, reject) => {
     web3.eth.subscribe('pendingTransactions', (err, res) => {})
       .on('data', (txHash) => {
@@ -12,7 +12,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, cha
           bcx.getTxInfo(web3, txHash)
             .then((txInfo) => {
               if (txInfo != null) {
-                processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, channel, queue);
+                processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, channel, queue, rmqServices);
               }
             })
             .catch((e) => { reject(e); });
@@ -28,7 +28,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, cha
 }
 module.exports.subscribePendingTx = subscribePendingTx;
 
-function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, channel, queue) {
+function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, channel, queue, rmqServices) {
   const subscribePromise = new Promise((resolve, reject) => {
   	web3.eth.subscribe('newBlockHeaders', (err, res) => {})
 	  .on('data', (blockHeader) => {
@@ -38,7 +38,7 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
 			  // Check for pending tx in database and update their status
 			  dbCollections.transactions.listPending()
 			  .then((pendingTxArray) => {
-				  processTx.checkPendingTx(web3, bcx, dbCollections, pendingTxArray, blockHeader.number, channel, queue)
+				  processTx.checkPendingTx(web3, bcx, dbCollections, pendingTxArray, blockHeader.number, channel, queue, rmqServices)
 				  .then(() => {
 					  dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
 					  .then(() => {
@@ -61,7 +61,8 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
-function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, channel, queue) {
+function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, channel, queue, rmqServices) {
+	// CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
   const subscribePromise = new Promise((resolve, reject) => {
     // let nbBlocksReceived = -1;
     web3.eth.subscribe('newBlockHeaders', (err, res) => {})
@@ -71,7 +72,7 @@ function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServ
           logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
           // NOW, @ EACH NEW BLOCK MINED:
           // Check for newly created ERC20 smart contracts
-          dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, blockHeader.number, blockHeader.number, dbCollections, false)
+          dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, blockHeader.number, blockHeader.number, dbCollections, false)
             .then(() => {
               // Update
               dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
@@ -91,12 +92,12 @@ function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServ
 }
 module.exports.checkNewERC20SmartContracts = checkNewERC20SmartContracts;
 
-function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue) {
+function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue, rmqServices) {
   const subscribePromise = new Promise(((resolve, reject) => {
     dbCollections.assets.listAll()
       .then((smartContractsArray) => {
         smartContractsArray.forEach((ERC20SmartContract) => {
-          module.exports.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, ERC20SmartContract);
+          module.exports.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
         });
         logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
         resolve();
@@ -107,14 +108,14 @@ function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, 
 }
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
 
-function subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, ERC20SmartContract) {
+function subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract) {
 // var subscribePromise = new Promise(function(resolve,reject){
   try {
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
       const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
-          processTx.checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, result, ERC20SmartContract);
+          processTx.checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, rmqServices, result, ERC20SmartContract);
         } else {
           logger.info(error);
         }

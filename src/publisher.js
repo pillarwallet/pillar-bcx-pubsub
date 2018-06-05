@@ -12,9 +12,9 @@ const dbServices = require('./services/dbServices.js');
 const bcx = require('./services/bcx.js');
 const gethSubscribe = require('./services/gethSubscribe.js');
 const processTx = require('./services/processTx.js');
+const rmqServices = require('./services/rmqServices.js');
 const abiDecoder = require('abi-decoder');
 require('dotenv').config();
-
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
@@ -133,6 +133,7 @@ exports.initCWBMQ = function () {
 };
 
 exports.initSubscriptions = function (channel, queue) {
+  console.log(rmqServices.sendMessage)
   /* CONNECT TO GETH NODE */
   gethConnect.gethConnectDisplay()
     .then((web3) => {
@@ -140,12 +141,12 @@ exports.initSubscriptions = function (channel, queue) {
       dbServices.dbConnectDisplayAccounts(mongoUrl)
         .then((dbCollections) => {
           /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue);
+          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue, rmqServices);
           gethSubscribe.subscribeBlockHeaders(
             web3, gethSubscribe, bcx, processTx, dbServices,
-            dbCollections, abiDecoder, channel, queue,
+            dbCollections, abiDecoder, channel, queue, rmqServices,
           );
-          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue);
+          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue, rmqServices);
         });
     });
 };

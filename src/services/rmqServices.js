@@ -1,8 +1,25 @@
 const amqp = require('amqplib/callback_api');
+const jsHashes = require('jsHashes');
+const SHA256 =  new jsHashes.SHA256
+require('dotenv').config();
+const checksumKey = process.env.CHECKSUM_KEY;
 
 let amqpConn = null;
 let pubChannel = null;
 const offlinePubQueue = [];
+
+
+
+function sendMessage(payload, channel, queue) {
+  const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
+
+  payload.checksum = checksum;
+
+  console.log(payload);
+
+  channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
+}
+// module.exports.sendMessage = sendMessage;
 
 const connect = () => {
   amqp.connect("amqp://localhost", function(err, conn) {
@@ -114,4 +131,5 @@ module.exports = {
   processMsg,
   work,
   closeOnErr,
+  sendMessage,
 };

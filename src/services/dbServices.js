@@ -410,7 +410,7 @@ module.exports.listPendingTx = listPendingTx;
 
 
 function dlERC20SmartContracts(
-  web3, gethSubscribe, bcx, processTx, channel, queue, startBlock,
+  web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, startBlock,
   endBlock, dbCollections, nbERC20Found, logs = false,
 ) {
   return new Promise(((resolve, reject) => {
@@ -426,7 +426,7 @@ function dlERC20SmartContracts(
             bcx.getBlockSmartContractsAddressesArray(web3, result.transactions, [], 0)
               .then((smartContractsAddressesArray) => {
                 module.exports.processSmartContractsAddressesArray(
-                  web3, gethSubscribe, bcx, processTx, channel, queue,
+                  web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices,
                   dbCollections, smartContractsAddressesArray, 0, 0,
                 )
                   .then((nbFound) => {
@@ -434,7 +434,7 @@ function dlERC20SmartContracts(
                     dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
                       .then(() => {
                         resolve(dlERC20SmartContracts(
-                          web3, gethSubscribe, bcx, processTx, channel, queue, startBlock + 1,
+                          web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, startBlock + 1,
                           endBlock, dbCollections, nbERC20Found, logs,
                         ));
                       })
@@ -452,7 +452,7 @@ function dlERC20SmartContracts(
 module.exports.dlERC20SmartContracts = dlERC20SmartContracts;
 
 function processSmartContractsAddressesArray(
-  web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+  web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, dbCollections,
   smartContractsAddressesArray, index, nbERC20Found,
 ) {
   return new Promise(((resolve, reject) => {
@@ -479,6 +479,7 @@ function processSmartContractsAddressesArray(
                         logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
                         if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
                           nbERC20Found += 1;
+                          // SEND MESSAGE TO SUBSCRIBER HERE !!!
                           dbCollections.assets.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
                             .then(() => {
                               ERC20SmartContract = {
@@ -486,9 +487,9 @@ function processSmartContractsAddressesArray(
                                 ticker: symbol,
                                 decimals,
                               };
-                              gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, ERC20SmartContract);
+                              gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
                               resolve(processSmartContractsAddressesArray(
-                                web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+                                web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, dbCollections,
                                 smartContractsAddressesArray, index + 1, nbERC20Found,
                               ));
                             })
@@ -539,14 +540,14 @@ function processSmartContractsAddressesArray(
 }
 module.exports.processSmartContractsAddressesArray = processSmartContractsAddressesArray;
 
-function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections, maxBlock) {
+function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, dbCollections, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
       dbCollections.assets.findERC20SmartContractsHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
           module.exports.dlERC20SmartContracts(
-            web3, gethSubscribe, bcx, processTx, channel, queue,
+            web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices,
             startBlock, maxBlock, dbCollections, 0, true,
           )
             .then((nbERC20Found) => {
