@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node 
 /** ************************************************************************************ */
 /*  Publisher                                                                          */
 /** ************************************************************************************ */
@@ -24,38 +24,46 @@ const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}
 
 var HashMap = require('hashmap');
 var wallets;
+//starting point
 var latestId = '5b0eabed715078cbab42df87';
+
+process.on('message',(data) => {
+  console.log('Publisher received message: ' + JSON.stringify(data));
+});
 
 exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
+
+    
     wallets = new HashMap();
+    /*
     ipc.config.id = `publisher${process.pid}`;
     ipc.config.retry = 1500;
     ipc.config.maxRetries = 10;
 
     ipc.connectToNet(
-      'manager',
+      'master',
       process.env.SERVER_ADDRESS,
       process.env.SERVER_PORT,
       () => {
-        ipc.of.manager.on(
+        ipc.of.master.on(
           'connect',
           () => {
-            ipc.log('## connected to manager ##', ipc.config.delay);
+            ipc.log('## connected to master ##', ipc.config.delay);
             exports.poll();
           },
         );
 
-        ipc.of.manager.on(
+        ipc.of.master.on(
           'disconnect',
           () => {
-            ipc.log('disconnected from manager');
+            ipc.log('disconnected from master');
             // clean up task
           },
         );
 
-        ipc.of.manager.on(
+        ipc.of.master.on(
           'wallet.receive',
           (data) => {
             logger.info('Received ', data);
@@ -63,16 +71,17 @@ exports.initIPC = function () {
               var obj = data[i];
               if(!wallets.has(obj.walletId)) {
                 wallets.set(obj.walletId,obj.pillarId);
-                logger.info('Manager, received a new wallet to monitor: ' + obj.walletId);
+                logger.info('master, received a new wallet to monitor: ' + obj.walletId);
               }
               latestId = obj.walletId;
             }
           }
         );
 
-        exports.manager = ipc.of.manager;
+        exports.master = ipc.of.master;
       },
     );
+    */
     setInterval(function() {
       exports.poll()
     },5000);
@@ -86,13 +95,19 @@ exports.initIPC = function () {
 
 exports.poll = function() {
     logger.info('Requesting new wallet :');
-    exports.manager.emit(
+    /*
+    exports.master.emit(
       'wallet.request',
       {
         id : ipc.config.id,
         message : latestId
       }
     );
+    */
+   process.send({
+    type: 'wallet.request',
+    message : latestId
+  });
 };
 
 exports.initBCXMQ = function () {
