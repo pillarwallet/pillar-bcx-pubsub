@@ -5,6 +5,7 @@
 const logger = require('./utils/logger');
 const mongoose = require('mongoose');
 const fork = require('child_process').fork;
+const fs = require('fs');
 
 const optionDefinitions = [
     { name: 'protocol', alias: 'p', type: String},
@@ -28,7 +29,7 @@ var maxWalletsPerPub = 500000;
 
 exports.pubs = [];
 exports.subs = [];
-exports.index = 1;
+exports.index = 0;
 
 exports.init = function() {
     try {
@@ -79,6 +80,11 @@ exports.notify = async function(idFrom,socket) {
             if(message.length > 0) {
                 logger.info('master.notify(): Sending IPC notification to monitor ' + message.length + ' wallets.'); 
                 socket.send({message});
+                fs.appendFile('./cache/pub_' + (exports.index - 1),JSON.stringify(message),function(err) {
+                    if(err) {
+                        throw ({message: 'Caching of wallets failed!'});
+                    }
+                });
             }
         }
     } catch(err) {
@@ -95,12 +101,13 @@ exports.launch = function() {
         //start the first program pair of publisher and subscribers
         exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
         exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
+        fs.createWriteStream('./cache/pub_'+exports.index,{'flags': 'a'});
 
         exports.pubs[exports.index].on('message',(data) => {
             logger.info('Master received message : ' + JSON.stringify(data) + ' from publisher');
             if(data.type == 'wallet.request') {
                 logger.info('Received ' +  (data.message) + ' from ' + (data.id));
-                exports.notify(data.message,exports.pubs[exports.index]);
+                exports.notify(data.message,exports.pubs[exports.index - 1]);
             }
             if(data.type == 'queue.full') {
                 logger.info('Received ' + (data.message) + ' from ' + (data.id));
@@ -108,6 +115,13 @@ exports.launch = function() {
                 this.launch();
             }
         });
+        exports.pubs[exports.index].on('exit',(data) => {
+            if(data.code !== null) {
+                //spin off a new publisher with the existing keys
+
+            }
+        });
+        exports.index++;
     } catch(err) {
         //throw err;
         logger.error(err.mesasage);
