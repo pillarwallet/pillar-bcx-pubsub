@@ -115,11 +115,8 @@ exports.launch = function() {
                 this.launch();
             }
         });
-        exports.pubs[exports.index].on('exit',(data) => {
-            if(data.code !== null) {
-                //spin off a new publisher with the existing keys
-
-            }
+        exports.pubs[exports.index].on('close',(data) => {
+            logger.info('Publisher: ' + exports.index + ' closed: ' + data);
         });
         exports.index++;
     } catch(err) {
