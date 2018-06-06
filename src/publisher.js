@@ -47,6 +47,7 @@ exports.initIPC = function () {
     setInterval(function() {
       exports.poll()
     },5000);
+    exports.initBCXMQ();
   } catch(err) {
     logger.error('Publisher.init() failed: ',err.message);
     throw err;

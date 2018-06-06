@@ -94,7 +94,7 @@ exports.launch = function() {
 
         //start the first program pair of publisher and subscribers
         exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
-        //subs[index] = fork(`${__dirname}/subscriber.js`);
+        exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
 
         exports.pubs[exports.index].on('message',(data) => {
             logger.info('Master received message : ' + JSON.stringify(data) + ' from publisher');
@@ -109,6 +109,7 @@ exports.launch = function() {
             }
         });
     } catch(err) {
+        //throw err;
         logger.error(err.mesasage);
     } finally {
         logger.info('Exited master.launch()');
