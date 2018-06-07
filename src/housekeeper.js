@@ -153,13 +153,15 @@ exports.processSmartContractsAddressesArray = function (
                         logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
                         if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
                           nbERC20Found += 1;
-                          dbCollections.assets.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
+                          ERC20SmartContract = {
+                            protocol: 'Ethereum',
+                            name,
+                            symbol,
+                            decimals,
+                            contractAddress: smartContractsAddressesArray[index],
+                          };
+                          dbCollections.assets.addContract(ERC20SmartContract)
                             .then(() => {
-                              ERC20SmartContract = {
-                                address: smartContractsAddressesArray[index],
-                                ticker: symbol,
-                                decimals,
-                              };
                               // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
                               // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
                               resolve(this.processSmartContractsAddressesArray(

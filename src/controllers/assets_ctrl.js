@@ -18,16 +18,12 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function addContract(contractAddress, name, symbol, decimals, protocol) {
+function addContract(ERC20SmartContract) {
   return new Promise(((resolve, reject) => {
     try {
-	    assets.Assets.find({
-		    contractAddress, name, symbol, decimals, protocol,
-      }, (err, result) => {
+      assets.Assets.find(ERC20SmartContract, (err, result) => {
         if (result.length === 0) {
-          const smartContract = new assets.Assets({
-	          contractAddress, name, symbol, decimals, protocol,
-          });
+          const smartContract = new assets.Assets(ERC20SmartContract);
           smartContract.save((e) => {
             if (e) {
               logger.info(`smartContracts.addContract DB controller ERROR: ${e}`);
