@@ -18,6 +18,27 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
+function listRecent(idFrom) {
+  return new Promise(((resolve, reject) => {
+    try {
+      oId = mongoose.Types.ObjectId(idFrom);
+      var query = "{_id : {$gt: " + oId + ")}}";
+      //console.log("Query: ",query);
+      //accounts.Accounts.find(query, (err, result) => {
+      assets.Assets.find({_id : {$gt: oId}}, (err, result) => {  
+        if(err) {
+          logger.error(`assets.listRecent DB controller ERROR: ${err}`);
+          reject(err);
+        }
+        resolve(result);
+      });
+    } catch(e) {
+      logger.error(`assets.listRecent error occurred: " + ${e}`);
+      reject(e);
+  }}));
+}
+module.exports.listRecent = listRecent;
+
 function addContract(contractAddress, name, symbol, decimals, protocol) {
   return new Promise(((resolve, reject) => {
     try {

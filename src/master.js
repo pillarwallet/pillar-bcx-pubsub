@@ -27,6 +27,7 @@ const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}
 var protocol = 'Ethereum';
 var maxWalletsPerPub = 500000;
 
+exports.housekeeper;
 exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
@@ -61,49 +62,29 @@ exports.init = function() {
     }
 };
 
-exports.notify = function(idFrom,socket) {
-    try {
-        logger.info('Started executing master.notify()');
-
-        //read the wallet address model and bring up multiple publishers
-        dbServices.recentAccounts(mongoUrl,idFrom).then(function (theWallets){
-            if(theWallets !== undefined) {
-                var message = [];
-                for(var i=0;i<theWallets.length;i++) {
-                    for(var j=0;j<theWallets[i].addresses.length;j++) {
-                        if(theWallets[i].addresses[j].protocol == protocol) {
-                            message.push({id: theWallets[i]._id, walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
-                        }
-                    }
-                }
-                if(message.length > 0) {
-                    logger.info('master.notify(): Sending IPC notification to monitor ' + message.length + ' wallets.'); 
-                    socket.send({message});
-                    fs.appendFile('./cache/pub_' + (exports.index - 1),JSON.stringify(message),function(err) {
-                        if(err) {
-                            throw ({message: 'Caching of wallets failed!'});
-                        }
-                    });
-                }
-            }
-        });
-    } catch(err) {
-        logger.error(`master.notify() failed: ${err}`);
-    } finally {
-        logger.info('Exited master.notify()');
-    }
-};
-
 exports.launch = function() {
     try {
         logger.info('Started executing master.launch()');
 
         //start the first program pair of publisher and subscribers
+        exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
         exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
         exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
         fs.createWriteStream('./cache/pub_'+exports.index,{'flags': 'w'});
 
-        //handle events associated with the child processes.
+        //handle events associated with the housekeeper child process.
+        exports.housekeeper.on('message',(data) => {
+            logger.info('Housekeeper has sent a message: ' + data);
+        });
+
+        exports.housekeeper.on('close',(data) => {
+            if(data !== undefined) {
+                logger.info('Housekeeper closed: ' + data);
+                exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
+            }
+        });
+
+        //handle events associated with the publisher child processes.
         exports.pubs[exports.index].on('message',(data) => {
             logger.info('Master received message : ' + JSON.stringify(data) + ' from publisher');
             if(data.type == 'wallet.request') {
@@ -132,7 +113,7 @@ exports.launch = function() {
                     if(data !== '') {
                         var message = JSON.parse(data);
                         logger.info('sending message: ' + JSON.stringify(message) + ' to publisher: ' + pubId);
-                        exports.pubs[pubId].send({message});
+                        exports.pubs[pubId].send({type: 'accounts', message: message});
                     }
                 });
             }
@@ -155,6 +136,39 @@ exports.launch = function() {
         logger.error(err.mesasage);
     } finally {
         logger.info('Exited master.launch()');
+    }
+};
+
+exports.notify = function(idFrom,socket) {
+    try {
+        logger.info('Started executing master.notify()');
+
+        //read the wallet address model and bring up multiple publishers
+        dbServices.recentAccounts(mongoUrl,idFrom).then(function (theWallets){
+            if(theWallets !== undefined) {
+                var message = [];
+                for(var i=0;i<theWallets.length;i++) {
+                    for(var j=0;j<theWallets[i].addresses.length;j++) {
+                        if(theWallets[i].addresses[j].protocol == protocol) {
+                            message.push({id: theWallets[i]._id, walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
+                        }
+                    }
+                }
+                if(message.length > 0) {
+                    logger.info('master.notify(): Sending IPC notification to monitor ' + message.length + ' wallets.'); 
+                    socket.send({type: 'accounts', message: message});
+                    fs.appendFile('./cache/pub_' + (exports.index - 1),JSON.stringify(message),function(err) {
+                        if(err) {
+                            throw ({message: 'Caching of wallets failed!'});
+                        }
+                    });
+                }
+            }
+        });
+    } catch(err) {
+        logger.error(`master.notify() failed: ${err}`);
+    } finally {
+        logger.info('Exited master.notify()');
     }
 };
 this.init();
