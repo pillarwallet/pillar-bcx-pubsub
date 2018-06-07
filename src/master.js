@@ -61,32 +61,32 @@ exports.init = function() {
     }
 };
 
-exports.notify = async function(idFrom,socket) {
+exports.notify = function(idFrom,socket) {
     try {
         logger.info('Started executing master.notify()');
 
         //read the wallet address model and bring up multiple publishers
-        var theWallets = await dbServices.recentAccounts(mongoUrl,idFrom);
-        console.log('Fetched data from: ',theWallets);
-        if(theWallets !== undefined) {
-            var message = [];
-            for(var i=0;i<theWallets.length;i++) {
-                for(var j=0;j<theWallets[i].addresses.length;j++) {
-                    if(theWallets[i].addresses[j].protocol == protocol) {
-                        message.push({id: theWallets[i]._id, walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
+        dbServices.recentAccounts(mongoUrl,idFrom).then(function (theWallets){
+            if(theWallets !== undefined) {
+                var message = [];
+                for(var i=0;i<theWallets.length;i++) {
+                    for(var j=0;j<theWallets[i].addresses.length;j++) {
+                        if(theWallets[i].addresses[j].protocol == protocol) {
+                            message.push({id: theWallets[i]._id, walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId});
+                        }
                     }
                 }
+                if(message.length > 0) {
+                    logger.info('master.notify(): Sending IPC notification to monitor ' + message.length + ' wallets.'); 
+                    socket.send({message});
+                    fs.appendFile('./cache/pub_' + (exports.index - 1),JSON.stringify(message),function(err) {
+                        if(err) {
+                            throw ({message: 'Caching of wallets failed!'});
+                        }
+                    });
+                }
             }
-            if(message.length > 0) {
-                logger.info('master.notify(): Sending IPC notification to monitor ' + message.length + ' wallets.'); 
-                socket.send({message});
-                fs.appendFile('./cache/pub_' + (exports.index - 1),JSON.stringify(message),function(err) {
-                    if(err) {
-                        throw ({message: 'Caching of wallets failed!'});
-                    }
-                });
-            }
-        }
+        });
     } catch(err) {
         logger.error(`master.notify() failed: ${err}`);
     } finally {
@@ -101,8 +101,9 @@ exports.launch = function() {
         //start the first program pair of publisher and subscribers
         exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
         exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
-        fs.createWriteStream('./cache/pub_'+exports.index,{'flags': 'a'});
+        fs.createWriteStream('./cache/pub_'+exports.index,{'flags': 'w'});
 
+        //handle events associated with the child processes.
         exports.pubs[exports.index].on('message',(data) => {
             logger.info('Master received message : ' + JSON.stringify(data) + ' from publisher');
             if(data.type == 'wallet.request') {
@@ -116,8 +117,38 @@ exports.launch = function() {
             }
         });
         exports.pubs[exports.index].on('close',(data) => {
-            logger.info('Publisher: ' + exports.index + ' closed: ' + data);
+            var pubId = (exports.index - 1);
+            
+            if(data !== undefined) {
+                logger.info('Publisher: ' + pubId + ' closed: ' + data);
+                exports.pubs[pubId] = fork(`${__dirname}/publisher.js`);
+                //send the cached set of wallet addresses
+                logger.info('Restarted publisher ' + pubId);
+                fs.readFile('./cache/pub_'+pubId, 'utf8', function (err, data) {
+                    if (err) {
+                        logger.error('Error reading from file: ' + err);
+                    }
+                    logger.info("Data from cache: " + data);
+                    if(data !== '') {
+                        var message = JSON.parse(data);
+                        logger.info('sending message: ' + JSON.stringify(message) + ' to publisher: ' + pubId);
+                        exports.pubs[pubId].send({message});
+                    }
+                });
+            }
         });
+
+        //handle events related to the subscriber child processes
+        exports.subs[exports.index].on('close',(data) => {
+            var subId = (exports.index - 1);
+            
+            if(data !== undefined) {
+                //restart the failed subscriber process
+                logger.info('Subscriber: ' + pubId + ' closed: ' + data);
+                exports.subs[subsId] = fork(`${__dirname}/subscriber.js`);
+            }
+        });
+        
         exports.index++;
     } catch(err) {
         //throw err;

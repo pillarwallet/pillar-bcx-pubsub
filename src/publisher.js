@@ -24,7 +24,7 @@ const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}
 var HashMap = require('hashmap');
 var wallets;
 //starting point
-var latestId = '5b0eabed715078cbab42df87';
+var latestId;
 
 process.on('message',(data) => {
   console.log('Publisher received message: ' + JSON.stringify(data));
@@ -134,7 +134,8 @@ exports.walletReceived = function () {
 
 };
 
-// this.initIPC();
+this.initIPC();
+/*
 this.initBCXMQ()
   .then((BCXMQParams) => {
     const bcxChannel = BCXMQParams.ch;
@@ -148,3 +149,4 @@ this.initBCXMQ()
         this.initSubscriptions(channel, queue);
       });
   });
+*/

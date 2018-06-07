@@ -78,19 +78,28 @@ function recentAccounts(
     try {
       module.exports.dbConnect(url, $arg)
         .then((dbCollections) => {
-          // fetch accounts registered after a given Id
-          dbCollections.accounts.listRecent(idFrom)
-            .then((ethAddressesArray) => {
-              logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
-              let i = 0;
-              //console.log(JSON.stringify(ethAddressesArray));
-              ethAddressesArray.forEach((item) => {
-                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
-                i += 1;
-              });
-              resolve(ethAddressesArray);
-            })
-            .catch((e) => { reject(e); });
+          if(idFrom !== undefined && idFrom !== '') {
+            // fetch accounts registered after a given Id
+            dbCollections.accounts.listRecent(idFrom)
+              .then((ethAddressesArray) => {
+                logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
+                let i = 0;
+                //console.log(JSON.stringify(ethAddressesArray));
+                ethAddressesArray.forEach((item) => {
+                  logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
+                  i += 1;
+                });
+                resolve(ethAddressesArray);
+              })
+              .catch((e) => { reject(e); });
+          } else {
+            dbCollections.accounts.listAll()
+              .then((ethAddressesArray) => {
+                logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
+                resolve(ethAddressesArray);
+              })
+              .catch((e) => { reject(e); });
+          }
         })
         .catch((e) => { reject(e); });
     } catch (e) { reject(e); }
