@@ -75,6 +75,12 @@ exports.launch = function() {
         //handle events associated with the housekeeper child process.
         exports.housekeeper.on('message',(data) => {
             logger.info('Housekeeper has sent a message: ' + data);
+            //broadcast the message to all publishers
+            if(data.type == 'accounts') {
+                for(var i=0;i<exports.pubs.length;i++) {
+                    exports.pubs[i++].send({type: 'accounts', message: data.message});
+                }
+            }
         });
 
         exports.housekeeper.on('close',(data) => {
