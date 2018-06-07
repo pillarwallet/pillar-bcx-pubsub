@@ -8,8 +8,9 @@ const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
+const hashPrefix = process.env.HASH_PREFIX;
 
-md5 = new jsHashes.MD5;
+sha256 = new jsHashes.SHA256;
 var connection;
 
 exports.initServices = function () {
@@ -23,23 +24,23 @@ exports.initServices = function () {
       })
     };
 
-var validate = (payload) => {
+exports.validate = (payload) => {
   var checksum = payload.checksum;
   delete payload.checksum;
-  if (md5.hex(JSON.stringify(payload)) === checksum) {
+  if (sha256.hex(hashPrefix + JSON.stringify(payload)) === checksum) {
     return true;
   } else {
     return false;
   }
 }
 
-var initRabbitMQ = (dbCollections) => {
+exports.initRabbitMQ = (dbCollections) => {
   try {
           logger.info('Started executing initRabbitMQ()');
           amqp.connect('amqp://localhost', (err, conn) => {
             if (err) {
               logger.error(err.message);
-              return setTimeout(initRabbitMQ, 2000);
+              return setTimeout(exports.initRabbitMQ, 2000);
             }
             if (conn)
             {
@@ -48,12 +49,12 @@ var initRabbitMQ = (dbCollections) => {
             connection.on("error", function(err)
             {
               logger.error(err)
-              return setTimeout(initRabbitMQ, 2000);
+              return setTimeout(exports.initRabbitMQ, 2000);
             });
             connection.on("close", function()
             {
               logger.error("Connection closed");
-              return setTimeout(initRabbitMQ, 2000);
+              return setTimeout(exports.initRabbitMQ, 2000);
             });
 
           logger.info("Connected");
@@ -105,7 +106,7 @@ var initRabbitMQ = (dbCollections) => {
       }  
        catch (err) {
           logger.error(err.message);
-          return setTimeout(einitRabbitMQ, 2000);
+          return setTimeout(exports.initRabbitMQ, 2000);
         } finally {
           logger.info('Exited initRabbitMQ()');
         }

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -80,8 +81,9 @@
   },
   "jest": {
     "roots": [
-      "."
+      "./src"
     ],
+    "collectCoverage": true,
     "testResultsProcessor": "./node_modules/jest-html-reporter",
     "collectCoverageFrom": [
       "**/*.{js,jsx}",
