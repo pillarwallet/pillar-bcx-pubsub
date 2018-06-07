@@ -43,55 +43,6 @@ exports.init = function () {
   });
 };
 
-exports.initBCXMQ = function () {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Started executing publisher.initBCXMQ()');
-      amqp.connect('amqp://localhost', (err, conn) => {
-        conn.createChannel((err, ch) => {
-          const q = 'bcx-pubsub';
-          const msg = 'Initialized BCX pubsub message queue!';
-          ch.assertQueue(q, { durable: false });
-          // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
-          resolve({ ch, q });
-        });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
-    } catch (err) {
-      logger.error('Publisher.configure() failed: ', err.message);
-    } finally {
-      logger.info('Exited publisher.initMQ()');
-    }
-  });
-};
-
-exports.initCWBMQ = function () {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Started executing publisher.initCWBMQ()');
-      amqp.connect('amqp://localhost', (err, conn) => {
-        conn.createChannel((err, ch) => {
-          const q = 'bcx-notifications';
-          const msg = 'Initialized CORE WALLET BACKEND message queue for BCX notifications!';
-          ch.assertQueue(q, { durable: false });
-          // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
-          resolve({ ch, q });
-        });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
-    } catch (err) {
-      logger.error('Publisher.configure() failed: ', err.message);
-    } finally {
-      logger.info('Exited publisher.initMQ()');
-    }
-  });
-};
-
-
 exports.checkTxPool = function (web3, dbCollections) {
   // At connection time: Check for pending Tx in TX pool which are not in DB
   // and would not be added in TX History by dbServices.updateTxHistory
@@ -150,7 +101,7 @@ this.init()
     this.checkTxPool(result.web3, result.dbCollections); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateTxHistory(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateERC20SmartContracts(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
-    gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections, abiDecoder);
+    gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections);
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
 

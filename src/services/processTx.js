@@ -59,7 +59,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                     timestamp: tmstmp,
                     value: tx.value,
                   };
-                  rmqServices.sendMessage(txMsgTo, channel.bcxChannel, queue.bcxQueue);
+                  rmqServices.sendMessage(txMsgTo, channel, queue);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                   dbCollections.transactions.addTx({
@@ -93,7 +93,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                       timestamp: tmstmp,
                       value: tx.value,
                     };
-                    rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
+                    rmqServices.sendMessage(txMsgFrom, channel, queue);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                     dbCollections.transactions.addTx({
@@ -139,7 +139,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                           timestamp: tmstmp,
                           value: tx.value,
                         };
-                        rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
+                        rmqServices.sendMessage(txMsgFrom, channel, queue);
                       } else {
                         // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                         dbCollections.transactions.addTx({
@@ -189,7 +189,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                             timestamp: tmstmp,
                             value: parseInt(data.params[1].value, 10),
                           };
-                          rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
+                          rmqServices.sendMessage(txMsgFrom, channel, queue);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                           dbCollections.transactions.addTx({
@@ -225,7 +225,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                                   timestamp: tmstmp,
                                   value: parseInt(data.params[1].value, 10),
                                 };
-                                rmqServices.sendMessage(txMsgTo, channel.bcxChannel, queue.bcxQueue);
+                                rmqServices.sendMessage(txMsgTo, channel, queue);
                               } else {
                                 // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                                 dbCollections.transactions.addTx({
@@ -269,7 +269,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                             timestamp: tmstmp,
                             value: tx.value,
                           };
-                          rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
+                          rmqServices.sendMessage(txMsgFrom, channel, queue);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                           dbCollections.transactions.addTx({
@@ -313,7 +313,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                                 timestamp: tmstmp,
                                 value: parseInt(data.params[1].value, 10),
                               };
-                              rmqServices.sendMessage(txMsgTo, channel.bcxChannel, queue.bcxQueue);
+                              rmqServices.sendMessage(txMsgTo, channel, queue);
                             } else {
                               // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                               dbCollections.transactions.addTx({
@@ -363,7 +363,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                       timestamp: tmstmp,
                       value: tx.value,
                     };
-                    rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
+                    rmqServices.sendMessage(txMsgFrom, channel, queue);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                     dbCollections.transactions.addTx({
@@ -404,7 +404,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                     timestamp: tmstmp,
                     value: tx.value,
                   };
-                  rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
+                  rmqServices.sendMessage(txMsgFrom, channel, queue);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                   dbCollections.transactions.addTx({
@@ -471,7 +471,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                               status: 'confirmed',
                               gasUsed: receipt.gasUsed,
                             };
-                            rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                            rmqServices.sendMessage(txMsg, channel, queue);
                           } else {
                             // HOUSEKEEPER UPDATES TX IN DB
                             dbCollections.transactions.updateTx({
@@ -505,7 +505,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                             status: 'failed: out of gas',
                             gasUsed: receipt.gasUsed,
                           };
-                          rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                          rmqServices.sendMessage(txMsg, channel, queue);
                         } else {
                           // HOUSEKEEPER UPDATES TX IN DB
                           dbCollections.transactions.updateTx({
@@ -534,7 +534,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                             status: 'confirmed',
                             gasUsed: receipt.gasUsed,
                           };
-                          rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                          rmqServices.sendMessage(txMsg, channel, queue);
                         } else {
                           // HOUSEKEEPER UPDATES TX IN DB
                           dbCollections.transactions.updateTx({
@@ -568,7 +568,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         status: 'failed: tx receipt not found',
                         // gasUsed: null,
                       };
-                      rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                      rmqServices.sendMessage(txMsg, channel, queue);
                     } else {
                       // HOUSEKEEPER UPDATES TX IN DB
                       dbCollections.transactions.updateTx({
@@ -601,7 +601,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 txHash: item.txHash,
                 status: 'failed: tx info not found',
               };
-              rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+              rmqServices.sendMessage(txMsg, channel, queue);
             } else {
               // HOUSEKEEPER UPDATES TX IN DB
               dbCollections.transactions.updateTx({
@@ -711,7 +711,7 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, rmqSe
                     blockNumber: '',
                     gasUsed: '',
                   };
-                  rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                  rmqServices.sendMessage(txMsg, channel, queue);
                   resolve();
                 } else {
                   resolve();

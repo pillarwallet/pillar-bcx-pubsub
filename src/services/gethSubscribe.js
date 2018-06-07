@@ -61,7 +61,7 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
-function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder) {
+function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections) {
 	// CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
   const subscribePromise = new Promise((resolve, reject) => {
     // let nbBlocksReceived = -1;
