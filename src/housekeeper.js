@@ -86,22 +86,188 @@ exports.updateTxHistory = function (web3, dbCollections) {
     });
 };
 
-exports.updateERC20SmartContracts = function (web3, dbCollections) {
-  // Update ERC20 Smart Contracts collection at connection time
-  bcx.getLastBlockNumber(web3)
-    .then((blockNumber) => {
-      logger.info(colors.blue.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
-      dbServices.updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollections, blockNumber);
-    });
+exports.dlERC20SmartContracts = function (
+  web3, startBlock, endBlock, dbCollections, nbERC20Found, logs = false,
+) {
+  return new Promise(((resolve, reject) => {
+    try {
+      if (startBlock > endBlock) {
+        resolve(nbERC20Found);
+      } else {
+        if (logs) {
+          logger.info(colors.blue(`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}\n`));
+        }
+        web3.eth.getBlock(startBlock, false)
+          .then((result) => {
+            bcx.getBlockSmartContractsAddressesArray(web3, result.transactions, [], 0)
+              .then((smartContractsAddressesArray) => {
+                this.processSmartContractsAddressesArray(
+                  web3, dbCollections, smartContractsAddressesArray, 0, 0,
+                )
+                  .then((nbFound) => {
+                    nbERC20Found += nbFound;
+                    dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
+                      .then(() => {
+                        resolve(this.dlERC20SmartContracts(
+                          web3, startBlock + 1,
+                          endBlock, dbCollections, nbERC20Found, logs,
+                        ));
+                      })
+                      .catch((e) => { reject(e); });
+                  })
+                  .catch((e) => { reject(e); });
+              })
+              .catch((e) => { reject(e); });
+          })
+          .catch((e) => { reject(e); });
+      }
+    } catch (e) { reject(e); }
+  }));
 };
 
+exports.processSmartContractsAddressesArray = function (
+  web3, dbCollections,
+  smartContractsAddressesArray, index, nbERC20Found,
+) {
+  return new Promise(((resolve, reject) => {
+    try {
+      if (index >= smartContractsAddressesArray.length) {
+        resolve(nbERC20Found);
+      } else {
+        try {
+          let ERC20SmartContract
+						= new web3.eth.Contract(ERC20ABI, smartContractsAddressesArray[index]);
+          ERC20SmartContract.methods.decimals().call()
+            .then((result) => {
+              const decimals = result;
+              // logger.info('DECIMALS : '+decimals)
+              ERC20SmartContract.methods.name().call()
+                .then((result2) => {
+                  const name = result2;
+                  // logger.info('NAME : '+name)
+                  ERC20SmartContract.methods.symbol().call()
+                    .then((result3) => {
+                      const symbol = result3;
+                      // logger.info('SYMBOL : '+symbol)
+                      if (decimals !== undefined && name !== undefined && symbol !== undefined) {
+                        logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
+                        if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
+                          nbERC20Found += 1;
+                          dbCollections.assets.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
+                            .then(() => {
+                              ERC20SmartContract = {
+                                address: smartContractsAddressesArray[index],
+                                ticker: symbol,
+                                decimals,
+                              };
+                              // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
+                              // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
+                              resolve(this.processSmartContractsAddressesArray(
+                                web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+                              ));
+                            })
+                            .catch((e) => { reject(e); });
+                        } else {
+                          logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)\n'));
+                          resolve(this.processSmartContractsAddressesArray(
+                            web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+                          ));
+                        }
+                      } else {
+                        resolve(this.processSmartContractsAddressesArray(
+                          web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+                        ));
+                      }
+                    })
+                    .catch(() => {
+                      resolve(this.processSmartContractsAddressesArray(
+                        web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+                      ));
+                    });
+                })
+                .catch(() => {
+                  resolve(this.processSmartContractsAddressesArray(
+                    web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+                  ));
+                });
+            })
+            .catch(() => {
+              resolve(this.processSmartContractsAddressesArray(
+                web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+              ));
+            });
+        } catch (e) {
+          resolve(this.processSmartContractsAddressesArray(
+            web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
+          ));
+        }
+      }
+    } catch (e) { reject(e); }
+  }));
+};
+
+exports.updateERC20SmartContracts = function (web3, dbCollections) {
+  return new Promise(((resolve, reject) => {
+    try {
+      bcx.getLastBlockNumber(web3)
+        .then((maxBlock) => {
+          logger.info(colors.blue.bold(`LAST BLOCK NUMBER = ${maxBlock}\n`));
+          dbCollections.assets.findERC20SmartContractsHistoryHeight()
+            .then((startBlock) => {
+              logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
+              this.dlERC20SmartContracts(
+                web3, startBlock, maxBlock, dbCollections, 0, true,
+              )
+                .then((nbERC20Found) => {
+                  logger.info(colors.blue.bold('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!\n'));
+                  logger.info(colors.blue(`-->${nbERC20Found} ERC20 smart contracts found\n`));
+                  resolve();
+                })
+                .catch((e) => { reject(e); });
+            })
+            .catch((e) => { reject(e); });
+        })
+        .catch((e) => { reject(e); });
+    } catch (e) { reject(e); }
+  }));
+};
+
+exports.checkNewERC20SmartContracts = function (web3, dbCollections) {
+  // CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
+  const subscribePromise = new Promise((resolve, reject) => {
+    // let nbBlocksReceived = -1;
+    web3.eth.subscribe('newBlockHeaders', (err, res) => {})
+      .on('data', (blockHeader) => {
+        if (blockHeader != null) {
+          //  nbBlocksReceived++;
+          logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
+          // NOW, @ EACH NEW BLOCK MINED:
+          // Check for newly created ERC20 smart contracts
+          dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, blockHeader.number, blockHeader.number, dbCollections, false)
+            .then(() => {
+              // Update
+              dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
+                .then(() => {
+                  // logger.info(colors.green.bold('Highest Block Number for ERC20 Smart Contracts: '+blockHeader.number+'\n'))
+                });
+            });
+        }
+      })
+      .on('endSubscribeBlockHeaders', () => { // Used for testing only
+        logger.info('END BLOCK HEADERS SUBSCRIBTION\n');
+        resolve();
+      });
+    logger.info(colors.green.bold('Subscribed to Block Headers\n'));
+  });
+  return (subscribePromise);
+};
 
 this.init()
   .then((result) => {
     this.checkTxPool(result.web3, result.dbCollections); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateTxHistory(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateERC20SmartContracts(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
-    gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections);
+    this.checkNewERC20SmartContracts(result.web3, result.dbCollections);
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
 
