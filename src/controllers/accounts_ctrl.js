@@ -23,14 +23,18 @@ function listRecent(idFrom) {
   return new Promise(((resolve, reject) => {
     try {
       oId = mongoose.Types.ObjectId(idFrom);
-      accounts.Accounts.find({_id : {$gt: oId}}, (err, result) => {
+      var query = "{_id : {$gt: " + oId + ")}}";
+      console.log("Query: ",query);
+      //accounts.Accounts.find(query, (err, result) => {
+      accounts.Accounts.find({_id : {$gt: oId}}, (err, result) => {  
         if(err) {
-          logger.info(`accounts.listRecent DB controller ERROR: ${err}`);
+          logger.error(`accounts.listRecent DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
       });
     } catch(e) {
+      logger.error(`accounts.listRecent error occurred: " + ${e}`);
       reject(e);
   }}));
 }

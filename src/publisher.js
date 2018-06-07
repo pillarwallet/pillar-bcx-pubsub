@@ -20,51 +20,33 @@ const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
-let manager;
 
+var HashMap = require('hashmap');
+var wallets;
+//starting point
+var latestId;
+
+process.on('message',(data) => {
+  console.log('Publisher received message: ' + JSON.stringify(data));
+  var message = data.message;
+  for(var i=0;i<message.length;i++) {
+    var obj = message[i];
+    logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
+    wallets.set(obj.walletId,obj.pillarId);
+    latestId = obj.id;
+  }
+});
 
 exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
 
-    ipc.config.id = `publisher${process.pid}`;
-    ipc.config.retry = 1500;
-    ipc.config.maxRetries = 10;
+    wallets = new HashMap();
 
-    ipc.connectToNet(
-      'manager',
-      process.env.SERVER_ADDRESS,
-      process.env.SERVER_PORT,
-      () => {
-        ipc.of.manager.on(
-          'connect',
-          () => {
-            ipc.log('## connected to manager ##', ipc.config.delay);
-            exports.poll();
-          },
-        );
-
-        ipc.of.manager.on(
-          'disconnect',
-          () => {
-            ipc.log('disconnected from manager');
-            // clean up task
-          },
-        );
-
-        ipc.of.manager.on(
-          'wallet.receive',
-          (data) => {
-            logger.info('Received ', data);
-          },
-        );
-
-        exports.manager = ipc.of.manager;
-      },
-    );
     setInterval(function() {
       exports.poll()
     },5000);
+    exports.initBCXMQ();
   } catch(err) {
     logger.error('Publisher.init() failed: ',err.message);
     throw err;
@@ -74,14 +56,12 @@ exports.initIPC = function () {
 };
 
 exports.poll = function() {
-    logger.info('Requesting new wallet :');
-    exports.manager.emit(
-      'wallet.request',
-      {
-        id : ipc.config.id,
-        message : '5b0eaf63715078cbab42df8b'
-      }
-    );
+  logger.info('Requesting new wallet :');
+
+  process.send({
+    type: 'wallet.request',
+    message : latestId
+  });
 };
 
 
@@ -108,6 +88,7 @@ exports.walletReceived = function () {
 
 };
 
+
 // this.initIPC();
 rmqServices.initMQ()
   .then((MQParams) => {
@@ -115,4 +96,3 @@ rmqServices.initMQ()
     const queue = MQParams.q;
     this.initSubscriptions(channel, queue);
   });
-
