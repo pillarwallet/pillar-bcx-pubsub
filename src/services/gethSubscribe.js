@@ -12,7 +12,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, cha
           bcx.getTxInfo(web3, txHash)
             .then((txInfo) => {
               if (txInfo != null) {
-                processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, channel, queue, rmqServices);
+		              processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, channel, queue, rmqServices);
               }
             })
             .catch((e) => { reject(e); });
@@ -61,7 +61,7 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
-function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, channel, queue, rmqServices) {
+function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder) {
 	// CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
   const subscribePromise = new Promise((resolve, reject) => {
     // let nbBlocksReceived = -1;
@@ -72,7 +72,7 @@ function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServ
           logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
           // NOW, @ EACH NEW BLOCK MINED:
           // Check for newly created ERC20 smart contracts
-          dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, blockHeader.number, blockHeader.number, dbCollections, false)
+          dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, blockHeader.number, blockHeader.number, dbCollections, false)
             .then(() => {
               // Update
               dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)

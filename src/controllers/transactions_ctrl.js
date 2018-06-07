@@ -91,7 +91,7 @@ function findByTxHash(txHash) {
 }
 module.exports.findByTxHash = findByTxHash;
 
-function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, nbConf, history = false) {
+function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, history = false) {
   return new Promise(((resolve, reject) => {
     try {
       let tx;

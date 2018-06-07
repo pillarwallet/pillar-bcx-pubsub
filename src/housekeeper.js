@@ -54,11 +54,11 @@ exports.initBCXMQ = function () {
           ch.assertQueue(q, { durable: false });
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg)
+          console.log(' [x] Sent %s', msg);
           resolve({ ch, q });
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-        });
+      });
     } catch (err) {
       logger.error('Publisher.configure() failed: ', err.message);
     } finally {
@@ -78,7 +78,7 @@ exports.initCWBMQ = function () {
           ch.assertQueue(q, { durable: false });
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg)
+          console.log(' [x] Sent %s', msg);
           resolve({ ch, q });
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
@@ -92,7 +92,7 @@ exports.initCWBMQ = function () {
 };
 
 
-exports.checkTxPool = function (web3, dbCollections, channel, queue) {
+exports.checkTxPool = function (web3, dbCollections) {
   // At connection time: Check for pending Tx in TX pool which are not in DB
   // and would not be added in TX History by dbServices.updateTxHistory
   return new Promise((resole, reject) => {
@@ -115,7 +115,7 @@ exports.checkTxPool = function (web3, dbCollections, channel, queue) {
                   unknownPendingTxArray.push(pendingTx);
                 }
               });
-              processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, notif, channel, queue, 0)
+		            processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, null, null, null, 0, false)
                 .then((nbTxFound) => {
                   logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
                 }).catch((e) => { reject(e); });
@@ -126,42 +126,31 @@ exports.checkTxPool = function (web3, dbCollections, channel, queue) {
 };
 
 
-exports.updateTxHistory = function (web3, dbCollections, channel, queue) {
+exports.updateTxHistory = function (web3, dbCollections) {
   // Update tx History at connection time
   bcx.getLastBlockNumber(web3)
     .then((blockNumber) => {
       logger.info(colors.red.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
-      dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, blockNumber);
+      dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, blockNumber);
     });
 };
 
-exports.updateERC20SmartContracts = function (web3, dbCollections, channel, queue) {
+exports.updateERC20SmartContracts = function (web3, dbCollections) {
   // Update ERC20 Smart Contracts collection at connection time
   bcx.getLastBlockNumber(web3)
     .then((blockNumber) => {
       logger.info(colors.blue.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
-      dbServices.updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections, blockNumber);
+      dbServices.updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollections, blockNumber);
     });
 };
 
 
-this.initBCXMQ()
-  .then((BCXMQParams) => {
-    const bcxChannel = BCXMQParams.ch;
-    const bcxQueue = BCXMQParams.q;
-    this.initCWBMQ()
-      .then((CWBMQParams) => {
-        const cwbChannel = CWBMQParams.ch;
-        const cwbQueue = CWBMQParams.q;
-        const channel = { bcxChannel, cwbChannel };
-        const queue = { bcxQueue, cwbQueue };
-        this.init()
-          .then((result) => {
-            this.checkTxPool(result.web3, result.dbCollections, channel, queue);
-            this.updateTxHistory(result.web3, result.dbCollections, channel, queue);
-            this.updateERC20SmartContracts(result.web3, result.dbCollections, channel, queue);
-            gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections, abiDecoder, channel, queue);
-          });
-      });
+this.init()
+  .then((result) => {
+    this.checkTxPool(result.web3, result.dbCollections); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
+    this.updateTxHistory(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
+    this.updateERC20SmartContracts(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
+    gethSubscribe.checkNewERC20SmartContracts(result.web3, gethSubscribe, bcx, processTx, dbServices, result.dbCollections, abiDecoder);
+    // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
 

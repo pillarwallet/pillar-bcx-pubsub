@@ -98,8 +98,7 @@ function recentAccounts(
 module.exports.recentAccounts = recentAccounts;
 
 function dlTxHistory(
-  web3, bcx, processTx, dbCollections, abiDecoder,
-  notif, channel, queue, startBlock, maxBlock, nbTx, checkAddress = null,
+  web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, nbTx, checkAddress = null,
 ) {
   return new Promise(((resolve, reject) => {
     try {
@@ -111,19 +110,18 @@ function dlTxHistory(
           .then((txArray) => {
             module.exports.processTxHistory(
               web3, processTx, txArray, dbCollections,
-              abiDecoder, notif, channel, queue, 0, 0, null,
+              abiDecoder, 0, 0, null,
             )
               .then((nbBlockTx) => {
                 nbTx += nbBlockTx;
                 dbCollections.transactions.listHistory()
                   .then((historyTxArray) => {
-                    processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, notif, false)
+                    processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, null, null, null, false)
                       .then(() => {
                         dbCollections.transactions.updateTxHistoryHeight(startBlock)
                           .then(() => {
                             resolve(dlTxHistory(
-                              web3, bcx, processTx, dbCollections, abiDecoder,
-                              notif, channel, queue, startBlock + 1, maxBlock, nbTx, checkAddress,
+                              web3, bcx, processTx, dbCollections, abiDecoder, startBlock + 1, maxBlock, nbTx, checkAddress,
                             ));
                           })
                           .catch((e) => { reject(e); });
@@ -142,8 +140,7 @@ function dlTxHistory(
 module.exports.dlTxHistory = dlTxHistory;
 
 function processTxHistory(
-  web3, processTx, txArray, dbCollections, abiDecoder,
-  notif, channel, queue, nbTx, index, checkAddress = null,
+  web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index, checkAddress = null,
 ) {
   return new Promise(((resolve, reject) => {
     try {
@@ -151,16 +148,14 @@ function processTxHistory(
         resolve(nbTx);
       } else {
         processTx.newPendingTx(
-          web3, txArray[index], dbCollections, abiDecoder,
-          notif, channel, queue, false, true, checkAddress,
+          web3, txArray[index], dbCollections, abiDecoder, null, null, null, false, checkAddress,
         )
           .then((pillarWalletTx) => {
             if (pillarWalletTx) {
               nbTx += 1;
             }
             resolve(processTxHistory(
-              web3, processTx, txArray, dbCollections, abiDecoder,
-              notif, channel, queue, nbTx, index + 1, checkAddress,
+              web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index + 1, checkAddress,
             ));
           });
       }
@@ -169,15 +164,14 @@ function processTxHistory(
 }
 module.exports.processTxHistory = processTxHistory;
 
-function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, notif, channel, queue, maxBlock) {
+function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
       dbCollections.transactions.findTxHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
           this.dlTxHistory(
-            web3, bcx, processTx, dbCollections, abiDecoder,
-            notif, channel, queue, startBlock, maxBlock, 0,
+            web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, 0,
           )
             .then((nbTxFound) => {
               logger.info(colors.red.bold('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!\n'));
@@ -410,7 +404,7 @@ module.exports.listPendingTx = listPendingTx;
 
 
 function dlERC20SmartContracts(
-  web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, startBlock,
+  web3, gethSubscribe, bcx, processTx, startBlock,
   endBlock, dbCollections, nbERC20Found, logs = false,
 ) {
   return new Promise(((resolve, reject) => {
@@ -426,7 +420,7 @@ function dlERC20SmartContracts(
             bcx.getBlockSmartContractsAddressesArray(web3, result.transactions, [], 0)
               .then((smartContractsAddressesArray) => {
                 module.exports.processSmartContractsAddressesArray(
-                  web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices,
+                  web3, gethSubscribe, bcx, processTx,
                   dbCollections, smartContractsAddressesArray, 0, 0,
                 )
                   .then((nbFound) => {
@@ -434,7 +428,7 @@ function dlERC20SmartContracts(
                     dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
                       .then(() => {
                         resolve(dlERC20SmartContracts(
-                          web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, startBlock + 1,
+                          web3, gethSubscribe, bcx, processTx, startBlock + 1,
                           endBlock, dbCollections, nbERC20Found, logs,
                         ));
                       })
@@ -452,7 +446,7 @@ function dlERC20SmartContracts(
 module.exports.dlERC20SmartContracts = dlERC20SmartContracts;
 
 function processSmartContractsAddressesArray(
-  web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, dbCollections,
+  web3, gethSubscribe, bcx, processTx, dbCollections,
   smartContractsAddressesArray, index, nbERC20Found,
 ) {
   return new Promise(((resolve, reject) => {
@@ -479,7 +473,6 @@ function processSmartContractsAddressesArray(
                         logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
                         if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
                           nbERC20Found += 1;
-                          // SEND MESSAGE TO SUBSCRIBER HERE !!!
                           dbCollections.assets.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
                             .then(() => {
                               ERC20SmartContract = {
@@ -487,9 +480,10 @@ function processSmartContractsAddressesArray(
                                 ticker: symbol,
                                 decimals,
                               };
-                              gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
+                              // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
+                              // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
                               resolve(processSmartContractsAddressesArray(
-                                web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, dbCollections,
+                                web3, gethSubscribe, bcx, processTx, dbCollections,
                                 smartContractsAddressesArray, index + 1, nbERC20Found,
                               ));
                             })
@@ -497,40 +491,40 @@ function processSmartContractsAddressesArray(
                         } else {
                           logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)\n'));
                           resolve(processSmartContractsAddressesArray(
-                            web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+                            web3, gethSubscribe, bcx, processTx, dbCollections,
                             smartContractsAddressesArray, index + 1, nbERC20Found,
                           ));
                         }
                       } else {
                         resolve(processSmartContractsAddressesArray(
-                          web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+                          web3, gethSubscribe, bcx, processTx, dbCollections,
                           smartContractsAddressesArray, index + 1, nbERC20Found,
                         ));
                       }
                     })
                     .catch(() => {
                       resolve(processSmartContractsAddressesArray(
-                        web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+                        web3, gethSubscribe, bcx, processTx, dbCollections,
                         smartContractsAddressesArray, index + 1, nbERC20Found,
                       ));
                     });
                 })
                 .catch(() => {
                   resolve(processSmartContractsAddressesArray(
-                    web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+                    web3, gethSubscribe, bcx, processTx, dbCollections,
                     smartContractsAddressesArray, index + 1, nbERC20Found,
                   ));
                 });
             })
             .catch(() => {
               resolve(processSmartContractsAddressesArray(
-                web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+                web3, gethSubscribe, bcx, processTx, dbCollections,
                 smartContractsAddressesArray, index + 1, nbERC20Found,
               ));
             });
         } catch (e) {
           resolve(processSmartContractsAddressesArray(
-            web3, gethSubscribe, bcx, processTx, channel, queue, dbCollections,
+            web3, gethSubscribe, bcx, processTx, dbCollections,
             smartContractsAddressesArray, index + 1, nbERC20Found,
           ));
         }
@@ -540,14 +534,14 @@ function processSmartContractsAddressesArray(
 }
 module.exports.processSmartContractsAddressesArray = processSmartContractsAddressesArray;
 
-function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices, dbCollections, maxBlock) {
+function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollections, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
       dbCollections.assets.findERC20SmartContractsHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
           module.exports.dlERC20SmartContracts(
-            web3, gethSubscribe, bcx, processTx, channel, queue, rmqServices,
+            web3, gethSubscribe, bcx, processTx,
             startBlock, maxBlock, dbCollections, 0, true,
           )
             .then((nbERC20Found) => {
