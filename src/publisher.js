@@ -1,4 +1,4 @@
-#!/usr/bin/env node 
+#!/usr/bin/env node
 /** ************************************************************************************ */
 /*  Publisher                                                                          */
 /** ************************************************************************************ */
@@ -12,9 +12,9 @@ const dbServices = require('./services/dbServices.js');
 const bcx = require('./services/bcx.js');
 const gethSubscribe = require('./services/gethSubscribe.js');
 const processTx = require('./services/processTx.js');
+const rmqServices = require('./services/rmqServices.js');
 const abiDecoder = require('abi-decoder');
 require('dotenv').config();
-
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
@@ -71,55 +71,9 @@ exports.poll = function() {
   });
 };
 
-exports.initBCXMQ = function () {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Started executing publisher.initBCXMQ()');
-      amqp.connect('amqp://localhost', (err, conn) => {
-        conn.createChannel((err, ch) => {
-          const q = 'bcx-pubsub';
-          const msg = 'Initialized BCX pubsub message queue!';
-          ch.assertQueue(q, { durable: false });
-          // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
-          resolve({ ch, q });
-        });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
-    } catch (err) {
-      logger.error('Publisher.configure() failed: ', err.message);
-    } finally {
-      logger.info('Exited publisher.initMQ()');
-    }
-  });
-};
-
-exports.initCWBMQ = function () {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Started executing publisher.initCWBMQ()');
-      amqp.connect('amqp://localhost', (err, conn) => {
-        conn.createChannel((err, ch) => {
-          const q = 'bcx-notifications';
-          const msg = 'Initialized CORE WALLET BACKEND message queue for BCX notifications!';
-          ch.assertQueue(q, { durable: false });
-          // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(q, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
-          resolve({ ch, q });
-        });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
-    } catch (err) {
-      logger.error('Publisher.configure() failed: ', err.message);
-    } finally {
-      logger.info('Exited publisher.initMQ()');
-    }
-  });
-};
 
 exports.initSubscriptions = function (channel, queue) {
+  console.log(rmqServices.sendMessage)
   /* CONNECT TO GETH NODE */
   gethConnect.gethConnectDisplay()
     .then((web3) => {
@@ -127,12 +81,12 @@ exports.initSubscriptions = function (channel, queue) {
       dbServices.dbConnectDisplayAccounts(mongoUrl)
         .then((dbCollections) => {
           /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue);
+          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue, rmqServices);
           gethSubscribe.subscribeBlockHeaders(
             web3, gethSubscribe, bcx, processTx, dbServices,
-            dbCollections, abiDecoder, channel, queue,
+            dbCollections, abiDecoder, channel, queue, rmqServices,
           );
-          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue);
+          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue, rmqServices);
         });
     });
 };
@@ -141,19 +95,11 @@ exports.walletReceived = function () {
 
 };
 
-this.initIPC();
-/*
-this.initBCXMQ()
-  .then((BCXMQParams) => {
-    const bcxChannel = BCXMQParams.ch;
-    const bcxQueue = BCXMQParams.q;
-    this.initCWBMQ()
-      .then((CWBMQParams) => {
-        const cwbChannel = CWBMQParams.ch;
-        const cwbQueue = CWBMQParams.q;
-        const channel = { bcxChannel, cwbChannel };
-        const queue = { bcxQueue, cwbQueue };
-        this.initSubscriptions(channel, queue);
-      });
+
+// this.initIPC();
+rmqServices.initMQ()
+  .then((MQParams) => {
+    const channel = MQParams.ch;
+    const queue = MQParams.q;
+    this.initSubscriptions(channel, queue);
   });
-*/
