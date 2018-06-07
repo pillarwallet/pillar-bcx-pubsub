@@ -160,8 +160,15 @@ exports.processSmartContractsAddressesArray = function (
                                 ticker: symbol,
                                 decimals,
                               };
+
                               // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
                               // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
+                              logger.info('Notifying master about a new smart contract: ' + JSON.stringify(ERC20SmartContract));
+                              process.send({
+                                type: 'accounts',
+                                message : ERC20SmartContract
+                              });
+
                               resolve(this.processSmartContractsAddressesArray(
                                 web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
                               ));
