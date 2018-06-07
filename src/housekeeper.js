@@ -86,9 +86,7 @@ exports.updateTxHistory = function (web3, dbCollections) {
     });
 };
 
-exports.dlERC20SmartContracts = function (
-  web3, startBlock, endBlock, dbCollections, nbERC20Found, logs = false,
-) {
+exports.dlERC20SmartContracts = function (web3, startBlock, endBlock, dbCollections, nbERC20Found, logs = false) {
   return new Promise(((resolve, reject) => {
     try {
       if (startBlock > endBlock) {
@@ -101,9 +99,7 @@ exports.dlERC20SmartContracts = function (
           .then((result) => {
             bcx.getBlockSmartContractsAddressesArray(web3, result.transactions, [], 0)
               .then((smartContractsAddressesArray) => {
-                this.processSmartContractsAddressesArray(
-                  web3, dbCollections, smartContractsAddressesArray, 0, 0,
-                )
+                this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, 0, 0)
                   .then((nbFound) => {
                     nbERC20Found += nbFound;
                     dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
@@ -164,44 +160,36 @@ exports.processSmartContractsAddressesArray = function (
                             .then(() => {
                               // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
                               // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
-                              resolve(this.processSmartContractsAddressesArray(
-                                web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-                              ));
+                              logger.info(`Notifying master about a new smart contract: ${JSON.stringify(ERC20SmartContract)}`);
+                              process.send({
+                                type: 'accounts',
+                                message: ERC20SmartContract,
+                              });
+
+                              resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
                             })
                             .catch((e) => { reject(e); });
                         } else {
                           logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)\n'));
-                          resolve(this.processSmartContractsAddressesArray(
-                            web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-                          ));
+                          resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
                         }
                       } else {
-                        resolve(this.processSmartContractsAddressesArray(
-                          web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-                        ));
+                        resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
                       }
                     })
                     .catch(() => {
-                      resolve(this.processSmartContractsAddressesArray(
-                        web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-                      ));
+                      resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
                     });
                 })
                 .catch(() => {
-                  resolve(this.processSmartContractsAddressesArray(
-                    web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-                  ));
+                  resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
                 });
             })
             .catch(() => {
-              resolve(this.processSmartContractsAddressesArray(
-                web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-              ));
+              resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
             });
         } catch (e) {
-          resolve(this.processSmartContractsAddressesArray(
-            web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found,
-          ));
+          resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
         }
       }
     } catch (e) { reject(e); }
@@ -217,9 +205,7 @@ exports.updateERC20SmartContracts = function (web3, dbCollections) {
           dbCollections.assets.findERC20SmartContractsHistoryHeight()
             .then((startBlock) => {
               logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-              this.dlERC20SmartContracts(
-                web3, startBlock, maxBlock, dbCollections, 0, true,
-              )
+              this.dlERC20SmartContracts(web3, startBlock, maxBlock, dbCollections, 0, true)
                 .then((nbERC20Found) => {
                   logger.info(colors.blue.bold('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!\n'));
                   logger.info(colors.blue(`-->${nbERC20Found} ERC20 smart contracts found\n`));

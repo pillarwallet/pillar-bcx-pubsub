@@ -23,17 +23,23 @@ const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}
 
 var HashMap = require('hashmap');
 var wallets;
+var assets;
 //starting point
 var latestId;
 
 process.on('message',(data) => {
-  console.log('Publisher received message: ' + JSON.stringify(data));
   var message = data.message;
-  for(var i=0;i<message.length;i++) {
-    var obj = message[i];
-    logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
-    wallets.set(obj.walletId,obj.pillarId);
-    latestId = obj.id;
+  if(data.type == 'accounts') {
+    for(var i=0;i<message.length;i++) {
+      var obj = message[i];
+      logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
+      wallets.set(obj.walletId,obj.pillarId);
+      latestId = obj.id;
+    }
+  } else if(data.type == 'assets') {
+    //add the new asset to the assets hashmap
+    logger.info('Publisher received notification to monitor a new asset: ' + message.contractAddress);
+    assets.set(message.contractAddress,message);
   }
 });
 
@@ -42,6 +48,7 @@ exports.initIPC = function () {
     logger.info('Started executing publisher.initIPC()');
 
     wallets = new HashMap();
+    assets = new HashMap();
 
     setInterval(function() {
       exports.poll()

@@ -566,3 +566,31 @@ function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollec
   }));
 }
 module.exports.updateERC20SmartContracts = updateERC20SmartContracts;
+
+function contractsToMonitor( 
+  url,
+  idFrom,
+  $arg = { useMongoClient: true }
+) {
+  return new Promise(((resolve, reject) => {
+    //code to fetch list of contracts/assets to monitor
+    module.exports.dbConnect(url, $arg)
+    .then((dbCollections) => {
+      if(idFrom !== undefined && idFrom !== '') {
+        // fetch accounts registered after a given Id
+        dbCollections.assets.listRecent(idFrom)
+        .then((assetsArray) => {
+          resolve(assetsArray);
+        })
+        .catch((e) => { reject(e);})
+      } else {
+        dbCollections.assets.listAll()
+        .then((assetsArray) => {
+          resolve(assetsArray);
+        })
+        .catch((e) => { reject(e);});
+      }
+    });
+  }));
+}
+module.exports.contractsToMonitor = contractsToMonitor;

@@ -24,7 +24,6 @@ function listRecent(idFrom) {
     try {
       oId = mongoose.Types.ObjectId(idFrom);
       var query = "{_id : {$gt: " + oId + ")}}";
-      console.log("Query: ",query);
       //accounts.Accounts.find(query, (err, result) => {
       accounts.Accounts.find({_id : {$gt: oId}}, (err, result) => {  
         if(err) {
