@@ -53,7 +53,7 @@ exports.checkTxPool = function (web3, dbCollections) {
         .then((pendingTxArray) => {
           // CHECK IF TX ALREADY IN DB
           const unknownPendingTxArray = [];
-          dbCollections.ethTransactions.listDbZeroConfTx()
+          dbCollections.transactions.listDbZeroConfTx()
             .then((dbPendingTxArray) => {
               pendingTxArray.forEach((pendingTx) => {
                 let isDbPendingTx = false;
