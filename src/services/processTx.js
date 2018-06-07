@@ -62,7 +62,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                   rmqServices.sendMessage(txMsgTo, channel.bcxChannel, queue.bcxQueue);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                  dbCollections.transactions.addTx('recipientPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                  dbCollections.transactions.addTx({
+                    pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    blockNumber: null,
+                    value: tx.value,
+                    status: 'pending',
+                    gasUsed: null,
+                  });
                 }
 
                 if (fromPillarAccount) { // TRANSACTION SENDER ADDRESS === PILLAR WALLET ADDRESS
@@ -83,7 +96,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                     rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                    dbCollections.transactions.addTx('senderPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                    dbCollections.transactions.addTx({
+                      pillarId: 'senderPillarId',
+                      protocol: 'Ethereum',
+                      fromAddress: tx.from,
+                      toAddress: tx.to,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress: null,
+                      timestamp: tmstmp,
+                      blockNumber: null,
+                      value: tx.value,
+                      status: 'pending',
+                      gasUsed: null,
+                    });
                   }
                   logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
                 } else {
@@ -106,7 +132,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                           pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABL
                           protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                           fromAddress: tx.from,
-                          toAddress: null,
+                          toAddress: tx.to,
                           txHash: tx.hash,
                           asset,
                           contractAddress,
@@ -116,7 +142,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                         rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
                       } else {
                         // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                        dbCollections.transactions.addTx('senderPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                        dbCollections.transactions.addTx({
+                          pillarId: 'senderPillarId',
+                          protocol: 'Ethereum',
+                          fromAddress: tx.from,
+                          toAddress: tx.to,
+                          txHash: tx.hash,
+                          asset,
+                          contractAddress,
+                          timestamp: tmstmp,
+                          blockNumber: null,
+                          value: tx.value,
+                          status: 'pending',
+                          gasUsed: null,
+                        });
                       }
                       logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\nDATA:\n`));
                       resolve(true);
@@ -153,7 +192,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                           rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                          dbCollections.transactions.addTx('senderPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                          dbCollections.transactions.addTx({
+                            pillarId: 'senderPillarId',
+                            protocol: 'Ethereum',
+                            fromAddress: tx.from,
+                            toAddress: to,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            blockNumber: null,
+                            value: tx.value,
+                            status: 'pending',
+                            gasUsed: null,
+                          });
                         }
                         module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
                           .then((result3) => {
@@ -176,7 +228,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                                 rmqServices.sendMessage(txMsgTo, channel.bcxChannel, queue.bcxQueue);
                               } else {
                                 // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                              dbCollections.transactions.addTx('recipientPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                                dbCollections.transactions.addTx({
+                                  pillarId: 'recipientPillarId',
+                                  protocol: 'Ethereum',
+                                  fromAddress: tx.from,
+                                  toAddress: to,
+                                  txHash: tx.hash,
+                                  asset,
+                                  contractAddress,
+                                  timestamp: tmstmp,
+                                  blockNumber: null,
+                                  value: tx.value,
+                                  status: 'pending',
+                                  gasUsed: null,
+                                });
                               }
                               logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
                             } else {
@@ -197,7 +262,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                             pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                             protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                             fromAddress: tx.from,
-                            toAddress: null,
+                            toAddress: contractAddress,
                             txHash: tx.hash,
                             asset,
                             contractAddress,
@@ -207,7 +272,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                           rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                          dbCollections.transactions.addTx('senderPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                          dbCollections.transactions.addTx({
+                            pillarId: 'senderPillarId',
+                            protocol: 'Ethereum',
+                            fromAddress: tx.from,
+                            toAddress: contractAddress,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            blockNumber: null,
+                            value: tx.value,
+                            status: 'pending',
+                            gasUsed: null,
+                          });
                         }
                         resolve(true);
                       }
@@ -238,7 +316,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                               rmqServices.sendMessage(txMsgTo, channel.bcxChannel, queue.bcxQueue);
                             } else {
                               // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                              dbCollections.transactions.addTx('recipientPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                              dbCollections.transactions.addTx({
+                                pillarId: 'recipientPillarId',
+                                protocol: 'Ethereum',
+                                fromAddress: tx.from,
+                                toAddress: to,
+                                txHash: tx.hash,
+                                asset,
+                                contractAddress,
+                                timestamp: tmstmp,
+                                blockNumber: null,
+                                value: tx.value,
+                                status: 'pending',
+                                gasUsed: null,
+                              });
                             }
                             logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM EXTERNAL ETH ACCOUNT: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
                             resolve(true);
@@ -265,7 +356,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                       pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                       protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                       fromAddress: tx.from,
-                      toAddress: null,
+                      toAddress: contractAddress,
                       txHash: tx.hash,
                       asset,
                       contractAddress,
@@ -275,7 +366,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                     rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                    dbCollections.transactions.addTx('senderPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                    dbCollections.transactions.addTx({
+                      pillarId: 'senderPillarId',
+                      protocol: 'Ethereum',
+                      fromAddress: tx.from,
+                      toAddress: contractAddress,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress,
+                      timestamp: tmstmp,
+                      blockNumber: null,
+                      value: tx.value,
+                      status: 'pending',
+                      gasUsed: null,
+                    });
                   }
                   logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ERC20 SMART CONTRACT ${tx.to}\n`));
                   resolve(true);
@@ -303,7 +407,20 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                   rmqServices.sendMessage(txMsgFrom, channel.bcxChannel, queue.bcxQueue);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-                  dbCollections.transactions.addTx('senderPillarId', tx.to, tx.from, asset, null, tmstmp, value, tx.hash, true);
+                  dbCollections.transactions.addTx({
+                    pillarId: 'senderPillarId',
+                    protocol: 'Ethereum',
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    blockNumber: null,
+                    value: tx.value,
+                    status: 'pending',
+                    gasUsed: null,
+                  });
                 }
                 logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: EXTERNAL ETH ACCOUNT OR SMART CONTRACT ${tx.to}\n`));
                 resolve(true);
@@ -336,116 +453,130 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
         .then((txInfo) => {
           if (txInfo != null) {
             if (txInfo.blockNumber != null) {
+              const confBlockNb = txInfo.blockNumber;
               bcx.getTxReceipt(web3, item.txHash)
                 .then((receipt) => {
                   if (receipt != null) {
-                    bcx.getBlockNumber(web3, txInfo.blockHash)
-                      .then((confBlockNb) => {
-                        const input = web3.utils.hexToNumberString(txInfo.input);
-                        if (txInfo.value === 0 && input !== '0') { // SMART CONTRACT CALL IDENTIFIED
-                          if (receipt.gasUsed < txInfo.gas) { // TX MINED
-                            const nbConf = 1 + (blockNumber - confBlockNb);
-                            if (nbConf >= 1) {
-                              if (publisher) {
-                                // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                                const txMsg = {
-                                  type: 'updateTx',
-                                  txHash: item.txHash,
-                                  blockNumber: confBlockNb,
-                                  status: 'confirmed',
-                                  gasUsed: receipt.gasUsed,
-                                };
-                                rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
-                              } else {
-                                // HOUSEKEEPER UPDATES TX IN DB
-                                // Need to refactor updateTx function here
-                                // dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, status)
-                              }
-
-                              logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
-
-                              resolve(checkPendingTx(
-                                web3, bcx, dbCollections, dbPendingTxArray,
-                                blockNumber, channel, queue, rmqServices, publisher,
-                              ));
-                            } else {
-                              logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
-                              resolve(checkPendingTx(
-                                web3, bcx, dbCollections, dbPendingTxArray,
-                                blockNumber, channel, queue, rmqServices, publisher,
-                              ));
-                            }
-                          } else { // OUT OF GAS
-                            if (publisher) {
-                              // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                              const txMsg = {
-                                type: 'updateTx',
-                                txHash: item.txHash,
-                                blockNumber: confBlockNb,
-                                status: 'failed: out of gas',
-                                gasUsed: receipt.gasUsed,
-                              };
-                              rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
-                            } else {
-                              // HOUSEKEEPER UPDATES TX IN DB
-                              // Need to refactor updateTx function here
-                              // dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, status)
-                            }
-                            logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
-
-                            resolve(checkPendingTx(
-                              web3, bcx, dbCollections, dbPendingTxArray,
-                              blockNumber, channel, queue, rmqServices, publisher,
-                            ));
-                          }
-                        } else { // REGULAR ETH TX
-                          const nbConf = 1 + (blockNumber - confBlockNb);
-                          if (nbConf >= 1) {
-                            if (publisher) {
-                              // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                              const txMsg = {
-                                type: 'updateTx',
-                                txHash: item.txHash,
-                                blockNumber: confBlockNb,
-                                status: 'confirmed',
-                                gasUsed: receipt.gasUsed,
-                              };
-                              rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
-                            } else {
-                              // HOUSEKEEPER UPDATES TX IN DB
-                              // Need to refactor updateTx function here
-                              // dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, status)
-                            }
-                            logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
-
-                            resolve(checkPendingTx(
-                              web3, bcx, dbCollections, dbPendingTxArray,
-                              blockNumber, channel, queue, rmqServices, publisher,
-                            ));
+                    const input = web3.utils.hexToNumberString(txInfo.input);
+                    if (txInfo.value === 0 && input !== '0') { // SMART CONTRACT CALL IDENTIFIED
+                      if (receipt.gasUsed < txInfo.gas) { // TX MINED
+                        const nbConf = 1 + (blockNumber - confBlockNb);
+                        if (nbConf >= 1) {
+                          if (publisher) {
+                            // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                            const txMsg = {
+                              type: 'updateTx',
+                              txHash: item.txHash,
+                              blockNumber: confBlockNb,
+                              status: 'confirmed',
+                              gasUsed: receipt.gasUsed,
+                            };
+                            rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
                           } else {
-                            logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
-                            resolve(checkPendingTx(
-                              web3, bcx, dbCollections, dbPendingTxArray,
-                              blockNumber, channel, queue, rmqServices, publisher,
-                            ));
+                            // HOUSEKEEPER UPDATES TX IN DB
+                            dbCollections.transactions.updateTx({
+                              txHash: item.txHash,
+                              blockNumber: confBlockNb,
+                              status: 'confirmed',
+                              gasUsed: receipt.gasUsed,
+                            });
                           }
+
+                          logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
+
+                          resolve(checkPendingTx(
+                            web3, bcx, dbCollections, dbPendingTxArray,
+                            blockNumber, channel, queue, rmqServices, publisher,
+                          ));
+                        } else {
+                          logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
+                          resolve(checkPendingTx(
+                            web3, bcx, dbCollections, dbPendingTxArray,
+                            blockNumber, channel, queue, rmqServices, publisher,
+                          ));
                         }
-                      })
-                      .catch((e) => { reject(e); });
+                      } else { // OUT OF GAS
+                        if (publisher) {
+                          // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                          const txMsg = {
+                            type: 'updateTx',
+                            txHash: item.txHash,
+                            blockNumber: confBlockNb,
+                            status: 'failed: out of gas',
+                            gasUsed: receipt.gasUsed,
+                          };
+                          rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                        } else {
+                          // HOUSEKEEPER UPDATES TX IN DB
+                          dbCollections.transactions.updateTx({
+                            txHash: item.txHash,
+                            blockNumber: confBlockNb,
+                            status: 'failed: out of gas',
+                            gasUsed: receipt.gasUsed,
+                          });
+                        }
+                        logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+
+                        resolve(checkPendingTx(
+                          web3, bcx, dbCollections, dbPendingTxArray,
+                          blockNumber, channel, queue, rmqServices, publisher,
+                        ));
+                      }
+                    } else { // REGULAR ETH TX
+                      const nbConf = 1 + (blockNumber - confBlockNb);
+                      if (nbConf >= 1) {
+                        if (publisher) {
+                          // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                          const txMsg = {
+                            type: 'updateTx',
+                            txHash: item.txHash,
+                            blockNumber: confBlockNb,
+                            status: 'confirmed',
+                            gasUsed: receipt.gasUsed,
+                          };
+                          rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
+                        } else {
+                          // HOUSEKEEPER UPDATES TX IN DB
+                          dbCollections.transactions.updateTx({
+                            txHash: item.txHash,
+                            blockNumber: confBlockNb,
+                            status: 'confirmed',
+                            gasUsed: receipt.gasUsed,
+                          });
+                        }
+                        logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
+
+                        resolve(checkPendingTx(
+                          web3, bcx, dbCollections, dbPendingTxArray,
+                          blockNumber, channel, queue, rmqServices, publisher,
+                        ));
+                      } else {
+                        logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
+                        resolve(checkPendingTx(
+                          web3, bcx, dbCollections, dbPendingTxArray,
+                          blockNumber, channel, queue, rmqServices, publisher,
+                        ));
+                      }
+                    }
                   } else { // TX RECEIPT NOT FOUND
                     if (publisher) {
                       // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                       const txMsg = {
                         type: 'updateTx',
                         txHash: item.txHash,
+                        blockNumber: confBlockNb,
                         status: 'failed: tx receipt not found',
-                        gasUsed: receipt.gasUsed,
+                        // gasUsed: null,
                       };
                       rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
                     } else {
                       // HOUSEKEEPER UPDATES TX IN DB
-                      // Need to refactor updateTx function here
-                      // dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, status)
+                      dbCollections.transactions.updateTx({
+                        txHash: item.txHash,
+                        blockNumber: confBlockNb,
+                        status: 'failed: tx receipt not found',
+                        // gasUsed: null,
+                      });
                     }
                     logger.info(colors.red.bold(`TRANSACTION ${item.hash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
                     resolve(checkPendingTx(
@@ -470,11 +601,15 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 txHash: item.txHash,
                 status: 'failed: tx info not found',
               };
-              rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue)
+              rmqServices.sendMessage(txMsg, channel.bcxChannel, queue.bcxQueue);
             } else {
               // HOUSEKEEPER UPDATES TX IN DB
-              // Need to refactor updateTx function here
-              // dbCollections.transactions.updateTx(item._id, txInfo, receipt, nbConf, status)
+              dbCollections.transactions.updateTx({
+                txHash: item.txHash,
+                // blockNumber: null,
+                status: 'failed: tx info not found',
+                // gasUsed: null,
+              });
             }
             logger.info(colors.red.bold(`TRANSACTION ${item.hash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
 

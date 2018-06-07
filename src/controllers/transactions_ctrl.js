@@ -91,6 +91,44 @@ function findByTxHash(txHash) {
 }
 module.exports.findByTxHash = findByTxHash;
 
+function addTx(txObject) {
+  return new Promise(((resolve, reject) => {
+    try {
+      const tx = new transactions.Transactions(txObject);
+      tx.save((err) => {
+        if (err) {
+          logger.info(`transactions.addTx DB controller ERROR: ${err}`);
+          reject(err);
+        }
+        resolve();
+      });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.addTx = addTx;
+
+function updateTx(txUpdatedKeys) {
+  return new Promise(((resolve, reject) => {
+    try {
+      findByTxHash(txUpdatedKeys.txHash).then((txObject) => {
+        transactions.Transactions.update(
+          { _id: txObject._id },
+          txUpdatedKeys,
+          (err) => {
+            if (err) {
+              logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
+              reject(err);
+            }
+            resolve();
+          },
+        );
+      });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.updateTx = updateTx;
+
+/*
 function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, history = false) {
   return new Promise(((resolve, reject) => {
     try {
@@ -140,7 +178,7 @@ function updateTx(id, txInfo, receipt, nbConf, status) {
   }));
 }
 module.exports.updateTx = updateTx;
-
+*/
 function txFailed(id, failureStatus) {
   return new Promise((resolve, reject) => {
     try {
