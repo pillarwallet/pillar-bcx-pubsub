@@ -6,7 +6,6 @@ const bcx = require('./services/bcx.js');
 const gethConnect = require('./services/gethConnect.js');
 const processTx = require('./services/processTx.js');
 const colors = require('colors');
-const notif = require('./services/notifications.js');
 const accounts = require('./services/accounts.js');
 const gethSubscribe = require('./services/gethSubscribe');
 const abiDecoder = require('abi-decoder');
@@ -91,8 +90,6 @@ exports.initCWBMQ = function () {
     }
   });
 };
-
-
 
 
 exports.checkTxPool = function (web3, dbCollections, channel, queue) {

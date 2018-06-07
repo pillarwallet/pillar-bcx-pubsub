@@ -2,18 +2,18 @@ const Mongoose = require('../services/dbServices.js').mongoose;
 
 // NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
-  pillarId: Number,
-  protocol: String,
-  fromAddress: String,
-  toAddress: String,
-  txHash: String,
-  asset: String,
-  contractAddress: String,
-  timestamp: Number,
-  blockNumber: Number,
-  value: Number,
-  status: String,
-  gasUsed: Number,
+  pillarId: { type: Number, required: true },
+  protocol: { type: String, required: true },
+  fromAddress: { type: String, required: false },
+  toAddress: { type: String, required: false },
+  txHash: { type: String, required: true },
+  asset: { type: String, required: false },
+  contractAddress: { type: String, required: false },
+  timestamp: { type: Number, required: false },
+  blockNumber: { type: Number, required: false },
+  value: { type: Number, required: false },
+  status: { type: String, required: false },
+  gasUsed: { type: Number, required: false },
 });
 
 /* OLD DB SCHEMA

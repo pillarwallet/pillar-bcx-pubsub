@@ -32,7 +32,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
     let fromPillarAccount;
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
-    } else {
+    } else { // REGULAR TRANSACTION OR SMART CONTRACT CALL
       module.exports.filterAddress(tx.to, dbCollections.accounts, dbCollections.assets, checkAddress)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
@@ -42,127 +42,212 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
               let value = tx.value * (10 ** -18);
-              if (toPillarAccount) {
-                const asset = 'ETH';
-                const txMsg = {
-                  type: 'newTx',
-                };
-	              channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-                  .then(() => {
-                    if (fromPillarAccount) {
-                      logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
-                      if (sendNotif) {
-                        const notifMsg = {
-                          type: 'pendingTx',
-                          destination: 'tx.to',
-                        };
-                        channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
-                      }
-                      resolve(true);
-                    } else {
-	                    logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: EXTERNAL ETH ACCOUNT ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
 
-	                    if (sendNotif) {
-		                    const notifMsg = {
-			                    type: 'pendingTx',
-			                    destination: 'tx.to',
-		                    };
-		                    channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
-	                    }
+              if (toPillarAccount) { // TRANSACTION RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
+                const asset = 'ETH'; // MUST BE ETH TRANSFER BECAUSE RECIPIENT ADDRESS !== SMART CONTRACT ADDRESS
 
-	                    resolve(true);
-                    }
-                  })
-                  .catch((e) => {
-                    reject(e);
+                // SEND NEW TX DATA TO SUBSCRIBER
+                const txMsg = JSON.stringify({
+                  type: 'newPendingTx',
+                  pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                  protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                  fromAddress: tx.from,
+                  toAddress: tx.to,
+                  txHash: tx.hash,
+                  asset,
+                  contractAddress: null,
+                  timestamp: tmstmp,
+                  value: tx.value,
+                });
+                channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                if (sendNotif) {
+                  // SEND PENDING TX NOTIFICATION TO CORE WALLET BACKEND
+                  const notifMsg = JSON.stringify({
+                    type: 'bcxTxNotification',
+                    status: 'pending',
+                    pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    asset,
+                    timestamp: tmstmp,
+                    value: value,
                   });
-              } else if (toERC20SmartContract) {
+                  channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+                  if (fromPillarAccount) { // TRANSACTION SENDER ADDRESS === PILLAR WALLET ADDRESS
+                    // SEND NEW TX DATA TO SUBSCRIBER
+                    const txMsg = JSON.stringify({
+                      type: 'newPendingTx',
+                      pillarId: '', //  SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                      protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: tx.from,
+                      toAddress: tx.to,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress: null,
+                      timestamp: tmstmp,
+                      value: tx.value,
+                    });
+                    channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+                    logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
+                  }
+                } else {
+                  logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: EXTERNAL ETH ACCOUNT ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
+                }
+                resolve(true);
+              } else if (toERC20SmartContract) { // RECIPIENT ADDRESS === SMART CONTRACT ADDRESS
                 const contractAddress = tx.to;
                 abiDecoder.addABI(ERC20ABI);
                 const data = abiDecoder.decodeMethod(tx.input);
-                if (data !== undefined) {
-                  if (value !== 0) {
-                    const asset = 'ETH';
-                    if (fromPillarAccount) {
-	                    const txMsg = {
-		                    type: 'newTx',
-	                    };
-	                    channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-	                    .then(() => {
-                          logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${tx.to}\nDATA:\n`));
-                          resolve(true);
-                        })
-                        .catch((e) => {
-                          reject(e);
-                        });
+                if (data !== undefined) { // TRANSACTION CARRIES INPUT DATA
+                  if (value !== 0) { // TRANSACTION VALUE !== 0 THEREFORE...
+                    const asset = 'ETH'; // ... TRANSACTION MUST BE ETH TRANSFER (TO A SMART CONTRACT BECAUSE RECIPIENT ADDRESS === SMART CONTRACT ADDRESS)
+
+                    if (fromPillarAccount) { // SENDER ADDRESS === PILLAR ADDRESS
+                      // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                      const txMsg = JSON.stringify({
+                        type: 'newPendingTx',
+                        pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                        protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                        fromAddress: tx.from,
+                        toAddress: null,
+                        txHash: tx.hash,
+                        asset,
+                        contractAddress,
+                        timestamp: tmstmp,
+                        value: tx.value,
+                      });
+                      channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+                      logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\nDATA:\n`));
+                      resolve(true);
                     } else {
                       resolve(false);
                     }
-                  } else { // value==0
+                  } else { // TRANSACTION VALUE === 0 THEREFORE TRANSACTION IS A SMART CONTRACT CALL
+                    // (BECAUSE RECIPIENT ADDRESS === SMART CONTRACT ADDRESS AND TRANSACTION CARRIES INPUT DATA)
                     const asset = ticker;
-                    if (fromPillarAccount) {
-                      logger.info(colors.cyan(`SMART CONTRACT CALL: ${tx.hash}\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${tx.to}\n`));
-                      if (data.name === 'transfer') {
-                        value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
-                        const to = data.params[0].value;
-	                      const txMsg = {
-		                      type: 'newTx',
-	                      };
-	                      channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-	                      .then(() => {
-                            module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
-                              .then((result3) => {
-                                toPillarAccount = result3.isPillarAddress;
-                                if (toPillarAccount) {
-                                  logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
-	                                if (sendNotif) {
-		                                const notifMsg = {
-			                                type: 'pendingTx',
-			                                destination: 'to',
-		                                };
-		                                channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
-	                                }
-                                  resolve(true);
-                                } else {
-                                  logger.info(colors.cyan.bold(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO EXTERNAL ETH ACCOUNT: ${to}\n`));
-                                  resolve(true);
-                                }
-                              })
-                              .catch((e) => {
-                                reject(e);
+                    if (fromPillarAccount) { // SENDER ADDRESS === PILLAR WALLET ADDRESS
+                      logger.info(colors.cyan(`SMART CONTRACT CALL: ${tx.hash}\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\n`));
+
+                      if (data.name === 'transfer') { // TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
+                        value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString(); // TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
+                        const to = data.params[0].value; // TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
+
+                        // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                        const txMsg = JSON.stringify({
+                          type: 'newPendingTx',
+                          pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                          protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                          fromAddress: tx.from,
+                          toAddress: to,
+                          txHash: tx.hash,
+                          asset,
+                          contractAddress,
+                          timestamp: tmstmp,
+                          value: parseInt(data.params[1].value, 10),
+                        });
+                        channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+                        module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
+                          .then((result3) => {
+                            toPillarAccount = result3.isPillarAddress;
+                            if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
+                              // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                              const txMsg = JSON.stringify({
+                                type: 'newPendingTx',
+                                pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: tx.from,
+                                toAddress: to,
+                                txHash: tx.hash,
+                                asset,
+                                contractAddress,
+                                timestamp: tmstmp,
+                                value: parseInt(data.params[1].value, 10),
                               });
+                              channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                              if (sendNotif) {
+                                // SEND PENDING TX NOTIFICATION TO CORE WALLET BACKEND MSG QUEUE
+                                const notifMsg = JSON.stringify({
+                                  type: 'bcxTxNotification',
+                                  status: 'pending',
+                                  pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                  protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                  fromAddress: tx.from,
+                                  toAddress: to,
+                                  asset,
+                                  timestamp: tmstmp,
+                                  value,
+                                });
+                                channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+                              }
+                              logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
+                            } else {
+                              logger.info(colors.cyan.bold(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO EXTERNAL ETH ACCOUNT: ${to}\n`));
+                            }
+                            resolve(true);
                           })
                           .catch((e) => {
                             reject(e);
                           });
-                      } else {
+                      } else { // TRANSACTION IS A ZERO-VALUE ERC20 SMART CONTRACT CALL (BUT NOT A TOKEN TRANSFER)
+                        // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                        const txMsg = JSON.stringify({
+                          type: 'newPendingTx',
+                          pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                          protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                          fromAddress: tx.from,
+                          toAddress: null,
+                          txHash: tx.hash,
+                          asset,
+                          contractAddress,
+                          timestamp: tmstmp,
+                          value: tx.value,
+                        });
+                        channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
                         resolve(true);
                       }
-                    } else if (data.name === 'transfer') {
-                      value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
-                      const to = data.params[0].value;
+                    } else if (data.name === 'transfer') { // TRANSACTION SENDER ADDRESS !== PILLAR ACCOUNT ADDRESS
+                      // AND TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
+                      value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();// TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
+                      const to = data.params[0].value;// TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
                       module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
-                          if (toPillarAccount) {
-	                          const txMsg = {
-		                          type: 'newTx',
-	                          };
-	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-	                          .then(() => {
-                                logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM EXTERNAL ETH ACCOUNT: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
-		                          if (sendNotif) {
-			                          const notifMsg = {
-				                          type: 'pendingTx',
-				                          destination: 'tx.to',
-			                          };
-			                          channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
-		                          }
-		                          resolve(true);
-                              })
-                              .catch((e) => {
-                                reject(e);
+                          if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR ACCOUNT ADDRESS
+                            // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                            const txMsg = JSON.stringify({
+                              type: 'newPendingTx',
+                              pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                              protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                              fromAddress: tx.from,
+                              toAddress: to,
+                              txHash: tx.hash,
+                              asset,
+                              contractAddress,
+                              timestamp: tmstmp,
+                              value: parseInt(data.params[1].value, 10),
+                            });
+                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                            if (sendNotif) {
+                              // SEND PENDING TX NOTIFICATION TO CORE WALLET BACKEND MSG QUEUE
+                              const notifMsg = JSON.stringify({
+                                type: 'bcxTxNotification',
+                                status: 'pending',
+                                pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: tx.from,
+                                toAddress: to,
+                                asset,
+                                timestamp: tmstmp,
+                                value,
                               });
+                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+                            }
+                            logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM EXTERNAL ETH ACCOUNT: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
+                            resolve(true);
                           } else {
                             resolve(false);
                           }
@@ -174,35 +259,50 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
                       resolve(false);
                     }
                   }
-                } else if (fromPillarAccount) {
-                  const asset = 'ETH';
-	                const txMsg = {
-		                type: 'newTx',
-	                };
-	                channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-	                .then(() => {
-                      logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ERC20 SMART CONTRACT ${tx.to}\n`));
-                      resolve(true);
-                    })
-                    .catch((e) => {
-                      reject(e);
-                    });
+                } else if (fromPillarAccount) { // TRANSACTION RECIPIENT ADDRESS === SMART CONTRACT ADDRESS
+                  // AND SENDER ADDRESS === PILLAR ACCOUNT ADDRESS
+                  // BUT TRANSACTION DOES NOT CARRY INPUT DATA...
+                  const asset = 'ETH'; // ... THEREFORE TRANSACTION MUST BE AN ETH TRANSFER TO A SMART CONTRACT
+                  // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                  const txMsg = JSON.stringify({
+                    type: 'newPendingTx',
+                    pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: null,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress,
+                    timestamp: tmstmp,
+                    value: tx.value,
+                  });
+                  channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                  logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ERC20 SMART CONTRACT ${tx.to}\n`));
+                  resolve(true);
                 } else {
                   resolve(false);
                 }
-              } else if (fromPillarAccount) {
+              } else if (fromPillarAccount) { // TRANSACTION RECIPIENT IS NOT A PILLAR ACCOUNT NOR IS IT A MONITORED ERC20 SMART CONTRACT
+                // BUT TRANSACTION SENDER ADDRESS === PILLAR ACCOUNT ADDRESS
                 const asset = 'ETH';
-	              const txMsg = {
-		              type: 'newTx',
-	              };
-	              channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-	              .then(() => {
-                    logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: EXTERNAL ETH ACCOUNT OR SMART CONTRACT ${tx.to}\n`));
-                    resolve(true);
-                  })
-                  .catch((e) => {
-                    reject(e);
-                  });
+                // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                const txMsg = JSON.stringify({
+                  type: 'newPendingTx',
+                  pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                  protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                  fromAddress: tx.from,
+                  toAddress: tx.to,
+                  txHash: tx.hash,
+                  asset,
+                  contractAddress: null,
+                  timestamp: tmstmp,
+                  value: tx.value,
+                });
+                channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: EXTERNAL ETH ACCOUNT OR SMART CONTRACT ${tx.to}\n`));
+                resolve(true);
               } else {
                 resolve(false);
               }
@@ -219,6 +319,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, sendN
 }
 module.exports.newPendingTx = newPendingTx;
 
+
 function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber, channel, queue, sendNotif = true) {
   return new Promise(((resolve, reject) => {
     if (dbPendingTxArray.length === 0) {
@@ -232,11 +333,11 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
       } else {
         contractAddress = null;
       }
-      bcx.getTxInfo(web3, item.hash)
+      bcx.getTxInfo(web3, item.txHash)
         .then((txInfo) => {
           if (txInfo != null) {
             if (txInfo.blockNumber != null) {
-              bcx.getTxReceipt(web3, item.hash)
+              bcx.getTxReceipt(web3, item.txHash)
                 .then((receipt) => {
                   if (receipt != null) {
                     bcx.getBlockNumber(web3, txInfo.blockHash)
@@ -245,151 +346,152 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         if (txInfo.value === 0 && input !== '0') { // SMART CONTRACT CALL IDENTIFIED
                           if (receipt.gasUsed < txInfo.gas) { // TX MINED
                             const nbConf = 1 + (blockNumber - confBlockNb);
-                            if (nbConf < 5 && nbConf >= 0) {
-	                            const txMsg = {
-		                            type: 'updateTx',
-	                            };
-	                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-                                .then(() => {
-                                  logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
-                                  resolve(checkPendingTx(
-                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, channel, queue, sendNotif,
-                                  ));
-                                })
-                                .catch((e) => { reject(e); });
-                            } else if (nbConf >= 5) {
-	                            const txMsg = {
-		                            type: 'updateTx',
-	                            };
-	                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg)).then(() => {
-                                logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
-                                logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
+                            if (nbConf >= 1) {
+                              // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                              const txMsg = JSON.stringify({
+                                type: 'updateTx',
+                                txHash: item.txHash,
+                                blockNumber: confBlockNb,
+                                status: 'confirmed',
+                                gasUsed: receipt.gasUsed,
+                              });
+                              channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
 
-                                if (sendNotif) {
-                                  const notifMsgTo = {
-                                    type: 'confirmedTx',
-                                    destination: 'item.to',
-                                  };
-                                  channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
-                                    .then(() => {
-                                      const notifMsgFrom = {
-                                        type: 'confirmedTx',
-                                        destination: 'item.from',
-                                      };
-                                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
-                                        .then(() => {
-                                          resolve(checkPendingTx(
-                                            web3, bcx, dbCollections, dbPendingTxArray,
-                                            blockNumber, channel, queue, sendNotif,
-                                          ));
-                                        })
-                                        .catch((e) => { reject(e); });
-                                    })
-                                    .catch((e) => { reject(e); });
-                                } else {
-                                  resolve(checkPendingTx(
-                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, channel, queue, sendNotif,
-                                  ));
-                                }
-                              })
-                                .catch((e) => { reject(e); });
+                              logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${blockNumber}\n`));
+
+                              if (sendNotif) {
+                                // SEND TX CONFIRMATION NOTIFICATION TO TX SENDER
+                                const notifMsgFrom = JSON.stringify({
+                                  type: 'bcxTxNotification',
+                                  status: 'confirmed',
+                                  pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                  protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                  fromAddress: item.fromAddress,
+                                  toAddress: item.toAddress,
+                                  asset: item.asset,
+                                  timestamp: item.timestamp,
+                                  value: item.value,
+                                });
+                                channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom));
+	                              // SEND TX CONFIRMATION NOTIFICATION TO TX RECIPIENT
+                                const notifMsgTo = JSON.stringify({
+                                  type: 'bcxTxNotification',
+                                  status: 'confirmed',
+                                  pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                  protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                  fromAddress: item.fromAddress,
+                                  toAddress: item.toAddress,
+                                  asset: item.asset,
+                                  timestamp: item.timestamp,
+                                  value: item.value,
+                                });
+                                channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo));
+                              }
+
+                              resolve(checkPendingTx(
+                                web3, bcx, dbCollections, dbPendingTxArray,
+                                blockNumber, channel, queue, sendNotif,
+                              ));
                             } else {
-                              logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
+                              logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
                               resolve(checkPendingTx(
                                 web3, bcx, dbCollections, dbPendingTxArray,
                                 blockNumber, channel, queue, sendNotif,
                               ));
                             }
                           } else { // OUT OF GAS
-	                          const txMsg = {
-		                          type: 'updateTx',
-	                          };
-	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-                              .then(() => {
-                                logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
-                                if (sendNotif) {
-                                  const notifMsgTo = {
-                                    type: 'outOfGasFailedTx',
-                                    destination: 'item.to',
-                                  };
-                                  channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
-                                    .then(() => {
-                                      const notifMsgFrom = {
-                                        type: 'outOfGasFailedTx',
-                                        destination: 'item.from',
-                                      };
-                                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
-                                        .then(() => {
-                                          resolve(checkPendingTx(
-                                            web3, bcx, dbCollections, dbPendingTxArray,
-                                            blockNumber, channel, queue, sendNotif,
-                                          ));
-                                        })
-                                        .catch((e) => { reject(e); });
-                                    })
-                                    .catch((e) => { reject(e); });
-                                } else {
-                                  resolve(checkPendingTx(
-                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, channel, queue, sendNotif,
-                                  ));
-                                }
-                              })
-                              .catch((e) => { reject(e); });
+                            // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                            const txMsg = JSON.stringify({
+                              type: 'updateTx',
+                              txHash: item.txHash,
+                              blockNumber: confBlockNb,
+                              status: 'failed: out of gas',
+                              gasUsed: receipt.gasUsed,
+                            });
+                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
+
+                            logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+
+                            if (sendNotif) {
+                              // SEND TX CONFIRMATION NOTIFICATION TO TX SENDER
+                              const notifMsgFrom = JSON.stringify({
+                                type: 'bcxTxNotification',
+                                status: 'failed: out of gas',
+                                pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: item.fromAddress,
+                                toAddress: item.toAddress,
+                                asset: item.asset,
+                                timestamp: item.timestamp,
+                                value: item.value,
+                              });
+                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom));
+                              // SEND TX CONFIRMATION NOTIFICATION TO TX RECIPIENT
+                              const notifMsgTo = JSON.stringify({
+                                type: 'bcxTxNotification',
+                                status: 'failed: out of gas',
+                                pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: item.fromAddress,
+                                toAddress: item.toAddress,
+                                asset: item.asset,
+                                timestamp: item.timestamp,
+                                value: item.value,
+                              });
+                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo));
+                            }
+                            resolve(checkPendingTx(
+                              web3, bcx, dbCollections, dbPendingTxArray,
+                              blockNumber, channel, queue, sendNotif,
+                            ));
                           }
                         } else { // REGULAR ETH TX
                           const nbConf = 1 + (blockNumber - confBlockNb);
-                          if (nbConf < 5 && nbConf >= 0) {
-	                          const txMsg = {
-		                          type: 'updateTx',
-	                          };
-	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg)).then(() => {
-                              logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
-                              resolve(checkPendingTx(
-                                web3, bcx, dbCollections, dbPendingTxArray,
-                                blockNumber, channel, queue, sendNotif,
-                              ));
-                            })
-                              .catch((e) => { reject(e); });
-                          } else if (nbConf >= 5) {
-	                          const txMsg = {
-		                          type: 'updateTx',
-	                          };
-	                          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-                              .then(() => {
-                                logger.info(colors.green(`TRANSACTION ${item.hash}: ${nbConf} CONFIRMATION(S) @ BLOCK # ${blockNumber}\n`));
-                                logger.info(colors.green.bold(`TRANSACTION ${item.hash} CONFIRMED!\n`));
-	                              if (sendNotif) {
-		                              const notifMsgTo = {
-			                              type: 'confirmedTx',
-			                              destination: 'item.to',
-		                              };
-		                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
-		                              .then(() => {
-			                              const notifMsgFrom = {
-				                              type: 'confirmedTx',
-				                              destination: 'item.from',
-			                              };
-			                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
-			                                .then(() => {
-                                          resolve(checkPendingTx(
-                                            web3, bcx, dbCollections, dbPendingTxArray,
-                                            blockNumber, channel, queue, sendNotif,
-                                          ));
-                                        })
-                                        .catch((e) => { reject(e); });
-                                    })
-                                    .catch((e) => { reject(e); });
-                                } else {
-                                  resolve(checkPendingTx(
-                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, channel, queue, sendNotif,
-                                  ));
-                                }
-                              })
-                              .catch((e) => { reject(e); });
+                          if (nbConf >= 1) {
+                            // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                            const txMsg = JSON.stringify({
+                              type: 'updateTx',
+                              txHash: item.txHash,
+                              blockNumber: confBlockNb,
+                              status: 'confirmed',
+                              gasUsed: receipt.gasUsed,
+                            });
+                            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                            logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${blockNumber}\n`));
+
+                            if (sendNotif) {
+                              // SEND TX CONFIRMATION NOTIFICATION TO TX SENDER
+                              const notifMsgFrom = JSON.stringify({
+                                type: 'bcxTxNotification',
+                                status: 'confirmed',
+                                pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: item.fromAddress,
+                                toAddress: item.toAddress,
+                                asset: item.asset,
+                                timestamp: item.timestamp,
+                                value: item.value,
+                              });
+                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom));
+                              // SEND TX CONFIRMATION NOTIFICATION TO TX RECIPIENT
+                              const notifMsgTo = JSON.stringify({
+                                type: 'bcxTxNotification',
+                                status: 'confirmed',
+                                pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: item.fromAddress,
+                                toAddress: item.toAddress,
+                                asset: item.asset,
+                                timestamp: item.timestamp,
+                                value: item.value,
+                              });
+                              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo));
+                            }
+                            resolve(checkPendingTx(
+                              web3, bcx, dbCollections, dbPendingTxArray,
+                              blockNumber, channel, queue, sendNotif,
+                            ));
                           } else {
                             logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
                             resolve(checkPendingTx(
@@ -401,94 +503,102 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                       })
                       .catch((e) => { reject(e); });
                   } else { // TX RECEIPT NOT FOUND
-	                  const txMsg = {
-		                  type: 'updateTx',
-	                  };
-	                  channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-                      .then(() => {
-                        logger.info(colors.red.bold(`TRANSACTION ${item.hash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
-	                      if (sendNotif) {
-		                      const notifMsgTo = {
-			                      type: 'txReceiptNotFoundFailedTx',
-			                      destination: 'item.to',
-		                      };
-		                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
-		                      .then(() => {
-			                      const notifMsgFrom = {
-				                      type: 'txReceiptNotFoundFailedTx',
-				                      destination: 'item.from',
-			                      };
-			                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
-			                      .then(() => {
-                                  resolve(checkPendingTx(
-                                    web3, bcx, dbCollections, dbPendingTxArray,
-                                    blockNumber, channel, queue, sendNotif,
-                                  ));
-                                })
-                                .catch((e) => { reject(e); });
-                            })
-                            .catch((e) => { reject(e); });
-                        } else {
-                          resolve(checkPendingTx(
-                            web3, bcx, dbCollections, dbPendingTxArray,
-                            blockNumber, channel, queue, sendNotif,
-                          ));
-                        }
-                      })
-                      .catch((e) => { reject(e); });
+                    // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                    const txMsg = JSON.stringify({
+                      type: 'updateTx',
+                      txHash: item.txHash,
+                      status: 'failed: tx receipt not found',
+                      gasUsed: receipt.gasUsed,
+                    });
+                    channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                    logger.info(colors.red.bold(`TRANSACTION ${item.hash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
+
+                    if (sendNotif) {
+                      // SEND TX CONFIRMATION NOTIFICATION TO TX SENDER
+                      const notifMsgFrom = JSON.stringify({
+                        type: 'bcxTxNotification',
+                        status: 'failed: tx receipt not found',
+                        pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                        protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                        fromAddress: item.fromAddress,
+                        toAddress: item.toAddress,
+                        asset: item.asset,
+                        timestamp: item.timestamp,
+                        value: item.value,
+                      });
+                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom));
+                      // SEND TX CONFIRMATION NOTIFICATION TO TX RECIPIENT
+                      const notifMsgTo = JSON.stringify({
+                        type: 'bcxTxNotification',
+                        status: 'failed: tx receipt not found',
+                        pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                        protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                        fromAddress: item.fromAddress,
+                        toAddress: item.toAddress,
+                        asset: item.asset,
+                        timestamp: item.timestamp,
+                        value: item.value,
+                      });
+                      channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo));
+                    }
+                    resolve(checkPendingTx(
+                      web3, bcx, dbCollections, dbPendingTxArray,
+                      blockNumber, channel, queue, sendNotif,
+                    ));
                   }
                 })
                 .catch((e) => { reject(e); });
-            } else {
-	            const txMsg = {
-		            type: 'updateTx',
-	            };
-	            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-                .then(() => {
-                  logger.info(`TX ${item.hash} STILL PENDING (IN TX POOL)...\n`);
-                  resolve(checkPendingTx(
-                    web3, bcx, dbCollections, dbPendingTxArray,
-                    blockNumber, channel, queue, sendNotif,
-                  ));
-                })
-                .catch((e) => { reject(e); });
+            } else { // TX STILL PENDING
+              logger.info(`TX ${item.hash} STILL PENDING (IN TX POOL)...\n`);
+              resolve(checkPendingTx(
+                web3, bcx, dbCollections, dbPendingTxArray,
+                blockNumber, channel, queue, sendNotif,
+              ));
             }
-          } else { // TX NOT FOUND
-	          const txMsg = {
-		          type: 'updateTx',
-	          };
-	          channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg))
-              .then(() => {
-                logger.info(colors.red.bold(`TRANSACTION ${item.hash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
-	              if (sendNotif) {
-		              const notifMsgTo = {
-			              type: 'txInfoNotFoundFailedTx',
-			              destination: 'item.to',
-		              };
-		              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
-		                .then(() => {
-			              const notifMsgFrom = {
-				              type: 'txInfoNotFoundFailedTx',
-				              destination: 'item.from',
-			              };
-			              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom))
-			                .then(() => {
-                          resolve(checkPendingTx(
-                            web3, bcx, dbCollections, dbPendingTxArray,
-                            blockNumber, channel, queue, sendNotif,
-                          ));
-                        })
-                        .catch((e) => { reject(e); });
-                    })
-                    .catch((e) => { reject(e); });
-                } else {
-                  resolve(checkPendingTx(
-                    web3, bcx, dbCollections, dbPendingTxArray,
-                    blockNumber, channel, queue, sendNotif,
-                  ));
-                }
-              })
-              .catch((e) => { reject(e); });
+          } else { // TX INFO NOT FOUND
+            // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+            const txMsg = JSON.stringify({
+              type: 'updateTx',
+              txHash: item.txHash,
+              status: 'failed: tx info not found',
+            });
+            channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+            logger.info(colors.red.bold(`TRANSACTION ${item.hash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
+
+            if (sendNotif) {
+              // SEND TX CONFIRMATION NOTIFICATION TO TX SENDER
+              const notifMsgFrom = JSON.stringify({
+                type: 'bcxTxNotification',
+                status: 'failed: tx info not found',
+                pillarId: '', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                fromAddress: item.fromAddress,
+                toAddress: item.toAddress,
+                asset: item.asset,
+                timestamp: item.timestamp,
+                value: item.value,
+              });
+              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgFrom));
+              // SEND TX CONFIRMATION NOTIFICATION TO TX RECIPIENT
+              const notifMsgTo = JSON.stringify({
+                type: 'bcxTxNotification',
+                status: 'failed: tx info not found',
+                pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                fromAddress: item.fromAddress,
+                toAddress: item.toAddress,
+                asset: item.asset,
+                timestamp: item.timestamp,
+                value: item.value,
+              });
+              channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo));
+            }
+            resolve(checkPendingTx(
+              web3, bcx, dbCollections, dbPendingTxArray,
+              blockNumber, channel, queue, sendNotif,
+            ));
           }
         })
         .catch((e) => { reject(e); });
@@ -516,7 +626,7 @@ function filterAddress(
               assets.findByAddress(ADDRESS)
                 .then((result2) => {
                   if (result2) {
-                    const ticker = result2.ticker;
+                    const ticker = result2.symbol;
                     resolve({
                       isPillarAddress: false,
                       isERC20SmartContract: true,
@@ -546,61 +656,61 @@ function filterAddress(
 }
 module.exports.filterAddress = filterAddress;
 
+
 function checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, eventInfo, ERC20SmartcContractInfo) {
+  // THIS IS TO CATCH TOKEN TRANSFERS THAT RESULT FROM SENDING ETH TO A SMART CONTRACT (WHICH N RETURN TRANSFERS TOKENS TO ETH SENDER)
   return new Promise(((resolve, reject) => {
     try {
+      const tmstmp = time.now();
       logger.info(eventInfo);
       module.exports.filterAddress(eventInfo.returnValues._to, dbCollections.accounts, dbCollections.assets) // check if token transfer destination address is pillar wallet
         .then((result) => {
-          if (result.isPillarAddress === true) {
+          if (result.isPillarAddress === true) { // TOKE TRANSFER DESTINATION ADDRESS === PILLAR ACCOUNT ADDRESS
             dbCollections.ethTransactions.findByTxHash(eventInfo.transactionHash)
-            // ETH TX SHOULD BE ALREADY IN DB BECAUSE ETH WAS SENT BY PILLAR WALLET
+            // ETH TX SHOULD BE ALREADY IN DB BECAUSE ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
               .then((tx) => {
-                if (tx.asset === 'ETH') { // check is it is regular token transfer, if so: resolve (because token transfer already processed), otherwise transfer needs to be processed here
+                if (tx.asset === 'ETH') { // check is it is regular token transfer,
+                  // if so (asset === TOKEN): resolve (because token transfer already processed),
+                  // otherwise (asset === ETH) transfer needs to be processed here:
                   const value
                     = eventInfo.returnValues._value * (10 ** -ERC20SmartcContractInfo.decimals);
                   logger.info(colors.red.bold('TOKEN TRANSFER EVENT:\n'));
                   logger.info(colors.red(`${value} ${ERC20SmartcContractInfo.ticker}\n`));
                   logger.info(colors.red(`FROM: ${ERC20SmartcContractInfo.ticker} SMART CONTRACT ${ERC20SmartcContractInfo.address}\n`));
                   logger.info(colors.red(`TO: PILLAR WALLET ${eventInfo.returnValues._to}\n`));
-                  dbCollections.transactions.addTx(
-                  	eventInfo.returnValues._to.toUpperCase(),
-	                  ERC20SmartcContractInfo.address.toUpperCase(),
-                    ERC20SmartcContractInfo.ticker,
-                    ERC20SmartcContractInfo.address.toUpperCase(),
-                    tx.tmstmp,
+
+                  // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                  const txMsg = JSON.stringify({
+                    type: 'newMinedTx',
+                    pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: ERC20SmartcContractInfo.address,
+                    toAddress: eventInfo.returnValues._to,
+                    txHash: eventInfo.transactionHash,
+                    asset: ERC20SmartcContractInfo.ticker,
+                    contractAddress: ERC20SmartcContractInfo.address,
+                    timestamp: tmstmp,
+                    value: eventInfo.returnValues._value,
+                    blockNumber: '',
+                    gasUsed: '',
+                  });
+                  channel.bcxChannel.sendToQueue(queue.bcxQueue, Buffer.from(txMsg));
+
+                  // SEND CONFIRMED TX NOTIFICATION TO CORE WALLET BACKEND MSG QUEUE
+                  const notifMsg = JSON.stringify({
+                    type: 'bcxTxNotification',
+                    status: 'confirmed',
+                    pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: ERC20SmartcContractInfo.address,
+                    toAddress: eventInfo.returnValues._to,
+                    asset: ERC20SmartcContractInfo.ticker,
+                    timestamp: tmstmp,
                     value,
-                    eventInfo.transactionHash,
-                    1,
-                    false,
-                  )
-                    .then(() => {
-                      /*
-                      dbCollections.accounts.getFCMIID(eventInfo.returnValues._to)
-                        .then((toFCMIID) => {
-                          notif.sendNotification(
-                            tx.hash,
-                            eventInfo.returnValues._from,
-                            eventInfo.returnValues._to, value,
-                            ERC20SmartcContractInfo.ticker,
-                            ERC20SmartcContractInfo.address,
-                            'pending',
-                            1,
-                            toFCMIID,
-                          )
-                          */
-	                        const notifMsgTo = {
-		                        type: 'txInfoNotFoundFailedTx',
-		                        destination: 'item.to',
-	                        };
-	                        channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsgTo))
-                        .then(() => {
-                          resolve();
-                        });
-                    })
-                    .catch((e) => { reject(e); });
-                  // })
-                  // catch((e) => { reject(e); });
+                  });
+                  channel.cwbChannel.sendToQueue(queue.cwbQueue, Buffer.from(notifMsg));
+
+                  resolve();
                 } else {
                   resolve();
                 }
