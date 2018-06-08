@@ -3,8 +3,6 @@ var subscriber = require("./subscriber.js");
 var amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
 logger.transports.forEach((t) => (t.silent = true));
-
-
 require('dotenv').config();
  
 describe('Function Calls', () => {
