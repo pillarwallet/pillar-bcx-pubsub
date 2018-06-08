@@ -1,8 +1,9 @@
-var amqp = require('amqplib/callback_api');
+const amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
-const dbServices = require('./services/dbServices.js'); 
-var jsHashes = require('jsHashes');
+const dbServices = require('./services/dbServices.js');
+const jsHashes = require('jsHashes');
 require('dotenv').config();
+
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
@@ -10,107 +11,96 @@ const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 const hashPrefix = process.env.HASH_PREFIX;
 
-sha256 = new jsHashes.SHA256;
-var connection;
+let dbCollections;
+
+sha256 = new jsHashes.SHA256();
+let connection;
 
 exports.initServices = function () {
-      dbServices.dbConnect(mongoUrl)
-      .then((dbCollections) => {
-        logger.info("Connected to database")
-        initRabbitMQ(dbCollections);
-      })
-      .catch(err =>{
-        logger.error(err.message);
-      })
-    };
+  dbServices.dbConnect(mongoUrl)
+    .then((db) => {
+      dbCollections = db;
+      logger.info('Connected to database');
+      this.initRabbitMQ();
+    })
+    .catch((err) => {
+      logger.error(err.message);
+    });
+};
 
 exports.validate = (payload) => {
-  var checksum = payload.checksum;
+  const checksum = payload.checksum;
   delete payload.checksum;
   if (sha256.hex(hashPrefix + JSON.stringify(payload)) === checksum) {
     return true;
-  } else {
-    return false;
   }
-}
+  return false;
+};
 
-exports.initRabbitMQ = (dbCollections) => {
+exports.initRabbitMQ = () => {
   try {
-          logger.info('Started executing initRabbitMQ()');
-          amqp.connect('amqp://localhost', (err, conn) => {
-            if (err) {
-              logger.error(err.message);
-              return setTimeout(exports.initRabbitMQ, 2000);
-            }
-            if (conn)
-            {
-              connection = conn;
-            }
-            connection.on("error", function(err)
-            {
-              logger.error(err)
-              return setTimeout(exports.initRabbitMQ, 2000);
-            });
-            connection.on("close", function()
-            {
-              logger.error("Connection closed");
-              return setTimeout(exports.initRabbitMQ, 2000);
-            });
+    logger.info('Started executing initRabbitMQ()');
+    amqp.connect('amqp://localhost', (err, conn) => {
+      if (err) {
+        logger.error(err.message);
+        return setTimeout(exports.initRabbitMQ, 2000);
+      }
+      if (conn) {
+        connection = conn;
+      }
+      connection.on('error', (err) => {
+        logger.error(err);
+        return setTimeout(exports.initRabbitMQ, 2000);
+      });
+      connection.on('close', () => {
+        logger.error('Connection closed');
+        return setTimeout(exports.initRabbitMQ, 2000);
+      });
 
-          logger.info("Connected");
+      logger.info('Connected');
 
-          connection.createChannel(function(err, ch) {
-                
-            var q = 'txQueue';
-            ch.assertQueue(q, {durable: false});
-            ch.consume(q, function(msg) {          
-            var entry = JSON.parse(msg.content);
-            var type = entry.type;
-            delete entry.type;
+      connection.createChannel((err, ch) => {
+        const q = 'bcx-pubsub';
+        ch.assertQueue(q, { durable: false });
+        ch.consume(q, (msg) => {
+          const entry = JSON.parse(msg.content);
+          const type = entry.type;
+          delete entry.type;
+          delete entry.checksum;
+          switch (type) {
+            case 'newTx':
+              entry.gasUsed = '';
+              entry.blockNumber = '';
+              entry.status = 'pending';
 
-            switch(type) {
-            case 'newPendingTx':
-                entry['gasUsed'] = '';
-                entry['blockNumber'] = '';
-                entry['status'] = 'pending'
-                dbCollections.transactions.addTx(entry)
+              dbCollections.transactions.addTx(entry)
                 .then(() => {
-                  logger.info("Transaction inserted: " + entry.txHash);
+                  logger.info(`Transaction inserted: ${entry.txHash}`);
                 })
-                .catch(err =>{
-                  logger.error(err.message)
-                })
-            break;
-            case 'newMinedTx':              
-                dbCollections.transactions.addTx(entry)
-                .then(() => {
-                  logger.info("Transaction inserted: " + entry.txHash);
-                })
-                .catch(err =>{
-                  logger.error(err.message)
-                })
-            break;
+                .catch((err) => {
+                  logger.error(err.message);
+                });
+              break
             case 'updateTx':
-                dbCollections.transactions.updateTx(entry)
+              dbCollections.transactions.updateTx(entry)
                 .then(() => {
-                  logger.info("Transaction updated: " + entry.txHash);
+                  logger.info(`Transaction updated: ${entry.txHash}`);
                 })
-                .catch(err =>{
-                  logger.error(err.message)
-                })
-            break;
-              }
-            }, {noAck: true});
-          });
-        })
-      }  
-       catch (err) {
-          logger.error(err.message);
-          return setTimeout(exports.initRabbitMQ, 2000);
-        } finally {
-          logger.info('Exited initRabbitMQ()');
-        }
-}
+                .catch((err) => {
+                  logger.error(err.message);
+                });
+              break;
+          }
+        }, { noAck: true });
+      });
+    });
+  } catch (err) {
+    logger.error(err.message);
+    return setTimeout(exports.initRabbitMQ, 2000);
+  } finally {
+    logger.info('Exited initRabbitMQ()');
+  }
+};
 
 
-exports.initServices()
+this.initServices();

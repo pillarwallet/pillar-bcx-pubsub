@@ -93,7 +93,7 @@ exports.dlERC20SmartContracts = function (web3, startBlock, endBlock, dbCollecti
         resolve(nbERC20Found);
       } else {
         if (logs) {
-          logger.info(colors.blue(`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}\n`));
+          // logger.info(colors.blue(`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}\n`));
         }
         web3.eth.getBlock(startBlock, false)
           .then((result) => {

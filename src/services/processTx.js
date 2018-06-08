@@ -48,7 +48,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                 if (publisher) {
                   // PUBLISHER SENDS NEW TX DATA TO SUBSCRIBER
                   const txMsgTo = {
-                    type: 'newPendingTx',
+                    type: 'newTx',
                     pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: tx.from,
@@ -82,7 +82,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                   if (publisher) {
                     // SEND NEW TX DATA TO SUBSCRIBER
                     const txMsgFrom = {
-                      type: 'newPendingTx',
+                      type: 'newTx',
                       pillarId: 'senderPillarId', //  SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                       protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                       fromAddress: tx.from,
@@ -128,7 +128,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                       if (publisher) {
                         // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                         const txMsgFrom = {
-                          type: 'newPendingTx',
+                          type: 'newTx',
                           pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABL
                           protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                           fromAddress: tx.from,
@@ -178,7 +178,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                         if (publisher) {
                           // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsgFrom = {
-                            type: 'newPendingTx',
+                            type: 'newTx',
                             pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                             protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                             fromAddress: tx.from,
@@ -214,7 +214,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                               if (publisher) {
                                 // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                                 const txMsgTo = {
-                                  type: 'newPendingTx',
+                                  type: 'newTx',
                                   pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
                                   protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                                   fromAddress: tx.from,
@@ -258,7 +258,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                         if (publisher) {
                           // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsgFrom = {
-                            type: 'newPendingTx',
+                            type: 'newTx',
                             pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                             protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                             fromAddress: tx.from,
@@ -302,7 +302,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                             if (publisher) {
                               // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                               const txMsgTo = {
-                                type: 'newPendingTx',
+                                type: 'newTx',
                                 pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
                                 protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                                 fromAddress: tx.from,
@@ -352,7 +352,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                   if (publisher) {
                     // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                     const txMsgFrom = {
-                      type: 'newPendingTx',
+                      type: 'newTx',
                       pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                       protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                       fromAddress: tx.from,
@@ -393,7 +393,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
                 if (publisher) {
                   // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                   const txMsgFrom = {
-                    type: 'newPendingTx',
+                    type: 'newTx',
                     pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: tx.from,
@@ -482,7 +482,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                             });
                           }
 
-                          logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
+                          logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
 
                           resolve(checkPendingTx(
                             web3, bcx, dbCollections, dbPendingTxArray,
@@ -515,7 +515,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                             gasUsed: receipt.gasUsed,
                           });
                         }
-                        logger.info(colors.red.bold(`TRANSACTION ${item.hash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+                        logger.info(colors.red.bold(`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
 
                         resolve(checkPendingTx(
                           web3, bcx, dbCollections, dbPendingTxArray,
@@ -544,7 +544,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                             gasUsed: receipt.gasUsed,
                           });
                         }
-                        logger.info(colors.green(`TRANSACTION ${item.hash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
+                        logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
 
                         resolve(checkPendingTx(
                           web3, bcx, dbCollections, dbPendingTxArray,
@@ -578,7 +578,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         // gasUsed: null,
                       });
                     }
-                    logger.info(colors.red.bold(`TRANSACTION ${item.hash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
+                    logger.info(colors.red.bold(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
                     resolve(checkPendingTx(
                       web3, bcx, dbCollections, dbPendingTxArray,
                       blockNumber, channel, queue, rmqServices, publisher,
@@ -587,7 +587,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 })
                 .catch((e) => { reject(e); });
             } else { // TX STILL PENDING
-              logger.info(`TX ${item.hash} STILL PENDING (IN TX POOL)...\n`);
+              logger.info(`TX ${item.txHash} STILL PENDING (IN TX POOL)...\n`);
               resolve(checkPendingTx(
                 web3, bcx, dbCollections, dbPendingTxArray,
                 blockNumber, channel, queue, rmqServices, publisher,
@@ -611,7 +611,7 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                 // gasUsed: null,
               });
             }
-            logger.info(colors.red.bold(`TRANSACTION ${item.hash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
+            logger.info(colors.red.bold(`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
 
             resolve(checkPendingTx(
               web3, bcx, dbCollections, dbPendingTxArray,
@@ -698,9 +698,9 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, rmqSe
 
                   // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                   const txMsg = {
-                    type: 'newMinedTx',
-                    pillarId: '', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
-                    protocol: '', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    type: 'newTx',
+                    pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: ERC20SmartcContractInfo.address,
                     toAddress: eventInfo.returnValues._to,
                     txHash: eventInfo.transactionHash,
@@ -708,8 +708,6 @@ function checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, rmqSe
                     contractAddress: ERC20SmartcContractInfo.address,
                     timestamp: tmstmp,
                     value: eventInfo.returnValues._value,
-                    blockNumber: '',
-                    gasUsed: '',
                   };
                   rmqServices.sendMessage(txMsg, channel, queue);
                   resolve();

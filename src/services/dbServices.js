@@ -115,7 +115,7 @@ function dlTxHistory(
       if (startBlock > maxBlock) {
         resolve(nbTx);
       } else {
-        logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
+        // logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
         bcx.getBlockTx(web3, startBlock)
           .then((txArray) => {
             module.exports.processTxHistory(
@@ -567,7 +567,7 @@ function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollec
 }
 module.exports.updateERC20SmartContracts = updateERC20SmartContracts;
 
-function contractsToMonitor( 
+function contractsToMonitor(
   url,
   idFrom,
   $arg = { useMongoClient: true }

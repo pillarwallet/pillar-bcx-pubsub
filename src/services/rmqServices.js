@@ -36,9 +36,6 @@ function sendMessage(payload, channel, queue) {
   const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
 
   payload.checksum = checksum;
-
-  console.log(payload);
-
   channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
 }
 module.exports.sendMessage = sendMessage;

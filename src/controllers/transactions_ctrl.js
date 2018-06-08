@@ -79,7 +79,7 @@ module.exports.findById = findById;
 function findByTxHash(txHash) {
   return new Promise((resolve, reject) => {
     try {
-	    transactions.Transactions.findOne({ txHash: txHash }, (err, result) => {
+	    transactions.Transactions.find({ txHash }, (err, result) => {
         if (err) {
           logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
           reject(err);
@@ -92,7 +92,6 @@ function findByTxHash(txHash) {
 module.exports.findByTxHash = findByTxHash;
 
 function addTx(txObject) {
-
   return new Promise((resolve, reject) => {
     try {
       const tx = new transactions.Transactions(txObject);
@@ -111,18 +110,20 @@ module.exports.addTx = addTx;
 function updateTx(txUpdatedKeys) {
   return new Promise((resolve, reject) => {
     try {
-      findByTxHash(txUpdatedKeys.txHash).then((txObject) => {
-        transactions.Transactions.update(
-          { _id: txObject._id },
-          txUpdatedKeys,
-          (err) => {
-            if (err) {
-              logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
-              reject(err);
-            }
-            resolve();
-          },
-        );
+      findByTxHash(txUpdatedKeys.txHash).then((result) => {
+        result.forEach((tx) => {
+          transactions.Transactions.update(
+            { _id: tx._id },
+            txUpdatedKeys,
+            (err) => {
+              if (err) {
+                logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
+                reject(err);
+              }
+            },
+          );
+        });
+        resolve();
       });
     } catch (e) { reject(e); }
   });
@@ -132,7 +133,7 @@ module.exports.updateTx = updateTx;
 function txFailed(id, failureStatus) {
   return new Promise((resolve, reject) => {
     try {
-	    transactions.Transactions.update(
+      transactions.Transactions.update(
         { _id: id },
         { status: failureStatus },
         (err) => {

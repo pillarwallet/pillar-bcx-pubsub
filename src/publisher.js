@@ -73,7 +73,6 @@ exports.poll = function() {
 
 
 exports.initSubscriptions = function (channel, queue) {
-  console.log(rmqServices.sendMessage)
   /* CONNECT TO GETH NODE */
   gethConnect.gethConnectDisplay()
     .then((web3) => {
