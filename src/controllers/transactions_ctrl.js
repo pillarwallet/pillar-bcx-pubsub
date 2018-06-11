@@ -92,12 +92,7 @@ function findByTxHash(txHash) {
 module.exports.findByTxHash = findByTxHash;
 
 function addTx(txObject) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-  return new Promise(((resolve, reject) => {
-=======
   return new Promise((resolve, reject) => {
->>>>>>> origin/master-pub-sub
     try {
       const tx = new transactions.Transactions(txObject);
       tx.save((err) => {
@@ -113,35 +108,7 @@ function addTx(txObject) {
 module.exports.addTx = addTx;
 
 function updateTx(txUpdatedKeys) {
-<<<<<<< HEAD
-  return new Promise(((resolve, reject) => {
-    try {
-      findByTxHash(txUpdatedKeys.txHash).then((txObject) => {
-        transactions.Transactions.update(
-          { _id: txObject._id },
-          txUpdatedKeys,
-          (err) => {
-            if (err) {
-              logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
-              reject(err);
-            }
-            resolve();
-          },
-        );
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.updateTx = updateTx;
-
-/*
-function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timestamp, value, txHash, history = false) {
-=======
->>>>>>> origin/subscriber
-  return new Promise(((resolve, reject) => {
-=======
   return new Promise((resolve, reject) => {
->>>>>>> origin/master-pub-sub
     try {
       findByTxHash(txUpdatedKeys.txHash).then((result) => {
         result.forEach((tx) => {
@@ -202,7 +169,7 @@ function addZeroTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
       const txHistHeight = new transactions.Transactions({
-        pillarId: '', protocol: '', txHash: '', blockNumber: 3333207, status: 'blockNumber = highest block number for tx history',
+        pillarId: 'lskjdhf', protocol: 'Ethereum', txHash: 'sjdhgkjdfhg', blockNumber: 3333207, status: 'blockNumber = highest block number for tx history',
       });
       txHistHeight.save((err) => {
         if (err) {
