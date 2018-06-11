@@ -8,56 +8,109 @@ const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
+const hashPrefix = process.env.HASH_PREFIX;
+
+sha256 = new jsHashes.SHA256;
+var connection;
 
 exports.initServices = function () {
-
-      md5 = new jsHashes.MD5;
-
       dbServices.dbConnect(mongoUrl)
-      .then((dbCollections) => {    
-          try {
-            logger.info('Started executing publisher.initMQ()');
-            amqp.connect('amqp://localhost', (err, conn) => {
-              conn.createChannel(function(err, ch) {
-                var q = 'txQueue';
-              
-                ch.assertQueue(q, {durable: false});
-                ch.consume(q, function(msg) {          
-                var entry = JSON.parse(msg.content);
+      .then((dbCollections) => {
+        logger.info("Connected to database")
+        initRabbitMQ(dbCollections);
+      })
+      .catch(err =>{
+        logger.error(err.message);
+      })
+    };
 
-                dbCollections.transactions.addTx(entry.pillarId,entry.protocol,entry.fromAddress,entry.toAddress,entry.txHash,entry.asset,entry.contractAddress, entry.timestamp,entry.blockNumber,entry.value,entry.status,entry.gasUsed)
-                .then(() =>{
-                  logger.info("Transaction inserted: " + entry.txHash);
-                })
-                }, {noAck: true});
-              });
-            });
-          } catch (err) {
-            logger.error('subscriber.initServices() failed: ', err.message);
-          } finally {
-            logger.info('Exited subscriber.initServices()');
-          }
-        });
-};
-
-var validate = (payload) => {
+exports.validate = (payload) => {
   var checksum = payload.checksum;
   delete payload.checksum;
-  if (md5.hex(JSON.stringify(payload)) === checksum) {
+  if (sha256.hex(hashPrefix + JSON.stringify(payload)) === checksum) {
     return true;
   } else {
     return false;
   }
 }
 
-amqp.connect('amqp://localhost', function(err, conn) {
-  conn.createChannel(function(err, ch) {
-    var q = 'bcx-pubsub';
+exports.initRabbitMQ = (dbCollections) => {
+  try {
+          logger.info('Started executing initRabbitMQ()');
+          amqp.connect('amqp://localhost', (err, conn) => {
+            if (err) {
+              logger.error(err.message);
+              return setTimeout(exports.initRabbitMQ, 2000);
+            }
+            if (conn)
+            {
+              connection = conn;
+            }
+            connection.on("error", function(err)
+            {
+              logger.error(err)
+              return setTimeout(exports.initRabbitMQ, 2000);
+            });
+            connection.on("close", function()
+            {
+              logger.error("Connection closed");
+              return setTimeout(exports.initRabbitMQ, 2000);
+            });
 
-    ch.assertQueue(q, {durable: false});
-    console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q);
-    ch.consume(q, function(msg) {
-      console.log(" [x] Received %s", msg.content.toString());
-    }, {noAck: true});
-  });
-});
+          logger.info("Connected");
+
+          connection.createChannel(function(err, ch) {
+                
+            var q = 'txQueue';
+            ch.assertQueue(q, {durable: false});
+            ch.consume(q, function(msg) {          
+            var entry = JSON.parse(msg.content);
+            var type = entry.type;
+            delete entry.type;
+
+            switch(type) {
+            case 'newPendingTx':
+                entry['gasUsed'] = '';
+                entry['blockNumber'] = '';
+                entry['status'] = 'pending'
+                dbCollections.transactions.addTx(entry)
+                .then(() => {
+                  logger.info("Transaction inserted: " + entry.txHash);
+                })
+                .catch(err =>{
+                  logger.error(err.message)
+                })
+            break;
+            case 'newMinedTx':              
+                dbCollections.transactions.addTx(entry)
+                .then(() => {
+                  logger.info("Transaction inserted: " + entry.txHash);
+                })
+                .catch(err =>{
+                  logger.error(err.message)
+                })
+            break;
+            case 'updateTx':
+                dbCollections.transactions.updateTx(entry)
+                .then(() => {
+                  logger.info("Transaction updated: " + entry.txHash);
+                })
+                .catch(err =>{
+                  logger.error(err.message)
+                })
+            break;
+              }
+            }, {noAck: true});
+          });
+        })
+      }  
+       catch (err) {
+          logger.error(err.message);
+          return setTimeout(exports.initRabbitMQ, 2000);
+        } finally {
+          logger.info('Exited initRabbitMQ()');
+        }
+}
+
+
+exports.initServices()
