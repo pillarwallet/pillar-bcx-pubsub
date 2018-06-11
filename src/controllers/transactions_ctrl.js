@@ -169,7 +169,7 @@ function addZeroTxHistoryHeight() {
   return new Promise(((resolve, reject) => {
     try {
       const txHistHeight = new transactions.Transactions({
-        pillarId: 'lskjdhf', protocol: 'Ethereum', txHash: 'sjdhgkjdfhg', blockNumber: 3333207, status: 'blockNumber = highest block number for tx history',
+        pillarId: 'pillarId', protocol: 'protocol', txHash: 'txHash', blockNumber: 3333207, status: 'blockNumber = highest block number for tx history',
       });
       txHistHeight.save((err) => {
         if (err) {
