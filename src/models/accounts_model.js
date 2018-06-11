@@ -3,7 +3,7 @@ const Mongoose = require('../services/dbServices').mongoose;
 
 // NEW DB SCHEMA
 const accountsSchema = Mongoose.Schema({
-  pillarId: { type: Number, required: true },
+  pillarId: { type: String, required: true },
   addresses: [
     {
       protocol: String,

@@ -77,9 +77,9 @@ function findById(id) {
 module.exports.findById = findById;
 
 function findByTxHash(txHash) {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-	    transactions.Transactions.findOne({ txHash: txHash }, (err, result) => {
+	    transactions.Transactions.find({ txHash }, (err, result) => {
         if (err) {
           logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
           reject(err);
@@ -87,13 +87,17 @@ function findByTxHash(txHash) {
         resolve(result);
       });
     } catch (e) { reject(e); }
-  }));
+  });
 }
 module.exports.findByTxHash = findByTxHash;
 
 function addTx(txObject) {
 <<<<<<< HEAD
+<<<<<<< HEAD
   return new Promise(((resolve, reject) => {
+=======
+  return new Promise((resolve, reject) => {
+>>>>>>> origin/master-pub-sub
     try {
       const tx = new transactions.Transactions(txObject);
       tx.save((err) => {
@@ -104,11 +108,12 @@ function addTx(txObject) {
         resolve();
       });
     } catch (e) { reject(e); }
-  }));
+  });
 }
 module.exports.addTx = addTx;
 
 function updateTx(txUpdatedKeys) {
+<<<<<<< HEAD
   return new Promise(((resolve, reject) => {
     try {
       findByTxHash(txUpdatedKeys.txHash).then((txObject) => {
@@ -134,48 +139,34 @@ function addTx(pillarId, toAddress, fromAddress, asset, contractAddress, timesta
 =======
 >>>>>>> origin/subscriber
   return new Promise(((resolve, reject) => {
+=======
+  return new Promise((resolve, reject) => {
+>>>>>>> origin/master-pub-sub
     try {
-      var tx = new transactions.Transactions(txObject);
-      tx.save((err) => {
-        if (err) {
-          logger.info(`transactions.addTx DB controller ERROR: ${err}`);
-          reject(err);
-        }
+      findByTxHash(txUpdatedKeys.txHash).then((result) => {
+        result.forEach((tx) => {
+          transactions.Transactions.update(
+            { _id: tx._id },
+            txUpdatedKeys,
+            (err) => {
+              if (err) {
+                logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
+                reject(err);
+              }
+            },
+          );
+        });
         resolve();
       });
     } catch (e) { reject(e); }
-  }));
-}
-module.exports.addTx = addTx;
-
-function updateTx(txUpdatedKeys) {
-  return new Promise(((resolve, reject) => {
-    try {
-      findByTxHash(txUpdatedKeys.txHash).then(txObject => {
-
-        transactions.Transactions.update(
-          { _id: txObject._id },
-          txUpdatedKeys,
-          (err) => {
-            if (err) {
-              logger.info(`transactions.updateTx DB controller ERROR: ${err}`);
-              reject(err);
-            }
-            resolve();
-          },
-        );
-
-      });
-
-    } catch (e) { reject(e); }
-  }));
+  });
 }
 module.exports.updateTx = updateTx;
-*/
+
 function txFailed(id, failureStatus) {
   return new Promise((resolve, reject) => {
     try {
-	    transactions.Transactions.update(
+      transactions.Transactions.update(
         { _id: id },
         { status: failureStatus },
         (err) => {
