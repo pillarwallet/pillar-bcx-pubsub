@@ -1,0 +1,66 @@
+{"message":"Started executing master.init()","level":"info"}
+{"message":"master.init(): Initializing master for Ethereum","level":"info"}
+{"message":"master.init(): A new publisher will be spawned for every 500000 wallets..","level":"info"}
+{"message":"Started executing master.launch()","level":"info"}
+{"message":"Exited master.launch()","level":"info"}
+{"message":"Exited master.init()","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Connected to database","level":"info"}
+{"message":"Started executing initRabbitMQ()","level":"info"}
+{"message":"Exited initRabbitMQ()","level":"info"}
+{"message":"Connected","level":"info"}
+{"message":"Started executing publisher.initIPC()","level":"info"}
+{"message":"Exited publisher.initIPC()","level":"info"}
+{"message":"Executing rmqServices.initMQ()","level":"info"}
+{"message":"Exited rmqServices.initMQ()","level":"info"}
+{"code":541,"level":"error"}
+{"message":"\u001b[32m\u001b[1mEstablished connection with local Ethereum node!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1mCurrent Block number :3423232\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Connection closed","level":"error"}
+{"message":"\u001b[32m\u001b[1mEstablished connection with local Ethereum node!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1mCurrent Block number :3423232\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 0:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0XABA31E585C4A221D9E196EA46C98793E0A0490BD\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 1:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0X486592D425272B856FD15ED7BFB2E6AC5CFC187E\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED SMART CONTRACTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 0\u001b[39m\n\u001b[36mPillar : SYMBOL = PLR    ADDRESS = 0X9471EA41772925E3FF477772681740C9F520D3AF\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 1\u001b[39m\n\u001b[36mBokkyPooBah Test Token : SYMBOL = BOKKY    ADDRESS = 0X583CBBB8A8443B38ABCC0C956BECE47340EA1367\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mDONE\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING TX HISTORY DATABASE ...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 0:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0XABA31E585C4A221D9E196EA46C98793E0A0490BD\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 1:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0X486592D425272B856FD15ED7BFB2E6AC5CFC187E\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED SMART CONTRACTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 0\u001b[39m\n\u001b[36mPillar : SYMBOL = PLR    ADDRESS = 0X9471EA41772925E3FF477772681740C9F520D3AF\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 1\u001b[39m\n\u001b[36mBokkyPooBah Test Token : SYMBOL = BOKKY    ADDRESS = 0X583CBBB8A8443B38ABCC0C956BECE47340EA1367\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to Pending Tx and Smart Contract Calls\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to Block Headers\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"level":"info"}
+{"level":"info"}
+{"level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to DB ERC20 Smart Contracts Transfer Events\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m-->Highest Block Number for Tx History: 3334578\u001b[39m\n\u001b[33m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mTX HISTORY DATABASE INITIALIZED\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING ERC20 SMART CONTRACTS DATABASE...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m-->Highest Block Number for ERC20 Smart Contracts: 3423216\u001b[39m\n\u001b[33m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mERC20 SMART CONTRACTS DATABASE INITIALIZED\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mUPDATING PENDING TX IN DATABASE...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to Block Headers\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[34m\u001b[1mLAST BLOCK NUMBER = 3423232\u001b[22m\u001b[39m\n\u001b[34m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[31m\u001b[1mLAST BLOCK NUMBER = 3423232\u001b[22m\u001b[39m\n\u001b[31m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[34m\u001b[1mUPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # 3423216\u001b[22m\u001b[39m\n\u001b[34m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[31m\u001b[1mUPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # 3334578\u001b[22m\u001b[39m\n\u001b[31m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mDONE UPDATING PENDING TX IN DATABASE\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m--> 0 transactions found\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Started executing initRabbitMQ()","level":"info"}
+{"message":"Exited initRabbitMQ()","level":"info"}
+{"message":"Started executing initRabbitMQ()","level":"info"}
+{"message":"Exited initRabbitMQ()","level":"info"}
+{"message":"Connected","level":"info"}
+{"message":"Connected","level":"info"}
+{"message":"\u001b[34m\u001b[1mERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!\u001b[22m\u001b[39m\n\u001b[34m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[34m-->0 ERC20 smart contracts found\u001b[39m\n\u001b[34m\u001b[39m","level":"info"}
