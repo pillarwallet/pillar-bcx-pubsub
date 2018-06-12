@@ -10,7 +10,6 @@ describe('Function Calls', () => {
   it('Expect dbConnect to be called by initServices()', () => {
 
     const spyConnect = jest.spyOn(dbServices, 'dbConnect').mockImplementation(() => Promise.resolve({ success: true }));
-    spyOn(console, 'error'); 
     subscriber.initServices();
     const mongoUser = process.env.MONGO_USER;
     const mongoPwd = process.env.MONGO_PWD;
