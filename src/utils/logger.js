@@ -13,7 +13,7 @@ const {
 } = format;
 
 const formatter = printf((info) => {
-  const output = `${info.timestamp} [${packageJson.name}/${packageJson.version}] ${info.level}: ${info.message}`;
+  const output = `${info.timestamp} - ${process.argv[1].substring(process.argv[1].lastIndexOf('/') + 1)} : [${packageJson.name}/${packageJson.version}] ${info.level}: ${info.message}`;
   return output;
 });
 
