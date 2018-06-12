@@ -11,15 +11,15 @@ const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 const hashPrefix = process.env.HASH_PREFIX;
 
-let dbCollections;
+// let dbCollections;
 
 sha256 = new jsHashes.SHA256();
 let connection;
 
 exports.initServices = function () {
   dbServices.dbConnect(mongoUrl)
-    .then((db) => {
-      dbCollections = db;
+    .then(() => {
+      // dbCollections = db;
       logger.info('Connected to database');
       this.initRabbitMQ();
     })
@@ -73,7 +73,7 @@ exports.initRabbitMQ = () => {
               entry.blockNumber = '';
               entry.status = 'pending';
 
-              dbCollections.transactions.addTx(entry)
+	            dbServices.dbCollections.transactions.addTx(entry)
                 .then(() => {
                   logger.info(`Transaction inserted: ${entry.txHash}`);
                 })
@@ -82,7 +82,7 @@ exports.initRabbitMQ = () => {
                 });
               break
             case 'updateTx':
-              dbCollections.transactions.updateTx(entry)
+	            dbServices.dbCollections.transactions.updateTx(entry)
                 .then(() => {
                   logger.info(`Transaction updated: ${entry.txHash}`);
                 })

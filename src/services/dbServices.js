@@ -8,6 +8,7 @@ module.exports.mongoose = mongoose;
 
 let dbCollections;
 
+
 function dbConnect(url, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
@@ -20,6 +21,7 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
       module.exports.mongoose.connection.on('open', () => {
         logger.info(colors.green.bold('Established connection to database!\n'));
         dbCollections = { accounts, assets, transactions };
+	      module.exports.dbCollections = dbCollections;
         resolve();
         // resolve({ accounts, assets, transactions });
       });
@@ -81,40 +83,43 @@ function recentAccounts(
 ) {
   return new Promise(((resolve, reject) => {
     try {
-      module.exports.dbConnect(url, $arg)
-        .then((dbCollections) => {
-          if(idFrom !== undefined && idFrom !== '') {
-            // fetch accounts registered after a given Id
-            dbCollections.accounts.listRecent(idFrom)
-              .then((ethAddressesArray) => {
-                logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
-                let i = 0;
-                //console.log(JSON.stringify(ethAddressesArray));
-                ethAddressesArray.forEach((item) => {
-                  logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
-                  i += 1;
-                });
-                resolve(ethAddressesArray);
-              })
-              .catch((e) => { reject(e); });
-          } else {
-            dbCollections.accounts.listAll()
-              .then((ethAddressesArray) => {
-                logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
-                resolve(ethAddressesArray);
-              })
-              .catch((e) => { reject(e); });
-          }
-        })
-        .catch((e) => { reject(e); });
+      if (dbCollections) {
+	      if (idFrom !== undefined && idFrom !== '') {
+		      // fetch accounts registered after a given Id
+		      dbCollections.accounts.listRecent(idFrom)
+		      .then((ethAddressesArray) => {
+			      logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
+			      let i = 0;
+			      // console.log(JSON.stringify(ethAddressesArray));
+			      ethAddressesArray.forEach((item) => {
+				      logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
+				      i += 1;
+			      });
+			      resolve(ethAddressesArray);
+		      })
+		      .catch((e) => { reject(e); });
+	      } else {
+		      dbCollections.accounts.listAll()
+		      .then((ethAddressesArray) => {
+			      logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
+			      resolve(ethAddressesArray);
+		      })
+		      .catch((e) => { reject(e); });
+	      }
+      } else {
+	      module.exports.dbConnect(url, $arg)
+	      .then(() => {
+		      resolve(module.exports.recentAccounts());
+	      })
+          .catch((e) => { reject(e); });
+      }
+      //
     } catch (e) { reject(e); }
   }));
 }
 module.exports.recentAccounts = recentAccounts;
 
-function dlTxHistory(
-  web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, nbTx, checkAddress = null,
-) {
+function dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, nbTx, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (startBlock > maxBlock) {
@@ -135,9 +140,7 @@ function dlTxHistory(
                       .then(() => {
                         dbCollections.transactions.updateTxHistoryHeight(startBlock)
                           .then(() => {
-                            resolve(dlTxHistory(
-                              web3, bcx, processTx, dbCollections, abiDecoder, startBlock + 1, maxBlock, nbTx, checkAddress,
-                            ));
+                            resolve(dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock + 1, maxBlock, nbTx, checkAddress));
                           })
                           .catch((e) => { reject(e); });
                       })
@@ -154,24 +157,18 @@ function dlTxHistory(
 }
 module.exports.dlTxHistory = dlTxHistory;
 
-function processTxHistory(
-  web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index, checkAddress = null,
-) {
+function processTxHistory(web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (index === txArray.length) {
         resolve(nbTx);
       } else {
-        processTx.newPendingTx(
-          web3, txArray[index], dbCollections, abiDecoder, null, null, null, false, checkAddress,
-        )
+        processTx.newPendingTx(web3, txArray[index], dbCollections, abiDecoder, null, null, null, false, checkAddress)
           .then((pillarWalletTx) => {
             if (pillarWalletTx) {
               nbTx += 1;
             }
-            resolve(processTxHistory(
-              web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index + 1, checkAddress,
-            ));
+            resolve(processTxHistory(web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index + 1, checkAddress));
           });
       }
     } catch (e) { reject(e); }
@@ -185,9 +182,7 @@ function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, maxBlo
       dbCollections.transactions.findTxHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-          this.dlTxHistory(
-            web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, 0,
-          )
+          this.dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, 0)
             .then((nbTxFound) => {
               logger.info(colors.red.bold('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!\n'));
               logger.info(colors.red(`-->${nbTxFound} transactions found\n`));
@@ -576,27 +571,27 @@ module.exports.updateERC20SmartContracts = updateERC20SmartContracts;
 function contractsToMonitor(
   url,
   idFrom,
-  $arg = { useMongoClient: true }
+  $arg = { useMongoClient: true },
 ) {
   return new Promise(((resolve, reject) => {
-    //code to fetch list of contracts/assets to monitor
+    // code to fetch list of contracts/assets to monitor
     module.exports.dbConnect(url, $arg)
-    .then((dbCollections) => {
-      if(idFrom !== undefined && idFrom !== '') {
+      .then((dbCollections) => {
+        if (idFrom !== undefined && idFrom !== '') {
         // fetch accounts registered after a given Id
-        dbCollections.assets.listRecent(idFrom)
-        .then((assetsArray) => {
-          resolve(assetsArray);
-        })
-        .catch((e) => { reject(e);})
-      } else {
-        dbCollections.assets.listAll()
-        .then((assetsArray) => {
-          resolve(assetsArray);
-        })
-        .catch((e) => { reject(e);});
-      }
-    });
+          dbCollections.assets.listRecent(idFrom)
+            .then((assetsArray) => {
+              resolve(assetsArray);
+            })
+            .catch((e) => { reject(e); });
+        } else {
+          dbCollections.assets.listAll()
+            .then((assetsArray) => {
+              resolve(assetsArray);
+            })
+            .catch((e) => { reject(e); });
+        }
+      });
   }));
 }
 module.exports.contractsToMonitor = contractsToMonitor;

@@ -28,7 +28,7 @@ function subscribePendingTx(web3, bcx, processTx, accounts, assets, abiDecoder, 
 }
 module.exports.subscribePendingTx = subscribePendingTx;
 
-function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections, abiDecoder, channel, queue, rmqServices) {
+function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, abiDecoder, channel, queue, rmqServices) {
   const subscribePromise = new Promise((resolve, reject) => {
   	web3.eth.subscribe('newBlockHeaders', (err, res) => {})
 	  .on('data', (blockHeader) => {
@@ -36,11 +36,11 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
 			  //  nbBlocksReceived++;
 			  logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
 			  // Check for pending tx in database and update their status
-			  dbCollections.transactions.listPending()
+			  dbServices.dbCollections.transactions.listPending()
 			  .then((pendingTxArray) => {
 				  processTx.checkPendingTx(web3, bcx, pendingTxArray, blockHeader.number, channel, queue, rmqServices)
 				  .then(() => {
-					  dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
+					  dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
 					  .then(() => {
 						  // logger.info(colors.green.bold('Highest Block Number for Tx History: '+blockHeader.number+'\n'))
 					  })
