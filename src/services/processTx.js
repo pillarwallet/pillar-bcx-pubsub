@@ -2,20 +2,23 @@ const colors = require('colors');
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
 const ERC20ABI = require('./ERC20ABI');
-const dbservices = require('./dbServices.js');
+const dbServices = require('./dbServices.js');
+const rmqServices = require('./rmqServices.js');
+const gethConnect = require('./gethConnect.js');
+const abiDecoder = require('abi-decoder');
+const bcx = require('./bcx.js');
 
-
-function processNewPendingTxArray(web3, txArray, accounts, assets, abiDecoder, channel, queue, rmqServices, nbTxFound, publisher = true, checkAddress = null) {
+function processNewPendingTxArray(txArray, accounts, assets, nbTxFound, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     try {
       if (txArray.length === 0) {
         resolve(nbTxFound);
       } else {
-        module.exports.newPendingTx(web3, txArray[0], accounts, assets, abiDecoder, channel, queue, rmqServices, publisher, checkAddress)
+        module.exports.newPendingTx(txArray[0], accounts, assets, isPublisher)
           .then((isMonitoredAccoutnTx) => {
             if (isMonitoredAccoutnTx) { nbTxFound += 1; }
             txArray.splice(0, 1);
-            resolve(processNewPendingTxArray(web3, txArray, accounts, assets, abiDecoder, channel, queue, rmqServices, nbTxFound, publisher, checkAddress));
+            resolve(processNewPendingTxArray(txArray, accounts, assets, nbTxFound, isPublisher));
           })
           .catch((e) => { reject(e); });
       }
@@ -24,7 +27,7 @@ function processNewPendingTxArray(web3, txArray, accounts, assets, abiDecoder, c
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
-function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rmqServices, publisher = true, checkAddress = null) {
+function newPendingTx(tx, accounts, assets, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
     let toERC20SmartContract;
@@ -34,19 +37,19 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
     } else { // REGULAR TRANSACTION OR SMART CONTRACT CALL
-      module.exports.filterAddress(tx.to, accounts, assets, checkAddress)
+      module.exports.filterAddress(tx.to, accounts, assets, isPublisher)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
           toERC20SmartContract = result.isERC20SmartContract;
           ticker = result.ERC20SmartContractTicker;
-          module.exports.filterAddress(tx.from, accounts, assets, checkAddress)
+          module.exports.filterAddress(tx.from, accounts, assets, isPublisher)
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
               let value = tx.value * (10 ** -18);
 
               if (toPillarAccount) { // TRANSACTION RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
                 const asset = 'ETH'; // MUST BE ETH TRANSFER BECAUSE RECIPIENT ADDRESS !== SMART CONTRACT ADDRESS
-                if (publisher) {
+                if (isPublisher) {
                   // PUBLISHER SENDS NEW TX DATA TO SUBSCRIBER
                   const txMsgTo = {
                     type: 'newTx',
@@ -60,10 +63,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                     timestamp: tmstmp,
                     value: tx.value,
                   };
-                  rmqServices.sendMessage(txMsgTo, channel, queue);
+                  rmqServices.sendMessage(txMsgTo);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                dbservices.dbCollections.transactions.addTx({
+                  dbServices.dbCollections.transactions.addTx({
                     pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: tx.from,
@@ -80,7 +83,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                 }
 
                 if (fromPillarAccount) { // TRANSACTION SENDER ADDRESS === PILLAR WALLET ADDRESS
-                  if (publisher) {
+                  if (isPublisher) {
                     // SEND NEW TX DATA TO SUBSCRIBER
                     const txMsgFrom = {
                       type: 'newTx',
@@ -94,10 +97,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                       timestamp: tmstmp,
                       value: tx.value,
                     };
-                    rmqServices.sendMessage(txMsgFrom, channel, queue);
+                    rmqServices.sendMessage(txMsgFrom);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                  dbservices.dbCollections.transactions.addTx({
+                    dbServices.dbCollections.transactions.addTx({
                       pillarId: 'senderPillarId',
                       protocol: 'Ethereum',
                       fromAddress: tx.from,
@@ -126,7 +129,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                     const asset = 'ETH'; // ... TRANSACTION MUST BE ETH TRANSFER (TO A SMART CONTRACT BECAUSE RECIPIENT ADDRESS === SMART CONTRACT ADDRESS)
 
                     if (fromPillarAccount) { // SENDER ADDRESS === PILLAR ADDRESS
-                      if (publisher) {
+                      if (isPublisher) {
                         // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                         const txMsgFrom = {
                           type: 'newTx',
@@ -140,10 +143,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                           timestamp: tmstmp,
                           value: tx.value,
                         };
-                        rmqServices.sendMessage(txMsgFrom, channel, queue);
+                        rmqServices.sendMessage(txMsgFrom);
                       } else {
                         // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                      dbservices.dbCollections.transactions.addTx({
+                        dbServices.dbCollections.transactions.addTx({
                           pillarId: 'senderPillarId',
                           protocol: 'Ethereum',
                           fromAddress: tx.from,
@@ -176,7 +179,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                         const to = data.params[0].value;
                         // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
 
-                        if (publisher) {
+                        if (isPublisher) {
                           // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsgFrom = {
                             type: 'newTx',
@@ -190,10 +193,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                             timestamp: tmstmp,
                             value: parseInt(data.params[1].value, 10),
                           };
-                          rmqServices.sendMessage(txMsgFrom, channel, queue);
+                          rmqServices.sendMessage(txMsgFrom);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                        dbservices.dbCollections.transactions.addTx({
+                          dbServices.dbCollections.transactions.addTx({
                             pillarId: 'senderPillarId',
                             protocol: 'Ethereum',
                             fromAddress: tx.from,
@@ -208,11 +211,11 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                             gasUsed: null,
                           });
                         }
-                        module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
+                        module.exports.filterAddress(to, accounts, assets, isPublisher)
                           .then((result3) => {
                             toPillarAccount = result3.isPillarAddress;
                             if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
-                              if (publisher) {
+                              if (isPublisher) {
                                 // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                                 const txMsgTo = {
                                   type: 'newTx',
@@ -226,10 +229,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                                   timestamp: tmstmp,
                                   value: parseInt(data.params[1].value, 10),
                                 };
-                                rmqServices.sendMessage(txMsgTo, channel, queue);
+                                rmqServices.sendMessage(txMsgTo);
                               } else {
                                 // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                              dbservices.dbCollections.transactions.addTx({
+                                dbServices.dbCollections.transactions.addTx({
                                   pillarId: 'recipientPillarId',
                                   protocol: 'Ethereum',
                                   fromAddress: tx.from,
@@ -256,7 +259,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                       } else {
                         // TRANSACTION IS A ZERO-VALUE ERC20 SMART CONTRACT CALL
                         // (BUT NOT A TOKEN TRANSFER)
-                        if (publisher) {
+                        if (isPublisher) {
                           // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsgFrom = {
                             type: 'newTx',
@@ -270,10 +273,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                             timestamp: tmstmp,
                             value: tx.value,
                           };
-                          rmqServices.sendMessage(txMsgFrom, channel, queue);
+                          rmqServices.sendMessage(txMsgFrom);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                        dbservices.dbCollections.transactions.addTx({
+                          dbServices.dbCollections.transactions.addTx({
                             pillarId: 'senderPillarId',
                             protocol: 'Ethereum',
                             fromAddress: tx.from,
@@ -296,11 +299,11 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                       // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                       const to = data.params[0].value;
                       // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
-                      module.exports.filterAddress(to, dbCollections.accounts, dbCollections.assets)
+                      module.exports.filterAddress(to, accounts, assets, isPublisher)
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
                           if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR ACCOUNT ADDRESS
-                            if (publisher) {
+                            if (isPublisher) {
                               // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                               const txMsgTo = {
                                 type: 'newTx',
@@ -314,10 +317,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                                 timestamp: tmstmp,
                                 value: parseInt(data.params[1].value, 10),
                               };
-                              rmqServices.sendMessage(txMsgTo, channel, queue);
+                              rmqServices.sendMessage(txMsgTo);
                             } else {
                               // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                            dbservices.dbCollections.transactions.addTx({
+                              dbServices.dbCollections.transactions.addTx({
                                 pillarId: 'recipientPillarId',
                                 protocol: 'Ethereum',
                                 fromAddress: tx.from,
@@ -350,7 +353,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                   // AND SENDER ADDRESS === PILLAR ACCOUNT ADDRESS
                   // BUT TRANSACTION DOES NOT CARRY INPUT DATA...
                   const asset = 'ETH'; // ... THEREFORE TRANSACTION MUST BE AN ETH TRANSFER TO A SMART CONTRACT
-                  if (publisher) {
+                  if (isPublisher) {
                     // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                     const txMsgFrom = {
                       type: 'newTx',
@@ -364,10 +367,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                       timestamp: tmstmp,
                       value: tx.value,
                     };
-                    rmqServices.sendMessage(txMsgFrom, channel, queue);
+                    rmqServices.sendMessage(txMsgFrom);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                  dbservices.dbCollections.transactions.addTx({
+                    dbServices.dbCollections.transactions.addTx({
                       pillarId: 'senderPillarId',
                       protocol: 'Ethereum',
                       fromAddress: tx.from,
@@ -391,7 +394,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                 // NOR IS IT A MONITORED ERC20 SMART CONTRACT
                 // BUT TRANSACTION SENDER ADDRESS === PILLAR ACCOUNT ADDRESS
                 const asset = 'ETH';
-                if (publisher) {
+                if (isPublisher) {
                   // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                   const txMsgFrom = {
                     type: 'newTx',
@@ -405,10 +408,10 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
                     timestamp: tmstmp,
                     value: tx.value,
                   };
-                  rmqServices.sendMessage(txMsgFrom, channel, queue);
+                  rmqServices.sendMessage(txMsgFrom);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
-	                dbservices.dbCollections.transactions.addTx({
+                  dbServices.dbCollections.transactions.addTx({
                     pillarId: 'senderPillarId',
                     protocol: 'Ethereum',
                     fromAddress: tx.from,
@@ -442,7 +445,7 @@ function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rm
 module.exports.newPendingTx = newPendingTx;
 
 
-function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue, rmqServices, publisher = true) {
+function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     if (dbPendingTxArray.length === 0) {
       resolve();
@@ -450,20 +453,20 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
       const item = dbPendingTxArray[0];
       dbPendingTxArray.splice(0, 1);
 
-      bcx.getTxInfo(web3, item.txHash)
+      bcx.getTxInfo(item.txHash)
         .then((txInfo) => {
           if (txInfo != null) {
             if (txInfo.blockNumber != null) {
               const confBlockNb = txInfo.blockNumber;
-              bcx.getTxReceipt(web3, item.txHash)
+              bcx.getTxReceipt(item.txHash)
                 .then((receipt) => {
                   if (receipt != null) {
-                    const input = web3.utils.hexToNumberString(txInfo.input);
+                    const input = gethConnect.web3.utils.hexToNumberString(txInfo.input);
                     if (txInfo.value === 0 && input !== '0') { // SMART CONTRACT CALL IDENTIFIED
                       if (receipt.gasUsed < txInfo.gas) { // TX MINED
                         const nbConf = 1 + (blockNumber - confBlockNb);
                         if (nbConf >= 1) {
-                          if (publisher) {
+                          if (isPublisher) {
                             // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                             const txMsg = {
                               type: 'updateTx',
@@ -472,10 +475,10 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                               status: 'confirmed',
                               gasUsed: receipt.gasUsed,
                             };
-                            rmqServices.sendMessage(txMsg, channel, queue);
+                            rmqServices.sendMessage(txMsg);
                           } else {
                             // HOUSEKEEPER UPDATES TX IN DB
-	                          dbservices.dbCollections.transactions.updateTx({
+                            dbServices.dbCollections.transactions.updateTx({
                               txHash: item.txHash,
                               blockNumber: confBlockNb,
                               status: 'confirmed',
@@ -485,19 +488,13 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
 
                           logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
 
-                          resolve(checkPendingTx(
-                            web3, bcx, dbPendingTxArray,
-                            blockNumber, channel, queue, rmqServices, publisher,
-                          ));
+                          resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
                         } else {
                           logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
-                          resolve(checkPendingTx(
-                            web3, bcx, dbPendingTxArray,
-                            blockNumber, channel, queue, rmqServices, publisher,
-                          ));
+                          resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
                         }
                       } else { // OUT OF GAS
-                        if (publisher) {
+                        if (isPublisher) {
                           // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsg = {
                             type: 'updateTx',
@@ -506,10 +503,10 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                             status: 'failed: out of gas',
                             gasUsed: receipt.gasUsed,
                           };
-                          rmqServices.sendMessage(txMsg, channel, queue);
+                          rmqServices.sendMessage(txMsg);
                         } else {
                           // HOUSEKEEPER UPDATES TX IN DB
-	                        dbservices.dbCollections.transactions.updateTx({
+                          dbServices.dbCollections.transactions.updateTx({
                             txHash: item.txHash,
                             blockNumber: confBlockNb,
                             status: 'failed: out of gas',
@@ -517,16 +514,12 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                           });
                         }
                         logger.info(colors.red.bold(`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
-
-                        resolve(checkPendingTx(
-                          web3, bcx, dbPendingTxArray,
-                          blockNumber, channel, queue, rmqServices, publisher,
-                        ));
+                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
                       }
                     } else { // REGULAR ETH TX
                       const nbConf = 1 + (blockNumber - confBlockNb);
                       if (nbConf >= 1) {
-                        if (publisher) {
+                        if (isPublisher) {
                           // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsg = {
                             type: 'updateTx',
@@ -535,10 +528,10 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                             status: 'confirmed',
                             gasUsed: receipt.gasUsed,
                           };
-                          rmqServices.sendMessage(txMsg, channel, queue);
+                          rmqServices.sendMessage(txMsg);
                         } else {
                           // HOUSEKEEPER UPDATES TX IN DB
-	                        dbservices.dbCollections.transactions.updateTx({
+                          dbServices.dbCollections.transactions.updateTx({
                             txHash: item.txHash,
                             blockNumber: confBlockNb,
                             status: 'confirmed',
@@ -546,21 +539,14 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                           });
                         }
                         logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
-
-                        resolve(checkPendingTx(
-                          web3, bcx, dbPendingTxArray,
-                          blockNumber, channel, queue, rmqServices, publisher,
-                        ));
+                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
                       } else {
                         logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
-                        resolve(checkPendingTx(
-                          web3, bcx, dbPendingTxArray,
-                          blockNumber, channel, queue, rmqServices, publisher,
-                        ));
+                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
                       }
                     }
                   } else { // TX RECEIPT NOT FOUND
-                    if (publisher) {
+                    if (isPublisher) {
                       // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                       const txMsg = {
                         type: 'updateTx',
@@ -569,10 +555,10 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                         status: 'failed: tx receipt not found',
                         // gasUsed: null,
                       };
-                      rmqServices.sendMessage(txMsg, channel, queue);
+                      rmqServices.sendMessage(txMsg);
                     } else {
                       // HOUSEKEEPER UPDATES TX IN DB
-	                    dbservices.dbCollections.transactions.updateTx({
+                      dbServices.dbCollections.transactions.updateTx({
                         txHash: item.txHash,
                         blockNumber: confBlockNb,
                         status: 'failed: tx receipt not found',
@@ -580,32 +566,26 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
                       });
                     }
                     logger.info(colors.red.bold(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
-                    resolve(checkPendingTx(
-                      web3, bcx, dbPendingTxArray,
-                      blockNumber, channel, queue, rmqServices, publisher,
-                    ));
+                    resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
                   }
                 })
                 .catch((e) => { reject(e); });
             } else { // TX STILL PENDING
               logger.info(`TX ${item.txHash} STILL PENDING (IN TX POOL)...\n`);
-              resolve(checkPendingTx(
-                web3, bcx, dbPendingTxArray,
-                blockNumber, channel, queue, rmqServices, publisher,
-              ));
+              resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
             }
           } else { // TX INFO NOT FOUND
-            if (publisher) {
+            if (isPublisher) {
               // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
               const txMsg = {
                 type: 'updateTx',
                 txHash: item.txHash,
                 status: 'failed: tx info not found',
               };
-              rmqServices.sendMessage(txMsg, channel, queue);
+              rmqServices.sendMessage(txMsg);
             } else {
               // HOUSEKEEPER UPDATES TX IN DB
-	            dbservices.dbCollections.transactions.updateTx({
+              dbServices.dbCollections.transactions.updateTx({
                 txHash: item.txHash,
                 // blockNumber: null,
                 status: 'failed: tx info not found',
@@ -613,11 +593,7 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
               });
             }
             logger.info(colors.red.bold(`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
-
-            resolve(checkPendingTx(
-              web3, bcx, dbPendingTxArray,
-              blockNumber, channel, queue, rmqServices, publisher,
-            ));
+            resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
           }
         })
         .catch((e) => { reject(e); });
@@ -627,62 +603,55 @@ function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue
 module.exports.checkPendingTx = checkPendingTx;
 
 
-function filterAddress(address, accounts, assets, checkAddress = null) {
+function filterAddress(address, accounts, assets, isPublisher) {
   /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
   return new Promise(((resolve, reject) => {
-	  try {
+    try {
       const ADDRESS = address.toUpperCase();
-
-      if (checkAddress && ADDRESS === checkAddress.toUpperCase()) {
-        resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-      } else if (accounts === null && assets === null) {
-	      dbservices.dbCollections.accounts.findByAddress(ADDRESS)
-	        .then((result) => {
-		        if (result) {
-			        resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-		        } else {
-			        dbservices.dbCollections.assets.findByAddress(ADDRESS)
-			        .then((result2) => {
-				        if (result2) {
-					        const ticker = result2.symbol;
-					        resolve({
-						        isPillarAddress: false,
-						        isERC20SmartContract: true,
-						        ERC20SmartContractTicker: ticker,
-					        });
-				        } else {
-					        resolve({
-						        isPillarAddress: false,
-						        isERC20SmartContract: false,
-						        ERC20SmartContractTicker: '',
-					        });
-				        }
-			        })
-			        .catch((e) => {
-				        reject(e);
-			        });
-		        }
-	        })
-	        .catch((e) => {
-		        reject(e);
-	        });
+      if (isPublisher === false) {
+        dbServices.dbCollections.accounts.findByAddress(ADDRESS)
+          .then((result) => {
+            if (result) {
+              resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+            } else {
+              dbServices.dbCollections.assets.findByAddress(ADDRESS)
+                .then((result2) => {
+                  if (result2) {
+                    const ticker = result2.symbol;
+                    resolve({
+                      isPillarAddress: false,
+                      isERC20SmartContract: true,
+                      ERC20SmartContractTicker: ticker,
+                    });
+                  } else {
+                    resolve({
+                      isPillarAddress: false,
+                      isERC20SmartContract: false,
+                      ERC20SmartContractTicker: '',
+                    });
+                  }
+                })
+                .catch((e) => { reject(e); });
+            }
+          })
+          .catch((e) => { reject(e); });
       } else if (accounts.has(ADDRESS)) {
-			      resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+        resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
       } else if (assets.has(ADDRESS)) {
-            // const ticker = result2.symbol; // NEED TO ADD ASSET SYMBOL IN HASHMAP
-        const ticker = 'ASSET SYMBOL'
-            resolve({
-              isPillarAddress: false,
-              isERC20SmartContract: true,
-              ERC20SmartContractTicker: ticker,
-            });
+        // const ticker = result2.symbol; // NEED TO ADD ASSET SYMBOL IN HASHMAP
+        const ticker = 'ASSET SYMBOL';
+        resolve({
+          isPillarAddress: false,
+          isERC20SmartContract: true,
+          ERC20SmartContractTicker: ticker,
+        });
       } else {
-            resolve({
-              isPillarAddress: false,
-              isERC20SmartContract: false,
-              ERC20SmartContractTicker: '',
-            });
-          }
+        resolve({
+          isPillarAddress: false,
+          isERC20SmartContract: false,
+          ERC20SmartContractTicker: '',
+        });
+      }
     } catch (e) {
       resolve({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     }
@@ -691,17 +660,21 @@ function filterAddress(address, accounts, assets, checkAddress = null) {
 module.exports.filterAddress = filterAddress;
 
 
-function checkTokenTransferEvent(web3, bcx, accounts, assets, dbServices, channel, queue, rmqServices, eventInfo, ERC20SmartcContractInfo) {
-  // THIS IS TO CATCH TOKEN TRANSFERS THAT RESULT FROM SENDING ETH TO A SMART CONTRACT (WHICH N RETURN TRANSFERS TOKENS TO ETH SENDER)
+function checkTokenTransferEvent(accounts, assets, eventInfo, ERC20SmartcContractInfo) {
+  // THIS IS TO CATCH TOKEN TRANSFERS THAT RESULT FROM SENDING ETH TO A
+  // SMART CONTRACT (WHICH IN RETURN TRANSFERS TOKENS TO ETH SENDER)
   return new Promise(((resolve, reject) => {
     try {
       const tmstmp = time.now();
       logger.info(eventInfo);
-      module.exports.filterAddress(eventInfo.returnValues._to, accounts, assets) // check if token transfer destination address is pillar wallet
+      module.exports.filterAddress(eventInfo.returnValues._to, accounts, assets, true)
+      // ^ check if token transfer destination address is pillar wallet
         .then((result) => {
-          if (result.isPillarAddress === true) { // TOKEN TRANSFER DESTINATION ADDRESS === PILLAR ACCOUNT ADDRESS
-	          dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
-            // ETH TX SHOULD BE ALREADY IN DB BECAUSE ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
+          if (result.isPillarAddress === true) {
+            // ^ TOKEN TRANSFER DESTINATION ADDRESS === PILLAR ACCOUNT ADDRESS
+            dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
+            // ETH TX SHOULD BE ALREADY IN DB BECAUSE
+            // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
               .then((tx) => {
                 if (tx.asset === 'ETH') { // check is it is regular token transfer,
                   // if so (asset === TOKEN): resolve (because token transfer already processed),
@@ -726,7 +699,7 @@ function checkTokenTransferEvent(web3, bcx, accounts, assets, dbServices, channe
                     timestamp: tmstmp,
                     value: eventInfo.returnValues._value,
                   };
-                  rmqServices.sendMessage(txMsg, channel, queue);
+                  rmqServices.sendMessage(txMsg);
                   resolve();
                 } else {
                   resolve();

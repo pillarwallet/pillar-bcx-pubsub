@@ -7,6 +7,8 @@ require('dotenv').config();
 
 const checksumKey = process.env.CHECKSUM_KEY;
 
+let channel;
+const queue = 'bcx-pubsub';
 
 exports.initMQ = function () {
   return new Promise((resolve, reject) => {
@@ -14,27 +16,27 @@ exports.initMQ = function () {
       logger.info('Executing rmqServices.initMQ()');
       amqp.connect('amqp://localhost', (err, conn) => {
         conn.createChannel((err, ch) => {
-          const q = 'bcx-pubsub';
+          channel = ch;
           const msg = 'Initialized bcx-pubsub message queue!';
-          ch.assertQueue(q, { durable: false });
+          ch.assertQueue(queue, { durable: false });
           // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(q, Buffer.from(msg));
+          ch.sendToQueue(queue, Buffer.from(msg));
           console.log(' [x] Sent %s', msg);
-          resolve({ ch, q });
+          resolve();
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
       });
     } catch (err) {
       logger.error('rmqServices.initMQ() failed: ', err.message);
+      reject(err);
     } finally {
       logger.info('Exited rmqServices.initMQ()');
     }
   });
 };
 
-function sendMessage(payload, channel, queue) {
+function sendMessage(payload) {
   const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
-
   payload.checksum = checksum;
   channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
 }
