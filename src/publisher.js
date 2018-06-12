@@ -21,25 +21,26 @@ const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 
-var HashMap = require('hashmap');
-var wallets;
-var assets;
+const HashMap = require('hashmap');
+
+let accounts;
+let assets;
 //starting point
-var latestId;
+let latestId;
 
 process.on('message',(data) => {
   var message = data.message;
-  if(data.type == 'accounts') {
-    for(var i=0;i<message.length;i++) {
+  if(data.type === 'accounts') {
+    for(var i = 0; i < message.length; i++) {
       var obj = message[i];
       logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
-      wallets.set(obj.walletId,obj.pillarId);
+      accounts.set(obj.walletId, obj.pillarId);
       latestId = obj.id;
     }
-  } else if(data.type == 'assets') {
+  } else if(data.type === 'assets') {
     //add the new asset to the assets hashmap
     logger.info('Publisher received notification to monitor a new asset: ' + message.contractAddress);
-    assets.set(message.contractAddress,message);
+    assets.set(message.contractAddress, message);
   }
 });
 
@@ -47,13 +48,13 @@ exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
 
-    wallets = new HashMap();
+    accounts = new HashMap();
     assets = new HashMap();
 
-    setInterval(function() {
-      exports.poll()
+    setInterval(() => {
+      exports.poll();
     },5000);
-    exports.initBCXMQ();
+    // exports.initMQ();
   } catch(err) {
     logger.error('Publisher.init() failed: ',err.message);
     throw err;
@@ -62,12 +63,12 @@ exports.initIPC = function () {
   }
 };
 
-exports.poll = function() {
-  logger.info('Requesting new wallet :');
+exports.poll = function () {
+  // logger.info('Requesting new wallet :');
 
   process.send({
     type: 'wallet.request',
-    message : latestId
+    message: latestId,
   });
 };
 
@@ -80,12 +81,12 @@ exports.initSubscriptions = function (channel, queue) {
       dbServices.dbConnectDisplayAccounts(mongoUrl)
         .then((dbCollections) => {
           /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue, rmqServices);
+          gethSubscribe.subscribePendingTx(web3, bcx, processTx, accounts, assets, abiDecoder, channel, queue, rmqServices);
           gethSubscribe.subscribeBlockHeaders(
             web3, gethSubscribe, bcx, processTx, dbServices,
             dbCollections, abiDecoder, channel, queue, rmqServices,
           );
-          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue, rmqServices);
+          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, assets, dbCollections, channel, queue, rmqServices);
         });
     });
 };
@@ -95,7 +96,7 @@ exports.walletReceived = function () {
 };
 
 
-// this.initIPC();
+this.initIPC();
 rmqServices.initMQ()
   .then((MQParams) => {
     const channel = MQParams.ch;

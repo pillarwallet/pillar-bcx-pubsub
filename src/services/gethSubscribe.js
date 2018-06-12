@@ -4,7 +4,7 @@ const colors = require('colors');
 const ERC20ABI = require('./ERC20ABI.json');
 
 
-function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, channel, queue, rmqServices) {
+function subscribePendingTx(web3, bcx, processTx, accounts, assets, abiDecoder, channel, queue, rmqServices) {
   const subscribePromise = new Promise(((resolve, reject) => {
     web3.eth.subscribe('pendingTransactions', (err, res) => {})
       .on('data', (txHash) => {
@@ -12,7 +12,7 @@ function subscribePendingTx(web3, bcx, processTx, dbCollections, abiDecoder, cha
           bcx.getTxInfo(web3, txHash)
             .then((txInfo) => {
               if (txInfo != null) {
-		              processTx.newPendingTx(web3, txInfo, dbCollections, abiDecoder, channel, queue, rmqServices);
+		              processTx.newPendingTx(web3, txInfo, accounts, assets, abiDecoder, channel, queue, rmqServices);
               }
             })
             .catch((e) => { reject(e); });
@@ -32,13 +32,13 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
   const subscribePromise = new Promise((resolve, reject) => {
   	web3.eth.subscribe('newBlockHeaders', (err, res) => {})
 	  .on('data', (blockHeader) => {
-		  if (blockHeader != null) {
+		  if (blockHeader && blockHeader.number && blockHeader.hash) {
 			  //  nbBlocksReceived++;
 			  logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
 			  // Check for pending tx in database and update their status
 			  dbCollections.transactions.listPending()
 			  .then((pendingTxArray) => {
-				  processTx.checkPendingTx(web3, bcx, dbCollections, pendingTxArray, blockHeader.number, channel, queue, rmqServices)
+				  processTx.checkPendingTx(web3, bcx, pendingTxArray, blockHeader.number, channel, queue, rmqServices)
 				  .then(() => {
 					  dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
 					  .then(() => {
@@ -61,6 +61,7 @@ function subscribeBlockHeaders(web3, gethSubscribe, bcx, processTx, dbServices, 
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
+/*
 function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServices, dbCollections) {
 	// CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
   const subscribePromise = new Promise((resolve, reject) => {
@@ -91,8 +92,9 @@ function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServ
   return (subscribePromise);
 }
 module.exports.checkNewERC20SmartContracts = checkNewERC20SmartContracts;
+*/
 
-function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, channel, queue, rmqServices) {
+function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, assets, dbCollections, channel, queue, rmqServices) {
   const subscribePromise = new Promise(((resolve, reject) => {
     dbCollections.assets.listAll()
       .then((smartContractsArray) => {
@@ -108,14 +110,14 @@ function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, dbCollections, 
 }
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
 
-function subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract) {
+function subscribeERC20SmartContract(web3, bcx, accounts, assets, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract) {
 // var subscribePromise = new Promise(function(resolve,reject){
   try {
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
       const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
-          processTx.checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, rmqServices, result, ERC20SmartContract);
+          processTx.checkTokenTransferEvent(web3, bcx, accounts, assets, dbCollections, channel, queue, rmqServices, result, ERC20SmartContract);
         } else {
           logger.info(error);
         }

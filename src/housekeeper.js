@@ -231,7 +231,7 @@ exports.checkNewERC20SmartContracts = function (web3, dbCollections) {
           logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
           // NOW, @ EACH NEW BLOCK MINED:
           // Check for newly created ERC20 smart contracts
-          dbServices.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, blockHeader.number, blockHeader.number, dbCollections, false)
+          this.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, blockHeader.number, blockHeader.number, dbCollections, false)
             .then(() => {
               // Update
               dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
@@ -249,7 +249,7 @@ exports.checkNewERC20SmartContracts = function (web3, dbCollections) {
   });
   return (subscribePromise);
 };
-
+/*
 this.init()
   .then((result) => {
     this.checkTxPool(result.web3, result.dbCollections); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
@@ -258,4 +258,5 @@ this.init()
     this.checkNewERC20SmartContracts(result.web3, result.dbCollections);
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
+  */
 

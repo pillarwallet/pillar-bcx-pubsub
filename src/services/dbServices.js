@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 
 module.exports.mongoose = mongoose;
 
+let dbCollections;
+
 function dbConnect(url, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
@@ -17,7 +19,9 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
 
       module.exports.mongoose.connection.on('open', () => {
         logger.info(colors.green.bold('Established connection to database!\n'));
-        resolve({ accounts, assets, transactions });
+        dbCollections = { accounts, assets, transactions };
+        resolve();
+        // resolve({ accounts, assets, transactions });
       });
 
       // Import DB controllers
@@ -36,7 +40,8 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
       module.exports.dbConnect(url, $arg)
-        .then((dbCollections) => {
+        .then(() => {
+        // .then((dbCollections) => {
           // Display accounts
           dbCollections.accounts.listAll()
             .then((accountsArray) => {
@@ -412,7 +417,7 @@ function listPendingTx(address, asset) {
 }
 module.exports.listPendingTx = listPendingTx;
 
-
+/*
 function dlERC20SmartContracts(
   web3, gethSubscribe, bcx, processTx, startBlock,
   endBlock, dbCollections, nbERC20Found, logs = false,
@@ -566,6 +571,7 @@ function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollec
   }));
 }
 module.exports.updateERC20SmartContracts = updateERC20SmartContracts;
+*/
 
 function contractsToMonitor(
   url,

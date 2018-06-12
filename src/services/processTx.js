@@ -4,17 +4,17 @@ const logger = require('../utils/logger.js');
 const ERC20ABI = require('./ERC20ABI');
 
 
-function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, channel, queue, rmqServices, nbTxFound, publisher = true, checkAddress = null) {
+function processNewPendingTxArray(web3, txArray, accounts, assets, abiDecoder, channel, queue, rmqServices, nbTxFound, publisher = true, dbCollections = null, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (txArray.length === 0) {
         resolve(nbTxFound);
       } else {
-        module.exports.newPendingTx(web3, txArray[0], dbCollections, abiDecoder, channel, queue, rmqServices, publisher, checkAddress)
+        module.exports.newPendingTx(web3, txArray[0], accounts, assets, abiDecoder, channel, queue, rmqServices, publisher, dbCollections, checkAddress)
           .then((isMonitoredAccoutnTx) => {
             if (isMonitoredAccoutnTx) { nbTxFound += 1; }
             txArray.splice(0, 1);
-            resolve(processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, channel, queue, rmqServices, nbTxFound, publisher, checkAddress));
+            resolve(processNewPendingTxArray(web3, txArray, accounts, assets, abiDecoder, channel, queue, rmqServices, nbTxFound, publisher, dbCollections, checkAddress));
           })
           .catch((e) => { reject(e); });
       }
@@ -23,7 +23,7 @@ function processNewPendingTxArray(web3, txArray, dbCollections, abiDecoder, chan
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
-function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqServices, publisher = true, checkAddress = null) {
+function newPendingTx(web3, tx, accounts, assets, abiDecoder, channel, queue, rmqServices, publisher = true, dbCollections = null, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
     let toERC20SmartContract;
@@ -33,12 +33,12 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
     } else { // REGULAR TRANSACTION OR SMART CONTRACT CALL
-      module.exports.filterAddress(tx.to, dbCollections.accounts, dbCollections.assets, checkAddress)
+      module.exports.filterAddress(tx.to, accounts, assets, dbCollections, checkAddress)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
           toERC20SmartContract = result.isERC20SmartContract;
           ticker = result.ERC20SmartContractTicker;
-          module.exports.filterAddress(tx.from, dbCollections.accounts, dbCollections.assets, checkAddress)
+          module.exports.filterAddress(tx.from, accounts, assets, dbCollections, checkAddress)
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
               let value = tx.value * (10 ** -18);
@@ -441,7 +441,7 @@ function newPendingTx(web3, tx, dbCollections, abiDecoder, channel, queue, rmqSe
 module.exports.newPendingTx = newPendingTx;
 
 
-function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber, channel, queue, rmqServices, publisher = true) {
+function checkPendingTx(web3, bcx, dbPendingTxArray, blockNumber, channel, queue, rmqServices, publisher = true, dbCollections = null) {
   return new Promise(((resolve, reject) => {
     if (dbPendingTxArray.length === 0) {
       resolve();
@@ -485,14 +485,14 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                           logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
 
                           resolve(checkPendingTx(
-                            web3, bcx, dbCollections, dbPendingTxArray,
-                            blockNumber, channel, queue, rmqServices, publisher,
+                            web3, bcx, dbPendingTxArray,
+                            blockNumber, channel, queue, rmqServices, publisher, dbCollections,
                           ));
                         } else {
                           logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
                           resolve(checkPendingTx(
-                            web3, bcx, dbCollections, dbPendingTxArray,
-                            blockNumber, channel, queue, rmqServices, publisher,
+                            web3, bcx, dbPendingTxArray,
+                            blockNumber, channel, queue, rmqServices, publisher, dbCollections,
                           ));
                         }
                       } else { // OUT OF GAS
@@ -518,8 +518,8 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         logger.info(colors.red.bold(`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
 
                         resolve(checkPendingTx(
-                          web3, bcx, dbCollections, dbPendingTxArray,
-                          blockNumber, channel, queue, rmqServices, publisher,
+                          web3, bcx, dbPendingTxArray,
+                          blockNumber, channel, queue, rmqServices, publisher, dbCollections,
                         ));
                       }
                     } else { // REGULAR ETH TX
@@ -547,14 +547,14 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                         logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
 
                         resolve(checkPendingTx(
-                          web3, bcx, dbCollections, dbPendingTxArray,
-                          blockNumber, channel, queue, rmqServices, publisher,
+                          web3, bcx, dbPendingTxArray,
+                          blockNumber, channel, queue, rmqServices, publisher, dbCollections,
                         ));
                       } else {
                         logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
                         resolve(checkPendingTx(
-                          web3, bcx, dbCollections, dbPendingTxArray,
-                          blockNumber, channel, queue, rmqServices, publisher,
+                          web3, bcx, dbPendingTxArray,
+                          blockNumber, channel, queue, rmqServices, publisher, dbCollections,
                         ));
                       }
                     }
@@ -580,8 +580,8 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
                     }
                     logger.info(colors.red.bold(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
                     resolve(checkPendingTx(
-                      web3, bcx, dbCollections, dbPendingTxArray,
-                      blockNumber, channel, queue, rmqServices, publisher,
+                      web3, bcx, dbPendingTxArray,
+                      blockNumber, channel, queue, rmqServices, publisher, dbCollections,
                     ));
                   }
                 })
@@ -589,8 +589,8 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
             } else { // TX STILL PENDING
               logger.info(`TX ${item.txHash} STILL PENDING (IN TX POOL)...\n`);
               resolve(checkPendingTx(
-                web3, bcx, dbCollections, dbPendingTxArray,
-                blockNumber, channel, queue, rmqServices, publisher,
+                web3, bcx, dbPendingTxArray,
+                blockNumber, channel, queue, rmqServices, publisher, dbCollections,
               ));
             }
           } else { // TX INFO NOT FOUND
@@ -614,8 +614,8 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
             logger.info(colors.red.bold(`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
 
             resolve(checkPendingTx(
-              web3, bcx, dbCollections, dbPendingTxArray,
-              blockNumber, channel, queue, rmqServices, publisher,
+              web3, bcx, dbPendingTxArray,
+              blockNumber, channel, queue, rmqServices, publisher, dbCollections,
             ));
           }
         })
@@ -626,46 +626,61 @@ function checkPendingTx(web3, bcx, dbCollections, dbPendingTxArray, blockNumber,
 module.exports.checkPendingTx = checkPendingTx;
 
 
-function filterAddress(address, accounts, assets, checkAddress = null) {
+function filterAddress(address, accounts, assets, dbCollections = null, checkAddress = null) {
   /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
   return new Promise(((resolve, reject) => {
-    try {
+	  try {
       const ADDRESS = address.toUpperCase();
 
       if (checkAddress && ADDRESS === checkAddress.toUpperCase()) {
         resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+      } else if (dbCollections) {
+	        dbCollections.accounts.findByAddress(ADDRESS)
+	        .then((result) => {
+		        if (result) {
+			        resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+		        } else {
+			        dbCollections.assets.findByAddress(ADDRESS)
+			        .then((result2) => {
+				        if (result2) {
+					        const ticker = result2.symbol;
+					        resolve({
+						        isPillarAddress: false,
+						        isERC20SmartContract: true,
+						        ERC20SmartContractTicker: ticker,
+					        });
+				        } else {
+					        resolve({
+						        isPillarAddress: false,
+						        isERC20SmartContract: false,
+						        ERC20SmartContractTicker: '',
+					        });
+				        }
+			        })
+			        .catch((e) => {
+				        reject(e);
+			        });
+		        }
+	        })
+	        .catch((e) => {
+		        reject(e);
+	        });
+      } else if (accounts.has(ADDRESS)) {
+			      resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+      } else if (assets.has(ADDRESS)) {
+            const ticker = result2.symbol;
+            resolve({
+              isPillarAddress: false,
+              isERC20SmartContract: true,
+              ERC20SmartContractTicker: ticker,
+            });
       } else {
-        accounts.findByAddress(ADDRESS)
-          .then((result) => {
-            if (result) {
-              resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-            } else {
-              assets.findByAddress(ADDRESS)
-                .then((result2) => {
-                  if (result2) {
-                    const ticker = result2.symbol;
-                    resolve({
-                      isPillarAddress: false,
-                      isERC20SmartContract: true,
-                      ERC20SmartContractTicker: ticker,
-                    });
-                  } else {
-                    resolve({
-                      isPillarAddress: false,
-                      isERC20SmartContract: false,
-                      ERC20SmartContractTicker: '',
-                    });
-                  }
-                })
-                .catch((e) => {
-                  reject(e);
-                });
-            }
-          })
-          .catch((e) => {
-            reject(e);
-          });
-      }
+            resolve({
+              isPillarAddress: false,
+              isERC20SmartContract: false,
+              ERC20SmartContractTicker: '',
+            });
+          }
     } catch (e) {
       resolve({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
     }
@@ -674,15 +689,15 @@ function filterAddress(address, accounts, assets, checkAddress = null) {
 module.exports.filterAddress = filterAddress;
 
 
-function checkTokenTransferEvent(web3, bcx, dbCollections, channel, queue, rmqServices, eventInfo, ERC20SmartcContractInfo) {
+function checkTokenTransferEvent(web3, bcx, accounts, assets, dbCollections, channel, queue, rmqServices, eventInfo, ERC20SmartcContractInfo) {
   // THIS IS TO CATCH TOKEN TRANSFERS THAT RESULT FROM SENDING ETH TO A SMART CONTRACT (WHICH N RETURN TRANSFERS TOKENS TO ETH SENDER)
   return new Promise(((resolve, reject) => {
     try {
       const tmstmp = time.now();
       logger.info(eventInfo);
-      module.exports.filterAddress(eventInfo.returnValues._to, dbCollections.accounts, dbCollections.assets) // check if token transfer destination address is pillar wallet
+      module.exports.filterAddress(eventInfo.returnValues._to, accounts, assets) // check if token transfer destination address is pillar wallet
         .then((result) => {
-          if (result.isPillarAddress === true) { // TOKE TRANSFER DESTINATION ADDRESS === PILLAR ACCOUNT ADDRESS
+          if (result.isPillarAddress === true) { // TOKEN TRANSFER DESTINATION ADDRESS === PILLAR ACCOUNT ADDRESS
             dbCollections.ethTransactions.findByTxHash(eventInfo.transactionHash)
             // ETH TX SHOULD BE ALREADY IN DB BECAUSE ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
               .then((tx) => {
