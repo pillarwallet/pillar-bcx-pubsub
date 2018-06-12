@@ -39,6 +39,7 @@ exports.index = 0;
 exports.init = function () {
   try {
     logger.info('Started executing master.init()');
+    
     // validating input parameters
     if (options.protocol !== undefined) {
       protocol = options.protocol;
