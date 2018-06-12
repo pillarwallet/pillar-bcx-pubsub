@@ -62,6 +62,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                     contractAddress: null,
                     timestamp: tmstmp,
                     value: tx.value,
+                    gasPrice: tx.gasPrice,
                   };
                   rmqServices.sendMessage(txMsgTo);
                 } else {
@@ -78,6 +79,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                     blockNumber: null,
                     value: tx.value,
                     status: 'pending',
+                    gasPrice: tx.gasPrice,
                     gasUsed: null,
                   });
                 }
@@ -96,6 +98,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                       contractAddress: null,
                       timestamp: tmstmp,
                       value: tx.value,
+                      gasPrice: tx.gasPrice,
                     };
                     rmqServices.sendMessage(txMsgFrom);
                   } else {
@@ -112,6 +115,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                       blockNumber: null,
                       value: tx.value,
                       status: 'pending',
+                      gasPrice: tx.gasPrice,
                       gasUsed: null,
                     });
                   }
@@ -142,6 +146,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                           contractAddress,
                           timestamp: tmstmp,
                           value: tx.value,
+                          gasPrice: tx.gasPrice,
                         };
                         rmqServices.sendMessage(txMsgFrom);
                       } else {
@@ -158,6 +163,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                           blockNumber: null,
                           value: tx.value,
                           status: 'pending',
+                          gasPrice: tx.gasPrice,
                           gasUsed: null,
                         });
                       }
@@ -192,6 +198,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                             contractAddress,
                             timestamp: tmstmp,
                             value: parseInt(data.params[1].value, 10),
+                            gasPrice: tx.gasPrice,
                           };
                           rmqServices.sendMessage(txMsgFrom);
                         } else {
@@ -208,6 +215,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                             blockNumber: null,
                             value: tx.value,
                             status: 'pending',
+                            gasPrice: tx.gasPrice,
                             gasUsed: null,
                           });
                         }
@@ -228,6 +236,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                                   contractAddress,
                                   timestamp: tmstmp,
                                   value: parseInt(data.params[1].value, 10),
+                                  gasPrice: tx.gasPrice,
                                 };
                                 rmqServices.sendMessage(txMsgTo);
                               } else {
@@ -244,6 +253,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                                   blockNumber: null,
                                   value: tx.value,
                                   status: 'pending',
+                                  gasPrice: tx.gasPrice,
                                   gasUsed: null,
                                 });
                               }
@@ -272,6 +282,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                             contractAddress,
                             timestamp: tmstmp,
                             value: tx.value,
+                            gasPrice: tx.gasPrice,
                           };
                           rmqServices.sendMessage(txMsgFrom);
                         } else {
@@ -288,6 +299,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                             blockNumber: null,
                             value: tx.value,
                             status: 'pending',
+                            gasPrice: tx.gasPrice,
                             gasUsed: null,
                           });
                         }
@@ -316,6 +328,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                                 contractAddress,
                                 timestamp: tmstmp,
                                 value: parseInt(data.params[1].value, 10),
+                                gasPrice: tx.gasPrice,
                               };
                               rmqServices.sendMessage(txMsgTo);
                             } else {
@@ -332,6 +345,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                                 blockNumber: null,
                                 value: tx.value,
                                 status: 'pending',
+                                gasPrice: tx.gasPrice,
                                 gasUsed: null,
                               });
                             }
@@ -366,6 +380,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                       contractAddress,
                       timestamp: tmstmp,
                       value: tx.value,
+                      gasPrice: tx.gasPrice,
                     };
                     rmqServices.sendMessage(txMsgFrom);
                   } else {
@@ -382,6 +397,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                       blockNumber: null,
                       value: tx.value,
                       status: 'pending',
+                      gasPrice: tx.gasPrice,
                       gasUsed: null,
                     });
                   }
@@ -407,6 +423,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                     contractAddress: null,
                     timestamp: tmstmp,
                     value: tx.value,
+                    gasPrice: tx.gasPrice,
                   };
                   rmqServices.sendMessage(txMsgFrom);
                 } else {
@@ -423,6 +440,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                     blockNumber: null,
                     value: tx.value,
                     status: 'pending',
+                    gasPrice: tx.gasPrice,
                     gasUsed: null,
                   });
                 }
@@ -698,6 +716,7 @@ function checkTokenTransferEvent(accounts, assets, eventInfo, ERC20SmartcContrac
                     contractAddress: ERC20SmartcContractInfo.address,
                     timestamp: tmstmp,
                     value: eventInfo.returnValues._value,
+                    gasPrice: eventInfo.gasPrice,
                   };
                   rmqServices.sendMessage(txMsg);
                   resolve();
