@@ -253,10 +253,10 @@ exports.checkNewERC20SmartContracts = function (web3) {
 
 this.init()
   .then((result) => {
-    //this.checkTxPool(result.web3); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
+    this.checkTxPool(result.web3); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateTxHistory(result.web3); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
-   // this.updateERC20SmartContracts(result.web3); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
-   // this.checkNewERC20SmartContracts(result.web3);
+    this.updateERC20SmartContracts(result.web3); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
+    this.checkNewERC20SmartContracts(result.web3);
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
 
