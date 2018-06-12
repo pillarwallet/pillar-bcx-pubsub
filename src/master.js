@@ -8,8 +8,10 @@ const fs = require('fs');
 
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
+  /*
   { name: 'minPort', type: Number },
   { name: 'maxPort', type: Number },
+  */
   { name: 'maxWallets', type: Number },
 ];
 const commandLineArgs = require('command-line-args');
@@ -30,17 +32,20 @@ exports.index = 0;
 exports.init = function () {
   try {
     logger.info('Started executing master.init()');
+    
     // validating input parameters
     if (options.protocol !== undefined) {
       protocol = options.protocol;
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
 
+    /*
     if ((options.minPort !== undefined) && (options.maxPort !== undefined) && (options.minPort >= 5500) && (options.minPort < options.maxPort)) {
       currentPort = options.minPort;
     } else {
       throw ({ message: 'Invalid configuration parameters minPort, maxPort' });
     }
+    */
 
     if (options.maxWallets !== undefined || options.maxWallets > 0) {
       logger.info(`master.init(): A new publisher will be spawned for every ${options.maxWallets} wallets..`);
