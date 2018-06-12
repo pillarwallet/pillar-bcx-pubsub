@@ -78,7 +78,7 @@ exports.launch = function () {
     exports.housekeeper.on('message', (data) => {
       logger.info(`Housekeeper has sent a message: ${data}`);
       // broadcast the message to all publishers
-      if (data.type == 'accounts') {
+      if (data.type === 'accounts') {
         for (let i = 0; i < exports.pubs.length; i++) {
           exports.pubs[i++].send({ type: 'accounts', message: data.message });
         }
@@ -95,11 +95,11 @@ exports.launch = function () {
     // handle events associated with the publisher child processes.
     exports.pubs[exports.index].on('message', (data) => {
       logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
-      if (data.type == 'wallet.request') {
+      if (data.type === 'wallet.request') {
         logger.info(`Received ${data.message} from ${data.id}`);
         exports.notify(data.message, exports.pubs[exports.index - 1]);
       }
-      if (data.type == 'queue.full') {
+      if (data.type === 'queue.full') {
         logger.info(`Received ${data.message} from ${data.id}`);
         // fork new publisher-subscriber process pairs
         this.launch();

@@ -167,7 +167,7 @@ function processTxHistory(web3, processTx, txArray, abiDecoder, nbTx, index, che
             if (pillarWalletTx) {
               nbTx += 1;
             }
-            resolve(processTxHistory(web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index + 1, checkAddress));
+            resolve(processTxHistory(web3, processTx, txArray, abiDecoder, nbTx, index + 1, checkAddress));
           });
       }
     } catch (e) { reject(e); }

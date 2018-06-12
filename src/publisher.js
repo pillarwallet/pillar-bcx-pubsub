@@ -94,7 +94,7 @@ exports.walletReceived = function () {
 
 };
 
-
+/*
 this.initIPC();
 rmqServices.initMQ()
   .then((MQParams) => {
@@ -102,3 +102,4 @@ rmqServices.initMQ()
     const queue = MQParams.q;
     this.initSubscriptions(channel, queue);
   });
+*/

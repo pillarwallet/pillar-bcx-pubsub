@@ -46,7 +46,7 @@ exports.init = function () {
 exports.checkTxPool = function (web3) {
   // At connection time: Check for pending Tx in TX pool which are not in DB
   // and would not be added in TX History by dbServices.updateTxHistory
-  return new Promise((resole, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...\n'));
       bcx.getPendingTxArray(web3)
@@ -69,6 +69,7 @@ exports.checkTxPool = function (web3) {
 		            processTx.processNewPendingTxArray(web3, unknownPendingTxArray, null, null, abiDecoder, null, null, null, 0, false)
                 .then((nbTxFound) => {
                   logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
+                  resolve();
                 }).catch((e) => { reject(e); });
             }).catch((e) => { reject(e); });
         }).catch((e) => { reject(e); });
@@ -252,10 +253,10 @@ exports.checkNewERC20SmartContracts = function (web3) {
 
 this.init()
   .then((result) => {
-    this.checkTxPool(result.web3); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
+    //this.checkTxPool(result.web3); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateTxHistory(result.web3); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
-    this.updateERC20SmartContracts(result.web3); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
-    this.checkNewERC20SmartContracts(result.web3);
+   // this.updateERC20SmartContracts(result.web3); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
+   // this.checkNewERC20SmartContracts(result.web3);
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
 
