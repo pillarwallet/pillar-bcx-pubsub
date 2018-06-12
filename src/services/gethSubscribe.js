@@ -94,12 +94,12 @@ function checkNewERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbServ
 module.exports.checkNewERC20SmartContracts = checkNewERC20SmartContracts;
 */
 
-function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, assets, dbCollections, channel, queue, rmqServices) {
+function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, assets, dbServices, channel, queue, rmqServices) {
   const subscribePromise = new Promise(((resolve, reject) => {
-    dbCollections.assets.listAll()
+	  dbServices.dbCollections.assets.listAll()
       .then((smartContractsArray) => {
         smartContractsArray.forEach((ERC20SmartContract) => {
-          module.exports.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
+          module.exports.subscribeERC20SmartContract(web3, bcx, dbServices, processTx, channel, queue, rmqServices, ERC20SmartContract);
         });
         logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
         resolve();
@@ -110,14 +110,14 @@ function subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, asset
 }
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
 
-function subscribeERC20SmartContract(web3, bcx, accounts, assets, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract) {
+function subscribeERC20SmartContract(web3, bcx, accounts, assets, dbServices, processTx, channel, queue, rmqServices, ERC20SmartContract) {
 // var subscribePromise = new Promise(function(resolve,reject){
   try {
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
       const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
-          processTx.checkTokenTransferEvent(web3, bcx, accounts, assets, dbCollections, channel, queue, rmqServices, result, ERC20SmartContract);
+          processTx.checkTokenTransferEvent(web3, bcx, accounts, assets, dbServices, channel, queue, rmqServices, result, ERC20SmartContract);
         } else {
           logger.info(error);
         }

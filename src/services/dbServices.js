@@ -43,7 +43,6 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
     try {
       module.exports.dbConnect(url, $arg)
         .then(() => {
-        // .then((dbCollections) => {
           // Display accounts
           dbCollections.accounts.listAll()
             .then((accountsArray) => {
@@ -63,7 +62,7 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
                     }
                     i += 1;
                   });
-                  resolve(dbCollections);
+                  resolve();
                 })
                 .catch((e) => { reject(e); });
             })
@@ -119,7 +118,7 @@ function recentAccounts(
 }
 module.exports.recentAccounts = recentAccounts;
 
-function dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, nbTx, checkAddress = null) {
+function dlTxHistory(web3, bcx, processTx, abiDecoder, startBlock, maxBlock, nbTx, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (startBlock > maxBlock) {
@@ -129,18 +128,18 @@ function dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock
         bcx.getBlockTx(web3, startBlock)
           .then((txArray) => {
             module.exports.processTxHistory(
-              web3, processTx, txArray, dbCollections,
+              web3, processTx, txArray,
               abiDecoder, 0, 0, null,
             )
               .then((nbBlockTx) => {
                 nbTx += nbBlockTx;
                 dbCollections.transactions.listHistory()
                   .then((historyTxArray) => {
-                    processTx.checkPendingTx(web3, bcx, dbCollections, historyTxArray, maxBlock, null, null, null, false)
+                    processTx.checkPendingTx(web3, bcx, historyTxArray, maxBlock, null, null, null, false)
                       .then(() => {
                         dbCollections.transactions.updateTxHistoryHeight(startBlock)
                           .then(() => {
-                            resolve(dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock + 1, maxBlock, nbTx, checkAddress));
+                            resolve(dlTxHistory(web3, bcx, processTx, abiDecoder, startBlock + 1, maxBlock, nbTx, checkAddress));
                           })
                           .catch((e) => { reject(e); });
                       })
@@ -157,7 +156,7 @@ function dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock
 }
 module.exports.dlTxHistory = dlTxHistory;
 
-function processTxHistory(web3, processTx, txArray, dbCollections, abiDecoder, nbTx, index, checkAddress = null) {
+function processTxHistory(web3, processTx, txArray, abiDecoder, nbTx, index, checkAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (index === txArray.length) {
@@ -176,13 +175,13 @@ function processTxHistory(web3, processTx, txArray, dbCollections, abiDecoder, n
 }
 module.exports.processTxHistory = processTxHistory;
 
-function updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, maxBlock) {
+function updateTxHistory(web3, bcx, processTx, abiDecoder, maxBlock) {
   return new Promise(((resolve, reject) => {
     try {
       dbCollections.transactions.findTxHistoryHeight()
         .then((startBlock) => {
           logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-          this.dlTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, startBlock, maxBlock, 0)
+          this.dlTxHistory(web3, bcx, processTx, abiDecoder, startBlock, maxBlock, 0)
             .then((nbTxFound) => {
               logger.info(colors.red.bold('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!\n'));
               logger.info(colors.red(`-->${nbTxFound} transactions found\n`));

@@ -80,13 +80,12 @@ exports.initSubscriptions = function (channel, queue) {
       /* CONNECT TO DATABASE --> NEED TO REPLACE THIS WITH HASHTABLE */
       dbServices.dbConnectDisplayAccounts(mongoUrl)
         .then(() => {
-        // .then((dbCollections) => {
           /* SUBSCRIBE TO GETH NODE EVENTS */
           gethSubscribe.subscribePendingTx(web3, bcx, processTx, accounts, assets, abiDecoder, channel, queue, rmqServices);
           gethSubscribe.subscribeBlockHeaders(
             web3, gethSubscribe, bcx, processTx, dbServices, abiDecoder, channel, queue, rmqServices,
           );
-         // gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, assets, dbCollections, channel, queue, rmqServices);
+          gethSubscribe.subscribeAllDBERC20SmartContracts(web3, bcx, processTx, accounts, assets, dbServices, channel, queue, rmqServices);
         });
     });
 };

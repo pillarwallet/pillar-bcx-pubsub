@@ -26,14 +26,14 @@ exports.init = function () {
           /* CONNECT TO DATABASE */
           console.log(mongoUrl);
           dbServices.dbConnectDisplayAccounts(mongoUrl)
-            .then((dbCollections) => {
+            .then(() => {
               dbServices.initDB(accounts.accountsArray, accounts.contractsArray)
                 .then(() => {
                   dbServices.initDBTxHistory()
                     .then(() => {
                       dbServices.initDBERC20SmartContracts()
                         .then(() => {
-                          resolve({ web3, dbCollections });
+                          resolve({ web3 });
                         }).catch((e) => { reject(e); });
                     }).catch((e) => { reject(e); });
                 }).catch((e) => { reject(e); });
@@ -43,7 +43,7 @@ exports.init = function () {
   });
 };
 
-exports.checkTxPool = function (web3, dbCollections) {
+exports.checkTxPool = function (web3) {
   // At connection time: Check for pending Tx in TX pool which are not in DB
   // and would not be added in TX History by dbServices.updateTxHistory
   return new Promise((resole, reject) => {
@@ -53,7 +53,7 @@ exports.checkTxPool = function (web3, dbCollections) {
         .then((pendingTxArray) => {
           // CHECK IF TX ALREADY IN DB
           const unknownPendingTxArray = [];
-          dbCollections.transactions.listDbZeroConfTx()
+	        dbServices.dbCollections.transactions.listDbZeroConfTx()
             .then((dbPendingTxArray) => {
               pendingTxArray.forEach((pendingTx) => {
                 let isDbPendingTx = false;
@@ -66,7 +66,7 @@ exports.checkTxPool = function (web3, dbCollections) {
                   unknownPendingTxArray.push(pendingTx);
                 }
               });
-		            processTx.processNewPendingTxArray(web3, unknownPendingTxArray, dbCollections, abiDecoder, null, null, null, 0, false)
+		            processTx.processNewPendingTxArray(web3, unknownPendingTxArray, null, null, abiDecoder, null, null, null, 0, false)
                 .then((nbTxFound) => {
                   logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
                 }).catch((e) => { reject(e); });
@@ -77,16 +77,16 @@ exports.checkTxPool = function (web3, dbCollections) {
 };
 
 
-exports.updateTxHistory = function (web3, dbCollections) {
+exports.updateTxHistory = function (web3) {
   // Update tx History at connection time
   bcx.getLastBlockNumber(web3)
     .then((blockNumber) => {
       logger.info(colors.red.bold(`LAST BLOCK NUMBER = ${blockNumber}\n`));
-      dbServices.updateTxHistory(web3, bcx, processTx, dbCollections, abiDecoder, blockNumber);
+      dbServices.updateTxHistory(web3, bcx, processTx, abiDecoder, blockNumber);
     });
 };
 
-exports.dlERC20SmartContracts = function (web3, startBlock, endBlock, dbCollections, nbERC20Found, logs = false) {
+exports.dlERC20SmartContracts = function (web3, startBlock, endBlock, nbERC20Found, logs = false) {
   return new Promise(((resolve, reject) => {
     try {
       if (startBlock > endBlock) {
@@ -99,14 +99,14 @@ exports.dlERC20SmartContracts = function (web3, startBlock, endBlock, dbCollecti
           .then((result) => {
             bcx.getBlockSmartContractsAddressesArray(web3, result.transactions, [], 0)
               .then((smartContractsAddressesArray) => {
-                this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, 0, 0)
+                this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, 0, 0)
                   .then((nbFound) => {
                     nbERC20Found += nbFound;
-                    dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
+                    dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
                       .then(() => {
                         resolve(this.dlERC20SmartContracts(
                           web3, startBlock + 1,
-                          endBlock, dbCollections, nbERC20Found, logs,
+                          endBlock, nbERC20Found, logs,
                         ));
                       })
                       .catch((e) => { reject(e); });
@@ -122,7 +122,7 @@ exports.dlERC20SmartContracts = function (web3, startBlock, endBlock, dbCollecti
 };
 
 exports.processSmartContractsAddressesArray = function (
-  web3, dbCollections,
+  web3,
   smartContractsAddressesArray, index, nbERC20Found,
 ) {
   return new Promise(((resolve, reject) => {
@@ -156,7 +156,7 @@ exports.processSmartContractsAddressesArray = function (
                             decimals,
                             contractAddress: smartContractsAddressesArray[index],
                           };
-                          dbCollections.assets.addContract(ERC20SmartContract)
+                          dbServices.dbCollections.assets.addContract(ERC20SmartContract)
                             .then(() => {
                               // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
                               // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
@@ -166,46 +166,46 @@ exports.processSmartContractsAddressesArray = function (
                                 message: ERC20SmartContract,
                               });
 
-                              resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+                              resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
                             })
                             .catch((e) => { reject(e); });
                         } else {
                           logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)\n'));
-                          resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+                          resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
                         }
                       } else {
-                        resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+                        resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
                       }
                     })
                     .catch(() => {
-                      resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+                      resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
                     });
                 })
                 .catch(() => {
-                  resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+                  resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
                 });
             })
             .catch(() => {
-              resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+              resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
             });
         } catch (e) {
-          resolve(this.processSmartContractsAddressesArray(web3, dbCollections, smartContractsAddressesArray, index + 1, nbERC20Found));
+          resolve(this.processSmartContractsAddressesArray(web3, smartContractsAddressesArray, index + 1, nbERC20Found));
         }
       }
     } catch (e) { reject(e); }
   }));
 };
 
-exports.updateERC20SmartContracts = function (web3, dbCollections) {
+exports.updateERC20SmartContracts = function (web3) {
   return new Promise(((resolve, reject) => {
     try {
       bcx.getLastBlockNumber(web3)
         .then((maxBlock) => {
           logger.info(colors.blue.bold(`LAST BLOCK NUMBER = ${maxBlock}\n`));
-          dbCollections.assets.findERC20SmartContractsHistoryHeight()
+	        dbServices.dbCollections.assets.findERC20SmartContractsHistoryHeight()
             .then((startBlock) => {
               logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-              this.dlERC20SmartContracts(web3, startBlock, maxBlock, dbCollections, 0, true)
+              this.dlERC20SmartContracts(web3, startBlock, maxBlock, 0, true)
                 .then((nbERC20Found) => {
                   logger.info(colors.blue.bold('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!\n'));
                   logger.info(colors.blue(`-->${nbERC20Found} ERC20 smart contracts found\n`));
@@ -220,7 +220,7 @@ exports.updateERC20SmartContracts = function (web3, dbCollections) {
   }));
 };
 
-exports.checkNewERC20SmartContracts = function (web3, dbCollections) {
+exports.checkNewERC20SmartContracts = function (web3) {
   // CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
   const subscribePromise = new Promise((resolve, reject) => {
     // let nbBlocksReceived = -1;
@@ -231,10 +231,10 @@ exports.checkNewERC20SmartContracts = function (web3, dbCollections) {
           logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
           // NOW, @ EACH NEW BLOCK MINED:
           // Check for newly created ERC20 smart contracts
-          this.dlERC20SmartContracts(web3, gethSubscribe, bcx, processTx, blockHeader.number, blockHeader.number, dbCollections, false)
+          this.dlERC20SmartContracts(web3, blockHeader.number, blockHeader.number, false)
             .then(() => {
               // Update
-              dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
+	            dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
                 .then(() => {
                   // logger.info(colors.green.bold('Highest Block Number for ERC20 Smart Contracts: '+blockHeader.number+'\n'))
                 });
@@ -249,14 +249,14 @@ exports.checkNewERC20SmartContracts = function (web3, dbCollections) {
   });
   return (subscribePromise);
 };
-/*
+
 this.init()
   .then((result) => {
-    this.checkTxPool(result.web3, result.dbCollections); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
-    this.updateTxHistory(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
-    this.updateERC20SmartContracts(result.web3, result.dbCollections); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
-    this.checkNewERC20SmartContracts(result.web3, result.dbCollections);
+    this.checkTxPool(result.web3); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
+    this.updateTxHistory(result.web3); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
+    this.updateERC20SmartContracts(result.web3); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
+    this.checkNewERC20SmartContracts(result.web3);
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
   });
-  */
+
 

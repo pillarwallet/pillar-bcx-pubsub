@@ -19,7 +19,6 @@ let connection;
 exports.initServices = function () {
   dbServices.dbConnect(mongoUrl)
     .then(() => {
-      // dbCollections = db;
       logger.info('Connected to database');
       this.initRabbitMQ();
     })
