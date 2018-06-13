@@ -3,14 +3,15 @@
 /*  Pub-Sub master that is used to spawn new instances of publishers and subscribers  */
 /** ************************************************************************************ */
 const logger = require('./utils/logger');
-const mongoose = require('mongoose');
 const fork = require('child_process').fork;
 const fs = require('fs');
 
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
+  /*
   { name: 'minPort', type: Number },
   { name: 'maxPort', type: Number },
+  */
   { name: 'maxWallets', type: Number },
 ];
 const commandLineArgs = require('command-line-args');
@@ -18,13 +19,7 @@ const commandLineArgs = require('command-line-args');
 const options = commandLineArgs(optionDefinitions);
 
 const dbServices = require('./services/dbServices');
-require('dotenv').config();
 
-const mongoUser = process.env.MONGO_USER;
-const mongoPwd = process.env.MONGO_PWD;
-const serverIP = process.env.SERVER;
-const dbName = process.env.DBNAME;
-const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 // protocol has to be setup during init, we will have one master per protocol
 let protocol = 'Ethereum';
 let maxWalletsPerPub = 500000;
@@ -37,17 +32,20 @@ exports.index = 0;
 exports.init = function () {
   try {
     logger.info('Started executing master.init()');
+    
     // validating input parameters
     if (options.protocol !== undefined) {
       protocol = options.protocol;
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
 
+    /*
     if ((options.minPort !== undefined) && (options.maxPort !== undefined) && (options.minPort >= 5500) && (options.minPort < options.maxPort)) {
       currentPort = options.minPort;
     } else {
       throw ({ message: 'Invalid configuration parameters minPort, maxPort' });
     }
+    */
 
     if (options.maxWallets !== undefined || options.maxWallets > 0) {
       logger.info(`master.init(): A new publisher will be spawned for every ${options.maxWallets} wallets..`);
@@ -152,7 +150,7 @@ exports.notify = function (idFrom, socket) {
     logger.info('Started executing master.notify()');
 
     // read the wallet address model and bring up multiple publishers
-    dbServices.recentAccounts(mongoUrl, idFrom).then((theWallets) => {
+    dbServices.recentAccounts(idFrom).then((theWallets) => {
       if (theWallets !== undefined) {
         const message = [];
         for (let i = 0; i < theWallets.length; i++) {
