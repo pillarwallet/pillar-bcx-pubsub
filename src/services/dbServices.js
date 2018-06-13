@@ -1,15 +1,17 @@
 const colors = require('colors');
 const logger = require('../utils/logger.js');
-
-const ERC20ABI = require('./ERC20ABI.json');
+require('dotenv').config();
 const mongoose = require('mongoose');
 
 module.exports.mongoose = mongoose;
-
+const mongoUser = process.env.MONGO_USER;
+const mongoPwd = process.env.MONGO_PWD;
+const serverIP = process.env.SERVER;
+const dbName = process.env.DBNAME;
+const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 let dbCollections;
 
-
-function dbConnect(url, $arg = { useMongoClient: true }) {
+function dbConnect($arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
       // Setting up listeners
@@ -21,7 +23,7 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
       module.exports.mongoose.connection.on('open', () => {
         logger.info(colors.green.bold('Established connection to database!\n'));
         dbCollections = { accounts, assets, transactions };
-	      module.exports.dbCollections = dbCollections;
+        module.exports.dbCollections = dbCollections;
         resolve();
         // resolve({ accounts, assets, transactions });
       });
@@ -31,17 +33,17 @@ function dbConnect(url, $arg = { useMongoClient: true }) {
       const assets = require('../controllers/assets_ctrl.js');
       const transactions = require('../controllers/transactions_ctrl.js');
 
-	    // Connect to database
-	    module.exports.mongoose.connect(url, $arg);
+      // Connect to database
+      module.exports.mongoose.connect(mongoUrl, $arg);
     } catch (e) { reject(e); }
   }));
 }
 module.exports.dbConnect = dbConnect;
 
-function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
+function dbConnectDisplayAccounts($arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
-      module.exports.dbConnect(url, $arg)
+      module.exports.dbConnect($arg)
         .then(() => {
           // Display accounts
           dbCollections.accounts.listAll()
@@ -75,7 +77,6 @@ function dbConnectDisplayAccounts(url, $arg = { useMongoClient: true }) {
 module.exports.dbConnectDisplayAccounts = dbConnectDisplayAccounts;
 
 function recentAccounts(
-  url,
   idFrom,
   protocol,
   $arg = { useMongoClient: true },
@@ -83,117 +84,67 @@ function recentAccounts(
   return new Promise(((resolve, reject) => {
     try {
       if (dbCollections) {
-	      if (idFrom !== undefined && idFrom !== '') {
-		      // fetch accounts registered after a given Id
-		      dbCollections.accounts.listRecent(idFrom)
-		      .then((ethAddressesArray) => {
-			      logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
-			      let i = 0;
-			      // console.log(JSON.stringify(ethAddressesArray));
-			      ethAddressesArray.forEach((item) => {
-				      logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
-				      i += 1;
-			      });
-			      resolve(ethAddressesArray);
-		      })
-		      .catch((e) => { reject(e); });
-	      } else {
-		      dbCollections.accounts.listAll()
-		      .then((ethAddressesArray) => {
-			      logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
-			      resolve(ethAddressesArray);
-		      })
-		      .catch((e) => { reject(e); });
-	      }
+        if (idFrom !== undefined && idFrom !== '') {
+          // fetch accounts registered after a given Id
+          dbCollections.accounts.listRecent(idFrom)
+            .then((ethAddressesArray) => {
+              logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
+              let i = 0;
+              // console.log(JSON.stringify(ethAddressesArray));
+              ethAddressesArray.forEach((item) => {
+                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
+                i += 1;
+              });
+              resolve(ethAddressesArray);
+            })
+            .catch((e) => { reject(e); });
+        } else {
+          dbCollections.accounts.listAll()
+            .then((ethAddressesArray) => {
+              logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
+              resolve(ethAddressesArray);
+            })
+            .catch((e) => { reject(e); });
+        }
       } else {
-	      module.exports.dbConnect(url, $arg)
-	      .then(() => {
-		      resolve(module.exports.recentAccounts());
-	      })
-          .catch((e) => { reject(e); });
-      }
-      //
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.recentAccounts = recentAccounts;
-
-function dlTxHistory(web3, bcx, processTx, abiDecoder, startBlock, maxBlock, nbTx, checkAddress = null) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (startBlock > maxBlock) {
-        resolve(nbTx);
-      } else {
-        // logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
-        bcx.getBlockTx(web3, startBlock)
-          .then((txArray) => {
-            module.exports.processTxHistory(
-              web3, processTx, txArray,
-              abiDecoder, 0, 0, null,
-            )
-              .then((nbBlockTx) => {
-                nbTx += nbBlockTx;
-                dbCollections.transactions.listHistory()
-                  .then((historyTxArray) => {
-                    processTx.checkPendingTx(web3, bcx, historyTxArray, maxBlock, null, null, null, false)
-                      .then(() => {
-                        dbCollections.transactions.updateTxHistoryHeight(startBlock)
-                          .then(() => {
-                            resolve(dlTxHistory(web3, bcx, processTx, abiDecoder, startBlock + 1, maxBlock, nbTx, checkAddress));
-                          })
-                          .catch((e) => { reject(e); });
-                      })
-                      .catch((e) => { reject(e); });
-                  })
-                  .catch((e) => { reject(e); });
-              })
-              .catch((e) => { reject(e); });
+        module.exports.dbConnect( $arg)
+          .then(() => {
+            resolve(module.exports.recentAccounts());
           })
           .catch((e) => { reject(e); });
       }
     } catch (e) { reject(e); }
   }));
 }
-module.exports.dlTxHistory = dlTxHistory;
+module.exports.recentAccounts = recentAccounts;
 
-function processTxHistory(web3, processTx, txArray, abiDecoder, nbTx, index, checkAddress = null) {
+function contractsToMonitor(
+  url,
+  idFrom,
+  $arg = { useMongoClient: true },
+) {
   return new Promise(((resolve, reject) => {
-    try {
-      if (index === txArray.length) {
-        resolve(nbTx);
-      } else {
-        processTx.newPendingTx(web3, txArray[index], dbCollections, abiDecoder, null, null, null, false, checkAddress)
-          .then((pillarWalletTx) => {
-            if (pillarWalletTx) {
-              nbTx += 1;
-            }
-            resolve(processTxHistory(web3, processTx, txArray, abiDecoder, nbTx, index + 1, checkAddress));
-          });
-      }
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.processTxHistory = processTxHistory;
-
-function updateTxHistory(web3, bcx, processTx, abiDecoder, maxBlock) {
-  return new Promise(((resolve, reject) => {
-    try {
-      dbCollections.transactions.findTxHistoryHeight()
-        .then((startBlock) => {
-          logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-          this.dlTxHistory(web3, bcx, processTx, abiDecoder, startBlock, maxBlock, 0)
-            .then((nbTxFound) => {
-              logger.info(colors.red.bold('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!\n'));
-              logger.info(colors.red(`-->${nbTxFound} transactions found\n`));
-              resolve();
+    // code to fetch list of contracts/assets to monitor
+    module.exports.dbConnect(url, $arg)
+      .then(() => {
+        if (idFrom !== undefined && idFrom !== '') {
+          // fetch accounts registered after a given Id
+          dbCollections.assets.listRecent(idFrom)
+            .then((assetsArray) => {
+              resolve(assetsArray);
             })
             .catch((e) => { reject(e); });
-        })
-        .catch((e) => { reject(e); });
-    } catch (e) { reject(e); }
+        } else {
+          dbCollections.assets.listAll()
+            .then((assetsArray) => {
+              resolve(assetsArray);
+            })
+            .catch((e) => { reject(e); });
+        }
+      });
   }));
 }
-module.exports.updateTxHistory = updateTxHistory;
+module.exports.contractsToMonitor = contractsToMonitor;
 
 function initDB(accountsArray, assetsArray) {
   return new Promise(((resolve, reject) => {
@@ -360,7 +311,7 @@ function emptyDBERC20SmartContracts() {
   return new Promise(((resolve, reject) => {
     try {
       const assets = require('../controllers/assets_ctrl.js');
-	    assets.emptyCollection()
+      assets.emptyCollection()
         .then(() => {
           logger.info(colors.red.bold('SMART CONTRACTS DATABASE IS NOW EMPTY\n'));
           resolve();
@@ -411,186 +362,3 @@ function listPendingTx(address, asset) {
 }
 module.exports.listPendingTx = listPendingTx;
 
-/*
-function dlERC20SmartContracts(
-  web3, gethSubscribe, bcx, processTx, startBlock,
-  endBlock, dbCollections, nbERC20Found, logs = false,
-) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (startBlock > endBlock) {
-        resolve(nbERC20Found);
-      } else {
-        if (logs) {
-          logger.info(colors.blue(`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}\n`));
-        }
-        web3.eth.getBlock(startBlock, false)
-          .then((result) => {
-            bcx.getBlockSmartContractsAddressesArray(web3, result.transactions, [], 0)
-              .then((smartContractsAddressesArray) => {
-                module.exports.processSmartContractsAddressesArray(
-                  web3, gethSubscribe, bcx, processTx,
-                  dbCollections, smartContractsAddressesArray, 0, 0,
-                )
-                  .then((nbFound) => {
-                    nbERC20Found += nbFound;
-                    dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
-                      .then(() => {
-                        resolve(dlERC20SmartContracts(
-                          web3, gethSubscribe, bcx, processTx, startBlock + 1,
-                          endBlock, dbCollections, nbERC20Found, logs,
-                        ));
-                      })
-                      .catch((e) => { reject(e); });
-                  })
-                  .catch((e) => { reject(e); });
-              })
-              .catch((e) => { reject(e); });
-          })
-          .catch((e) => { reject(e); });
-      }
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.dlERC20SmartContracts = dlERC20SmartContracts;
-
-function processSmartContractsAddressesArray(
-  web3, gethSubscribe, bcx, processTx, dbCollections,
-  smartContractsAddressesArray, index, nbERC20Found,
-) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (index >= smartContractsAddressesArray.length) {
-        resolve(nbERC20Found);
-      } else {
-        try {
-          let ERC20SmartContract
-            = new web3.eth.Contract(ERC20ABI, smartContractsAddressesArray[index]);
-          ERC20SmartContract.methods.decimals().call()
-            .then((result) => {
-              const decimals = result;
-              // logger.info('DECIMALS : '+decimals)
-              ERC20SmartContract.methods.name().call()
-                .then((result2) => {
-                  const name = result2;
-                  // logger.info('NAME : '+name)
-                  ERC20SmartContract.methods.symbol().call()
-                    .then((result3) => {
-                      const symbol = result3;
-                      // logger.info('SYMBOL : '+symbol)
-                      if (decimals !== undefined && name !== undefined && symbol !== undefined) {
-                        logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
-                        if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
-                          nbERC20Found += 1;
-                          dbCollections.assets.addContract(smartContractsAddressesArray[index], name, symbol, decimals)
-                            .then(() => {
-                              ERC20SmartContract = {
-                                address: smartContractsAddressesArray[index],
-                                ticker: symbol,
-                                decimals,
-                              };
-                              // gethSubscribe.subscribeERC20SmartContract(web3, bcx, dbCollections, processTx, channel, queue, rmqServices, ERC20SmartContract);
-                              // HERE SEND IPC NOTIFICATION TO PUB-MASTER FOR ERC20 ~SMA~RT CONTRACT SUBSCRIPTION
-                              resolve(processSmartContractsAddressesArray(
-                                web3, gethSubscribe, bcx, processTx, dbCollections,
-                                smartContractsAddressesArray, index + 1, nbERC20Found,
-                              ));
-                            })
-                            .catch((e) => { reject(e); });
-                        } else {
-                          logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)\n'));
-                          resolve(processSmartContractsAddressesArray(
-                            web3, gethSubscribe, bcx, processTx, dbCollections,
-                            smartContractsAddressesArray, index + 1, nbERC20Found,
-                          ));
-                        }
-                      } else {
-                        resolve(processSmartContractsAddressesArray(
-                          web3, gethSubscribe, bcx, processTx, dbCollections,
-                          smartContractsAddressesArray, index + 1, nbERC20Found,
-                        ));
-                      }
-                    })
-                    .catch(() => {
-                      resolve(processSmartContractsAddressesArray(
-                        web3, gethSubscribe, bcx, processTx, dbCollections,
-                        smartContractsAddressesArray, index + 1, nbERC20Found,
-                      ));
-                    });
-                })
-                .catch(() => {
-                  resolve(processSmartContractsAddressesArray(
-                    web3, gethSubscribe, bcx, processTx, dbCollections,
-                    smartContractsAddressesArray, index + 1, nbERC20Found,
-                  ));
-                });
-            })
-            .catch(() => {
-              resolve(processSmartContractsAddressesArray(
-                web3, gethSubscribe, bcx, processTx, dbCollections,
-                smartContractsAddressesArray, index + 1, nbERC20Found,
-              ));
-            });
-        } catch (e) {
-          resolve(processSmartContractsAddressesArray(
-            web3, gethSubscribe, bcx, processTx, dbCollections,
-            smartContractsAddressesArray, index + 1, nbERC20Found,
-          ));
-        }
-      }
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.processSmartContractsAddressesArray = processSmartContractsAddressesArray;
-
-function updateERC20SmartContracts(web3, gethSubscribe, bcx, processTx, dbCollections, maxBlock) {
-  return new Promise(((resolve, reject) => {
-    try {
-      dbCollections.assets.findERC20SmartContractsHistoryHeight()
-        .then((startBlock) => {
-          logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
-          module.exports.dlERC20SmartContracts(
-            web3, gethSubscribe, bcx, processTx,
-            startBlock, maxBlock, dbCollections, 0, true,
-          )
-            .then((nbERC20Found) => {
-              logger.info(colors.blue.bold('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!\n'));
-              logger.info(colors.blue(`-->${nbERC20Found} ERC20 smart contracts found\n`));
-              resolve();
-            })
-            .catch((e) => { reject(e); });
-        })
-        .catch((e) => { reject(e); });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.updateERC20SmartContracts = updateERC20SmartContracts;
-*/
-
-function contractsToMonitor(
-  url,
-  idFrom,
-  $arg = { useMongoClient: true },
-) {
-  return new Promise(((resolve, reject) => {
-    // code to fetch list of contracts/assets to monitor
-    module.exports.dbConnect(url, $arg)
-      .then((dbCollections) => {
-        if (idFrom !== undefined && idFrom !== '') {
-        // fetch accounts registered after a given Id
-          dbCollections.assets.listRecent(idFrom)
-            .then((assetsArray) => {
-              resolve(assetsArray);
-            })
-            .catch((e) => { reject(e); });
-        } else {
-          dbCollections.assets.listAll()
-            .then((assetsArray) => {
-              resolve(assetsArray);
-            })
-            .catch((e) => { reject(e); });
-        }
-      });
-  }));
-}
-module.exports.contractsToMonitor = contractsToMonitor;

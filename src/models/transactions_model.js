@@ -13,6 +13,7 @@ const transactionsSchema = Mongoose.Schema({
   blockNumber: { type: Number, required: false },
   value: { type: Number, required: false },
   status: { type: String, required: false },
+  gasPrice: { type: Number, required: false },
   gasUsed: { type: Number, required: false },
 });
 

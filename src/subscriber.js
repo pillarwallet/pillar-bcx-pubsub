@@ -2,13 +2,7 @@ const amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
 const jsHashes = require('jsHashes');
-require('dotenv').config();
 
-const mongoUser = process.env.MONGO_USER;
-const mongoPwd = process.env.MONGO_PWD;
-const serverIP = process.env.SERVER;
-const dbName = process.env.DBNAME;
-const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
 const hashPrefix = process.env.HASH_PREFIX;
 
 // let dbCollections;
@@ -17,7 +11,7 @@ sha256 = new jsHashes.SHA256();
 let connection;
 
 exports.initServices = function () {
-  dbServices.dbConnect(mongoUrl)
+  dbServices.dbConnect()
     .then(() => {
       logger.info('Connected to database');
       this.initRabbitMQ();

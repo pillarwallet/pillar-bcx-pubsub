@@ -2,15 +2,18 @@ const Web3 = require('web3');
 const colors = require('colors');
 const logger = require('../utils/logger.js');
 
+let web3;
+
+
 function gethConnectDisplay() {
   return new Promise(((resolve, reject) => {
     module.exports.setWeb3WebsocketConnection()
-      .then((web3) => {
-        web3.eth.getBlockNumber()
+      .then(() => {
+        module.exports.web3.eth.getBlockNumber()
           .then((result) => {
             if (result != null) {
               logger.info(colors.green.bold(`Established connection with local Ethereum node!\nCurrent Block number :${result}\n`));
-              resolve(web3);
+              resolve();
             } else {
               logger.info(colors.red.bold('Failed to establish connection with local Ethereum node :(\n'));
               reject();
@@ -26,8 +29,9 @@ module.exports.gethConnectDisplay = gethConnectDisplay;
 function setWeb3WebsocketConnection() {
   return new Promise(((resolve, reject) => {
     try {
-      const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://node.pillarproject.io:8546'));
-      resolve(web3);
+      web3 = new Web3(new Web3.providers.WebsocketProvider('ws://node.pillarproject.io:8546'));
+      module.exports.web3 = web3;
+      resolve();
     } catch (e) {
       reject(e);
       logger.info(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));

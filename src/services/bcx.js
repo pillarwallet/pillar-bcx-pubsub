@@ -1,23 +1,27 @@
 const logger = require('../utils/logger.js');
+const gethConnect = require('./gethConnect.js');
 
-function getTxInfo(web3, txHash) {
-  return web3.eth.getTransaction(txHash);
+
+function getTxInfo(txHash) {
+  return gethConnect.web3.eth.getTransaction(txHash);
 }
 module.exports.getTxInfo = getTxInfo;
 
 
-function getBlockSmartContractsAddressesArray(web3, txHashArray, smartContractsAddressesArray, index) {
+function getBlockSmartContractsAddressesArray(txHashArray, smartContractsAddressesArray, index) {
   return new Promise(((resolve, reject) => {
     try {
       if (index >= txHashArray.length) {
         resolve(smartContractsAddressesArray);
       } else {
-        web3.eth.getTransactionReceipt(txHashArray[index])
+        gethConnect.web3.eth.getTransactionReceipt(txHashArray[index])
           .then((txReceipt) => {
             if (txReceipt.contractAddress != null) {
               smartContractsAddressesArray.push(txReceipt.contractAddress);
             }
-            resolve(getBlockSmartContractsAddressesArray(web3, txHashArray, smartContractsAddressesArray, index + 1));
+            resolve(getBlockSmartContractsAddressesArray(
+              txHashArray, smartContractsAddressesArray, index + 1,
+            ));
           })
           .catch((e) => { reject(e); });
       }
@@ -26,18 +30,17 @@ function getBlockSmartContractsAddressesArray(web3, txHashArray, smartContractsA
 }
 module.exports.getBlockSmartContractsAddressesArray = getBlockSmartContractsAddressesArray;
 
-function getBlockTx(web3, blockNumber) {
+function getBlockTx(blockNumber) {
   return new Promise(((resolve, reject) => {
     try {
-      web3.eth.getBlock(blockNumber, true)
+      gethConnect.web3.eth.getBlock(blockNumber, true)
         .then((result) => {
           // logger.info(result.transactions)
-          if(result) {
-	          resolve(result.transactions);
+          if (result) {
+            resolve(result.transactions);
           } else {
             reject('bcx.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED');
           }
-
         })
         .catch((e) => { reject(e); });
     } catch (e) { reject(e); }
@@ -45,10 +48,10 @@ function getBlockTx(web3, blockNumber) {
 }
 module.exports.getBlockTx = getBlockTx;
 
-function getBlockNumber(web3, blockHash) {
+function getBlockNumber(blockHash) {
   return new Promise(((resolve, reject) => {
     try {
-      web3.eth.getBlock(blockHash)
+      gethConnect.web3.eth.getBlock(blockHash)
         .then((result) => {
           resolve(result.number);
         })
@@ -58,20 +61,20 @@ function getBlockNumber(web3, blockHash) {
 }
 module.exports.getBlockNumber = getBlockNumber;
 
-function getLastBlockNumber(web3) {
-  return web3.eth.getBlockNumber();
+function getLastBlockNumber() {
+  return gethConnect.web3.eth.getBlockNumber();
 }
 module.exports.getLastBlockNumber = getLastBlockNumber;
 
-function getTxReceipt(web3, txHash) {
-  return web3.eth.getTransactionReceipt(txHash);
+function getTxReceipt(txHash) {
+  return gethConnect.web3.eth.getTransactionReceipt(txHash);
 }
 module.exports.getTxReceipt = getTxReceipt;
 
-function getPendingTxArray(web3) {
+function getPendingTxArray() {
   return new Promise(((resolve, reject) => {
     try {
-      web3.eth.getBlock('pending', true)
+      gethConnect.web3.eth.getBlock('pending', true)
         .then((result) => {
           // logger.info(result)
           resolve(result.transactions);
@@ -82,13 +85,13 @@ function getPendingTxArray(web3) {
 }
 module.exports.getPendingTxArray = getPendingTxArray;
 
-function getBalance(address, asset, web3, contractAddress) {
+function getBalance(address, asset, contractAddress) {
   return new Promise(((resolve, reject) => {
     try {
       if (asset === 'ETH') {
-        web3.eth.getBalance(address)
+        gethConnect.web3.eth.getBalance(address)
           .then((result) => {
-            const ETHBalance = web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
+            const ETHBalance = gethConnect.web3.utils.fromWei(gethConnect.web3.utils.toBN(result).toString(), 'ether');
             logger.info(`WEB3 ${asset} BALANCE = ${ETHBalance}`);
             resolve(ETHBalance);
           })
@@ -99,7 +102,7 @@ function getBalance(address, asset, web3, contractAddress) {
         }
         const addr = (address).substring(2);
         const callData = (`0x70a08231000000000000000000000000${addr}`);
-        web3.eth.call(
+        gethConnect.web3.eth.call(
           {
             to: contractAddress,
             // ERC20 token contract address,
@@ -109,7 +112,7 @@ function getBalance(address, asset, web3, contractAddress) {
           },
           (err, result) => {
             if (result) {
-              const tokenBalance = web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
+              const tokenBalance = gethConnect.web3.utils.fromWei(gethConnect.web3.utils.toBN(result).toString(), 'ether');
               // logger.info('WEB3 '+asset+ 'TOKEN BALANCE = ' + tokenBalance+'\n')
               resolve(tokenBalance);
             } else {
