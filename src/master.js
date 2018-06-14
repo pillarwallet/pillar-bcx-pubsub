@@ -94,11 +94,11 @@ exports.launch = function () {
     exports.pubs[exports.index].on('message', (data) => {
       logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
       if (data.type === 'wallet.request') {
-        logger.info(`Received ${data.message} from ${data.id}`);
+        logger.info(`Received ${data.message} from publisher: ${exports.index}`);
         exports.notify(data.message, exports.pubs[exports.index - 1]);
       }
       if (data.type === 'queue.full') {
-        logger.info(`Received ${data.message} from ${data.id}`);
+        logger.info(`Received ${data.message} from publisher: ${exports.index}`);
         // fork new publisher-subscriber process pairs
         this.launch();
       }
