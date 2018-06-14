@@ -58,7 +58,7 @@ exports.checkTxPool = function () {
                   unknownPendingTxArray.push(pendingTx);
                 }
               });
-              processTx.processNewPendingTxArray(unknownPendingTxArray, null, null, 0, false)
+              processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false)
                 .then((nbTxFound) => {
                   logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
                   resolve();
@@ -139,7 +139,7 @@ exports.processTxHistory = function (txArray, nbTx, index) {
       if (index === txArray.length) {
         resolve(nbTx);
       } else {
-        processTx.newPendingTx(txArray[index], null, null, false)
+        processTx.newPendingTx(txArray[index], false)
           .then((pillarWalletTx) => {
             if (pillarWalletTx) {
               nbTx += 1;

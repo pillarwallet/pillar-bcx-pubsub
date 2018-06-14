@@ -1,0 +1,416 @@
+{"message":"Started executing master.init()","level":"info"}
+{"message":"master.init(): Initializing master for Ethereum","level":"info"}
+{"message":"master.init(): A new publisher will be spawned for every 500000 wallets..","level":"info"}
+{"message":"Started executing master.launch()","level":"info"}
+{"message":"Exited master.launch()","level":"info"}
+{"message":"Exited master.init()","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Connected to database","level":"info"}
+{"message":"Started executing initRabbitMQ()","level":"info"}
+{"message":"Exited initRabbitMQ()","level":"info"}
+{"message":"Connected","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection with local Ethereum node!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1mCurrent Block number :3434533\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 0:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0XABA31E585C4A221D9E196EA46C98793E0A0490BD\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 1:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0X486592D425272B856FD15ED7BFB2E6AC5CFC187E\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED SMART CONTRACTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 0\u001b[39m\n\u001b[36mPillar : SYMBOL = PLR    ADDRESS = 0X9471EA41772925E3FF477772681740C9F520D3AF\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 1\u001b[39m\n\u001b[36mBokkyPooBah Test Token : SYMBOL = BOKKY    ADDRESS = 0X583CBBB8A8443B38ABCC0C956BECE47340EA1367\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING DATABASE ADDRESSES COLLECTIONS...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mDONE\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING TX HISTORY DATABASE ...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m-->Highest Block Number for Tx History: 3423800\u001b[39m\n\u001b[33m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mTX HISTORY DATABASE INITIALIZED\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mINITIALIZING ERC20 SMART CONTRACTS DATABASE...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m-->Highest Block Number for ERC20 Smart Contracts: 2870525\u001b[39m\n\u001b[33m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mERC20 SMART CONTRACTS DATABASE INITIALIZED\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33m\u001b[1mUPDATING PENDING TX IN DATABASE...\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to Block Headers\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[31m\u001b[1mLAST BLOCK NUMBER = 3434533\u001b[22m\u001b[39m\n\u001b[31m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[34m\u001b[1mLAST BLOCK NUMBER = 3434533\u001b[22m\u001b[39m\n\u001b[34m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[31m\u001b[1mUPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # 3423800\u001b[22m\u001b[39m\n\u001b[31m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[34m\u001b[1mUPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # 2870525\u001b[22m\u001b[39m\n\u001b[34m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Started executing publisher.initIPC()","level":"info"}
+{"message":"Executing rmqServices.initMQ()","level":"info"}
+{"message":"Exited rmqServices.initMQ()","level":"info"}
+{"message":"Exited publisher.initIPC()","level":"info"}
+{"code":541,"level":"error"}
+{"message":"Connection closed","level":"error"}
+{"message":"\u001b[32m\u001b[1mEstablished connection with local Ethereum node!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1mCurrent Block number :3434534\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434534 Hash = 0xa084faf03af4fa39d09375792d0b8fdd54c8907feba44967fee038401ff859e3\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 0:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0XABA31E585C4A221D9E196EA46C98793E0A0490BD\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mACCOUNT # 1:\u001b[39m\n\u001b[36m PUBLIC ADDRESS = 0X486592D425272B856FD15ED7BFB2E6AC5CFC187E\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mMONITORED SMART CONTRACTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 0\u001b[39m\n\u001b[36mPillar : SYMBOL = PLR    ADDRESS = 0X9471EA41772925E3FF477772681740C9F520D3AF\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[36mSMART CONTRACT # 1\u001b[39m\n\u001b[36mBokkyPooBah Test Token : SYMBOL = BOKKY    ADDRESS = 0X583CBBB8A8443B38ABCC0C956BECE47340EA1367\u001b[39m\n\u001b[36m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to Pending Tx and Smart Contract Calls\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[32m\u001b[1mSubscribed to Block Headers\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"level":"info"}
+{"message":"\u001b[33m\u001b[1mDONE UPDATING PENDING TX IN DATABASE\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m--> 0 transactions found\u001b[22m\u001b[39m\n\u001b[33m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Started executing initRabbitMQ()","level":"info"}
+{"message":"Exited initRabbitMQ()","level":"info"}
+{"message":"Started executing initRabbitMQ()","level":"info"}
+{"message":"Exited initRabbitMQ()","level":"info"}
+{"message":"Connected","level":"info"}
+{"message":"Connected","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\"} from publisher","level":"info"}
+{"message":"Received undefined from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[32m\u001b[1mEstablished connection to database!\u001b[22m\u001b[39m\n\u001b[32m\u001b[1m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mFETCHING ALL ADDRESSES:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"master.notify(): Sending IPC notification to monitor 2 wallets.","level":"info"}
+{"message":"Publisher has received message from master........","level":"info"}
+{"message":"Publisher received notification to monitor :0XABA31E585C4A221D9E196EA46C98793E0A0490BD for pillarId: 1","level":"info"}
+{"message":"Publisher received notification to monitor :0X486592D425272B856FD15ED7BFB2E6AC5CFC187E for pillarId: 2","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434535 Hash = 0xd138da3b9296cf9c815512108816cc6fcc8ecc88205f4686e9d1e0cebbcf4c07\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434535 Hash = 0xd138da3b9296cf9c815512108816cc6fcc8ecc88205f4686e9d1e0cebbcf4c07\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434536 Hash = 0xe0ca0356c968eff8335732615e692229a7f79aa5a0fc0a6fc89b764402570708\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434536 Hash = 0xe0ca0356c968eff8335732615e692229a7f79aa5a0fc0a6fc89b764402570708\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434537 Hash = 0xabefc3af5295b90c0b96aa5006784482f321a423cb1cdb6cb14030e3585b6fbf\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434537 Hash = 0xabefc3af5295b90c0b96aa5006784482f321a423cb1cdb6cb14030e3585b6fbf\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434538 Hash = 0x2e3a010dfe77611018dd2d682742b2c1b59e6fff9870e23787c1abdce153ac9d\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434538 Hash = 0x2e3a010dfe77611018dd2d682742b2c1b59e6fff9870e23787c1abdce153ac9d\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434539 Hash = 0xf68a7f898df4c905334f0b39bc599788f18312df803006ee8f8b878779173193\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434539 Hash = 0xf68a7f898df4c905334f0b39bc599788f18312df803006ee8f8b878779173193\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434540 Hash = 0x3b536f574a1a795e388bc37f11b1b7a23f87aa85abb5c9ccae59e099e13978c7\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434540 Hash = 0x3b536f574a1a795e388bc37f11b1b7a23f87aa85abb5c9ccae59e099e13978c7\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[33mTRANSACTION PENDING: 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1\u001b[39m\n\u001b[33m0.1 ETH\u001b[39m\n\u001b[33mFROM: PILLAR WALLET 0xabA31e585c4a221d9e196EA46c98793e0A0490bD\u001b[39m\n\u001b[33mTO: PILLAR WALLET 0x486592D425272B856fd15eD7bFb2E6ac5CfC187E\u001b[39m\n\u001b[33m\u001b[39m","level":"info"}
+{"message":"Transaction inserted: 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1","level":"info"}
+{"message":"Transaction inserted: 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434541 Hash = 0xb0100dd1861f57af7050b0bbd54a9e0e02cd221e5ad75479385aad2c6756ba1a\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434541 Hash = 0xb0100dd1861f57af7050b0bbd54a9e0e02cd221e5ad75479385aad2c6756ba1a\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"TX 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1 STILL PENDING (IN TX POOL)...\n","level":"info"}
+{"message":"TX 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1 STILL PENDING (IN TX POOL)...\n","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434542 Hash = 0x587c037ad9a4fd084b5968cfe01bb359f8dc18523dfdff3cf77d1e4985403155\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434542 Hash = 0x587c037ad9a4fd084b5968cfe01bb359f8dc18523dfdff3cf77d1e4985403155\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"TX 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1 STILL PENDING (IN TX POOL)...\n","level":"info"}
+{"message":"TX 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1 STILL PENDING (IN TX POOL)...\n","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434543 Hash = 0x8d41819d7d4098324b96fa570d1b2f11deb71c1061aa0e5eedd256c4d2d19e76\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434543 Hash = 0x8d41819d7d4098324b96fa570d1b2f11deb71c1061aa0e5eedd256c4d2d19e76\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[32mTRANSACTION 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1 CONFIRMED @ BLOCK # 3434543\u001b[39m\n\u001b[32m\u001b[39m","level":"info"}
+{"message":"Transaction updated: 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1","level":"info"}
+{"message":"\u001b[32mTRANSACTION 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1 CONFIRMED @ BLOCK # 3434543\u001b[39m\n\u001b[32m\u001b[39m","level":"info"}
+{"message":"Transaction updated: 0x747d7b0eaa1ac6990117f013e41c056d27d5efb5bf63c480420f449cb12dbbc1","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434544 Hash = 0xfa3b71e72cc11193af219243831b726fa1b3ace0a973a47718156d6a4e7a5baa\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434544 Hash = 0xfa3b71e72cc11193af219243831b726fa1b3ace0a973a47718156d6a4e7a5baa\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434545 Hash = 0x5e9844124798b9e373d2fac8e9836344b2e6d2ef937936a87af80dd00c9a7817\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434545 Hash = 0x5e9844124798b9e373d2fac8e9836344b2e6d2ef937936a87af80dd00c9a7817\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434546 Hash = 0xb53a6cf00d4e30b4bf9a76ec97abed5f03324b2d1bf819cc2cf9aad2221a1738\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434546 Hash = 0xb53a6cf00d4e30b4bf9a76ec97abed5f03324b2d1bf819cc2cf9aad2221a1738\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434547 Hash = 0x7f5d6810e355ef871e72ae597ed8462142c9270650bebc9dd95474a59faaf822\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434547 Hash = 0x7f5d6810e355ef871e72ae597ed8462142c9270650bebc9dd95474a59faaf822\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434548 Hash = 0x295702afc0971b826be49317043ae253264e9ef91ac88c3fca8f584a66c65c26\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434548 Hash = 0x295702afc0971b826be49317043ae253264e9ef91ac88c3fca8f584a66c65c26\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434549 Hash = 0x7fd321123a56a7f7662562d2c25f897f91bfce30f406e44e8ef3b2dc58a6a2bd\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434549 Hash = 0x7fd321123a56a7f7662562d2c25f897f91bfce30f406e44e8ef3b2dc58a6a2bd\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434550 Hash = 0x6680515a491f63deac7ac9d141f2222270622cfafdd8880e5883a8f6df381ee8\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434550 Hash = 0x6680515a491f63deac7ac9d141f2222270622cfafdd8880e5883a8f6df381ee8\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434551 Hash = 0x6f1f458d03204fea950b9d3d4c082df74148519bc6da93334cbcb66f79fec58c\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434551 Hash = 0x6f1f458d03204fea950b9d3d4c082df74148519bc6da93334cbcb66f79fec58c\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434552 Hash = 0xb54ea147ad72efe5126d05d23b648429a3db7a79312fe1fc6a7de1bc120cf309\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434552 Hash = 0xb54ea147ad72efe5126d05d23b648429a3db7a79312fe1fc6a7de1bc120cf309\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434553 Hash = 0xcec1bed1c7fa0438e57fa728722eaff2ec7d425e518bb85b46b05d3a190dc2a4\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434553 Hash = 0xcec1bed1c7fa0438e57fa728722eaff2ec7d425e518bb85b46b05d3a190dc2a4\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434554 Hash = 0xe8c82eae5caf105ea228dfdb3b2de49e6680ba6159dcca29c7c299f2e7978826\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434554 Hash = 0xe8c82eae5caf105ea228dfdb3b2de49e6680ba6159dcca29c7c299f2e7978826\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434555 Hash = 0xada66480409ff332933ebb3853782470dacb4c9c93f0bc32008bc02b9591c9c6\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434555 Hash = 0xada66480409ff332933ebb3853782470dacb4c9c93f0bc32008bc02b9591c9c6\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434556 Hash = 0x11b1164ebf4b9e1e90b985a244a696e297db7de89331a02e89b0ca70114dbbd7\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434556 Hash = 0x11b1164ebf4b9e1e90b985a244a696e297db7de89331a02e89b0ca70114dbbd7\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434557 Hash = 0xdb40517b08d6ffef27fa81b9db93b6bb5b1a6460b9ba019fc31e24a7fd5d4062\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434557 Hash = 0xdb40517b08d6ffef27fa81b9db93b6bb5b1a6460b9ba019fc31e24a7fd5d4062\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434558 Hash = 0x37a7015d7c92c1afd9d5feabb6c41e41f1a7cbe1d6b89f5057d477b71d917c23\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"\u001b[90mNEW BLOCK MINED : # 3434558 Hash = 0x37a7015d7c92c1afd9d5feabb6c41e41f1a7cbe1d6b89f5057d477b71d917c23\u001b[39m\n\u001b[90m\u001b[39m","level":"info"}
+{"message":"Master received message : {\"type\":\"wallet.request\",\"message\":\"5b0d670de21a32f5077d23e3\"} from publisher","level":"info"}
+{"message":"Received 5b0d670de21a32f5077d23e3 from publisher: 1","level":"info"}
+{"message":"Started executing master.notify()","level":"info"}
+{"message":"Exited master.notify()","level":"info"}
+{"message":"\u001b[36m\u001b[1m\u001b[4mNO NEW ACCOUNTS:\u001b[24m\u001b[22m\u001b[39m\n\u001b[36m\u001b[1m\u001b[4m\u001b[24m\u001b[22m\u001b[39m","level":"info"}

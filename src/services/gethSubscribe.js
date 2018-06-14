@@ -6,11 +6,10 @@ const ERC20ABI = require('./ERC20ABI.json');
 const gethConnect = require('./gethConnect.js');
 const bcx = require('./bcx.js');
 const processTx = require('./processTx.js');
-// const abiDecoder = require('abi-decoder');
 const dbServices = require('./dbServices.js');
 
 
-function subscribePendingTx(accounts, assets) {
+function subscribePendingTx() {
   const subscribePromise = new Promise(((resolve, reject) => {
     try {
       gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
@@ -19,7 +18,7 @@ function subscribePendingTx(accounts, assets) {
             bcx.getTxInfo(txHash)
               .then((txInfo) => {
                 if (txInfo != null) {
-                  processTx.newPendingTx(txInfo, accounts, assets);
+                  processTx.newPendingTx(txInfo);
                 }
               })
               .catch((e) => { reject(e); });
@@ -71,25 +70,25 @@ function subscribeBlockHeaders() {
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
 
-function subscribeAllDBERC20SmartContracts(accounts, assets) {
+function subscribeAllDBERC20SmartContracts() {
   try {
     const smartContractsArray = assets.values();
     smartContractsArray.forEach((ERC20SmartContract) => {
-      module.exports.subscribeERC20SmartContract(accounts, assets, ERC20SmartContract);
+      module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });
     logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
   } catch (e) { logger.info(e); }
 }
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
 
-function subscribeERC20SmartContract(accounts, assets, ERC20SmartContract) {
+function subscribeERC20SmartContract(ERC20SmartContract) {
   try {
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
       const ERC20SmartContractObject =
         new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
-          processTx.checkTokenTransferEvent(accounts, assets, result, ERC20SmartContract);
+          processTx.checkTokenTransferEvent(result, ERC20SmartContract);
         } else {
           logger.info(error);
         }
