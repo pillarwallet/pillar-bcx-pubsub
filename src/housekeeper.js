@@ -315,5 +315,6 @@ this.init()
     this.updateERC20SmartContracts(); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
     this.checkNewERC20SmartContracts();
     // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
-  });
+  })
+  .catch((e) => { logger.error(e); });
 
