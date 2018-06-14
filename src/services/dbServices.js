@@ -88,13 +88,17 @@ function recentAccounts(
           // fetch accounts registered after a given Id
           dbCollections.accounts.listRecent(idFrom)
             .then((ethAddressesArray) => {
-              logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
-              let i = 0;
-              // console.log(JSON.stringify(ethAddressesArray));
-              ethAddressesArray.forEach((item) => {
-                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
-                i += 1;
-              });
+              if(ethAddressesArray.length > 0) {
+                logger.info(colors.cyan.bold.underline('NEW ACCOUNTS FOUND:\n'));
+                let i = 0;
+                // console.log(JSON.stringify(ethAddressesArray));
+                ethAddressesArray.forEach((item) => {
+                  logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
+                  i += 1;
+                });
+              } else {
+                logger.info(colors.cyan.bold.underline('NO NEW ACCOUNTS:\n'));
+              }
               resolve(ethAddressesArray);
             })
             .catch((e) => { reject(e); });

@@ -11,11 +11,12 @@ const rmqServices = require('./services/rmqServices.js');
 
 const HashMap = require('hashmap');
 
-let accounts;
-let assets;
-let latestId;
+var accounts;
+var assets;
+var latestId;
 
 process.on('message',(data) => {
+  logger.info('Publisher has received message from master........');
   const message = data.message;
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
@@ -41,7 +42,12 @@ exports.initIPC = function () {
     setInterval(() => {
       exports.poll();
     },5000);
-    // exports.initMQ();
+    
+    rmqServices.initMQ()
+      .then(() => {
+        this.initSubscriptions();
+      })
+    .catch((e) => { logger.error(e); });
   } catch (err) {
     logger.error('Publisher.init() failed: ', err.message);
     throw err;
@@ -52,7 +58,6 @@ exports.initIPC = function () {
 
 exports.poll = function () {
   // logger.info('Requesting new wallet :');
-
   process.send({
     type: 'wallet.request',
     message: latestId,
@@ -77,15 +82,5 @@ exports.initSubscriptions = function () {
     .catch((e) => { logger.error(e); });
 };
 
-exports.walletReceived = function () {
-
-};
-
-
 this.initIPC();
-rmqServices.initMQ()
-  .then(() => {
-    this.initSubscriptions();
-  })
-  .catch((e) => { logger.error(e); });
 

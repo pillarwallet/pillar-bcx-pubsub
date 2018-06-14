@@ -15,7 +15,7 @@ function subscribePendingTx(accounts, assets) {
     try {
       gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
         .on('data', (txHash) => {
-          if (txHash != null) {
+          if ((txHash !== null) && (txHash !== '')) {
             bcx.getTxInfo(txHash)
               .then((txInfo) => {
                 if (txInfo != null) {

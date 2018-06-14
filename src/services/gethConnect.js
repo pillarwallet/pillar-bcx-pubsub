@@ -33,8 +33,8 @@ function setWeb3WebsocketConnection() {
       module.exports.web3 = web3;
       resolve();
     } catch (e) {
-      reject(e);
       logger.info(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));
+      reject(e);
     }
   }));
 }
