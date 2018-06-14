@@ -11,13 +11,7 @@ describe('Function Calls', () => {
 
     const spyConnect = jest.spyOn(dbServices, 'dbConnect').mockImplementation(() => Promise.resolve({ success: true }));
     subscriber.initServices();
-    const mongoUser = process.env.MONGO_USER;
-    const mongoPwd = process.env.MONGO_PWD;
-    const serverIP = process.env.SERVER;
-    const dbName = process.env.DBNAME;
-    const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
     expect(spyConnect).toBeCalled();
-    expect(spyConnect).toBeCalledWith(mongoUrl);
     spyConnect.mockRestore() 
   });
 
