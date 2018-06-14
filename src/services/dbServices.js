@@ -50,20 +50,22 @@ function dbConnectDisplayAccounts($arg = { useMongoClient: true }) {
             .then((accountsArray) => {
               dbCollections.assets.listAll()
                 .then((assetsArray) => {
+                  /*
                   logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
                   let i = 0;
                   accountsArray.forEach((item) => {
-                    logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
+                    logger.info(colors.cyan(`ACCOUNT # ${i}:PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
                     i += 1;
                   });
                   logger.info(colors.cyan.bold.underline('MONITORED SMART CONTRACTS:\n'));
-                  i = 0;
+                  i = 0; 
                   assetsArray.forEach((item) => {
                     if (item.contractAddress !== 'contractAddress') {
                       logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.symbol}    ADDRESS = ${item.contractAddress}\n`));
                     }
                     i += 1;
                   });
+                  */
                   resolve();
                 })
                 .catch((e) => { reject(e); });
@@ -88,13 +90,19 @@ function recentAccounts(
           // fetch accounts registered after a given Id
           dbCollections.accounts.listRecent(idFrom)
             .then((ethAddressesArray) => {
-              logger.info(colors.cyan.bold.underline('NEW ACCOUNTS:\n'));
-              let i = 0;
-              // console.log(JSON.stringify(ethAddressesArray));
-              ethAddressesArray.forEach((item) => {
-                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
-                i += 1;
-              });
+              if(ethAddressesArray.length > 0) {
+                logger.info(colors.cyan.bold.underline(`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:\n`));
+                /*
+                let i = 0;
+                // console.log(JSON.stringify(ethAddressesArray));
+                ethAddressesArray.forEach((item) => {
+                  logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
+                  i += 1;
+                });
+                */
+              } else {
+                logger.info(colors.cyan.bold.underline('NO NEW ACCOUNTS:\n'));
+              }
               resolve(ethAddressesArray);
             })
             .catch((e) => { reject(e); });
@@ -107,7 +115,7 @@ function recentAccounts(
             .catch((e) => { reject(e); });
         }
       } else {
-        module.exports.dbConnect( $arg)
+        module.exports.dbConnect($arg)
           .then(() => {
             resolve(module.exports.recentAccounts());
           })
@@ -119,29 +127,27 @@ function recentAccounts(
 module.exports.recentAccounts = recentAccounts;
 
 function contractsToMonitor(
-  url,
   idFrom,
   $arg = { useMongoClient: true },
 ) {
   return new Promise(((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
-    module.exports.dbConnect(url, $arg)
-      .then(() => {
-        if (idFrom !== undefined && idFrom !== '') {
-          // fetch accounts registered after a given Id
-          dbCollections.assets.listRecent(idFrom)
-            .then((assetsArray) => {
-              resolve(assetsArray);
-            })
-            .catch((e) => { reject(e); });
-        } else {
-          dbCollections.assets.listAll()
-            .then((assetsArray) => {
-              resolve(assetsArray);
-            })
-            .catch((e) => { reject(e); });
-        }
-      });
+    if (dbCollections) {
+      if (idFrom !== undefined && idFrom !== '') {
+        // fetch accounts registered after a given Id
+        dbCollections.assets.listRecent(idFrom)
+          .then((assetsArray) => {
+            resolve(assetsArray);
+          })
+          .catch((e) => { reject(e); });
+      } else {
+        dbCollections.assets.listAll()
+          .then((assetsArray) => {
+            resolve(assetsArray);
+          })
+          .catch((e) => { reject(e); });
+      }
+    }
   }));
 }
 module.exports.contractsToMonitor = contractsToMonitor;

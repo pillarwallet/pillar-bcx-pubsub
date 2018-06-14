@@ -3,7 +3,12 @@ const gethConnect = require('./gethConnect.js');
 
 
 function getTxInfo(txHash) {
-  return gethConnect.web3.eth.getTransaction(txHash);
+  try {
+    return gethConnect.web3.eth.getTransaction(txHash);
+  }catch(e) {
+    logger.error('Invalid transaction hash: ' + txHash);
+    return;
+  }
 }
 module.exports.getTxInfo = getTxInfo;
 

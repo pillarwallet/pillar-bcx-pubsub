@@ -7,18 +7,19 @@ const rmqServices = require('./rmqServices.js');
 const gethConnect = require('./gethConnect.js');
 const abiDecoder = require('abi-decoder');
 const bcx = require('./bcx.js');
+const hashMaps = require('../utils/hashMaps.js');
 
-function processNewPendingTxArray(txArray, accounts, assets, nbTxFound, isPublisher = true) {
+function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     try {
       if (txArray.length === 0) {
         resolve(nbTxFound);
       } else {
-        module.exports.newPendingTx(txArray[0], accounts, assets, isPublisher)
+        module.exports.newPendingTx(txArray[0], isPublisher)
           .then((isMonitoredAccoutnTx) => {
             if (isMonitoredAccoutnTx) { nbTxFound += 1; }
             txArray.splice(0, 1);
-            resolve(processNewPendingTxArray(txArray, accounts, assets, nbTxFound, isPublisher));
+            resolve(processNewPendingTxArray(txArray, nbTxFound, isPublisher));
           })
           .catch((e) => { reject(e); });
       }
@@ -27,7 +28,7 @@ function processNewPendingTxArray(txArray, accounts, assets, nbTxFound, isPublis
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
-function newPendingTx(tx, accounts, assets, isPublisher = true) {
+function newPendingTx(tx, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
     let toERC20SmartContract;
@@ -37,12 +38,12 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
     } else { // REGULAR TRANSACTION OR SMART CONTRACT CALL
-      module.exports.filterAddress(tx.to, accounts, assets, isPublisher)
+      module.exports.filterAddress(tx.to, isPublisher)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
           toERC20SmartContract = result.isERC20SmartContract;
           ticker = result.ERC20SmartContractTicker;
-          module.exports.filterAddress(tx.from, accounts, assets, isPublisher)
+          module.exports.filterAddress(tx.from, isPublisher)
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
               let value = tx.value * (10 ** -18);
@@ -219,7 +220,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                             gasUsed: null,
                           });
                         }
-                        module.exports.filterAddress(to, accounts, assets, isPublisher)
+                        module.exports.filterAddress(to, isPublisher)
                           .then((result3) => {
                             toPillarAccount = result3.isPillarAddress;
                             if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
@@ -311,7 +312,7 @@ function newPendingTx(tx, accounts, assets, isPublisher = true) {
                       // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                       const to = data.params[0].value;
                       // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
-                      module.exports.filterAddress(to, accounts, assets, isPublisher)
+                      module.exports.filterAddress(to, isPublisher)
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
                           if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR ACCOUNT ADDRESS
@@ -621,18 +622,18 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
 module.exports.checkPendingTx = checkPendingTx;
 
 
-function filterAddress(address, accounts, assets, isPublisher) {
+function filterAddress(address, isPublisher) {
   /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
   return new Promise(((resolve, reject) => {
     try {
-      const ADDRESS = address.toUpperCase();
+      // const ADDRESS = address.toUpperCase();
       if (isPublisher === false) {
-        dbServices.dbCollections.accounts.findByAddress(ADDRESS)
+        dbServices.dbCollections.accounts.findByAddress(address)
           .then((result) => {
             if (result) {
               resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
             } else {
-              dbServices.dbCollections.assets.findByAddress(ADDRESS)
+              dbServices.dbCollections.assets.findByAddress(address)
                 .then((result2) => {
                   if (result2) {
                     const ticker = result2.symbol;
@@ -653,9 +654,9 @@ function filterAddress(address, accounts, assets, isPublisher) {
             }
           })
           .catch((e) => { reject(e); });
-      } else if (accounts.has(ADDRESS)) {
+      } else if (hashMaps.accounts.has(address)) {
         resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-      } else if (assets.has(ADDRESS)) {
+      } else if (hashMaps.assets.has(address)) {
         // const ticker = result2.symbol; // NEED TO ADD ASSET SYMBOL IN HASHMAP
         const ticker = 'ASSET SYMBOL';
         resolve({
@@ -678,14 +679,14 @@ function filterAddress(address, accounts, assets, isPublisher) {
 module.exports.filterAddress = filterAddress;
 
 
-function checkTokenTransferEvent(accounts, assets, eventInfo, ERC20SmartcContractInfo) {
+function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   // THIS IS TO CATCH TOKEN TRANSFERS THAT RESULT FROM SENDING ETH TO A
   // SMART CONTRACT (WHICH IN RETURN TRANSFERS TOKENS TO ETH SENDER)
   return new Promise(((resolve, reject) => {
     try {
       const tmstmp = time.now();
       logger.info(eventInfo);
-      module.exports.filterAddress(eventInfo.returnValues._to, accounts, assets, true)
+      module.exports.filterAddress(eventInfo.returnValues._to, true)
       // ^ check if token transfer destination address is pillar wallet
         .then((result) => {
           if (result.isPillarAddress === true) {
