@@ -71,8 +71,10 @@ exports.initSubscriptions = function () {
           gethSubscribe.subscribePendingTx(accounts, assets);
           gethSubscribe.subscribeBlockHeaders();
           gethSubscribe.subscribeAllDBERC20SmartContracts(accounts, assets);
-        });
-    });
+        })
+        .catch((e) => { logger.error(e); });
+    })
+    .catch((e) => { logger.error(e); });
 };
 
 exports.walletReceived = function () {
@@ -84,5 +86,6 @@ this.initIPC();
 rmqServices.initMQ()
   .then(() => {
     this.initSubscriptions();
-  });
+  })
+  .catch((e) => { logger.error(e); });
 
