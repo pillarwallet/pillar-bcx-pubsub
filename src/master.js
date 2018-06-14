@@ -76,9 +76,9 @@ exports.launch = function () {
     exports.housekeeper.on('message', (data) => {
       logger.info(`Housekeeper has sent a message: ${data}`);
       // broadcast the message to all publishers
-      if (data.type === 'accounts') {
+      if (data.type === 'assets') {
         for (let i = 0; i < exports.pubs.length; i++) {
-          exports.pubs[i++].send({ type: 'accounts', message: data.message });
+          exports.pubs[i++].send({ type: 'assets', message: data.message });
         }
       }
     });
@@ -103,6 +103,7 @@ exports.launch = function () {
         this.launch();
       }
     });
+
     exports.pubs[exports.index].on('close', (data) => {
       const pubId = (exports.index - 1);
 
@@ -136,6 +137,14 @@ exports.launch = function () {
       }
     });
 
+    //send list of assets to the publisher
+    logger.info('Sending list of assets to monitor to each publisher');
+    dbServices.contractsToMonitor('')
+      .then((assets) => {
+        logger.info(assets.length + ' assets identified to be monitored');
+        exports.pubs[exports.index].send({ type: 'assets', message: assets});
+      });
+    
     exports.index++;
   } catch (err) {
     // throw err;
