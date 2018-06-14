@@ -115,7 +115,7 @@ function recentAccounts(
             .catch((e) => { reject(e); });
         }
       } else {
-        module.exports.dbConnect( $arg)
+        module.exports.dbConnect($arg)
           .then(() => {
             resolve(module.exports.recentAccounts());
           })
