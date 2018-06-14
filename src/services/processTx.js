@@ -626,14 +626,14 @@ function filterAddress(address, isPublisher) {
   /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
   return new Promise(((resolve, reject) => {
     try {
-      const ADDRESS = address.toUpperCase();
+      // const ADDRESS = address.toUpperCase();
       if (isPublisher === false) {
-        dbServices.dbCollections.accounts.findByAddress(ADDRESS)
+        dbServices.dbCollections.accounts.findByAddress(address)
           .then((result) => {
             if (result) {
               resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
             } else {
-              dbServices.dbCollections.assets.findByAddress(ADDRESS)
+              dbServices.dbCollections.assets.findByAddress(address)
                 .then((result2) => {
                   if (result2) {
                     const ticker = result2.symbol;
@@ -654,9 +654,9 @@ function filterAddress(address, isPublisher) {
             }
           })
           .catch((e) => { reject(e); });
-      } else if (hashMaps.accounts.has(ADDRESS)) {
+      } else if (hashMaps.accounts.has(address)) {
         resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-      } else if (hashMaps.assets.has(ADDRESS)) {
+      } else if (hashMaps.assets.has(address)) {
         // const ticker = result2.symbol; // NEED TO ADD ASSET SYMBOL IN HASHMAP
         const ticker = 'ASSET SYMBOL';
         resolve({

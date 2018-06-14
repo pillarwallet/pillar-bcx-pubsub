@@ -50,19 +50,24 @@ function dbConnectDisplayAccounts($arg = { useMongoClient: true }) {
             .then((accountsArray) => {
               dbCollections.assets.listAll()
                 .then((assetsArray) => {
-                  logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
-                  let i = 0;
-                  accountsArray.forEach((item) => {
-                    logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
-                    i += 1;
-                  });
-                  logger.info(colors.cyan.bold.underline('MONITORED SMART CONTRACTS:\n'));
-                  i = 0;
-                  assetsArray.forEach((item) => {
-                    if (item.contractAddress !== 'contractAddress') {
-                      logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.symbol}    ADDRESS = ${item.contractAddress}\n`));
-                    }
-                    i += 1;
+	                logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
+	                let i = 0;
+	                accountsArray.forEach((item) => {
+		                if (item.addresses[0] && i <= 10) {
+			                logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
+		                }
+		                i += 1;
+	                });
+	                if (i > 10) {
+		                logger.info('. . .\n');
+	                }
+	                logger.info(colors.cyan.bold.underline('MONITORED SMART CONTRACTS:\n'));
+	                i = 0;
+	                assetsArray.forEach((item) => {
+		                if (item.contractAddress !== 'contractAddress') {
+			                logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.symbol}    ADDRESS = ${item.contractAddress}\n`));
+		                }
+		                i += 1;
                   });
                   resolve();
                 })
@@ -88,7 +93,7 @@ function recentAccounts(
           // fetch accounts registered after a given Id
           dbCollections.accounts.listRecent(idFrom)
             .then((ethAddressesArray) => {
-              if(ethAddressesArray.length > 0) {
+              if (ethAddressesArray.length > 0) {
                 logger.info(colors.cyan.bold.underline('NEW ACCOUNTS FOUND:\n'));
                 let i = 0;
                 // console.log(JSON.stringify(ethAddressesArray));
@@ -111,7 +116,7 @@ function recentAccounts(
             .catch((e) => { reject(e); });
         }
       } else {
-        module.exports.dbConnect( $arg)
+        module.exports.dbConnect($arg)
           .then(() => {
             resolve(module.exports.recentAccounts());
           })
