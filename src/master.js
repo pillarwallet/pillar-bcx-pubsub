@@ -93,6 +93,15 @@ exports.launch = function () {
     // handle events associated with the publisher child processes.
     exports.pubs[exports.index].on('message', (data) => {
       logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
+      if(data.type == 'assets.request') {
+        //send list of assets to the publisher
+        logger.info('Sending list of assets to monitor to each publisher');
+        dbServices.contractsToMonitor('')
+          .then((assets) => {
+            logger.info(assets.length + ' assets identified to be monitored');
+            exports.pubs[exports.index].send({ type: 'assets', message: assets});
+          });
+      }
       if (data.type === 'wallet.request') {
         logger.info(`Received ${data.message} from publisher: ${exports.index}`);
         exports.notify(data.message, exports.pubs[exports.index - 1]);
@@ -136,14 +145,6 @@ exports.launch = function () {
         exports.subs[subsId] = fork(`${__dirname}/subscriber.js`);
       }
     });
-
-    //send list of assets to the publisher
-    logger.info('Sending list of assets to monitor to each publisher');
-    dbServices.contractsToMonitor('')
-      .then((assets) => {
-        logger.info(assets.length + ' assets identified to be monitored');
-        exports.pubs[exports.index].send({ type: 'assets', message: assets});
-      });
     
     exports.index++;
   } catch (err) {
