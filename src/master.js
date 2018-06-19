@@ -16,7 +16,7 @@ const optionDefinitions = [
 ];
 const commandLineArgs = require('command-line-args');
 
-const options = commandLineArgs(optionDefinitions);
+const options = commandLineArgs(optionDefinitions, {partial: true});
 
 const dbServices = require('./services/dbServices');
 
@@ -29,16 +29,14 @@ exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
 
-exports.init = function () {
+exports.init = function (options) {
   try {
     logger.info('Started executing master.init()');
-    
     // validating input parameters
     if (options.protocol !== undefined) {
       protocol = options.protocol;
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
-
     /*
     if ((options.minPort !== undefined) && (options.maxPort !== undefined) && (options.minPort >= 5500) && (options.minPort < options.maxPort)) {
       currentPort = options.minPort;
@@ -47,13 +45,12 @@ exports.init = function () {
     }
     */
 
-    if (options.maxWallets !== undefined || options.maxWallets > 0) {
+    if (options.maxWallets == undefined || options.maxWallets <= 0) {
+      throw ({ message: 'Invalid configuration parameter maxWallets' });
+    } else {
       logger.info(`master.init(): A new publisher will be spawned for every ${options.maxWallets} wallets..`);
       maxWalletsPerPub = options.maxWallets;
-    } else {
-      throw ({ message: 'Invalid configuration parameter maxWallets' });
     }
-
     this.launch();
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
@@ -65,7 +62,6 @@ exports.init = function () {
 exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
-
     // start the first program pair of publisher and subscribers
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
@@ -180,6 +176,9 @@ exports.notify = function (idFrom, socket) {
           });
         }
       }
+    })
+    .catch(err => {
+      throw(err)
     });
   } catch (err) {
     logger.error(`master.notify() failed: ${err}`);
@@ -187,4 +186,4 @@ exports.notify = function (idFrom, socket) {
     logger.info('Exited master.notify()');
   }
 };
-this.init();
+this.init(options);

@@ -4,7 +4,7 @@
   "description": "Pillar BCX master, publisher and subscriber",
   "main": "./src/master.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "test:coverage": "jest --coverage"
   },
   "repository": {
