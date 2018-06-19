@@ -33,21 +33,29 @@ exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
 
-    // accounts = new HashMap();
-    // assets = new HashMap();
-
     setInterval(() => {
       exports.poll();
     },5000);
 
-    rmqServices.initMQ()
-      .then(() => {
-        this.initSubscriptions();
-      })
-      .catch((e) => { logger.error(e); });
+    logger.info('Requesting a list of assets to monitor');
+
+    process.send({
+      type: 'assets.request',
+      message: '',
+    });
+    
+    setTimeout(function() {
+      logger.info('Initializing RMQ.')
+      rmqServices.initMQ()
+        .then(() => {
+          exports.initSubscriptions();
+        })
+        .catch((e) => { logger.error(e); 
+      });
+    },100);  
   } catch (err) {
     logger.error('Publisher.init() failed: ', err.message);
-    throw err;
+    //throw err;
   } finally {
     logger.info('Exited publisher.initIPC()');
   }
