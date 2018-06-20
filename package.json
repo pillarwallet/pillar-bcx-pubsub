@@ -6,7 +6,6 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "plato": "es6-plato -r -x node_modules -d ./reports/plato .",
     "lint": "eslint . --ignore-pattern '!.eslintrc.js'"
   },
   "repository": {
