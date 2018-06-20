@@ -11,7 +11,7 @@ module.exports = {
       script    : './src/master.js',
       args      : '--protocol="Ethereum" --maxWallets=500000',
       cwd       : './',
-      instances : 'max',
+      instances : '1',
       instance_var: 'INSTANCE_ID',
       env: {
         COMMON_VARIABLE: 'true'

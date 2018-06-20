@@ -137,8 +137,8 @@ exports.launch = function () {
 
       if (data !== undefined) {
         // restart the failed subscriber process
-        logger.info(`Subscriber: ${pubId} closed: ${data}`);
-        exports.subs[subsId] = fork(`${__dirname}/subscriber.js`);
+        logger.info(`Subscriber: ${subId} closed: ${data}`);
+        exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
     });
     
