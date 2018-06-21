@@ -17,7 +17,7 @@ exports.initMQ = function () {
       amqp.connect('amqp://localhost', (err, conn) => {
         conn.createChannel((err, ch) => {
           channel = ch;
-          const msg = 'Initialized bcx-pubsub message queue!';
+          const msg = '{}';
           ch.assertQueue(queue, { durable: false });
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(queue, Buffer.from(msg));

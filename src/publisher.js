@@ -33,26 +33,27 @@ exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
 
-    setInterval(() => {
-      exports.poll();
-    },5000);
-
-    logger.info('Requesting a list of assets to monitor');
+    logger.info('Publisher requesting master a list of assets to monitor');
 
     process.send({
       type: 'assets.request',
       message: '',
     });
     
+    logger.info('Publisher initializing the RMQ');
     setTimeout(function() {
       logger.info('Initializing RMQ.')
       rmqServices.initMQ()
         .then(() => {
           exports.initSubscriptions();
-        })
-        .catch((e) => { logger.error(e); 
-      });
+        });
     },100);  
+
+    logger.info('Publisher polling master for new wallets every 5 seconds');
+    setInterval(() => {
+      exports.poll();
+    },5000);
+
   } catch (err) {
     logger.error('Publisher.init() failed: ', err.message);
     //throw err;

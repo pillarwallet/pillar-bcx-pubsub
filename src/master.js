@@ -91,7 +91,7 @@ exports.launch = function () {
       logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
       if(data.type == 'assets.request') {
         //send list of assets to the publisher
-        logger.info('Sending list of assets to monitor to each publisher');
+        logger.info('Master Sending list of assets to monitor to each publisher');
         dbServices.contractsToMonitor('')
           .then((assets) => {
             logger.info(assets.length + ' assets identified to be monitored');
@@ -99,11 +99,11 @@ exports.launch = function () {
           });
       }
       if (data.type === 'wallet.request') {
-        logger.info(`Received ${data.message} from publisher: ${exports.index}`);
+        logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${exports.index}`);
         exports.notify(data.message, exports.pubs[exports.index - 1]);
       }
       if (data.type === 'queue.full') {
-        logger.info(`Received ${data.message} from publisher: ${exports.index}`);
+        logger.info(`Master Received ${data.message} from publisher: ${exports.index}`);
         // fork new publisher-subscriber process pairs
         this.launch();
       }
@@ -137,7 +137,7 @@ exports.launch = function () {
 
       if (data !== undefined) {
         // restart the failed subscriber process
-        logger.info(`Subscriber: ${pubId} closed: ${data}`);
+        logger.info(`Subscriber: ${subId} closed: ${data}`);
         exports.subs[subsId] = fork(`${__dirname}/subscriber.js`);
       }
     });

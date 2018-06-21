@@ -32,68 +32,64 @@ exports.validate = (payload) => {
 
 exports.initRabbitMQ = () => {
   try {
-    logger.info('Started executing initRabbitMQ()');
+    logger.info('Subscriber Started executing initRabbitMQ()');
     amqp.connect('amqp://localhost', (err, conn) => {
       if (err) {
-        logger.error(err.message);
+        logger.error('Subscriber failed initializing RabbitMQ, error: ' + err);
         return setTimeout(exports.initRabbitMQ, 2000);
       }
       if (conn) {
         connection = conn;
       }
       connection.on('error', (err) => {
-        logger.error(err);
+        logger.error('Subscriber RMQ connection errored out: ' + err);
         return setTimeout(exports.initRabbitMQ, 2000);
       });
       connection.on('close', () => {
-        logger.error('Connection closed');
+        logger.error('Subscriber RMQ Connection closed');
         return setTimeout(exports.initRabbitMQ, 2000);
       });
 
-      logger.info('Connected');
+      logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
         const q = 'bcx-pubsub';
         ch.assertQueue(q, { durable: false });
         ch.consume(q, (msg) => {
-          const entry = JSON.parse(msg.content);
-          const type = entry.type;
-          delete entry.type;
-          delete entry.checksum;
-          switch (type) {
-            case 'newTx':
-              entry.gasUsed = '';
-              entry.blockNumber = '';
-              entry.status = 'pending';
+          logger.info('Subscriber received rmq message: ' + msg.content);
+          if(msg.content !== undefined && msg.content !== '') {
+            const entry = JSON.parse(msg.content);
+            const type = entry.type;
+            delete entry.type;
+            delete entry.checksum;
+            switch (type) {
+              case 'newTx':
+                entry.gasUsed = '';
+                entry.blockNumber = '';
+                entry.status = 'pending';
 
-	            dbServices.dbCollections.transactions.addTx(entry)
-                .then(() => {
-                  logger.info(`Transaction inserted: ${entry.txHash}`);
-                })
-                .catch((err) => {
-                  logger.error(err.message);
-                });
-              break
-            case 'updateTx':
-	            dbServices.dbCollections.transactions.updateTx(entry)
-                .then(() => {
-                  logger.info(`Transaction updated: ${entry.txHash}`);
-                })
-                .catch((err) => {
-                  logger.error(err.message);
-                });
-              break;
+                dbServices.dbCollections.transactions.addTx(entry)
+                  .then(() => {
+                    logger.info(`Transaction inserted: ${entry.txHash}`);
+                  })
+                break
+              case 'updateTx':
+                dbServices.dbCollections.transactions.updateTx(entry)
+                  .then(() => {
+                    logger.info(`Transaction updated: ${entry.txHash}`);
+                  })
+                break;
+            }
           }
         }, { noAck: true });
       });
     });
   } catch (err) {
-    logger.error(err.message);
+    logger.error('Subscriber initiRabbitMQ failed: ' + err);
     return setTimeout(exports.initRabbitMQ, 2000);
   } finally {
     logger.info('Exited initRabbitMQ()');
   }
 };
-
 
 this.initServices();
