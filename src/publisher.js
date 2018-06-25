@@ -39,7 +39,7 @@ exports.initIPC = function () {
       type: 'assets.request',
       message: '',
     });
-    
+
     logger.info('Publisher initializing the RMQ');
     setTimeout(function() {
       logger.info('Initializing RMQ.')
@@ -47,7 +47,7 @@ exports.initIPC = function () {
         .then(() => {
           exports.initSubscriptions();
         });
-    },100);  
+    },100);
 
     logger.info('Publisher polling master for new wallets every 5 seconds');
     setInterval(() => {
