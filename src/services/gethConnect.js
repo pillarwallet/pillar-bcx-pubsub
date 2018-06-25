@@ -1,6 +1,9 @@
 const Web3 = require('web3');
 const colors = require('colors');
 const logger = require('../utils/logger.js');
+require('dotenv').config();
+
+const gethURL = process.env.GETH_NODE_URL + ':' + process.env.GETH_NODE_PORT;
 
 let web3;
 
@@ -29,7 +32,7 @@ module.exports.gethConnectDisplay = gethConnectDisplay;
 function setWeb3WebsocketConnection() {
   return new Promise(((resolve, reject) => {
     try {
-      web3 = new Web3(new Web3.providers.WebsocketProvider('ws://node.pillarproject.io:8546'));
+      web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
       module.exports.web3 = web3;
       resolve();
     } catch (e) {
