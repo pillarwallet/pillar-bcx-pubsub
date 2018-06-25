@@ -1,0 +1,44 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/node:8.9.4
+    steps:
+      - checkout
+      - run:
+          name: Build steps
+          command: echo "need some unit tests that can run in CI environment, then it will be useful to install dependencies and run them."
+
+  publish:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/node:8.9.4
+    steps:
+      - checkout
+      - run:
+          name: Append circleCI build number to version
+          command: |
+            git config user.email "devops@pillar.io"
+            git config user.name "Issabot"
+            npm version $(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM
+      - run:
+          name: Authenticate with registry
+          command: curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD https://pillarproject.jfrog.io/pillarproject/api/npm/auth >> ~/core-wallet-backend/.npmrc
+      - run:
+          name: Publish Package to Artifactory
+          command: npm publish   --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
+
+workflows:
+  version: 2
+  test_everything_deploy_develop:
+    jobs:
+      - build
+      - publish:
+          requires:
+             - build
+          filters:
+            branches:
+              only:
+                  - master-pub-sub->deploy-pipeline
+                  - master
