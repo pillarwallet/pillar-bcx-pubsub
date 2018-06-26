@@ -12,13 +12,14 @@ const dbServices = require('./dbServices.js');
 function subscribePendingTx() {
   const subscribePromise = new Promise(((resolve, reject) => {
     try {
-      gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {
-        if(!err) {
+      gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
+      /*  if(!err) {
           logger.info('Subscribing to pending transactions from ethereum node.');
         } else {
           logger.info('Subscription of pending transactions from ethereum node failed: ' + err);
         }
       })
+      */
       .on('data', (txHash) => {
         if ((txHash !== null) && (txHash !== '')) {
           bcx.getTxInfo(txHash)

@@ -17,7 +17,7 @@ process.on('message',(data) => {
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
-      // logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
+      logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
       hashMaps.accounts.set(obj.walletId, obj.pillarId);
       latestId = obj.id;
     }
@@ -47,12 +47,12 @@ exports.initIPC = function () {
         .then(() => {
           exports.initSubscriptions();
         });
-    },100);
+    }, 100);
 
     logger.info('Publisher polling master for new wallets every 5 seconds');
     setInterval(() => {
       exports.poll();
-    },5000);
+    }, 5000);
 
   } catch (err) {
     logger.error('Publisher.init() failed: ', err.message);
