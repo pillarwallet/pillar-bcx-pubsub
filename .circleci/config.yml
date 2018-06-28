@@ -1,0 +1,71 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/node:8.9.4
+    steps:
+      - checkout
+      - run:
+          name: Build steps
+          command: echo "need some unit tests that can run in CI environment, then it will be useful to install dependencies and run them."
+
+  publish:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/node:8.9.4
+    steps:
+      - checkout
+      - run:
+          name: Append circleCI build number to version
+          command: |
+            git config user.email "devops@pillar.io"
+            git config user.name "Issabot"
+            npm version $(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM
+      - run:
+          name: Authenticate with registry
+          command: curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD https://pillarproject.jfrog.io/pillarproject/api/npm/auth >> ~/pillar-bcx-pubsub/.npmrc
+      - run:
+          name: Publish Package to Artifactory
+          command: npm publish   --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
+      - run:
+          name: create version file
+          command: |
+            mkdir -p workspace
+            echo $(node -e "console.log(require('./package.json').name)")@$(node -e "console.log(require('./package.json').version)") >> workspace/pillar-bcx-pubsub.txt
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - pillar-bcx-pubsub.txt
+  deploySandbox:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+        - image:  circleci/python:3.6.1
+    steps:
+      - attach_workspace:
+          at: ~/pillar-bcx-pubsub/workspace
+      - run:
+          name: install aws cli
+          command: |
+            sudo pip install --upgrade pip
+            pip install awscli --upgrade --user
+      - run:
+          name: publish pillar-bcx-pubsub.txt to s3
+          command: /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt s3://pillar-sandbox-releases/pillar-bcx-pubsub.txt
+
+workflows:
+  version: 2
+  test_everything_deploy_develop:
+    jobs:
+      - build
+      - publish:
+          requires:
+             - build
+          filters:
+            branches:
+              only:
+                  - master-pub-sub
+                  - master
+      - deploySandbox:
+          requires:
+             - publish
