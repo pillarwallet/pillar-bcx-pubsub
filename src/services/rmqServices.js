@@ -1,5 +1,5 @@
 const amqp = require('amqplib/callback_api');
-const jsHashes = require('jsHashes');
+const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 
 const SHA256 = new jsHashes.SHA256();
