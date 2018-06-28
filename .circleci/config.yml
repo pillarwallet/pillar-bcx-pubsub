@@ -64,7 +64,7 @@ workflows:
           filters:
             branches:
               only:
-                  - master-pub-sub->deploy-pipeline
+                  - master-pub-sub
                   - master
       - deploySandbox:
           requires:
