@@ -1,7 +1,7 @@
 const amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
-const jsHashes = require('jsHashes');
+const jsHashes = require('jshashes');
 
 const hashPrefix = process.env.HASH_PREFIX;
 
