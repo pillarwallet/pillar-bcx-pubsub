@@ -2,9 +2,8 @@ const colors = require('colors');
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
 const ERC20ABI = require('./ERC20ABI');
-const dbServices = require('./dbServices.js');
+// const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
-const gethConnect = require('./gethConnect.js');
 const abiDecoder = require('abi-decoder');
 const bcx = require('./bcx.js');
 const hashMaps = require('../utils/hashMaps.js');
@@ -70,6 +69,19 @@ function newPendingTx(tx, isPublisher = true) {
                     gasPrice: tx.gasPrice,
                   };
                   rmqServices.sendPubSubMessage(txMsgTo);
+                  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                  hashMaps.pendingTx.set(tx.hash, {
+                    pillarId: toPillarId,
+                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    value: tx.value,
+                    gasPrice: tx.gasPrice,
+                  });
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                   dbServices.dbCollections.transactions.addTx({
@@ -106,6 +118,19 @@ function newPendingTx(tx, isPublisher = true) {
                       gasPrice: tx.gasPrice,
                     };
                     rmqServices.sendPubSubMessage(txMsgFrom);
+                    // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                    hashMaps.pendingTx.set(tx.hash, {
+                      pillarId: toPillarId,
+                      protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: tx.from,
+                      toAddress: tx.to,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress: null,
+                      timestamp: tmstmp,
+                      value: tx.value,
+                      gasPrice: tx.gasPrice,
+                    });
                     // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                     const notifMsg = {
                       type: 'transactionEvent',
@@ -198,6 +223,19 @@ function newPendingTx(tx, isPublisher = true) {
                           gasPrice: tx.gasPrice,
                         };
                         rmqServices.sendPubSubMessage(txMsgFrom);
+                        // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                        hashMaps.pendingTx.set(tx.hash, {
+                          pillarId: toPillarId,
+                          protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                          fromAddress: tx.from,
+                          toAddress: tx.to,
+                          txHash: tx.hash,
+                          asset,
+                          contractAddress,
+                          timestamp: tmstmp,
+                          value: tx.value,
+                          gasPrice: tx.gasPrice,
+                        });
                         // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                         const notifMsg = {
                           type: 'transactionEvent',
@@ -218,6 +256,7 @@ function newPendingTx(tx, isPublisher = true) {
                             status: 'pending',
                           },
                         };
+
                         rmqServices.sendNotificationMessage(notifMsg);
                       } else {
                         // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
@@ -271,6 +310,19 @@ function newPendingTx(tx, isPublisher = true) {
                             gasPrice: tx.gasPrice,
                           };
                           rmqServices.sendPubSubMessage(txMsgFrom);
+                          // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                          hashMaps.pendingTx.set(tx.hash, {
+                            pillarId: toPillarId,
+                            protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                            fromAddress: tx.from,
+                            toAddress: to,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            value: parseInt(data.params[1].value, 10),
+                            gasPrice: tx.gasPrice,
+                          });
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                           dbServices.dbCollections.transactions.addTx({
@@ -309,6 +361,19 @@ function newPendingTx(tx, isPublisher = true) {
                                   gasPrice: tx.gasPrice,
                                 };
                                 rmqServices.sendPubSubMessage(txMsgTo);
+                                // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                                hashMaps.pendingTx.set(tx.hash, {
+                                  pillarId: toPillarId,
+                                  protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                  fromAddress: tx.from,
+                                  toAddress: to,
+                                  txHash: tx.hash,
+                                  asset,
+                                  contractAddress,
+                                  timestamp: tmstmp,
+                                  value: parseInt(data.params[1].value, 10),
+                                  gasPrice: tx.gasPrice,
+                                });
                                 // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                                 const notifMsg = {
                                   type: 'transactionEvent',
@@ -399,6 +464,19 @@ function newPendingTx(tx, isPublisher = true) {
                             gasPrice: tx.gasPrice,
                           };
                           rmqServices.sendPubSubMessage(txMsgFrom);
+                          // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                          hashMaps.pendingTx.set(tx.hash, {
+                            pillarId: toPillarId,
+                            protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                            fromAddress: tx.from,
+                            toAddress: contractAddress,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            value: tx.value,
+                            gasPrice: tx.gasPrice,
+                          });
                           // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                           const notifMsg = {
                             type: 'transactionEvent',
@@ -466,6 +544,19 @@ function newPendingTx(tx, isPublisher = true) {
                                 gasPrice: tx.gasPrice,
                               };
                               rmqServices.sendPubSubMessage(txMsgTo);
+                              // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                              hashMaps.pendingTx.set(tx.hash, {
+                                pillarId: toPillarId,
+                                protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: tx.from,
+                                toAddress: to,
+                                txHash: tx.hash,
+                                asset,
+                                contractAddress,
+                                timestamp: tmstmp,
+                                value: parseInt(data.params[1].value, 10),
+                                gasPrice: tx.gasPrice,
+                              });
                               // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                               const notifMsg = {
                                 type: 'transactionEvent',
@@ -541,6 +632,19 @@ function newPendingTx(tx, isPublisher = true) {
                       gasPrice: tx.gasPrice,
                     };
                     rmqServices.sendPubSubMessage(txMsgFrom);
+                    // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                    hashMaps.pendingTx.set(tx.hash, {
+                      pillarId: toPillarId,
+                      protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: tx.from,
+                      toAddress: contractAddress,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress,
+                      timestamp: tmstmp,
+                      value: tx.value,
+                      gasPrice: tx.gasPrice,
+                    });
                     // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                     const notifMsg = {
                       type: 'transactionEvent',
@@ -609,6 +713,19 @@ function newPendingTx(tx, isPublisher = true) {
                     gasPrice: tx.gasPrice,
                   };
                   rmqServices.sendPubSubMessage(txMsgFrom);
+                  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                  hashMaps.pendingTx.set(tx.hash, {
+                    pillarId: toPillarId,
+                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    value: tx.value,
+                    gasPrice: tx.gasPrice,
+                  });
                   // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
                   const notifMsg = {
                     type: 'transactionEvent',
@@ -668,13 +785,14 @@ function newPendingTx(tx, isPublisher = true) {
 module.exports.newPendingTx = newPendingTx;
 
 
-function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
+function checkPendingTx(pendingTxArray, blockNumber, isPublisher = true) {
   return new Promise(((resolve, reject) => {
-    if (dbPendingTxArray.length === 0) {
+    if (pendingTxArray.length === 0) {
       resolve();
     } else {
-      const item = dbPendingTxArray[0];
-      dbPendingTxArray.splice(0, 1);
+      const txHash = pendingTxArray[0];
+      const item = hashMaps.pendingTx.get(txHash);
+      pendingTxArray.splice(0, 1);
 
       bcx.getTxInfo(item.txHash)
         .then((txInfo) => {
@@ -701,8 +819,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                           };
                           rmqServices.sendPubSubMessage(txMsg);
                           // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
-                          const senderPillarId = dbServices.dbCollections.accounts.findByAddress(item.fromAddress).pillarId || null;
-                          const recipientPillarId = dbServices.dbCollections.accounts.findByAddress(item.toAddress).pillarId || null;
+                          const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+                          const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
                           const notifMsg = {
                             type: 'transactionEvent',
                             meta: {
@@ -735,7 +853,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                           });
                         }
                         logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
-                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+                        hashMaps.pendingTx.delete(txHash);
+                        resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
                       } else {
                         logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
                       }
@@ -754,8 +873,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                         };
                         rmqServices.sendPubSubMessage(txMsg);
                         // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
-                        const senderPillarId = dbServices.dbCollections.accounts.findByAddress(item.fromAddress).pillarId || null;
-                        const recipientPillarId = dbServices.dbCollections.accounts.findByAddress(item.toAddress).pillarId || null;
+                        const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+                        const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
                         const notifMsg = {
                           type: 'transactionEvent',
                           meta: {
@@ -772,7 +891,7 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                             timestamp: item.timestamp,
                             value: item.value,
                             gasPrice: item.gasPrice,
-	                          blockNumber: confBlockNumber,
+                            blockNumber: confBlockNumber,
                             gasUsed,
                             status,
                           },
@@ -788,7 +907,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                         });
                       }
                       logger.info(colors.red.bold(`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
-                      resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+                      hashMaps.pendingTx.delete(txHash);
+                      resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
                     }
                   } else { // TX RECEIPT NOT FOUND
                     const status = 'failed: tx receipt not found';
@@ -805,8 +925,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                       };
                       rmqServices.sendPubSubMessage(txMsg);
                       // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
-                      const senderPillarId = dbServices.dbCollections.accounts.findByAddress(item.fromAddress).pillarId || null;
-                      const recipientPillarId = dbServices.dbCollections.accounts.findByAddress(item.toAddress).pillarId || null;
+                      const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+                      const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
                       const notifMsg = {
                         type: 'transactionEvent',
                         meta: {
@@ -823,7 +943,7 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                           timestamp: item.timestamp,
                           value: item.value,
                           gasPrice: item.gasPrice,
-	                        blockNumber: confBlockNumber,
+                          blockNumber: confBlockNumber,
                           gasUsed,
                           status,
                         },
@@ -839,13 +959,14 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                       });
                     }
                     logger.info(colors.red.bold(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
-                    resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+                    hashMaps.pendingTx.delete(txHash);
+                    resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
                   }
                 })
                 .catch((e) => { reject(e); });
             } else { // TX STILL PENDING
               logger.info(`TX ${item.txHash} STILL PENDING (IN TX POOL)...\n`);
-              resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+              resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
             }
           } else { // TX INFO NOT FOUND
             const status = 'failed: tx info not found';
@@ -862,8 +983,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
               };
               rmqServices.sendPubSubMessage(txMsg);
               // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
-              const senderPillarId = dbServices.dbCollections.accounts.findByAddress(item.fromAddress).pillarId || null;
-              const recipientPillarId = dbServices.dbCollections.accounts.findByAddress(item.toAddress).pillarId || null;
+              const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+              const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
               const notifMsg = {
                 type: 'transactionEvent',
                 meta: {
@@ -880,7 +1001,7 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
                   timestamp: item.timestamp,
                   value: item.value,
                   gasPrice: item.gasPrice,
-	                blockNumber: confBlockNumber,
+                  blockNumber: confBlockNumber,
                   gasUsed,
                   status,
                 },
@@ -896,7 +1017,8 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
               });
             }
             logger.info(colors.red.bold(`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
-            resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+            hashMaps.pendingTx.delete(txHash);
+            resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
           }
         })
         .catch((e) => { reject(e); });

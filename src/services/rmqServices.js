@@ -150,6 +150,6 @@ exports.initPubCWBMQ = function () {
 exports.sendNotificationMessage = function (payload) {
   const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
   payload.checksum = checksum;
-	console.log(payload)
+  console.log(payload)
   notificationsChannel.sendToQueue(notificationsQueue, Buffer.from(JSON.stringify(payload)));
 };

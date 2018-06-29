@@ -22,10 +22,9 @@ process.on('message',(data) => {
       latestId = obj.id;
     }
   } else if (data.type === 'assets') {
-    //add the new asset to the assets hashmap
+    // add the new asset to the assets hashmap
     logger.info('Publisher received notification to monitor a new asset: ' + message.contractAddress.toLowerCase());
     hashMaps.assets.set(message.contractAddress.toLowerCase(), message);
-    console.log(hashMaps.assets);
   }
 });
 
