@@ -1,9 +1,9 @@
+require('dotenv').config();
 const dbServices = require('./services/dbServices.js');
 var subscriber = require("./subscriber.js");
 var amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
 logger.transports.forEach((t) => (t.silent = true));
-require('dotenv').config();
  
 describe('Function Calls', () => {
 
@@ -20,7 +20,7 @@ describe('Function Calls', () => {
     const spyConnect = jest.spyOn(amqp, 'connect');
         subscriber.initRabbitMQ("dummyArg");
         expect(spyConnect).toBeCalled();
-        expect(spyConnect).toBeCalledWith('amqp://localhost', expect.anything());
+        expect(spyConnect).toBeCalledWith(process.env.RABBITMQ_SERVER, expect.anything());
         spyConnect.mockRestore();
   });
 

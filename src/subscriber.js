@@ -1,3 +1,4 @@
+require('dotenv').config();
 const amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
@@ -33,7 +34,7 @@ exports.validate = (payload) => {
 exports.initRabbitMQ = () => {
   try {
     logger.info('Subscriber Started executing initRabbitMQ()');
-    amqp.connect('amqp://localhost', (err, conn) => {
+    amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
       if (err) {
         logger.error('Subscriber failed initializing RabbitMQ, error: ' + err);
         return setTimeout(exports.initRabbitMQ, 2000);

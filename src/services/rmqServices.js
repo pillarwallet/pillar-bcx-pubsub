@@ -1,3 +1,4 @@
+require('dotenv').config();
 const amqp = require('amqplib/callback_api');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
@@ -14,7 +15,7 @@ exports.initMQ = function () {
   return new Promise((resolve, reject) => {
     try {
       logger.info('Executing rmqServices.initMQ()');
-      amqp.connect('amqp://localhost', (err, conn) => {
+      amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
         conn.createChannel((err, ch) => {
           channel = ch;
           const msg = '{}';
