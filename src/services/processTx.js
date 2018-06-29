@@ -2,9 +2,8 @@ const colors = require('colors');
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
 const ERC20ABI = require('./ERC20ABI');
-const dbServices = require('./dbServices.js');
+// const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
-const gethConnect = require('./gethConnect.js');
 const abiDecoder = require('abi-decoder');
 const bcx = require('./bcx.js');
 const hashMaps = require('../utils/hashMaps.js');
@@ -34,18 +33,22 @@ function newPendingTx(tx, isPublisher = true) {
     let toERC20SmartContract;
     let ticker;
     let toPillarAccount;
+    let toPillarId;
     let fromPillarAccount;
+    let fromPillarId;
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
     } else { // REGULAR TRANSACTION OR SMART CONTRACT CALL
       module.exports.filterAddress(tx.to, isPublisher)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
+	        toPillarId = result.pillarId;
           toERC20SmartContract = result.isERC20SmartContract;
           ticker = result.ERC20SmartContractTicker;
           module.exports.filterAddress(tx.from, isPublisher)
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
+	            fromPillarId = result2.pillarId;
               let value = tx.value * (10 ** -18);
 
               if (toPillarAccount) { // TRANSACTION RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
@@ -54,7 +57,7 @@ function newPendingTx(tx, isPublisher = true) {
                   // PUBLISHER SENDS NEW TX DATA TO SUBSCRIBER
                   const txMsgTo = {
                     type: 'newTx',
-                    pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    pillarId: toPillarId,
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: tx.from,
                     toAddress: tx.to,
@@ -65,11 +68,24 @@ function newPendingTx(tx, isPublisher = true) {
                     value: tx.value,
                     gasPrice: tx.gasPrice,
                   };
-                  rmqServices.sendMessage(txMsgTo);
+                  rmqServices.sendPubSubMessage(txMsgTo);
+                  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                  hashMaps.pendingTx.set(tx.hash, {
+                    pillarId: toPillarId,
+                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    value: tx.value,
+                    gasPrice: tx.gasPrice,
+                  });
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                   dbServices.dbCollections.transactions.addTx({
-                    pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    pillarId: toPillarId,
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: tx.from,
                     toAddress: tx.to,
@@ -90,7 +106,7 @@ function newPendingTx(tx, isPublisher = true) {
                     // SEND NEW TX DATA TO SUBSCRIBER
                     const txMsgFrom = {
                       type: 'newTx',
-                      pillarId: 'senderPillarId', //  SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                      pillarId: fromPillarId,
                       protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                       fromAddress: tx.from,
                       toAddress: tx.to,
@@ -101,11 +117,45 @@ function newPendingTx(tx, isPublisher = true) {
                       value: tx.value,
                       gasPrice: tx.gasPrice,
                     };
-                    rmqServices.sendMessage(txMsgFrom);
+                    rmqServices.sendPubSubMessage(txMsgFrom);
+                    // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                    hashMaps.pendingTx.set(tx.hash, {
+                      pillarId: toPillarId,
+                      protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: tx.from,
+                      toAddress: tx.to,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress: null,
+                      timestamp: tmstmp,
+                      value: tx.value,
+                      gasPrice: tx.gasPrice,
+                    });
+                    // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                    const notifMsg = {
+                      type: 'transactionEvent',
+                      meta: {
+                        senderWalletId: fromPillarId,
+                        recipientWalletId: toPillarId,
+                      },
+                      payload: {
+                        protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                        fromAddress: tx.from,
+                        toAddress: tx.to,
+                        txHash: tx.hash,
+                        asset,
+                        contractAddress: null,
+                        timestamp: tmstmp,
+                        value: tx.value,
+                        gasPrice: tx.gasPrice,
+                        status: 'pending',
+                      },
+                    };
+                    rmqServices.sendNotificationMessage(notifMsg);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                     dbServices.dbCollections.transactions.addTx({
-                      pillarId: 'senderPillarId',
+                      pillarId: fromPillarId,
                       protocol: 'Ethereum',
                       fromAddress: tx.from,
                       toAddress: tx.to,
@@ -122,6 +172,29 @@ function newPendingTx(tx, isPublisher = true) {
                   }
                   logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
                 } else {
+                  if (isPublisher) {
+                    // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                    const notifMsg = {
+                      type: 'transactionEvent',
+                      meta: {
+                        senderWalletId: null, // SENDER IS AN EXTERNAL ETH ACCOUNT (NOT A PILLAR WALLET)
+                        recipientWalletId: toPillarId,
+                      },
+                      payload: {
+                        protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                        fromAddress: tx.from,
+                        toAddress: tx.to,
+                        txHash: tx.hash,
+                        asset,
+                        contractAddress: null,
+                        timestamp: tmstmp,
+                        value: tx.value,
+                        gasPrice: tx.gasPrice,
+                        status: 'pending',
+                      },
+                    };
+                    rmqServices.sendNotificationMessage(notifMsg);
+                  }
                   logger.info(colors.yellow(`TRANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: EXTERNAL ETH ACCOUNT ${tx.from}\nTO: PILLAR WALLET ${tx.to}\n`));
                 }
                 resolve(true);
@@ -138,7 +211,7 @@ function newPendingTx(tx, isPublisher = true) {
                         // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                         const txMsgFrom = {
                           type: 'newTx',
-                          pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABL
+                          pillarId: fromPillarId,
                           protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                           fromAddress: tx.from,
                           toAddress: tx.to,
@@ -149,11 +222,46 @@ function newPendingTx(tx, isPublisher = true) {
                           value: tx.value,
                           gasPrice: tx.gasPrice,
                         };
-                        rmqServices.sendMessage(txMsgFrom);
+                        rmqServices.sendPubSubMessage(txMsgFrom);
+                        // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                        hashMaps.pendingTx.set(tx.hash, {
+                          pillarId: toPillarId,
+                          protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                          fromAddress: tx.from,
+                          toAddress: tx.to,
+                          txHash: tx.hash,
+                          asset,
+                          contractAddress,
+                          timestamp: tmstmp,
+                          value: tx.value,
+                          gasPrice: tx.gasPrice,
+                        });
+                        // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                        const notifMsg = {
+                          type: 'transactionEvent',
+                          meta: {
+                            senderWalletId: fromPillarId,
+                            recipientWalletId: null, // RECIPIENT IS A SMART CONTRACT
+                          },
+                          payload: {
+                            protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                            fromAddress: tx.from,
+                            toAddress: tx.to,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            value: tx.value,
+                            gasPrice: tx.gasPrice,
+                            status: 'pending',
+                          },
+                        };
+
+                        rmqServices.sendNotificationMessage(notifMsg);
                       } else {
                         // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                         dbServices.dbCollections.transactions.addTx({
-                          pillarId: 'senderPillarId',
+                          pillarId: fromPillarId,
                           protocol: 'Ethereum',
                           fromAddress: tx.from,
                           toAddress: tx.to,
@@ -190,7 +298,7 @@ function newPendingTx(tx, isPublisher = true) {
                           // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsgFrom = {
                             type: 'newTx',
-                            pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                            pillarId: fromPillarId,
                             protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                             fromAddress: tx.from,
                             toAddress: to,
@@ -201,11 +309,24 @@ function newPendingTx(tx, isPublisher = true) {
                             value: parseInt(data.params[1].value, 10),
                             gasPrice: tx.gasPrice,
                           };
-                          rmqServices.sendMessage(txMsgFrom);
+                          rmqServices.sendPubSubMessage(txMsgFrom);
+                          // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                          hashMaps.pendingTx.set(tx.hash, {
+                            pillarId: toPillarId,
+                            protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                            fromAddress: tx.from,
+                            toAddress: to,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            value: parseInt(data.params[1].value, 10),
+                            gasPrice: tx.gasPrice,
+                          });
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                           dbServices.dbCollections.transactions.addTx({
-                            pillarId: 'senderPillarId',
+                            pillarId: fromPillarId,
                             protocol: 'Ethereum',
                             fromAddress: tx.from,
                             toAddress: to,
@@ -228,7 +349,7 @@ function newPendingTx(tx, isPublisher = true) {
                                 // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                                 const txMsgTo = {
                                   type: 'newTx',
-                                  pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                  pillarId: toPillarId,
                                   protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                                   fromAddress: tx.from,
                                   toAddress: to,
@@ -239,11 +360,45 @@ function newPendingTx(tx, isPublisher = true) {
                                   value: parseInt(data.params[1].value, 10),
                                   gasPrice: tx.gasPrice,
                                 };
-                                rmqServices.sendMessage(txMsgTo);
+                                rmqServices.sendPubSubMessage(txMsgTo);
+                                // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                                hashMaps.pendingTx.set(tx.hash, {
+                                  pillarId: toPillarId,
+                                  protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                  fromAddress: tx.from,
+                                  toAddress: to,
+                                  txHash: tx.hash,
+                                  asset,
+                                  contractAddress,
+                                  timestamp: tmstmp,
+                                  value: parseInt(data.params[1].value, 10),
+                                  gasPrice: tx.gasPrice,
+                                });
+                                // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                                const notifMsg = {
+                                  type: 'transactionEvent',
+                                  meta: {
+                                    senderWalletId: fromPillarId,
+                                    recipientWalletId: toPillarId,
+                                  },
+                                  payload: {
+                                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                    fromAddress: tx.from,
+                                    toAddress: to,
+                                    txHash: tx.hash,
+                                    asset,
+                                    contractAddress,
+                                    timestamp: tmstmp,
+                                    value: parseInt(data.params[1].value, 10),
+                                    gasPrice: tx.gasPrice,
+                                    status: 'pending',
+                                  },
+                                };
+                                rmqServices.sendNotificationMessage(notifMsg);
                               } else {
                                 // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                                 dbServices.dbCollections.transactions.addTx({
-                                  pillarId: 'recipientPillarId',
+                                  pillarId: toPillarId,
                                   protocol: 'Ethereum',
                                   fromAddress: tx.from,
                                   toAddress: to,
@@ -260,6 +415,29 @@ function newPendingTx(tx, isPublisher = true) {
                               }
                               logger.info(colors.cyan(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO PILLAR WALLET: ${to}\n`));
                             } else {
+                              if (isPublisher) {
+                                // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                                const notifMsg = {
+                                  type: 'transactionEvent',
+                                  meta: {
+                                    senderWalletId: fromPillarId,
+                                    recipientWalletId: null, // RECIPIENT IS AN EXTERNAL ETH ACCOUNT (NOT A PILLAR WALLET)
+                                  },
+                                  payload: {
+                                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                    fromAddress: tx.from,
+                                    toAddress: to,
+                                    txHash: tx.hash,
+                                    asset,
+                                    contractAddress,
+                                    timestamp: tmstmp,
+                                    value: parseInt(data.params[1].value, 10),
+                                    gasPrice: tx.gasPrice,
+                                    status: 'pending',
+                                  },
+                                };
+                                rmqServices.sendNotificationMessage(notifMsg);
+                              }
                               logger.info(colors.cyan.bold(`${ticker} TOKEN TRANSFER:\n${value} ${ticker}\nFROM PILLAR WALLET: ${tx.from}\nTO EXTERNAL ETH ACCOUNT: ${to}\n`));
                             }
                             resolve(true);
@@ -269,12 +447,12 @@ function newPendingTx(tx, isPublisher = true) {
                           });
                       } else {
                         // TRANSACTION IS A ZERO-VALUE ERC20 SMART CONTRACT CALL
-                        // (BUT NOT A TOKEN TRANSFER)
+                        // (BUT NOT A TOKEN TRANSFER) FROM A PILLAR WALLET
                         if (isPublisher) {
                           // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsgFrom = {
                             type: 'newTx',
-                            pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                            pillarId: fromPillarId,
                             protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                             fromAddress: tx.from,
                             toAddress: contractAddress,
@@ -285,11 +463,45 @@ function newPendingTx(tx, isPublisher = true) {
                             value: tx.value,
                             gasPrice: tx.gasPrice,
                           };
-                          rmqServices.sendMessage(txMsgFrom);
+                          rmqServices.sendPubSubMessage(txMsgFrom);
+                          // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                          hashMaps.pendingTx.set(tx.hash, {
+                            pillarId: toPillarId,
+                            protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                            fromAddress: tx.from,
+                            toAddress: contractAddress,
+                            txHash: tx.hash,
+                            asset,
+                            contractAddress,
+                            timestamp: tmstmp,
+                            value: tx.value,
+                            gasPrice: tx.gasPrice,
+                          });
+                          // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                          const notifMsg = {
+                            type: 'transactionEvent',
+                            meta: {
+                              senderWalletId: fromPillarId,
+                              recipientWalletId: null, // RECIPIENT IS A SMART CONTRACT
+                            },
+                            payload: {
+                              protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                              fromAddress: tx.from,
+                              toAddress: contractAddress,
+                              txHash: tx.hash,
+                              asset,
+                              contractAddress,
+                              timestamp: tmstmp,
+                              value: tx.value,
+                              gasPrice: tx.gasPrice,
+                              status: 'pending',
+                            },
+                          };
+                          rmqServices.sendNotificationMessage(notifMsg);
                         } else {
                           // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                           dbServices.dbCollections.transactions.addTx({
-                            pillarId: 'senderPillarId',
+                            pillarId: fromPillarId,
                             protocol: 'Ethereum',
                             fromAddress: tx.from,
                             toAddress: contractAddress,
@@ -320,7 +532,7 @@ function newPendingTx(tx, isPublisher = true) {
                               // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                               const txMsgTo = {
                                 type: 'newTx',
-                                pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                                pillarId: toPillarId,
                                 protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                                 fromAddress: tx.from,
                                 toAddress: to,
@@ -331,11 +543,45 @@ function newPendingTx(tx, isPublisher = true) {
                                 value: parseInt(data.params[1].value, 10),
                                 gasPrice: tx.gasPrice,
                               };
-                              rmqServices.sendMessage(txMsgTo);
+                              rmqServices.sendPubSubMessage(txMsgTo);
+                              // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                              hashMaps.pendingTx.set(tx.hash, {
+                                pillarId: toPillarId,
+                                protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                fromAddress: tx.from,
+                                toAddress: to,
+                                txHash: tx.hash,
+                                asset,
+                                contractAddress,
+                                timestamp: tmstmp,
+                                value: parseInt(data.params[1].value, 10),
+                                gasPrice: tx.gasPrice,
+                              });
+                              // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                              const notifMsg = {
+                                type: 'transactionEvent',
+                                meta: {
+                                  senderWalletId: null, // SENDER IS AN EXTERNAL ETH ACCOUNT (NOT A PILLAR WALLET)
+                                  recipientWalletId: toPillarId,
+                                },
+                                payload: {
+                                  protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                                  fromAddress: tx.from,
+                                  toAddress: to,
+                                  txHash: tx.hash,
+                                  asset,
+                                  contractAddress,
+                                  timestamp: tmstmp,
+                                  value: parseInt(data.params[1].value, 10),
+                                  gasPrice: tx.gasPrice,
+                                  status: 'pending',
+                                },
+                              };
+                              rmqServices.sendNotificationMessage(notifMsg);
                             } else {
                               // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                               dbServices.dbCollections.transactions.addTx({
-                                pillarId: 'recipientPillarId',
+                                pillarId: toPillarId,
                                 protocol: 'Ethereum',
                                 fromAddress: tx.from,
                                 toAddress: to,
@@ -360,6 +606,8 @@ function newPendingTx(tx, isPublisher = true) {
                           reject(e);
                         });
                     } else {
+                      // TX IS SMART CONTRACT CALL (CARRIES INPUT DATA)
+                      // FROM EXTERNAL ETH ACCOUNT AND NOT A TOKEN TRANSFER
                       resolve(false);
                     }
                   }
@@ -372,7 +620,7 @@ function newPendingTx(tx, isPublisher = true) {
                     // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                     const txMsgFrom = {
                       type: 'newTx',
-                      pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                      pillarId: fromPillarId,
                       protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                       fromAddress: tx.from,
                       toAddress: contractAddress,
@@ -383,11 +631,45 @@ function newPendingTx(tx, isPublisher = true) {
                       value: tx.value,
                       gasPrice: tx.gasPrice,
                     };
-                    rmqServices.sendMessage(txMsgFrom);
+                    rmqServices.sendPubSubMessage(txMsgFrom);
+                    // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                    hashMaps.pendingTx.set(tx.hash, {
+                      pillarId: toPillarId,
+                      protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: tx.from,
+                      toAddress: contractAddress,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress,
+                      timestamp: tmstmp,
+                      value: tx.value,
+                      gasPrice: tx.gasPrice,
+                    });
+                    // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                    const notifMsg = {
+                      type: 'transactionEvent',
+                      meta: {
+                        senderWalletId: fromPillarId,
+                        recipientWalletId: null, // RECIPIENT IS A SMART CONTRACT
+                      },
+                      payload: {
+                        protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                        fromAddress: tx.from,
+                        toAddress: contractAddress,
+                        txHash: tx.hash,
+                        asset,
+                        contractAddress,
+                        timestamp: tmstmp,
+                        value: tx.value,
+                        gasPrice: tx.gasPrice,
+                        status: 'pending',
+                      },
+                    };
+                    rmqServices.sendNotificationMessage(notifMsg);
                   } else {
                     // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                     dbServices.dbCollections.transactions.addTx({
-                      pillarId: 'senderPillarId',
+                      pillarId: fromPillarId,
                       protocol: 'Ethereum',
                       fromAddress: tx.from,
                       toAddress: contractAddress,
@@ -405,6 +687,10 @@ function newPendingTx(tx, isPublisher = true) {
                   logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: ERC20 SMART CONTRACT ${tx.to}\n`));
                   resolve(true);
                 } else {
+                  // TX RECIPIENT IS A SMART CONTRACT,
+                  // TX SENDER IS AN EXTERNAL ETH ACCOUNT (NOT A PILLAR WALLET)
+                  // AND TX DOES NOT CARRY INPUT DATA,
+                  // SO TX IS AN ETH TRANSFER TO A SMART CONTRACT FROM AN EXTERNAL ETH ACCOUNT
                   resolve(false);
                 }
               } else if (fromPillarAccount) { // TRANSACTION RECIPIENT IS NOT A PILLAR ACCOUNT
@@ -415,7 +701,7 @@ function newPendingTx(tx, isPublisher = true) {
                   // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                   const txMsgFrom = {
                     type: 'newTx',
-                    pillarId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    pillarId: fromPillarId,
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: tx.from,
                     toAddress: tx.to,
@@ -426,11 +712,45 @@ function newPendingTx(tx, isPublisher = true) {
                     value: tx.value,
                     gasPrice: tx.gasPrice,
                   };
-                  rmqServices.sendMessage(txMsgFrom);
+                  rmqServices.sendPubSubMessage(txMsgFrom);
+                  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+                  hashMaps.pendingTx.set(tx.hash, {
+                    pillarId: toPillarId,
+                    protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                    fromAddress: tx.from,
+                    toAddress: tx.to,
+                    txHash: tx.hash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    value: tx.value,
+                    gasPrice: tx.gasPrice,
+                  });
+                  // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                  const notifMsg = {
+                    type: 'transactionEvent',
+                    meta: {
+                      senderWalletId: fromPillarId,
+                      recipientWalletId: null, // RECIPIENT IS NOT A PILLAR WALLET
+                    },
+                    payload: {
+                      protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: tx.from,
+                      toAddress: tx.to,
+                      txHash: tx.hash,
+                      asset,
+                      contractAddress: null,
+                      timestamp: tmstmp,
+                      value: tx.value,
+                      gasPrice: tx.gasPrice,
+                      status: 'pending',
+                    },
+                  };
+                  rmqServices.sendNotificationMessage(notifMsg);
                 } else {
                   // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
                   dbServices.dbCollections.transactions.addTx({
-                    pillarId: 'senderPillarId',
+                    pillarId: fromPillarId,
                     protocol: 'Ethereum',
                     fromAddress: tx.from,
                     toAddress: tx.to,
@@ -448,6 +768,7 @@ function newPendingTx(tx, isPublisher = true) {
                 logger.info(colors.yellow(`TANSACTION PENDING: ${tx.hash}\n${value} ETH\nFROM: PILLAR WALLET ${tx.from}\nTO: EXTERNAL ETH ACCOUNT OR SMART CONTRACT ${tx.to}\n`));
                 resolve(true);
               } else {
+                // TX IS NOT TO OR FROM A PILLAR WALLET AND IS NOT TO A SMART CONTRACT
                 resolve(false);
               }
             })
@@ -464,13 +785,14 @@ function newPendingTx(tx, isPublisher = true) {
 module.exports.newPendingTx = newPendingTx;
 
 
-function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
+function checkPendingTx(pendingTxArray, blockNumber, isPublisher = true) {
   return new Promise(((resolve, reject) => {
-    if (dbPendingTxArray.length === 0) {
+    if (pendingTxArray.length === 0) {
       resolve();
     } else {
-      const item = dbPendingTxArray[0];
-      dbPendingTxArray.splice(0, 1);
+      const txHash = pendingTxArray[0];
+      const item = hashMaps.pendingTx.get(txHash);
+      pendingTxArray.splice(0, 1);
 
       bcx.getTxInfo(item.txHash)
         .then((txInfo) => {
@@ -480,139 +802,223 @@ function checkPendingTx(dbPendingTxArray, blockNumber, isPublisher = true) {
               bcx.getTxReceipt(item.txHash)
                 .then((receipt) => {
                   if (receipt != null) {
-                    const input = gethConnect.web3.utils.hexToNumberString(txInfo.input);
-                    if (txInfo.value === 0 && input !== '0') { // SMART CONTRACT CALL IDENTIFIED
-                      if (receipt.gasUsed < txInfo.gas) { // TX MINED
-                        const nbConf = 1 + (blockNumber - confBlockNb);
-                        if (nbConf >= 1) {
-                          if (isPublisher) {
-                            // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                            const txMsg = {
-                              type: 'updateTx',
-                              txHash: item.txHash,
-                              blockNumber: confBlockNb,
-                              status: 'confirmed',
-                              gasUsed: receipt.gasUsed,
-                            };
-                            rmqServices.sendMessage(txMsg);
-                          } else {
-                            // HOUSEKEEPER UPDATES TX IN DB
-                            dbServices.dbCollections.transactions.updateTx({
-                              txHash: item.txHash,
-                              blockNumber: confBlockNb,
-                              status: 'confirmed',
-                              gasUsed: receipt.gasUsed,
-                            });
-                          }
-
-                          logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
-
-                          resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
-                        } else {
-                          logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
-                          resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
-                        }
-                      } else { // OUT OF GAS
-                        if (isPublisher) {
-                          // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                          const txMsg = {
-                            type: 'updateTx',
-                            txHash: item.txHash,
-                            blockNumber: confBlockNb,
-                            status: 'failed: out of gas',
-                            gasUsed: receipt.gasUsed,
-                          };
-                          rmqServices.sendMessage(txMsg);
-                        } else {
-                          // HOUSEKEEPER UPDATES TX IN DB
-                          dbServices.dbCollections.transactions.updateTx({
-                            txHash: item.txHash,
-                            blockNumber: confBlockNb,
-                            status: 'failed: out of gas',
-                            gasUsed: receipt.gasUsed,
-                          });
-                        }
-                        logger.info(colors.red.bold(`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
-                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
-                      }
-                    } else { // REGULAR ETH TX
+                    if (receipt.gasUsed <= txInfo.gas) { // TX MINED
                       const nbConf = 1 + (blockNumber - confBlockNb);
                       if (nbConf >= 1) {
+                        const status = 'confirmed';
+                        const confBlockNumber = confBlockNb;
+                        const gasUsed = receipt.gasUsed;
                         if (isPublisher) {
                           // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                           const txMsg = {
                             type: 'updateTx',
                             txHash: item.txHash,
-                            blockNumber: confBlockNb,
-                            status: 'confirmed',
-                            gasUsed: receipt.gasUsed,
+                            confBlockNumber,
+                            status,
+                            gasUsed,
                           };
-                          rmqServices.sendMessage(txMsg);
+                          rmqServices.sendPubSubMessage(txMsg);
+                          // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                          const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+                          const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
+                          const notifMsg = {
+                            type: 'transactionEvent',
+                            meta: {
+                              senderWalletId: senderPillarId,
+                              recipientWalletId: recipientPillarId,
+                            },
+                            payload: {
+                              protocol: item.protocol,
+                              fromAddress: item.fromAddress,
+                              toAddress: item.toAddress,
+                              txHash: item.txHash,
+                              asset: item.asset,
+                              contractAddress: item.contractAddress,
+                              timestamp: item.timestamp,
+                              value: item.value,
+                              gasPrice: item.gasPrice,
+                              blockNumber: confBlockNumber,
+                              gasUsed,
+                              status,
+                            },
+                          };
+                          rmqServices.sendNotificationMessage(notifMsg);
                         } else {
                           // HOUSEKEEPER UPDATES TX IN DB
                           dbServices.dbCollections.transactions.updateTx({
                             txHash: item.txHash,
-                            blockNumber: confBlockNb,
-                            status: 'confirmed',
-                            gasUsed: receipt.gasUsed,
+                            blockNumber,
+                            status,
+                            gasUsed,
                           });
                         }
                         logger.info(colors.green(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`));
-                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+                        hashMaps.pendingTx.delete(txHash);
+                        resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
                       } else {
-                        logger.info(colors.red.bold('WARNING: txInfo.blockNumber>lastBlockNumber\n'));
-                        resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+                        logger.info(colors.red.bold('WARNING: txInfo.blockNumber>=lastBlockNumber\n'));
                       }
+                    } else { // OUT OF GAS
+                      const status = 'failed: out of gas';
+                      const confBlockNumber = confBlockNb;
+                      const gasUsed = receipt.gasUsed;
+                      if (isPublisher) {
+                        // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
+                        const txMsg = {
+                          type: 'updateTx',
+                          txHash: item.txHash,
+                          confBlockNumber,
+                          status,
+                          gasUsed,
+                        };
+                        rmqServices.sendPubSubMessage(txMsg);
+                        // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                        const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+                        const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
+                        const notifMsg = {
+                          type: 'transactionEvent',
+                          meta: {
+                            senderWalletId: senderPillarId,
+                            recipientWalletId: recipientPillarId,
+                          },
+                          payload: {
+                            protocol: item.protocol,
+                            fromAddress: item.fromAddress,
+                            toAddress: item.toAddress,
+                            txHash: item.txHash,
+                            asset: item.asset,
+                            contractAddress: item.contractAddress,
+                            timestamp: item.timestamp,
+                            value: item.value,
+                            gasPrice: item.gasPrice,
+                            blockNumber: confBlockNumber,
+                            gasUsed,
+                            status,
+                          },
+                        };
+                        rmqServices.sendNotificationMessage(notifMsg);
+                      } else {
+                        // HOUSEKEEPER UPDATES TX IN DB
+                        dbServices.dbCollections.transactions.updateTx({
+                          txHash: item.txHash,
+                          blockNumber,
+                          status,
+                          gasUsed,
+                        });
+                      }
+                      logger.info(colors.red.bold(`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+                      hashMaps.pendingTx.delete(txHash);
+                      resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
                     }
                   } else { // TX RECEIPT NOT FOUND
+                    const status = 'failed: tx receipt not found';
+                    const confBlockNumber = confBlockNb;
+                    const gasUsed = null;
                     if (isPublisher) {
                       // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                       const txMsg = {
                         type: 'updateTx',
                         txHash: item.txHash,
-                        blockNumber: confBlockNb,
-                        status: 'failed: tx receipt not found',
-                        // gasUsed: null,
+                        confBlockNumber,
+                        status,
+                        gasUsed,
                       };
-                      rmqServices.sendMessage(txMsg);
+                      rmqServices.sendPubSubMessage(txMsg);
+                      // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                      const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+                      const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
+                      const notifMsg = {
+                        type: 'transactionEvent',
+                        meta: {
+                          senderWalletId: senderPillarId,
+                          recipientWalletId: recipientPillarId,
+                        },
+                        payload: {
+                          protocol: item.protocol,
+                          fromAddress: item.fromAddress,
+                          toAddress: item.toAddress,
+                          txHash: item.txHash,
+                          asset: item.asset,
+                          contractAddress: item.contractAddress,
+                          timestamp: item.timestamp,
+                          value: item.value,
+                          gasPrice: item.gasPrice,
+                          blockNumber: confBlockNumber,
+                          gasUsed,
+                          status,
+                        },
+                      };
+                      rmqServices.sendNotificationMessage(notifMsg);
                     } else {
                       // HOUSEKEEPER UPDATES TX IN DB
                       dbServices.dbCollections.transactions.updateTx({
                         txHash: item.txHash,
-                        blockNumber: confBlockNb,
-                        status: 'failed: tx receipt not found',
-                        // gasUsed: null,
+                        blockNumber,
+                        status,
+                        gasUsed,
                       });
                     }
                     logger.info(colors.red.bold(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)\n`));
-                    resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+                    hashMaps.pendingTx.delete(txHash);
+                    resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
                   }
                 })
                 .catch((e) => { reject(e); });
             } else { // TX STILL PENDING
               logger.info(`TX ${item.txHash} STILL PENDING (IN TX POOL)...\n`);
-              resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+              resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
             }
           } else { // TX INFO NOT FOUND
+            const status = 'failed: tx info not found';
+            const confBlockNumber = null;
+            const gasUsed = null;
             if (isPublisher) {
               // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
               const txMsg = {
                 type: 'updateTx',
                 txHash: item.txHash,
-                status: 'failed: tx info not found',
+                confBlockNumber,
+                status,
+                gasUsed,
               };
-              rmqServices.sendMessage(txMsg);
+              rmqServices.sendPubSubMessage(txMsg);
+              // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+              const senderPillarId = hashMaps.accounts.get(item.fromAddress.toLowerCase()) || null;
+              const recipientPillarId = hashMaps.accounts.get(item.toAddress.toLowerCase()) || null;
+              const notifMsg = {
+                type: 'transactionEvent',
+                meta: {
+                  senderWalletId: senderPillarId,
+                  recipientWalletId: recipientPillarId,
+                },
+                payload: {
+                  protocol: item.protocol,
+                  fromAddress: item.fromAddress,
+                  toAddress: item.toAddress,
+                  txHash: item.txHash,
+                  asset: item.asset,
+                  contractAddress: item.contractAddress,
+                  timestamp: item.timestamp,
+                  value: item.value,
+                  gasPrice: item.gasPrice,
+                  blockNumber: confBlockNumber,
+                  gasUsed,
+                  status,
+                },
+              };
+              rmqServices.sendNotificationMessage(notifMsg);
             } else {
               // HOUSEKEEPER UPDATES TX IN DB
               dbServices.dbCollections.transactions.updateTx({
                 txHash: item.txHash,
-                // blockNumber: null,
-                status: 'failed: tx info not found',
-                // gasUsed: null,
+                blockNumber,
+                status,
+                gasUsed,
               });
             }
             logger.info(colors.red.bold(`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
-            resolve(checkPendingTx(dbPendingTxArray, blockNumber, isPublisher));
+            hashMaps.pendingTx.delete(txHash);
+            resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
           }
         })
         .catch((e) => { reject(e); });
@@ -628,25 +1034,29 @@ function filterAddress(address, isPublisher) {
     try {
       // const ADDRESS = address.toUpperCase();
       if (isPublisher === false) {
-        dbServices.dbCollections.accounts.findByAddress(address)
+        dbServices.dbCollections.accounts.findByAddress(address.toLowerCase)
           .then((result) => {
             if (result) {
-              resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+              resolve({
+                isPillarAddress: true, pillarId: result.pillarId, isERC20SmartContract: false, ERC20SmartContractTicker: '',
+              });
             } else {
-              dbServices.dbCollections.assets.findByAddress(address)
+              dbServices.dbCollections.assets.findByAddress(address.toLowerCase)
                 .then((result2) => {
                   if (result2) {
                     const ticker = result2.symbol;
                     resolve({
                       isPillarAddress: false,
+	                    pillarId: null,
                       isERC20SmartContract: true,
                       ERC20SmartContractTicker: ticker,
                     });
                   } else {
                     resolve({
                       isPillarAddress: false,
+	                    pillarId: null,
                       isERC20SmartContract: false,
-                      ERC20SmartContractTicker: '',
+                      ERC20SmartContractTicker: null,
                     });
                   }
                 })
@@ -654,25 +1064,31 @@ function filterAddress(address, isPublisher) {
             }
           })
           .catch((e) => { reject(e); });
-      } else if (hashMaps.accounts.has(address)) {
-        resolve({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-      } else if (hashMaps.assets.has(address)) {
-        // const ticker = result2.symbol; // NEED TO ADD ASSET SYMBOL IN HASHMAP
-        const ticker = 'ASSET SYMBOL';
+      } else if (hashMaps.accounts.has(address.toLowerCase())) {
+
+        const pillarId = hashMaps.accounts.get(address.toLowerCase());
+        resolve({
+          isPillarAddress: true, pillarId, isERC20SmartContract: false, ERC20SmartContractTicker: null,
+        });
+      } else if (hashMaps.assets.has(address.toLowerCase())) {
         resolve({
           isPillarAddress: false,
+	        pillarId: null,
           isERC20SmartContract: true,
-          ERC20SmartContractTicker: ticker,
+          ERC20SmartContractTicker: 'ticker', // NEED TO ADD ASSET TICKER IN HASHMAP
         });
       } else {
         resolve({
           isPillarAddress: false,
+	        pillarId: null,
           isERC20SmartContract: false,
-          ERC20SmartContractTicker: '',
+          ERC20SmartContractTicker: null,
         });
       }
     } catch (e) {
-      resolve({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+      resolve({
+        isPillarAddress: false, pillarId: null, isERC20SmartContract: false, ERC20SmartContractTicker: null,
+      });
     }
   }));
 }
@@ -691,6 +1107,7 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
         .then((result) => {
           if (result.isPillarAddress === true) {
             // ^ TOKEN TRANSFER DESTINATION ADDRESS === PILLAR ACCOUNT ADDRESS
+            const pillarId = result.pillarId;
             dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
             // ETH TX SHOULD BE ALREADY IN DB BECAUSE
             // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
@@ -708,7 +1125,7 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
                   // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
                   const txMsg = {
                     type: 'newTx',
-                    pillarId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    pillarId, // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
                     fromAddress: ERC20SmartcContractInfo.address,
                     toAddress: eventInfo.returnValues._to,
@@ -718,8 +1135,34 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
                     timestamp: tmstmp,
                     value: eventInfo.returnValues._value,
                     gasPrice: eventInfo.gasPrice,
+                    // blockNumber,
+                    // gasUsed,
+                    status: 'confirmed',
                   };
-                  rmqServices.sendMessage(txMsg);
+                  rmqServices.sendPubSubMessage(txMsg);
+                  // SEND NOTIFICATION MESSAGE TO CWB NOTIFICATIONS CENTER
+                  const notifMsg = {
+                    type: 'transactionEvent',
+                    meta: {
+                      senderWalletId: 'senderPillarId', // SENDER PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                      recipientWalletId: 'recipientPillarId', // RECIPIENT PILLAR ID, NEED TO FIND IT IN HASH TABLE
+                    },
+                    payload: {
+                      protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
+                      fromAddress: ERC20SmartcContractInfo.address,
+                      toAddress: eventInfo.returnValues._to,
+                      txHash: eventInfo.transactionHash,
+                      asset: ERC20SmartcContractInfo.ticker,
+                      contractAddress: ERC20SmartcContractInfo.address,
+                      timestamp: tmstmp,
+                      value: eventInfo.returnValues._value,
+                      gasPrice: eventInfo.gasPrice,
+                      // blockNumber,
+                      // gasUsed,
+                      status: 'confirmed',
+                    },
+                  };
+                  rmqServices.sendNotificationMessage(notifMsg);
                   resolve();
                 } else {
                   resolve();

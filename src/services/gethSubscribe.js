@@ -7,6 +7,7 @@ const gethConnect = require('./gethConnect.js');
 const bcx = require('./bcx.js');
 const processTx = require('./processTx.js');
 const dbServices = require('./dbServices.js');
+const hashMaps = require('../utils/hashMaps.js');
 
 
 function subscribePendingTx() {
@@ -20,21 +21,21 @@ function subscribePendingTx() {
         }
       })
       */
-      .on('data', (txHash) => {
-        if ((txHash !== null) && (txHash !== '')) {
-          bcx.getTxInfo(txHash)
-            .then((txInfo) => {
-              if (txInfo != null) {
-                processTx.newPendingTx(txInfo);
-              }
-            })
-            .catch((e) => { reject(e); });
-        }
-      })
-      .on('endSubscribePendingTx', () => { // Used for testing only
-        logger.info('END PENDING TX SUBSCRIBTION\n');
-        resolve();
-      });
+        .on('data', (txHash) => {
+          if ((txHash !== null) && (txHash !== '')) {
+            bcx.getTxInfo(txHash)
+              .then((txInfo) => {
+                if (txInfo != null) {
+                  processTx.newPendingTx(txInfo);
+                }
+              })
+              .catch((e) => { reject(e); });
+          }
+        })
+        .on('endSubscribePendingTx', () => { // Used for testing only
+          logger.info('END PENDING TX SUBSCRIBTION\n');
+          resolve();
+        });
       logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
     } catch (e) { reject(e); }
   }));
@@ -50,15 +51,11 @@ function subscribeBlockHeaders() {
           if (blockHeader && blockHeader.number && blockHeader.hash) {
             logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
             // Check for pending tx in database and update their status
-            dbServices.dbCollections.transactions.listPending()
-              .then((pendingTxArray) => {
-                processTx.checkPendingTx(pendingTxArray, blockHeader.number)
+            processTx.checkPendingTx(hashMaps.pendingTx.keys(), blockHeader.number)
+              .then(() => {
+                dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
                   .then(() => {
-                    dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
-                      .then(() => {
-                        // logger.info(colors.green.bold('Highest Block Number for Tx History: '+blockHeader.number+'\n'))
-                      })
-                      .catch((e) => { reject(e); });
+                    // logger.info(colors.green.bold('Highest Block Number for Tx History: '+blockHeader.number+'\n'))
                   })
                   .catch((e) => { reject(e); });
               })

@@ -18,15 +18,14 @@ process.on('message',(data) => {
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
-      logger.info('Publisher received notification to monitor :' + obj.walletId + ' for pillarId: ' + obj.pillarId);
-      hashMaps.accounts.set(obj.walletId, obj.pillarId);
+      logger.info('Publisher received notification to monitor :' + obj.walletId.toLowerCase() + ' for pillarId: ' + obj.pillarId);
+      hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
       latestId = obj.id;
     }
   } else if (data.type === 'assets') {
-    //add the new asset to the assets hashmap
-    logger.info('Publisher received notification to monitor a new asset: ' + message.contractAddress);
-    hashMaps.assets.set(message.contractAddress, message);
-    console.log(hashMaps.assets);
+    // add the new asset to the assets hashmap
+    logger.info('Publisher received notification to monitor a new asset: ' + message.contractAddress.toLowerCase());
+    hashMaps.assets.set(message.contractAddress.toLowerCase(), message);
   }
 });
 
@@ -44,9 +43,12 @@ exports.initIPC = function () {
     logger.info('Publisher initializing the RMQ');
     setTimeout(function() {
       logger.info('Initializing RMQ.')
-      rmqServices.initMQ()
+      rmqServices.initPubSubMQ()
         .then(() => {
-          exports.initSubscriptions();
+          rmqServices.initPubCWBMQ()
+            .then(() => {
+              exports.initSubscriptions();
+            });
         });
     }, 100);
 
