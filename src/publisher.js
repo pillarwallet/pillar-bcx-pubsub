@@ -2,6 +2,7 @@
 /** ************************************************************************************ */
 /*  Publisher                                                                          */
 /** ************************************************************************************ */
+require('dotenv').config();
 const logger = require('./utils/logger');
 const gethConnect = require('./services/gethConnect.js');
 const dbServices = require('./services/dbServices.js');

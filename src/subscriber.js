@@ -1,3 +1,5 @@
+
+const amqp = require('amqplib/callback_api');
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');

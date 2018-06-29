@@ -1,3 +1,4 @@
+require('dotenv').config();
 const amqp = require('amqplib/callback_api');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
@@ -22,8 +23,9 @@ const CWBURL = process.env.CWB_URL;
 exports.initPubSubMQ = function () {
   return new Promise((resolve, reject) => {
     try {
-      logger.info('Executing rmqServices.initPubSubMQ()');
-      amqp.connect('amqp://localhost', (err, conn) => {
+
+      logger.info('Executing rmqServices.initMQ()');
+      amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
         conn.createChannel((err, ch) => {
           pubSubChannel = ch;
           const msg = '{}';
@@ -54,7 +56,7 @@ exports.initSubPubMQ = () => {
   try {
 	  let connection;
     logger.info('Subscriber Started executing initRabbitMQ()');
-    amqp.connect('amqp://localhost', (err, conn) => {
+    amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
       if (err) {
         logger.error(`Subscriber failed initializing RabbitMQ, error: ${err}`);
         return setTimeout(exports.initRabbitMQ, 2000);
@@ -126,7 +128,7 @@ exports.initPubCWBMQ = function () {
   return new Promise((resolve, reject) => {
     try {
       logger.info('Executing rmqServices.initPubCWBMQ()');
-      amqp.connect(CWBURL, (err, conn) => {
+      amqp.connect(process.env.RABBITMQ_CWB, (err, conn) => {
         conn.createChannel((err, ch) => {
           notificationsChannel = ch;
           const msg = '{}';
