@@ -10,7 +10,7 @@ const gethSubscribe = require('./services/gethSubscribe.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 
-let latestId;
+let latestId = '';
 
 process.on('message',(data) => {
   logger.info('Publisher has received message from master........');
