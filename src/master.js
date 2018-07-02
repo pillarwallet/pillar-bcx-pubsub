@@ -157,6 +157,7 @@ exports.notify = function (idFrom, socket) {
 
     // read the wallet address model and bring up multiple publishers
     dbServices.recentAccounts(idFrom).then((theWallets) => {
+      logger.info('Master.notify(): received new wallets to monitor: ' + JSON.stringify(theWallets));
       if (theWallets !== undefined) {
         const message = [];
         for (let i = 0; i < theWallets.length; i++) {
