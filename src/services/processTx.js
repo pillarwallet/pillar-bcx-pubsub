@@ -83,7 +83,7 @@ function newPendingTx(tx, isPublisher = true) {
                     gasPrice: tx.gasPrice,
                   });
                 } else {
-                  // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                  // HOUSEKEEPER STORES TX IN DB
                   dbServices.dbCollections.transactions.addTx({
                     pillarId: toPillarId,
                     protocol: 'Ethereum', // WHERE DO WE GET THIS INFO FROM? IS IT A PUBLISHER INSTANCE ATTRIBUTE?
@@ -153,7 +153,7 @@ function newPendingTx(tx, isPublisher = true) {
                     };
                     rmqServices.sendNotificationMessage(notifMsg);
                   } else {
-                    // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                    // HOUSEKEEPER STORES TX IN DB
                     dbServices.dbCollections.transactions.addTx({
                       pillarId: fromPillarId,
                       protocol: 'Ethereum',
@@ -259,7 +259,7 @@ function newPendingTx(tx, isPublisher = true) {
 
                         rmqServices.sendNotificationMessage(notifMsg);
                       } else {
-                        // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                        // HOUSEKEEPER STORES TX IN DB
                         dbServices.dbCollections.transactions.addTx({
                           pillarId: fromPillarId,
                           protocol: 'Ethereum',
@@ -324,7 +324,7 @@ function newPendingTx(tx, isPublisher = true) {
                             gasPrice: tx.gasPrice,
                           });
                         } else {
-                          // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                          // HOUSEKEEPER STORES TX IN DB
                           dbServices.dbCollections.transactions.addTx({
                             pillarId: fromPillarId,
                             protocol: 'Ethereum',
@@ -396,7 +396,7 @@ function newPendingTx(tx, isPublisher = true) {
                                 };
                                 rmqServices.sendNotificationMessage(notifMsg);
                               } else {
-                                // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                                // HOUSEKEEPER STORES TX IN DB
                                 dbServices.dbCollections.transactions.addTx({
                                   pillarId: toPillarId,
                                   protocol: 'Ethereum',
@@ -499,7 +499,7 @@ function newPendingTx(tx, isPublisher = true) {
                           };
                           rmqServices.sendNotificationMessage(notifMsg);
                         } else {
-                          // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                          // HOUSEKEEPER STORES TX IN DB
                           dbServices.dbCollections.transactions.addTx({
                             pillarId: fromPillarId,
                             protocol: 'Ethereum',
@@ -579,7 +579,7 @@ function newPendingTx(tx, isPublisher = true) {
                               };
                               rmqServices.sendNotificationMessage(notifMsg);
                             } else {
-                              // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                              // HOUSEKEEPER STORES TX IN DB
                               dbServices.dbCollections.transactions.addTx({
                                 pillarId: toPillarId,
                                 protocol: 'Ethereum',
@@ -667,7 +667,7 @@ function newPendingTx(tx, isPublisher = true) {
                     };
                     rmqServices.sendNotificationMessage(notifMsg);
                   } else {
-                    // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                    // HOUSEKEEPER STORES TX IN DB
                     dbServices.dbCollections.transactions.addTx({
                       pillarId: fromPillarId,
                       protocol: 'Ethereum',
@@ -748,7 +748,7 @@ function newPendingTx(tx, isPublisher = true) {
                   };
                   rmqServices.sendNotificationMessage(notifMsg);
                 } else {
-                  // HOUSEKEEPER STORES TX IN DB WITH 'history' FLAG
+                  // HOUSEKEEPER STORES TX IN DB
                   dbServices.dbCollections.transactions.addTx({
                     pillarId: fromPillarId,
                     protocol: 'Ethereum',
