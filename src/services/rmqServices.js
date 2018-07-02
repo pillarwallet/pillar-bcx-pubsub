@@ -80,7 +80,7 @@ exports.initSubPubMQ = () => {
         ch.assertQueue(q, { durable: false });
         ch.consume(q, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
-          if (msg.content !== undefined && msg.content !== '') {
+          if (msg.content !== undefined && msg.content !== '' && exports.validatePubSubMessage(JSON.parse(msg.content))) {
             const entry = JSON.parse(msg.content);
             const type = entry.type;
             delete entry.type;
