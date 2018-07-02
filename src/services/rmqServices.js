@@ -23,7 +23,6 @@ const CWBURL = process.env.CWB_URL;
 exports.initPubSubMQ = function () {
   return new Promise((resolve, reject) => {
     try {
-
       logger.info('Executing rmqServices.initMQ()');
       amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
         conn.createChannel((err, ch) => {
@@ -59,18 +58,18 @@ exports.initSubPubMQ = () => {
     amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
       if (err) {
         logger.error(`Subscriber failed initializing RabbitMQ, error: ${err}`);
-        return setTimeout(exports.initRabbitMQ, 2000);
+        return setTimeout(exports.initSubPubMQ, 2000);
       }
       if (conn) {
         connection = conn;
       }
       connection.on('error', (err) => {
         logger.error(`Subscriber RMQ connection errored out: ${err}`);
-        return setTimeout(exports.initRabbitMQ, 2000);
+        return setTimeout(exports.initSubPubMQ, 2000);
       });
       connection.on('close', () => {
         logger.error('Subscriber RMQ Connection closed');
-        return setTimeout(exports.initRabbitMQ, 2000);
+        return setTimeout(exports.initSubPubMQ, 2000);
       });
 
       logger.info('Subscriber RMQ Connected');
@@ -128,18 +127,20 @@ exports.initPubCWBMQ = function () {
   return new Promise((resolve, reject) => {
     try {
       logger.info('Executing rmqServices.initPubCWBMQ()');
-      amqp.connect(process.env.RABBITMQ_CWB, (err, conn) => {
-        conn.createChannel((err, ch) => {
-          notificationsChannel = ch;
-          const msg = '{}';
-          ch.assertQueue(pubSubQueue, { durable: false });
-          // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(pubSubQueue, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
-          resolve();
-        });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
+
+      // amqp.connect(process.env.RABBITMQ_CWB, (err, conn) => {
+      amqp.connect('amqp://notifications:plokij@206.189.16.39:5672/notifications', (err, conn) => {
+		      conn.createChannel((err, ch) => {
+			      notificationsChannel = ch;
+			      const msg = '{}';
+			      ch.assertQueue(notificationsQueue, { durable: false });
+			      // Note: on Node 6 Buffer.from(msg) should be used
+			      ch.sendToQueue(notificationsQueue, Buffer.from(msg));
+			      console.log(' [x] Sent %s', msg);
+			      resolve();
+		      });
+		      // setTimeout(() => { conn.close(); process.exit(0); }, 500);
+	      });
     } catch (err) {
       logger.error('rmqServices.initPubCWBMQ() failed: ', err.message);
       reject(err);
@@ -150,8 +151,12 @@ exports.initPubCWBMQ = function () {
 };
 
 exports.sendNotificationMessage = function (payload) {
-  const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
-  payload.checksum = checksum;
-  // console.log(payload)
-  notificationsChannel.sendToQueue(notificationsQueue, Buffer.from(JSON.stringify(payload)));
+  try {
+	  const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
+	  payload.checksum = checksum;
+	  console.log(payload);
+	  notificationsChannel.sendToQueue(notificationsQueue, Buffer.from(JSON.stringify(payload)));
+  } catch (err) {
+	  logger.error('rmqServices.sendNotificationMessage() failed: ', err.message);
+  }
 };
