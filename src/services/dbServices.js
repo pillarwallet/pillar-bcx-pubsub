@@ -109,8 +109,12 @@ function recentAccounts(
         } else {
           dbCollections.accounts.listAll()
             .then((ethAddressesArray) => {
-              logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
-              resolve(ethAddressesArray);
+              if(ethAddressesArray.length > 0) {
+                logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
+                resolve(ethAddressesArray);
+              } else {
+                logger.info(colors.cyan.bold.underline('NO ACCOUNTS IN DATABASE\n'));
+              }
             })
             .catch((e) => { reject(e); });
         }
