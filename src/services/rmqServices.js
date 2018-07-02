@@ -9,7 +9,6 @@ const SHA256 = new jsHashes.SHA256();
 require('dotenv').config();
 
 const checksumKey = process.env.CHECKSUM_KEY;
-const hashPrefix = process.env.HASH_PREFIX;
 
 
 let pubSubChannel;
@@ -117,7 +116,7 @@ exports.initSubPubMQ = () => {
 exports.validatePubSubMessage = (payload) => {
   const checksum = payload.checksum;
   delete payload.checksum;
-  if (SHA256.hex(hashPrefix + JSON.stringify(payload)) === checksum) {
+  if (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum) {
     return true;
   }
   return false;

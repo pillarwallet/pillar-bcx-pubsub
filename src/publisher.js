@@ -45,10 +45,10 @@ exports.initIPC = function () {
       logger.info('Initializing RMQ.')
       rmqServices.initPubSubMQ()
         .then(() => {
-          rmqServices.initPubCWBMQ()
-            .then(() => {
+          // rmqServices.initPubCWBMQ()
+            // .then(() => {
               exports.initSubscriptions();
-            });
+            // });
         });
     }, 100);
 
