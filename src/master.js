@@ -163,13 +163,14 @@ exports.notify = function (idFrom, socket) {
         for (let i = 0; i < theWallets.length; i++) {
           for (let j = 0; j < theWallets[i].addresses.length; j++) {
             if (theWallets[i].addresses[j].protocol == protocol) {
+              logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallets[i].addresses[j].address + '/pillarId: ' + theWallets[i].pillarId);
               message.push({ id: theWallets[i]._id, walletId: theWallets[i].addresses[j].address, pillarId: theWallets[i].pillarId });
             }
           }
         }
         if (message.length > 0) {
           logger.info(`master.notify(): Sending IPC notification to monitor ${message.length} wallets.`);
-          socket.send({ type: 'accounts', message });
+          socket.send({ type: 'accounts', message: message });
           fs.appendFile(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
             if (err) {
               throw ({ message: 'Caching of wallets failed!' });
