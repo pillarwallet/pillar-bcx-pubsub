@@ -17,7 +17,7 @@ process.on('message', (data) => {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
       logger.info(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
-      //TODO - add code to perform catchup services for this wallet id
+      module.exports.recoverWallet(obj.walletId.toLowerCase(), 15);
     }
   }
 });
@@ -45,6 +45,62 @@ exports.init = function () {
     } catch (e) { reject(e); }
   });
 };
+
+exports.recoverWallet = function (recoverAddress, nbBlocks) {
+  return new Promise((resolve, reject) => {
+    try {
+      bcx.getPendingTxArray() // SEND MSG TO PRODUCTION SEGMENT
+        .then((pendingTxArray) => {
+          // CHECK IF TX ALREADY IN DB
+          const unknownPendingTxArray = [];
+          dbServices.dbCollections.transactions.listDbZeroConfTx()
+            .then((dbPendingTxArray) => {
+              pendingTxArray.forEach((pendingTx) => {
+                let isDbPendingTx = false;
+                dbPendingTxArray.forEach((dbPendingTx) => {
+                  if (pendingTx.hash === dbPendingTx.txHash) {
+                    isDbPendingTx = true;
+                  }
+                });
+                if (isDbPendingTx === false) {
+                  unknownPendingTxArray.push(pendingTx);
+                }
+              });
+              processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false, recoverAddress)
+                .then((nbPendingTxFound) => {
+                  console.log(`DONE RECOVERING PENDING TX FOR NEW ACCOUNT ${recoverAddress}\n--> ${nbPendingTxFound} transactions found\n`);
+                  bcx.getLastBlockNumber()
+                    .then((lastBlockNb) => {
+                      module.exports.dlTxHistory(lastBlockNb - nbBlocks, lastBlockNb, 0, false, recoverAddress) // SEND MSG TO PRODUCTION SEGMENT
+                        .then((nbMinedTxFound) => {
+                          console.log(`DONE RECOVERING MINED TX FOR NEW ACCOUNT ${recoverAddress}\n--> ${nbMinedTxFound} transactions found\n`);
+                          resolve();
+                        })
+                        .catch((e) => {
+                          reject(e);
+                        });
+                    })
+                    .catch((e) => {
+                      reject(e);
+                    });
+                })
+                .catch((e) => {
+                  reject(e);
+                });
+            })
+            .catch((e) => {
+              reject(e);
+            });
+        })
+        .catch((e) => {
+          reject(e);
+        });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 
 exports.checkTxPool = function () {
   // At connection time: Check for pending Tx in TX pool which are not in DB
@@ -108,7 +164,7 @@ exports.updateTxHistory = function () {
   }));
 };
 
-exports.dlTxHistory = function (startBlock, maxBlock, nbTx, logs = false) {
+exports.dlTxHistory = function (startBlock, maxBlock, nbTx, logs = false, recoverAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (startBlock > maxBlock) {
@@ -119,16 +175,16 @@ exports.dlTxHistory = function (startBlock, maxBlock, nbTx, logs = false) {
         }
         bcx.getBlockTx(startBlock)
           .then((txArray) => {
-            module.exports.processTxHistory(txArray, 0, 0)
+            module.exports.processTxHistory(txArray, 0, 0, recoverAddress)
               .then((nbBlockTx) => {
                 nbTx += nbBlockTx;
                 dbServices.dbCollections.transactions.listHistory()
                   .then((historyTxArray) => {
-                    processTx.checkPendingTx(historyTxArray, maxBlock, false)
+                    processTx.checkPendingTx(historyTxArray, maxBlock, false, recoverAddress)
                       .then(() => {
                         dbServices.dbCollections.transactions.updateTxHistoryHeight(startBlock)
                           .then(() => {
-                            resolve(this.dlTxHistory(startBlock + 1, maxBlock, nbTx, logs));
+                            resolve(this.dlTxHistory(startBlock + 1, maxBlock, nbTx, logs, recoverAddress));
                           })
                           .catch((e) => { reject(e); });
                       })
@@ -144,23 +200,23 @@ exports.dlTxHistory = function (startBlock, maxBlock, nbTx, logs = false) {
   }));
 };
 
-exports.processTxHistory = function (txArray, nbTx, index) {
+exports.processTxHistory = function (txArray, nbTx, index, recoverAddress = null) {
   return new Promise(((resolve, reject) => {
     try {
       if (index === txArray.length) {
         resolve(nbTx);
       } else {
-        processTx.newPendingTx(txArray[index], false)
+        processTx.newPendingTx(txArray[index], false, recoverAddress)
           .then((pillarWalletTx) => {
             if (pillarWalletTx) {
               nbTx += 1;
             }
-            resolve(this.processTxHistory(txArray, nbTx, index + 1));
+            resolve(this.processTxHistory(txArray, nbTx, index + 1, recoverAddress));
           });
       }
     } catch (e) { reject(e); }
   }));
-}
+};
 
 exports.dlERC20SmartContracts = function (startBlock, endBlock, nbERC20Found, logs = false) {
   return new Promise(((resolve, reject) => {
@@ -320,7 +376,6 @@ exports.checkNewERC20SmartContracts = function () {
 
 this.init()
   .then(() => {
-
     this.checkTxPool(); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateTxHistory(); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
     this.updateERC20SmartContracts(); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
