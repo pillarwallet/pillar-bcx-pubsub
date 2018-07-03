@@ -9,7 +9,7 @@ module.exports = {
     {
       name      : 'master',
       script    : './src/master.js',
-      args      : '--protocol="Ethereum" --maxWallets=500000',
+      args      : '--protocol=Ethereum --maxWallets=500000',
       cwd       : './',
       instances : '1',
       instance_var: 'INSTANCE_ID',
