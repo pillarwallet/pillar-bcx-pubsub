@@ -101,6 +101,8 @@ exports.launch = function () {
       if (data.type === 'wallet.request') {
         logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${exports.index}`);
         exports.notify(data.message, exports.pubs[exports.index - 1]);
+        //notify the same message to the housekeeper to perform catchup services for the new wallet
+        exports.notify(data.message,exports.housekeeper);
       }
       if (data.type === 'queue.full') {
         logger.info(`Master Received ${data.message} from publisher: ${exports.index}`);

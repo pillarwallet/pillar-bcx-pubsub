@@ -10,6 +10,17 @@ const ERC20ABI = require('./services/ERC20ABI');
 
 const logs = false;
 
+process.on('message', (data) => {
+  logger.info('Housekeeper has received message from master........');
+  const message = data.message;
+  if (data.type === 'accounts') {
+    for (let i = 0; i < message.length; i++) {
+      const obj = message[i];
+      logger.info(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
+      //TODO - add code to perform catchup services for this wallet id
+    }
+  }
+});
 
 exports.init = function () {
   return new Promise((resolve, reject) => {
