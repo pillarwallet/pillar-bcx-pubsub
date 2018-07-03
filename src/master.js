@@ -161,19 +161,19 @@ exports.notify = function (idFrom, socket) {
       if (theWallets !== undefined) {
         const message = [];
         for (let i = 0; i < theWallets.length; i++) {
-	  var theWallet = theWallets[i];
-	  logger.debug('Wallet: ' + theWallets[i]);
+	        var theWallet = theWallets[i];
+	        logger.debug('Wallet: ' + theWallets[i]);
           for (let j = 0; j < theWallet.addresses.length; j++) {
-	    var theAddress = theWallet.addresses[j];
-	    logger.debug('The address protocol: ' + theAddress.protocol.trim());
-	    logger.debug('Protocol: ' + protocol);
-	    logger.debug('Match? : ' + (theAddress.protocol.trim() === protocol));
+	          var theAddress = theWallet.addresses[j];
+            logger.debug('The address protocol: ' + theAddress.protocol.trim());
+            logger.debug('Protocol: ' + protocol);
+            logger.debug('Match? : ' + (theAddress.protocol.trim() === protocol));
             if (theAddress.protocol.trim() === protocol) {
               logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallet.addresses[j].address + '/pillarId: ' + theWallet.pillarId);
               message.push({ id: theWallet._id, walletId: theWallet.addresses[j].address, pillarId: theWallet.pillarId });
             } else {
-		logger.debug('Protocol doesnt match, ignoring,....');
-	    }
+		          logger.debug('Protocol doesnt match, ignoring,....');
+	          }
           }
         }
         if (message.length > 0) {
