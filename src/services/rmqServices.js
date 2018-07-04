@@ -50,6 +50,10 @@ exports.sendPubSubMessage = function (payload) {
   pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));
 };
 
+exports.sendNotificationsMessage = function (payload) {
+  notificationsChannel.sendToQueue(notificationsQueue, Buffer.from(JSON.stringify(payload)));
+};
+
 exports.initSubPubMQ = () => {
   try {
 	  let connection;
@@ -74,11 +78,12 @@ exports.initSubPubMQ = () => {
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
-        const q = 'bcx-pubsub';
-        ch.assertQueue(q, { durable: false });
-        ch.consume(q, (msg) => {
+        const notificationMessage;
+        ch.assertQueue(pubSubQueue, { durable: false });
+        ch.consume(pubSubQueue, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
-          if (msg.content !== undefined && msg.content !== '') {
+          notificationMessage = message.content;
+          if (msg.content !== undefined && msg.content !== '' && validatePubSubMessage(JSON.parse(msg.content))) {
             const entry = JSON.parse(msg.content);
             const type = entry.type;
             delete entry.type;
@@ -103,6 +108,9 @@ exports.initSubPubMQ = () => {
             }
           }
         }, { noAck: true });
+        if (msg.content !== undefined && msg.content !== '' && validatePubSubMessage(JSON.parse(msg.content))) {
+          ch.sendToQueue(notificationsQueue, new Buffer.from(msg));
+        }
       });
     });
   } catch (err) {
