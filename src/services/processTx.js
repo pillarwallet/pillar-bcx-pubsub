@@ -2,23 +2,23 @@ const colors = require('colors');
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
 const ERC20ABI = require('./ERC20ABI');
-const dbServices = require('./dbServices.js');
+// const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
 const bcx = require('./bcx.js');
 const hashMaps = require('../utils/hashMaps.js');
 
-function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true, recoverAddress = null) {
+function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     try {
       if (txArray.length === 0) {
         resolve(nbTxFound);
       } else {
-        module.exports.newPendingTx(txArray[0], isPublisher, recoverAddress)
-          .then((isMonitoredAccountTx) => {
-            if (isMonitoredAccountTx) { nbTxFound += 1; }
+        module.exports.newPendingTx(txArray[0], isPublisher)
+          .then((isMonitoredAccoutnTx) => {
+            if (isMonitoredAccoutnTx) { nbTxFound += 1; }
             txArray.splice(0, 1);
-            resolve(processNewPendingTxArray(txArray, nbTxFound, isPublisher, recoverAddress));
+            resolve(processNewPendingTxArray(txArray, nbTxFound, isPublisher));
           })
           .catch((e) => { reject(e); });
       }
@@ -27,7 +27,7 @@ function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true, recove
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
-function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
+function newPendingTx(tx, isPublisher = true) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
     let toERC20SmartContract;
@@ -39,13 +39,13 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
     if (tx.to == null) { // SMART CONTRACT CREATION TRANSACTION
       resolve(false);
     } else { // REGULAR TRANSACTION OR SMART CONTRACT CALL
-      module.exports.filterAddress(tx.to, isPublisher, recoverAddress)
+      module.exports.filterAddress(tx.to, isPublisher)
         .then((result) => {
           toPillarAccount = result.isPillarAddress;
 	        toPillarId = result.pillarId;
           toERC20SmartContract = result.isERC20SmartContract;
           ticker = result.ERC20SmartContractTicker;
-          module.exports.filterAddress(tx.from, isPublisher, recoverAddress)
+          module.exports.filterAddress(tx.from, isPublisher)
             .then((result2) => {
               fromPillarAccount = result2.isPillarAddress;
 	            fromPillarId = result2.pillarId;
@@ -275,7 +275,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                             gasUsed: null,
                           });
                         }
-                        module.exports.filterAddress(to, isPublisher, recoverAddress)
+                        module.exports.filterAddress(to, isPublisher)
                           .then((result3) => {
                             toPillarAccount = result3.isPillarAddress;
                             if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR WALLET ADDRESS
@@ -393,7 +393,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                       // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                       const to = data.params[0].value;
                       // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
-                      module.exports.filterAddress(to, isPublisher, recoverAddress)
+                      module.exports.filterAddress(to, isPublisher)
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
                           if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR ACCOUNT ADDRESS
@@ -734,38 +734,17 @@ function checkPendingTx(pendingTxArray, blockNumber, isPublisher = true) {
 module.exports.checkPendingTx = checkPendingTx;
 
 
-function filterAddress(address, isPublisher, recoverAddress = null) {
+function filterAddress(address, isPublisher) {
   /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
   return new Promise(((resolve, reject) => {
     try {
-      if (recoverAddress && recoverAddress.toLowerCase() === address.toLowerCase()) {
-        dbServices.dbCollections.accounts.findByAddress(recoverAddress.toLowerCase())
-          .then((result) => {
-            if (result) {
-              resolve({
-                isPillarAddress: true,
-                pillarId: result.pillarId,
-                isERC20SmartContract: false,
-                ERC20SmartContractTicker: '',
-              });
-            } else {
-              resolve({
-                isPillarAddress: false,
-                pillarId: null,
-                isERC20SmartContract: false,
-                ERC20SmartContractTicker: null,
-              });
-            }
-          });
-      } else if (isPublisher === false) {
+      // const ADDRESS = address.toUpperCase();
+      if (isPublisher === false) {
         dbServices.dbCollections.accounts.findByAddress(address.toLowerCase)
           .then((result) => {
             if (result) {
               resolve({
-                isPillarAddress: true,
-                pillarId: result.pillarId,
-                isERC20SmartContract: false,
-                ERC20SmartContractTicker: '',
+                isPillarAddress: true, pillarId: result.pillarId, isERC20SmartContract: false, ERC20SmartContractTicker: '',
               });
             } else {
               dbServices.dbCollections.assets.findByAddress(address.toLowerCase)
@@ -774,56 +753,47 @@ function filterAddress(address, isPublisher, recoverAddress = null) {
                     const ticker = result2.symbol;
                     resolve({
                       isPillarAddress: false,
-                      pillarId: null,
+	                    pillarId: null,
                       isERC20SmartContract: true,
                       ERC20SmartContractTicker: ticker,
                     });
                   } else {
                     resolve({
                       isPillarAddress: false,
-                      pillarId: null,
+	                    pillarId: null,
                       isERC20SmartContract: false,
                       ERC20SmartContractTicker: null,
                     });
                   }
                 })
-                .catch((e) => {
-                  reject(e);
-                });
+                .catch((e) => { reject(e); });
             }
           })
-          .catch((e) => {
-            reject(e);
-          });
+          .catch((e) => { reject(e); });
       } else if (hashMaps.accounts.has(address.toLowerCase())) {
+
         const pillarId = hashMaps.accounts.get(address.toLowerCase());
         resolve({
-          isPillarAddress: true,
-          pillarId,
-          isERC20SmartContract: false,
-          ERC20SmartContractTicker: null,
+          isPillarAddress: true, pillarId, isERC20SmartContract: false, ERC20SmartContractTicker: null,
         });
       } else if (hashMaps.assets.has(address.toLowerCase())) {
         resolve({
           isPillarAddress: false,
-          pillarId: null,
+	        pillarId: null,
           isERC20SmartContract: true,
           ERC20SmartContractTicker: 'ticker', // NEED TO ADD ASSET TICKER IN HASHMAP
         });
       } else {
         resolve({
           isPillarAddress: false,
-          pillarId: null,
+	        pillarId: null,
           isERC20SmartContract: false,
           ERC20SmartContractTicker: null,
         });
       }
     } catch (e) {
       resolve({
-        isPillarAddress: false,
-        pillarId: null,
-        isERC20SmartContract: false,
-        ERC20SmartContractTicker: null,
+        isPillarAddress: false, pillarId: null, isERC20SmartContract: false, ERC20SmartContractTicker: null,
       });
     }
   }));
@@ -891,4 +861,3 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   }));
 }
 module.exports.checkTokenTransferEvent = checkTokenTransferEvent;
-
