@@ -18,13 +18,16 @@ function gethConnectDisplay() {
               logger.info(colors.green.bold(`Established connection with local Ethereum node!\nCurrent Block number :${result}\n`));
               resolve();
             } else {
-              logger.info(colors.red.bold('Failed to establish connection with local Ethereum node :(\n'));
+              logger.error(colors.red.bold('Failed to establish connection with local Ethereum node :(\n'));
               reject();
             }
           })
           .catch((e) => { reject(e); });
       })
-      .catch((e) => { reject(e); });
+      .catch((e) => { 
+        logger.error('gethConnect.gethConnectDisplay() failed: ' + e);
+        reject(e); 
+      });
   }));
 }
 module.exports.gethConnectDisplay = gethConnectDisplay;
@@ -36,7 +39,7 @@ function setWeb3WebsocketConnection() {
       module.exports.web3 = web3;
       resolve();
     } catch (e) {
-      logger.info(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));
+      logger.error(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));
       reject(e);
     }
   }));

@@ -14,13 +14,6 @@ function subscribePendingTx() {
   const subscribePromise = new Promise(((resolve, reject) => {
     try {
       gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
-      /*  if(!err) {
-          logger.info('Subscribing to pending transactions from ethereum node.');
-        } else {
-          logger.info('Subscription of pending transactions from ethereum node failed: ' + err);
-        }
-      })
-      */
         .on('data', (txHash) => {
           if ((txHash !== null) && (txHash !== '')) {
             bcx.getTxInfo(txHash)
@@ -37,7 +30,10 @@ function subscribePendingTx() {
           resolve();
         });
       logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
-    } catch (e) { reject(e); }
+    } catch (e) {
+      logger.error('gethSubscribe.subscribePendingTx() failed: ' + e); 
+      reject(e); 
+    }
   }));
   return (subscribePromise);
 }
@@ -67,7 +63,10 @@ function subscribeBlockHeaders() {
           resolve();
         });
       logger.info(colors.green.bold('Subscribed to Block Headers\n'));
-    } catch (e) { reject(e); }
+    } catch (e) {
+      logger.error('gethSubscribe.subscribeBlockHeaders() failed: ' + e); 
+      reject(e); 
+    }
   });
   return (subscribePromise);
 }
@@ -81,7 +80,9 @@ function subscribeAllDBERC20SmartContracts() {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });
     logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
-  } catch (e) { logger.info(e); }
+  } catch (e) { 
+    logger.error('gethSubscribe.subscribeAllDBERC20SmartContracts() failed: ' + e); 
+  }
 }
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
 
@@ -98,7 +99,8 @@ function subscribeERC20SmartContract(ERC20SmartContract) {
         }
       });
     }
-  } catch (e) { logger.info(e); }
+  } catch (e) { 
+    logger.error('gethSubscribe.subscribeERC20SmartContract() failed: ' + e); 
+  }
 }
 module.exports.subscribeERC20SmartContract = subscribeERC20SmartContract;
-
