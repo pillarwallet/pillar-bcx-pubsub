@@ -10,6 +10,7 @@ function updateTx() {
     resolve();
   }));
 }
+
 module.exports.updateTx = updateTx;
 
 function addTxHistory() {
@@ -17,6 +18,7 @@ function addTxHistory() {
     resolve();
   }));
 }
+
 module.exports.addTxHistory = addTxHistory;
 
 function findByTxHash() {

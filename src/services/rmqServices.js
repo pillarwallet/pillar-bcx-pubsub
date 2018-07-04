@@ -12,9 +12,7 @@ const { env } = process;
 const checksumKey = env.CHECKSUM_KEY;
 
 let pubSubChannel;
-
-const pubSubQueue = typeof env.PUB_SUB_QUEUE !== 'undefined' ?
-  env.PUB_SUB_QUEUE : 'bcx-pubsub';
+let pubSubQueue = 'bcx-pubsub';
 
 let notificationsChannel;
 
@@ -26,6 +24,8 @@ const CWBURL = env.CWB_URL;
 function validatePubSubMessage(payload) {
   const { checksum } = payload;
   delete payload.checksum;
+  // const check = (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum);
+  // logger.info(`CHECKSUM: ${check}`);
   return (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum);
 }
 
@@ -118,8 +118,18 @@ exports.initSubPubMQ = () => {
                   .catch(e => logger.error(`${JSON.stringify(e)}`));
                 break;
               case 'updateTx':
+                logger.info(`In updateTx: ${entry.txHash}`);
                 dbServices.dbCollections.transactions.updateTx(entry)
-                  .then(() => logger.info(`Transaction updated: ${entry.txHash}`));
+                  .then(() => {
+                    logger.info(`Transaction updated: ${entry.txHash}`);
+
+                    ch.assertQueue(notificationsQueue, { durable: false });
+                    ch.sendToQueue(
+                      notificationsQueue,
+                      new Buffer.from(JSON.stringify(msg.content))
+                    );
+                    logger.info(`Transaction produced to: ${notificationsQueue}`);
+                  });
                 break;
               default:
                 break;
