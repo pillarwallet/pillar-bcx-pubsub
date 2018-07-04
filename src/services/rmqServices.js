@@ -1,75 +1,79 @@
 require('dotenv').config();
+
 const amqp = require('amqplib/callback_api');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
 
-
 const SHA256 = new jsHashes.SHA256();
 require('dotenv').config();
 
-const checksumKey = process.env.CHECKSUM_KEY;
-
+const { env } = process;
+const checksumKey = env.CHECKSUM_KEY;
 
 let pubSubChannel;
-const pubSubQueue = 'bcx-pubsub';
+
+const pubSubQueue = typeof env.PUB_SUB_QUEUE !== 'undefined' ?
+  env.PUB_SUB_QUEUE : 'bcx-pubsub';
 
 let notificationsChannel;
-const notificationsQueue = 'bcx-notifications';
 
-const CWBURL = process.env.CWB_URL;
+const notificationsQueue = typeof env.NOTIFICATIONS_QUEUE !== 'undefined' ?
+  env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 
-exports.initPubSubMQ = function () {
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Executing rmqServices.initMQ()');
-      amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
-        conn.createChannel((err, ch) => {
-          pubSubChannel = ch;
-          const msg = '{}';
-          ch.assertQueue(pubSubQueue, { durable: false });
-          // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(pubSubQueue, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
-          resolve();
-        });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
-    } catch (err) {
-      logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
-      reject(err);
-    } finally {
-      logger.info('Exited rmqServices.initPubSubMQ()');
-    }
+const CWBURL = env.CWB_URL;
+
+function validatePubSubMessage(payload) {
+  const { checksum } = payload;
+  delete payload.checksum;
+  return (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum);
+}
+
+exports.validatePubSubMessage = validatePubSubMessage;
+
+exports.initPubSubMQ = () => new Promise((resolve, reject) => {
+  logger.info('Executing rmqServices.initMQ()');
+  amqp.connect(env.RABBITMQ_SERVER, (error, conn) => {
+    conn.createChannel((err, ch) => {
+      pubSubChannel = ch;
+      const msg = '{}';
+      ch.assertQueue(pubSubQueue, { durable: false });
+      // Note: on Node 6 Buffer.from(msg) should be used
+      ch.sendToQueue(pubSubQueue, Buffer.from(msg));
+      logger.info(` [x] Sent: ${msg}`);
+      resolve();
+    });
   });
-};
+});
 
-exports.sendPubSubMessage = function (payload) {
-  const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
-  payload.checksum = checksum;
+exports.sendPubSubMessage = (payload) => {
+  payload.checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
   pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));
 };
 
-exports.sendNotificationsMessage = function (payload) {
+exports.sendNotificationsMessage = (payload) => {
   notificationsChannel.sendToQueue(notificationsQueue, Buffer.from(JSON.stringify(payload)));
 };
 
 exports.initSubPubMQ = () => {
   try {
-	  let connection;
+    let connection;
     logger.info('Subscriber Started executing initRabbitMQ()');
-    amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
-      if (err) {
-        logger.error(`Subscriber failed initializing RabbitMQ, error: ${err}`);
+    amqp.connect(env.RABBITMQ_SERVER, (error, conn) => {
+      if (error) {
+        logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
         return setTimeout(exports.initSubPubMQ, 2000);
       }
+
       if (conn) {
         connection = conn;
       }
+
       connection.on('error', (err) => {
-        logger.error(`Subscriber RMQ connection errored out: ${err}`);
+        logger.error(`Subscriber RMQ connection error out: ${err}`);
         return setTimeout(exports.initSubPubMQ, 2000);
       });
+
       connection.on('close', () => {
         logger.error('Subscriber RMQ Connection closed');
         return setTimeout(exports.initSubPubMQ, 2000);
@@ -78,14 +82,15 @@ exports.initSubPubMQ = () => {
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
-        const notificationMessage;
         ch.assertQueue(pubSubQueue, { durable: false });
+
         ch.consume(pubSubQueue, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
-          notificationMessage = message.content;
-          if (msg.content !== undefined && msg.content !== '' && validatePubSubMessage(JSON.parse(msg.content))) {
+
+          if (typeof msg.content !== 'undefined' && msg.content !== '' &&
+            validatePubSubMessage(JSON.parse(msg.content))) {
             const entry = JSON.parse(msg.content);
-            const type = entry.type;
+            const { type } = entry;
             delete entry.type;
             delete entry.checksum;
             switch (type) {
@@ -94,23 +99,33 @@ exports.initSubPubMQ = () => {
                 entry.blockNumber = null;
                 entry.status = 'pending';
 
-                dbServices.dbCollections.transactions.addTx(entry)
+                dbServices.dbCollections.transactions.findOneByTxHash(entry.txHash)
+                  .then((tx) => {
+                    if (tx === null) {
+                      return dbServices.dbCollections.transactions.addTx(entry);
+                    }
+                    throw new Error('Transaction already exists');
+                  })
                   .then(() => {
                     logger.info(`Transaction inserted: ${entry.txHash}`);
-                  });
+                    ch.assertQueue(notificationsQueue, { durable: false });
+                    ch.sendToQueue(
+                      notificationsQueue,
+                      new Buffer.from(JSON.stringify(msg.content))
+                    );
+                    logger.info(`Transaction produced to: ${notificationsQueue}`);
+                  })
+                  .catch(e => logger.error(`${JSON.stringify(e)}`));
                 break;
               case 'updateTx':
                 dbServices.dbCollections.transactions.updateTx(entry)
-                  .then(() => {
-                    logger.info(`Transaction updated: ${entry.txHash}`);
-                  });
+                  .then(() => logger.info(`Transaction updated: ${entry.txHash}`));
+                break;
+              default:
                 break;
             }
           }
         }, { noAck: true });
-        if (msg.content !== undefined && msg.content !== '' && validatePubSubMessage(JSON.parse(msg.content))) {
-          ch.sendToQueue(notificationsQueue, new Buffer.from(msg));
-        }
       });
     });
   } catch (err) {
@@ -119,13 +134,4 @@ exports.initSubPubMQ = () => {
   } finally {
     logger.info('Exited initRabbitMQ()');
   }
-};
-
-exports.validatePubSubMessage = (payload) => {
-  const checksum = payload.checksum;
-  delete payload.checksum;
-  if (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum) {
-    return true;
-  }
-  return false;
 };

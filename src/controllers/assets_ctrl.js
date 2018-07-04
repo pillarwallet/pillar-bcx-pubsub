@@ -9,7 +9,7 @@ function listAll() {
         if (err) {
           logger.info(`smartContracts.listAll DB controller ERROR: ${err}`);
           reject(err);
-        }
+         }
 
         resolve(result);
       });

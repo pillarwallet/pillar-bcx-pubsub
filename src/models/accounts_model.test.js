@@ -1,4 +1,4 @@
-const dbServices = require('../subServices/dbServices.js');
+const dbServices = require('../services/dbServices.js');
 
 const url = 'mongodb://127.0.0.1:27017/PillarBCX';
 jest.mock('mongoose');

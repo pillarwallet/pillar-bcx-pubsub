@@ -88,4 +88,3 @@ exports.initSubscriptions = function () {
 };
 
 this.initIPC();
-

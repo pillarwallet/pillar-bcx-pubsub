@@ -1,54 +1,52 @@
 const logger = require('../utils/logger.js');
 const gethConnect = require('./gethConnect.js');
 
-
 function getTxInfo(txHash) {
+  let transaction = {};
   try {
-    return gethConnect.web3.eth.getTransaction(txHash);
-  }catch(e) {
-    logger.error('Invalid transaction hash: ' + txHash);
-    return;
+    transaction = gethConnect.web3.eth.getTransaction(txHash);
+  } catch (e) {
+    logger.error(`Invalid transaction hash: ${txHash}`);
   }
+  return transaction;
 }
-module.exports.getTxInfo = getTxInfo;
 
+module.exports.getTxInfo = getTxInfo;
 
 function getBlockSmartContractsAddressesArray(txHashArray, smartContractsAddressesArray, index) {
   return new Promise(((resolve, reject) => {
-    try {
-      if (index >= txHashArray.length) {
-        resolve(smartContractsAddressesArray);
-      } else {
-        gethConnect.web3.eth.getTransactionReceipt(txHashArray[index])
-          .then((txReceipt) => {
-            if (txReceipt.contractAddress != null) {
-              smartContractsAddressesArray.push(txReceipt.contractAddress);
-            }
-            resolve(getBlockSmartContractsAddressesArray(
-              txHashArray, smartContractsAddressesArray, index + 1,
-            ));
-          })
-          .catch((e) => { reject(e); });
-      }
-    } catch (e) { reject(e); }
+    if (index >= txHashArray.length) {
+      return resolve(smartContractsAddressesArray);
+    }
+
+    gethConnect.web3.eth.getTransactionReceipt(txHashArray[index])
+      .then((txReceipt) => {
+        if (txReceipt.contractAddress != null) {
+          smartContractsAddressesArray.push(txReceipt.contractAddress);
+        }
+        resolve(getBlockSmartContractsAddressesArray(
+          txHashArray,
+          smartContractsAddressesArray,
+          index + 1
+        ));
+      })
+      .catch(e => reject(e));
   }));
 }
+
 module.exports.getBlockSmartContractsAddressesArray = getBlockSmartContractsAddressesArray;
 
 function getBlockTx(blockNumber) {
   return new Promise(((resolve, reject) => {
-    try {
-      gethConnect.web3.eth.getBlock(blockNumber, true)
-        .then((result) => {
-          // logger.info(result.transactions)
-          if (result) {
-            resolve(result.transactions);
-          } else {
-            reject('bcx.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED');
-          }
-        })
-        .catch((e) => { reject(e); });
-    } catch (e) { reject(e); }
+    gethConnect.web3.eth.getBlock(blockNumber, true)
+      .then((result) => {
+        if (result) {
+          resolve(result.transactions);
+        } else {
+          reject(new Error('bcx.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED'));
+        }
+      })
+      .catch(e => reject(e));
   }));
 }
 module.exports.getBlockTx = getBlockTx;
@@ -78,14 +76,9 @@ module.exports.getTxReceipt = getTxReceipt;
 
 function getPendingTxArray() {
   return new Promise(((resolve, reject) => {
-    try {
-      gethConnect.web3.eth.getBlock('pending', true)
-        .then((result) => {
-          // logger.info(result)
-          resolve(result.transactions);
-        })
-        .catch((e) => { reject(e); });
-    } catch (e) { reject(e); }
+    gethConnect.web3.eth.getBlock('pending', true)
+      .then(result => resolve(result.transactions))
+      .catch(e => reject(e));
   }));
 }
 module.exports.getPendingTxArray = getPendingTxArray;
@@ -100,10 +93,10 @@ function getBalance(address, asset, contractAddress) {
             logger.info(`WEB3 ${asset} BALANCE = ${ETHBalance}`);
             resolve(ETHBalance);
           })
-          .catch((e) => { reject(e); });
+          .catch(e => reject(e));
       } else {
         if (!contractAddress) {
-          reject(new Error('Missing ERC20 contract address'));
+          return reject(new Error('Missing ERC20 contract address'));
         }
         const addr = (address).substring(2);
         const callData = (`0x70a08231000000000000000000000000${addr}`);

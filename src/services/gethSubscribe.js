@@ -9,68 +9,57 @@ const processTx = require('./processTx.js');
 const dbServices = require('./dbServices.js');
 const hashMaps = require('../utils/hashMaps.js');
 
-
 function subscribePendingTx() {
   const subscribePromise = new Promise(((resolve, reject) => {
-    try {
-      gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
-      /*  if(!err) {
-          logger.info('Subscribing to pending transactions from ethereum node.');
-        } else {
-          logger.info('Subscription of pending transactions from ethereum node failed: ' + err);
+    gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => { })
+      .on('data', (txHash) => {
+        if ((txHash !== null) && (txHash !== '')) {
+          bcx.getTxInfo(txHash)
+            .then((txInfo) => {
+              if (txInfo != null) {
+                processTx.newPendingTx(txInfo);
+              }
+            })
+            .catch(e => reject(e));
         }
       })
-      */
-        .on('data', (txHash) => {
-          if ((txHash !== null) && (txHash !== '')) {
-            bcx.getTxInfo(txHash)
-              .then((txInfo) => {
-                if (txInfo != null) {
-                  processTx.newPendingTx(txInfo);
-                }
-              })
-              .catch((e) => { reject(e); });
-          }
-        })
-        .on('endSubscribePendingTx', () => { // Used for testing only
-          logger.info('END PENDING TX SUBSCRIBTION\n');
-          resolve();
-        });
-      logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
-    } catch (e) { reject(e); }
+      .on('endSubscribePendingTx', () => { // Used for testing only
+        logger.info('END PENDING TX SUBSCRIBTION\n');
+        resolve();
+      });
+    logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
   }));
   return (subscribePromise);
 }
+
 module.exports.subscribePendingTx = subscribePendingTx;
 
 function subscribeBlockHeaders() {
   const subscribePromise = new Promise((resolve, reject) => {
-    try {
-      gethConnect.web3.eth.subscribe('newBlockHeaders', (err, res) => {})
-        .on('data', (blockHeader) => {
-          if (blockHeader && blockHeader.number && blockHeader.hash) {
-            logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
-            // Check for pending tx in database and update their status
-            processTx.checkPendingTx(hashMaps.pendingTx.keys(), blockHeader.number)
-              .then(() => {
-                dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
-                  .then(() => {
-                    // logger.info(colors.green.bold('Highest Block Number for Tx History: '+blockHeader.number+'\n'))
-                  })
-                  .catch((e) => { reject(e); });
-              })
-              .catch((e) => { reject(e); });
-          }
-        })
-        .on('endSubscribeBlockHeaders', () => { // Used for testing only
-          logger.info('END BLOCK HEADERS SUBSCRIBTION\n');
-          resolve();
-        });
-      logger.info(colors.green.bold('Subscribed to Block Headers\n'));
-    } catch (e) { reject(e); }
+    gethConnect.web3.eth.subscribe('newBlockHeaders', (err, res) => { })
+      .on('data', (blockHeader) => {
+        if (blockHeader && blockHeader.number && blockHeader.hash) {
+          logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
+          // Check for pending tx in database and update their status
+          processTx.checkPendingTx(hashMaps.pendingTx.keys(), blockHeader.number)
+            .then(() => dbServices.dbCollections.transactions
+              .updateTxHistoryHeight(blockHeader.number))
+            .then(() => {
+              // logger.info(colors.green.bold('Highest Block Number
+              // or Tx History: '+blockHeader.number+'\n'))
+            })
+            .catch(e => reject(e));
+        }
+      })
+      .on('endSubscribeBlockHeaders', () => { // Used for testing only
+        logger.info('END BLOCK HEADERS SUBSCRIBTION\n');
+        resolve();
+      });
+    logger.info(colors.green.bold('Subscribed to Block Headers\n'));
   });
   return (subscribePromise);
 }
+
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
 
@@ -81,8 +70,11 @@ function subscribeAllDBERC20SmartContracts() {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });
     logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
-  } catch (e) { logger.info(e); }
+  } catch (e) {
+    logger.info(e);
+  }
 }
+
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
 
 function subscribeERC20SmartContract(ERC20SmartContract) {
@@ -98,7 +90,9 @@ function subscribeERC20SmartContract(ERC20SmartContract) {
         }
       });
     }
-  } catch (e) { logger.info(e); }
+  } catch (e) {
+    logger.info(e);
+  }
 }
-module.exports.subscribeERC20SmartContract = subscribeERC20SmartContract;
 
+module.exports.subscribeERC20SmartContract = subscribeERC20SmartContract;

@@ -1,6 +1,5 @@
 const Mongoose = require('../services/dbServices').mongoose;
 
-
 // NEW DB SCHEMA
 const accountsSchema = Mongoose.Schema({
   pillarId: { type: String, required: true },
