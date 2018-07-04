@@ -95,7 +95,7 @@ exports.launch = function () {
         dbServices.contractsToMonitor('')
           .then((assets) => {
             logger.info(assets.length + ' assets identified to be monitored');
-            exports.pubs[exports.index].send({ type: 'assets', message: assets});
+            exports.pubs[exports.index-1].send({ type: 'assets', message: assets});
           });
       }
       if (data.type === 'wallet.request') {
@@ -143,7 +143,7 @@ exports.launch = function () {
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
     });
-    
+
     exports.index++;
   } catch (err) {
     // throw err;

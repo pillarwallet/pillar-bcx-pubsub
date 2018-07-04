@@ -89,15 +89,21 @@ module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContr
 function subscribeERC20SmartContract(ERC20SmartContract) {
   try {
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
-      const ERC20SmartContractObject =
-        new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
-      ERC20SmartContractObject.events.Transfer((error, result) => {
-        if (!error) {
-          processTx.checkTokenTransferEvent(result, ERC20SmartContract);
-        } else {
-          logger.error(error);
-        }
-      });
+      if (gethConnect.web3) {
+        const ERC20SmartContractObject =
+          new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
+        ERC20SmartContractObject.events.Transfer((error, result) => {
+          if (!error) {
+            processTx.checkTokenTransferEvent(result, ERC20SmartContract);
+          } else {
+            logger.error(error);
+          }
+        });
+      } else {
+        setTimeout(() => {
+          exports.subscribeERC20SmartContract(ERC20SmartContract);
+        }, 1000);
+      }
     }
   } catch (e) {
     logger.error('gethSubscribe.subscribeERC20SmartContract() failed: ' + e);
