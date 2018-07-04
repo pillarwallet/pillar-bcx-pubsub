@@ -26,6 +26,7 @@ process.on('message', (data) => {
     // add the new asset to the assets hashmap
     logger.info(`Publisher received notification to monitor a new asset: ${message.contractAddress.toLowerCase()}`);
     hashMaps.assets.set(message.contractAddress.toLowerCase(), message);
+    gethSubscribe.subscribeERC20SmartContract(message.contractAddress.toLowerCase());
   }
 });
 
@@ -80,7 +81,6 @@ exports.initSubscriptions = function () {
           /* SUBSCRIBE TO GETH NODE EVENTS */
           gethSubscribe.subscribePendingTx();
           gethSubscribe.subscribeBlockHeaders();
-          gethSubscribe.subscribeAllDBERC20SmartContracts();
         })
         .catch((e) => { logger.error(e); });
     })

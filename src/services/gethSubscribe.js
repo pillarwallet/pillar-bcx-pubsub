@@ -31,8 +31,8 @@ function subscribePendingTx() {
         });
       logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
     } catch (e) {
-      logger.error('gethSubscribe.subscribePendingTx() failed: ' + e); 
-      reject(e); 
+      logger.error('gethSubscribe.subscribePendingTx() failed: ' + e);
+      reject(e);
     }
   }));
   return (subscribePromise);
@@ -64,8 +64,8 @@ function subscribeBlockHeaders() {
         });
       logger.info(colors.green.bold('Subscribed to Block Headers\n'));
     } catch (e) {
-      logger.error('gethSubscribe.subscribeBlockHeaders() failed: ' + e); 
-      reject(e); 
+      logger.error('gethSubscribe.subscribeBlockHeaders() failed: ' + e);
+      reject(e);
     }
   });
   return (subscribePromise);
@@ -75,13 +75,13 @@ module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
 function subscribeAllDBERC20SmartContracts() {
   try {
-    const smartContractsArray = assets.values();
+    const smartContractsArray = hashMaps.assets.values();
     smartContractsArray.forEach((ERC20SmartContract) => {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });
     logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
-  } catch (e) { 
-    logger.error('gethSubscribe.subscribeAllDBERC20SmartContracts() failed: ' + e); 
+  } catch (e) {
+    logger.error('gethSubscribe.subscribeAllDBERC20SmartContracts() failed: ' + e);
   }
 }
 module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContracts;
@@ -99,8 +99,8 @@ function subscribeERC20SmartContract(ERC20SmartContract) {
         }
       });
     }
-  } catch (e) { 
-    logger.error('gethSubscribe.subscribeERC20SmartContract() failed: ' + e); 
+  } catch (e) {
+    logger.error('gethSubscribe.subscribeERC20SmartContract() failed: ' + e);
   }
 }
 module.exports.subscribeERC20SmartContract = subscribeERC20SmartContract;
