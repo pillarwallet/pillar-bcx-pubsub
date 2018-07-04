@@ -24,9 +24,11 @@ process.on('message', (data) => {
     }
   } else if (data.type === 'assets') {
     // add the new asset to the assets hashmap
-    logger.info(`Publisher received notification to monitor a new asset: ${message.contractAddress.toLowerCase()}`);
-    hashMaps.assets.set(message.contractAddress.toLowerCase(), message);
-    gethSubscribe.subscribeERC20SmartContract(message.contractAddress.toLowerCase());
+    for(let i = 0; i < message.length; i++) {
+      const obj = message[i];
+      logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`);
+      hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
+    }
   }
 });
 
