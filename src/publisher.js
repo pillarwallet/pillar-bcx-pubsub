@@ -38,10 +38,9 @@ exports.initIPC = function () {
 
     logger.info('Publisher requesting master a list of assets to monitor');
 
-    process.send({
-      type: 'assets.request',
-      message: '',
-    });
+    if(hashMaps.assets.count() < 1) {
+      logger.info('Publisher.initIPC(): no assets available yet, waiting for message from master.');
+    }
 
     logger.info('Publisher initializing the RMQ');
     setTimeout(() => {

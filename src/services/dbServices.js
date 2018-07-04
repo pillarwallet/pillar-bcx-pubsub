@@ -88,7 +88,7 @@ function recentAccounts(
 		          logger.info('Total accounts found to monitor: ' + ethAddressesArray.length);
               if(ethAddressesArray.length > 0) {
                 logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
-                logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
+                //logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
               } else {
                 logger.info(colors.cyan.bold.underline('NO ACCOUNTS IN DATABASE\n'));
               }
@@ -119,12 +119,19 @@ function contractsToMonitor(
         // fetch accounts registered after a given Id
         dbCollections.assets.listRecent(idFrom)
           .then((assetsArray) => {
-            resolve(assetsArray);
+            if(assetsArray.length > 0) {
+              logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
+            } else {
+              logger.info('dbServices.contractsToMonitor(): No assets available for monitoring');
+            }
+              resolve(assetsArray);
           })
           .catch((e) => { reject(e); });
       } else {
+        logger.info('dbServices.contractsToMonitor(): Fetching all assets from the database.')
         dbCollections.assets.listAll()
           .then((assetsArray) => {
+            logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
             resolve(assetsArray);
           })
           .catch((e) => { reject(e); });
