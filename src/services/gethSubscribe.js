@@ -11,25 +11,28 @@ const hashMaps = require('../utils/hashMaps.js');
 
 
 function subscribePendingTx() {
+  logger.info('Publisher subscribing to pending transactions.');
   const subscribePromise = new Promise(((resolve, reject) => {
     try {
-      gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
-        .on('data', (txHash) => {
-          if ((txHash !== null) && (txHash !== '')) {
-            bcx.getTxInfo(txHash)
-              .then((txInfo) => {
-                if (txInfo != null) {
-                  processTx.newPendingTx(txInfo);
-                }
-              })
-              .catch((e) => { reject(e); });
-          }
-        })
-        .on('endSubscribePendingTx', () => { // Used for testing only
-          logger.info('END PENDING TX SUBSCRIBTION\n');
-          resolve();
-        });
-      logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
+      gethConnect.gethConnectDisplay().then(function() {
+        gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
+          .on('data', (txHash) => {
+            if ((txHash !== null) && (txHash !== '')) {
+              bcx.getTxInfo(txHash)
+                .then((txInfo) => {
+                  if (txInfo != null) {
+                    processTx.newPendingTx(txInfo);
+                  }
+                })
+                .catch((e) => { reject(e); });
+            }
+          })
+          .on('endSubscribePendingTx', () => { // Used for testing only
+            logger.info('END PENDING TX SUBSCRIBTION\n');
+            resolve();
+          });
+        logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
+     });
     } catch (e) {
       logger.error('gethSubscribe.subscribePendingTx() failed: ' + e);
       reject(e);
@@ -40,6 +43,7 @@ function subscribePendingTx() {
 module.exports.subscribePendingTx = subscribePendingTx;
 
 function subscribeBlockHeaders() {
+  logger.info('Publisher subscribing to block headers.');
   const subscribePromise = new Promise((resolve, reject) => {
     try {
       gethConnect.web3.eth.subscribe('newBlockHeaders', (err, res) => {})
@@ -75,6 +79,7 @@ module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
 function subscribeAllDBERC20SmartContracts() {
   try {
+    logger.info('Publisher subscribing to ERC20 events.');
     const smartContractsArray = hashMaps.assets.values();
     smartContractsArray.forEach((ERC20SmartContract) => {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
@@ -88,6 +93,7 @@ module.exports.subscribeAllDBERC20SmartContracts = subscribeAllDBERC20SmartContr
 
 function subscribeERC20SmartContract(ERC20SmartContract) {
   try {
+    logger.info('gethSubscribe.subscribeERC20SmartContract() subscribed to events for contract: ' + ERC20SmartContract.contractAddress);
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
       const ERC20SmartContractObject =
         new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
@@ -95,7 +101,7 @@ function subscribeERC20SmartContract(ERC20SmartContract) {
         if (!error) {
           processTx.checkTokenTransferEvent(result, ERC20SmartContract);
         } else {
-          logger.error(error);
+          logger.error('gethSubscribe.subscribeERC20SmartContract() failed: ' + error);
         }
       });
     }

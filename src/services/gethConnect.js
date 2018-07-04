@@ -9,6 +9,7 @@ let web3;
 
 
 function gethConnectDisplay() {
+  logger.info('Connecting to geth node');
   return new Promise(((resolve, reject) => {
     module.exports.setWeb3WebsocketConnection()
       .then(() => {
@@ -37,6 +38,7 @@ function setWeb3WebsocketConnection() {
     try {
       web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
       module.exports.web3 = web3;
+      logger.info('Successfully established connection to ' + gethURL + ' websocket');
       resolve();
     } catch (e) {
       logger.error(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));

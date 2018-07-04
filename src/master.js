@@ -52,7 +52,7 @@ exports.init = function (options) {
   }
 };
 
-exports.launch = async function () {
+exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
 
@@ -61,15 +61,7 @@ exports.launch = async function () {
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
     fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
-
-    //send list of assets to publisher
-    logger.info('Master Sending list of assets to monitor to each publisher');
-
-    await dbServices.contractsToMonitor('').then((assets) => {
-      logger.info(assets.length + ' assets identified to be monitored');
-      exports.pubs[exports.index].send({ type: 'assets', message: assets});
-    });
-    
+  
     // handle events associated with the housekeeper child process.
     exports.housekeeper.on('message', (data) => {
       logger.info(`Housekeeper has sent a message: ${data}`);
@@ -93,6 +85,15 @@ exports.launch = async function () {
       try {
         logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
 
+        if(data.type === 'assets.request') {
+          //send list of assets to publisher
+          logger.info('Master Sending list of assets to monitor to each publisher');
+
+          dbServices.contractsToMonitor('').then((assets) => {
+            logger.info(assets.length + ' assets identified to be monitored');
+            exports.pubs[exports.index - 1].send({ type: 'assets', message: assets});
+          });
+        }
         if (data.type === 'wallet.request') {
           logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${exports.index}`);
           exports.notify(data.message, exports.pubs[exports.index - 1]);
@@ -166,7 +167,7 @@ exports.notify = function (idFrom, socket) {
           for (let j = 0; j < theWallet.addresses.length; j++) {
 	          var theAddress = theWallet.addresses[j];
             if (theAddress.protocol.trim() === protocol) {
-              logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallet.addresses[j].address + '/pillarId: ' + theWallet.pillarId);
+              //logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallet.addresses[j].address + '/pillarId: ' + theWallet.pillarId);
               message.push({ id: theWallet._id, walletId: theWallet.addresses[j].address, pillarId: theWallet.pillarId });
             } else {
 		          logger.debug('Protocol doesnt match, ignoring,....');

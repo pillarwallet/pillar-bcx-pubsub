@@ -136,6 +136,12 @@ function contractsToMonitor(
           })
           .catch((e) => { reject(e); });
       }
+    } else {
+      module.exports.dbConnect($arg)
+        .then(() => {
+          resolve(module.exports.contractsToMonitor());
+        })
+        .catch((e) => { reject(e); });
     }
   }));
 }
