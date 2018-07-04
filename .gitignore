@@ -7,5 +7,4 @@
 /.npmrc
 /bin/logs
 /package-lock.json
-/src/logs
-/cache
+
