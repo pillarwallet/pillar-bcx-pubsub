@@ -49,9 +49,21 @@ exports.sendPubSubMessage = function (payload) {
   pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));
 };
 
+function getNotificationPayload(payload) {
+  const p = {
+    type: 'transactionEvent',
+    meta: {
+      recipientWalletId: payload.pillarId
+    },
+    payload
+  };
+  logger.info(JSON.stringify(p));
+  return p;
+}
+
 exports.initSubPubMQ = () => {
   try {
-	  let connection;
+    let connection;
     logger.info('Subscriber Started executing initRabbitMQ()');
     amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
       if (err) {
@@ -101,7 +113,7 @@ exports.initSubPubMQ = () => {
                     ch.assertQueue(notificationsQueue, { durable: false });
                     ch.sendToQueue(
                       notificationsQueue,
-                      new Buffer.from(JSON.stringify(msg.content))
+                      new Buffer.from(JSON.stringify(getNotificationPayload(entry)))
                     );
                     logger.info(`newTx: Transaction produced to: ${notificationsQueue}`);
                   })
@@ -114,7 +126,7 @@ exports.initSubPubMQ = () => {
                     ch.assertQueue(notificationsQueue, { durable: false });
                     ch.sendToQueue(
                       notificationsQueue,
-                      new Buffer.from(JSON.stringify(msg.content))
+                      new Buffer.from(JSON.stringify(getNotificationPayload(entry)))
                     );
                     logger.info(`updateTx: Transaction produced to: ${notificationsQueue}`);
                   });
