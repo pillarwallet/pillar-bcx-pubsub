@@ -91,6 +91,20 @@ function findByTxHash(txHash) {
 }
 module.exports.findByTxHash = findByTxHash;
 
+function findOneByTxHash(txHash) {
+  return new Promise((resolve, reject) => {
+    transactions.Transactions.findOne({ txHash }, (err, result) => {
+      if (err) {
+        logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
+        reject(err);
+      }
+      logger.info(`transactions.findByTxHash DB controller: ${result}`);
+      resolve(result);
+    });
+  });
+}
+
+module.exports.findOneByTxHash = findOneByTxHash;
 function addTx(txObject) {
   return new Promise((resolve, reject) => {
     try {

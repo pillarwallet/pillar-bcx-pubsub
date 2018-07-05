@@ -10,12 +10,11 @@ require('dotenv').config();
 
 const checksumKey = process.env.CHECKSUM_KEY;
 
-
 let pubSubChannel;
 const pubSubQueue = 'bcx-pubsub';
 
-let notificationsChannel;
-const notificationsQueue = 'bcx-notifications';
+const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
+  process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 
 const CWBURL = process.env.CWB_URL;
 
@@ -78,7 +77,8 @@ exports.initSubPubMQ = () => {
         ch.assertQueue(q, { durable: false });
         ch.consume(q, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
-          if (msg.content !== undefined && msg.content !== '') {
+          if (typeof msg.content !== 'undefined' && msg.content !== '' &&
+            exports.validatePubSubMessage(JSON.parse(msg.content))) {
             const entry = JSON.parse(msg.content);
             const type = entry.type;
             delete entry.type;
@@ -89,16 +89,37 @@ exports.initSubPubMQ = () => {
                 entry.blockNumber = null;
                 entry.status = 'pending';
 
-                dbServices.dbCollections.transactions.addTx(entry)
+                dbServices.dbCollections.transactions.findOneByTxHash(entry.txHash)
+                  .then((tx) => {
+                    if (tx === null) {
+                      return dbServices.dbCollections.transactions.addTx(entry);
+                    }
+                    throw new Error('Transaction already exists');
+                  })
                   .then(() => {
                     logger.info(`Transaction inserted: ${entry.txHash}`);
-                  });
+                    ch.assertQueue(notificationsQueue, { durable: false });
+                    ch.sendToQueue(
+                      notificationsQueue,
+                      new Buffer.from(JSON.stringify(msg.content))
+                    );
+                    logger.info(`Transaction produced to: ${notificationsQueue}`);
+                  })
+                  .catch(e => logger.error(`${JSON.stringify(e)}`));
                 break;
               case 'updateTx':
                 dbServices.dbCollections.transactions.updateTx(entry)
                   .then(() => {
                     logger.info(`Transaction updated: ${entry.txHash}`);
+                    ch.assertQueue(notificationsQueue, { durable: false });
+                    ch.sendToQueue(
+                      notificationsQueue,
+                      new Buffer.from(JSON.stringify(msg.content))
+                    );
+                    logger.info(`Transaction produced to: ${notificationsQueue}`);
                   });
+                break;
+              default:
                 break;
             }
           }
