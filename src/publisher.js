@@ -13,7 +13,7 @@ const hashMaps = require('./utils/hashMaps.js');
 let latestId = '';
 
 process.on('message', (data) => {
-  logger.info('Publisher has received message from master........');
+  logger.info('Publisher has received message from master: ' + data.type);
   const message = data.message;
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
@@ -23,29 +23,31 @@ process.on('message', (data) => {
       latestId = obj.id;
     }
   } else if (data.type === 'assets') {
+    logger.info('Publisher initializing assets.');
     // add the new asset to the assets hashmap
-    logger.info(`Publisher received notification to monitor a new asset: ${message.contractAddress.toLowerCase()}`);
-    hashMaps.assets.set(message.contractAddress.toLowerCase(), message);
+    for(let i = 0; i < message.length; i++) {
+      const obj = message[i];
+      logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`);
+      hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
+    }
+    exports.initSubscriptions();
   }
 });
 
 exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
-
     logger.info('Publisher requesting master a list of assets to monitor');
-
-    process.send({
-      type: 'assets.request',
-      message: '',
-    });
+    process.send({type: 'assets.request'});
 
     logger.info('Publisher initializing the RMQ');
     setTimeout(() => {
-      logger.info('Initializing RMQ.');
+      logger.info('Publisher Initializing RMQ.');
       rmqServices.initPubSubMQ()
         .then(() => {
-          exports.initSubscriptions();
+          if(hashMaps.assets.count() > 0) {
+            exports.initSubscriptions();
+          }
         });
     }, 100);
 
@@ -63,26 +65,22 @@ exports.initIPC = function () {
 
 exports.poll = function () {
   // logger.info('Requesting new wallet :');
-  process.send({
-    type: 'wallet.request',
-    message: latestId,
-  });
+  if(hashMaps.assets.count() == 0) {
+    process.send({type: 'assets.request'});
+  }
+  //request new wallets
+  process.send({type: 'wallet.request', message: latestId});
 };
 
-
 exports.initSubscriptions = function () {
+  logger.info('Publisher subscribing to geth websocket events...');
   /* CONNECT TO GETH NODE */
   gethConnect.gethConnectDisplay()
     .then(() => {
-      /* CONNECT TO DATABASE --> NEED TO REPLACE THIS WITH HASHTABLE */
-      dbServices.dbConnectDisplayAccounts()
-        .then(() => {
-          /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx();
-          gethSubscribe.subscribeBlockHeaders();
-          gethSubscribe.subscribeAllDBERC20SmartContracts();
-        })
-        .catch((e) => { logger.error(e); });
+      /* SUBSCRIBE TO GETH NODE EVENTS */
+      gethSubscribe.subscribePendingTx();
+      gethSubscribe.subscribeBlockHeaders();
+      gethSubscribe.subscribeAllDBERC20SmartContracts();
     })
     .catch((e) => { logger.error(e); });
 };

@@ -50,22 +50,6 @@ function dbConnectDisplayAccounts($arg = { useMongoClient: true }) {
             .then((accountsArray) => {
               dbCollections.assets.listAll()
                 .then((assetsArray) => {
-                  /*
-                  logger.info(colors.cyan.bold.underline('MONITORED ACCOUNTS:\n'));
-                  let i = 0;
-                  accountsArray.forEach((item) => {
-                    logger.info(colors.cyan(`ACCOUNT # ${i}:PUBLIC ADDRESS = ${item.addresses[0].address}\n`));
-                    i += 1;
-                  });
-                  logger.info(colors.cyan.bold.underline('MONITORED SMART CONTRACTS:\n'));
-                  i = 0; 
-                  assetsArray.forEach((item) => {
-                    if (item.contractAddress !== 'contractAddress') {
-                      logger.info(colors.cyan(`SMART CONTRACT # ${i}\n${item.name} : SYMBOL = ${item.symbol}    ADDRESS = ${item.contractAddress}\n`));
-                    }
-                    i += 1;
-                  });
-                  */
                   resolve();
                 })
                 .catch((e) => { reject(e); });
@@ -92,14 +76,6 @@ function recentAccounts(
             .then((ethAddressesArray) => {
               if(ethAddressesArray.length > 0) {
                 logger.info(colors.cyan.bold.underline(`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:\n`));
-                /*
-                let i = 0;
-                // console.log(JSON.stringify(ethAddressesArray));
-                ethAddressesArray.forEach((item) => {
-                  logger.info(colors.cyan(`ACCOUNT # ${i}:\n PUBLIC ADDRESS = ${JSON.stringify(item.addresses)}\n`));
-                  i += 1;
-                });
-                */
               } else {
                 logger.info(colors.cyan.bold.underline('NO NEW ACCOUNTS:\n'));
               }
@@ -109,10 +85,10 @@ function recentAccounts(
         } else {
           dbCollections.accounts.listAll()
             .then((ethAddressesArray) => {
-		logger.info('Total accounts found to monitor: ' + ethAddressesArray.length);
+		          logger.info('Total accounts found to monitor: ' + ethAddressesArray.length);
               if(ethAddressesArray.length > 0) {
                 logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
-                logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
+                //logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
               } else {
                 logger.info(colors.cyan.bold.underline('NO ACCOUNTS IN DATABASE\n'));
               }
@@ -143,16 +119,29 @@ function contractsToMonitor(
         // fetch accounts registered after a given Id
         dbCollections.assets.listRecent(idFrom)
           .then((assetsArray) => {
-            resolve(assetsArray);
+            if(assetsArray.length > 0) {
+              logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
+            } else {
+              logger.info('dbServices.contractsToMonitor(): No assets available for monitoring');
+            }
+              resolve(assetsArray);
           })
           .catch((e) => { reject(e); });
       } else {
+        logger.info('dbServices.contractsToMonitor(): Fetching all assets from the database.')
         dbCollections.assets.listAll()
           .then((assetsArray) => {
+            logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
             resolve(assetsArray);
           })
           .catch((e) => { reject(e); });
       }
+    } else {
+      module.exports.dbConnect($arg)
+        .then(() => {
+          resolve(module.exports.contractsToMonitor());
+        })
+        .catch((e) => { reject(e); });
     }
   }));
 }

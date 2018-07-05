@@ -891,4 +891,3 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   }));
 }
 module.exports.checkTokenTransferEvent = checkTokenTransferEvent;
-

@@ -31,7 +31,7 @@ const transactionsSchema = Mongoose.Schema({
   nbConfirmations: Number,
 });
 */
-transactionsSchema.index({ to: 1, from: 1 });
+transactionsSchema.index({ txHash: 1, toAddress: 1, fromAddress: 1 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
 

@@ -9,6 +9,7 @@ let web3;
 
 
 function gethConnectDisplay() {
+  logger.info('Connecting to geth node');
   return new Promise(((resolve, reject) => {
     module.exports.setWeb3WebsocketConnection()
       .then(() => {
@@ -18,13 +19,16 @@ function gethConnectDisplay() {
               logger.info(colors.green.bold(`Established connection with local Ethereum node!\nCurrent Block number :${result}\n`));
               resolve();
             } else {
-              logger.info(colors.red.bold('Failed to establish connection with local Ethereum node :(\n'));
+              logger.error(colors.red.bold('Failed to establish connection with local Ethereum node :(\n'));
               reject();
             }
           })
           .catch((e) => { reject(e); });
       })
-      .catch((e) => { reject(e); });
+      .catch((e) => { 
+        logger.error('gethConnect.gethConnectDisplay() failed: ' + e);
+        reject(e); 
+      });
   }));
 }
 module.exports.gethConnectDisplay = gethConnectDisplay;
@@ -34,9 +38,10 @@ function setWeb3WebsocketConnection() {
     try {
       web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
       module.exports.web3 = web3;
+      logger.info('Successfully established connection to ' + gethURL + ' websocket');
       resolve();
     } catch (e) {
-      logger.info(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));
+      logger.error(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));
       reject(e);
     }
   }));
