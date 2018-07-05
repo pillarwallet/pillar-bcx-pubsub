@@ -29,7 +29,7 @@ exports.initPubSubMQ = function () {
           ch.assertQueue(pubSubQueue, { durable: false });
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(pubSubQueue, Buffer.from(msg));
-          console.log(' [x] Sent %s', msg);
+          logger.info(` [x] Sent ${msg}`);
           resolve();
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
@@ -94,16 +94,16 @@ exports.initSubPubMQ = () => {
                     if (tx === null) {
                       return dbServices.dbCollections.transactions.addTx(entry);
                     }
-                    throw new Error('Transaction already exists');
+                    throw new Error('newTx: Transaction already exists');
                   })
                   .then(() => {
-                    logger.info(`Transaction inserted: ${entry.txHash}`);
+                    logger.info(`newTx: Transaction inserted: ${entry.txHash}`);
                     ch.assertQueue(notificationsQueue, { durable: false });
                     ch.sendToQueue(
                       notificationsQueue,
                       new Buffer.from(JSON.stringify(msg.content))
                     );
-                    logger.info(`Transaction produced to: ${notificationsQueue}`);
+                    logger.info(`newTx: Transaction produced to: ${notificationsQueue}`);
                   })
                   .catch(e => logger.error(`${JSON.stringify(e)}`));
                 break;
@@ -116,7 +116,7 @@ exports.initSubPubMQ = () => {
                       notificationsQueue,
                       new Buffer.from(JSON.stringify(msg.content))
                     );
-                    logger.info(`Transaction produced to: ${notificationsQueue}`);
+                    logger.info(`updateTx: Transaction produced to: ${notificationsQueue}`);
                   });
                 break;
               default:
