@@ -26,7 +26,7 @@ exports.initPubSubMQ = function () {
         conn.createChannel((err, ch) => {
           pubSubChannel = ch;
           const msg = '{}';
-          ch.assertQueue(pubSubQueue, { durable: false });
+          ch.assertQueue(pubSubQueue, { durable: true });
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(pubSubQueue, Buffer.from(msg));
           logger.info(` [x] Sent ${msg}`);
@@ -85,9 +85,8 @@ exports.initSubPubMQ = () => {
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
-        const q = 'bcx-pubsub';
-        ch.assertQueue(q, { durable: false });
-        ch.consume(q, (msg) => {
+        ch.assertQueue(pubSubQueue, { durable: true });
+        ch.consume(pubSubQueue, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
           if (typeof msg.content !== 'undefined' && msg.content !== '' &&
             exports.validatePubSubMessage(JSON.parse(msg.content))) {
@@ -110,7 +109,7 @@ exports.initSubPubMQ = () => {
                   })
                   .then(() => {
                     logger.info(`newTx: Transaction inserted: ${entry.txHash}`);
-                    ch.assertQueue(notificationsQueue, { durable: false });
+                    ch.assertQueue(notificationsQueue, { durable: true });
                     ch.sendToQueue(
                       notificationsQueue,
                       new Buffer.from(JSON.stringify(getNotificationPayload(entry)))
@@ -123,7 +122,7 @@ exports.initSubPubMQ = () => {
                 dbServices.dbCollections.transactions.updateTx(entry)
                   .then(() => {
                     logger.info(`Transaction updated: ${entry.txHash}`);
-                    ch.assertQueue(notificationsQueue, { durable: false });
+                    ch.assertQueue(notificationsQueue, { durable: true });
                     ch.sendToQueue(
                       notificationsQueue,
                       new Buffer.from(JSON.stringify(getNotificationPayload(entry)))
