@@ -1,9 +1,9 @@
 require('dotenv').config();
 const amqp = require('amqplib/callback_api');
+const moment = require('moment');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
-
 
 const SHA256 = new jsHashes.SHA256();
 require('dotenv').config();
@@ -17,6 +17,9 @@ const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 
 const CWBURL = process.env.CWB_URL;
+const TX_MAP = {};
+
+moment.locale('en_GB');
 
 exports.initPubSubMQ = function () {
   return new Promise((resolve, reject) => {
@@ -61,13 +64,26 @@ function getNotificationPayload(payload) {
   return p;
 }
 
+function resetTxMap() {
+  for (const x in TX_MAP) {
+    logger.info(`resetTxMap Loop: ${x}`);
+    const timestamp = moment().diff(TX_MAP[x].timestamp, 'minutes');
+    logger.info(`resetTxMap Loop Timestamp: ${timestamp}`);
+
+    if (timestamp >= 3) {
+      delete TX_MAP[x];
+      logger.info(`resetTxMap delete: ${x}`);
+    }
+  }
+}
+
 exports.initSubPubMQ = () => {
   try {
     let connection;
     logger.info('Subscriber Started executing initRabbitMQ()');
-    amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
-      if (err) {
-        logger.error(`Subscriber failed initializing RabbitMQ, error: ${err}`);
+    amqp.connect(process.env.RABBITMQ_SERVER, (error, conn) => {
+      if (error) {
+        logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
         return setTimeout(exports.initSubPubMQ, 2000);
       }
       if (conn) {
@@ -92,16 +108,26 @@ exports.initSubPubMQ = () => {
           if (typeof msg.content !== 'undefined' && msg.content !== '' &&
             exports.validatePubSubMessage(JSON.parse(msg.content))) {
             const entry = JSON.parse(msg.content);
-            const type = entry.type;
+            const { type, txHash } = entry;
             delete entry.type;
             delete entry.checksum;
             switch (type) {
               case 'newTx':
+                // Removes all txn hash's after 3 minutes.
+                resetTxMap();
+
+                // Added to stop duplicate transactions.
+                if (txHash in TX_MAP) {
+                  break;
+                } else {
+                  TX_MAP[txHash] = { timestamp: moment() };
+                }
+
                 entry.gasUsed = null;
                 entry.blockNumber = null;
                 entry.status = 'pending';
 
-                dbServices.dbCollections.transactions.findOneByTxHash(entry.txHash)
+                dbServices.dbCollections.transactions.findOneByTxHash(txHash)
                   .then((tx) => {
                     if (tx === null) {
                       return dbServices.dbCollections.transactions.addTx(entry);
@@ -109,7 +135,7 @@ exports.initSubPubMQ = () => {
                     throw new Error('newTx: Transaction already exists');
                   })
                   .then(() => {
-                    logger.info(`newTx: Transaction inserted: ${entry.txHash}`);
+                    logger.info(`newTx: Transaction inserted: ${txHash}`);
                     ch.assertQueue(notificationsQueue, { durable: false });
                     ch.sendToQueue(
                       notificationsQueue,
@@ -122,7 +148,7 @@ exports.initSubPubMQ = () => {
               case 'updateTx':
                 dbServices.dbCollections.transactions.updateTx(entry)
                   .then(() => {
-                    logger.info(`Transaction updated: ${entry.txHash}`);
+                    logger.info(`Transaction updated: ${txHash}`);
                     ch.assertQueue(notificationsQueue, { durable: false });
                     ch.sendToQueue(
                       notificationsQueue,
