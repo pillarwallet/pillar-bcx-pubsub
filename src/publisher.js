@@ -13,8 +13,9 @@ const hashMaps = require('./utils/hashMaps.js');
 let latestId = '';
 
 process.on('message', (data) => {
-  logger.info('Publisher has received message from master: ' + data.type);
-  const message = data.message;
+  logger.info(`Publisher has received message from master: ${data.type}`);
+  const { message } = data;
+
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
@@ -25,7 +26,7 @@ process.on('message', (data) => {
   } else if (data.type === 'assets') {
     logger.info('Publisher initializing assets.');
     // add the new asset to the assets hashmap
-    for(let i = 0; i < message.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       const obj = message[i];
       logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`);
       hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
@@ -38,14 +39,14 @@ exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
     logger.info('Publisher requesting master a list of assets to monitor');
-    process.send({type: 'assets.request'});
+    process.send({ type: 'assets.request' });
 
     logger.info('Publisher initializing the RMQ');
     setTimeout(() => {
       logger.info('Publisher Initializing RMQ.');
       rmqServices.initPubSubMQ()
         .then(() => {
-          if(hashMaps.assets.count() > 0) {
+          if (hashMaps.assets.count() > 0) {
             exports.initSubscriptions();
           }
         });
@@ -65,11 +66,11 @@ exports.initIPC = function () {
 
 exports.poll = function () {
   // logger.info('Requesting new wallet :');
-  if(hashMaps.assets.count() == 0) {
-    process.send({type: 'assets.request'});
+  if (hashMaps.assets.count() === 0) {
+    process.send({ type: 'assets.request' });
   }
-  //request new wallets
-  process.send({type: 'wallet.request', message: latestId});
+  // request new wallets
+  process.send({ type: 'wallet.request', message: latestId });
 };
 
 exports.initSubscriptions = function () {
@@ -82,7 +83,9 @@ exports.initSubscriptions = function () {
       gethSubscribe.subscribeBlockHeaders();
       gethSubscribe.subscribeAllDBERC20SmartContracts();
     })
-    .catch((e) => { logger.error(e); });
+    .catch((e) => {
+      logger.error(e);
+    });
 };
 
 this.initIPC();

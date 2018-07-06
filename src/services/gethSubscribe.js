@@ -32,9 +32,9 @@ function subscribePendingTx() {
             resolve();
           });
         logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
-     });
+      });
     } catch (e) {
-      logger.error('gethSubscribe.subscribePendingTx() failed: ' + e);
+      logger.error(`gethSubscribe.subscribePendingTx() failed: ${e}`);
       reject(e);
     }
   }));
@@ -53,13 +53,15 @@ function subscribeBlockHeaders() {
             // Check for pending tx in database and update their status
             processTx.checkPendingTx(hashMaps.pendingTx.keys(), blockHeader.number)
               .then(() => {
-                dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number)
-                  .then(() => {
-                    // logger.info(colors.green.bold('Highest Block Number for Tx History: '+blockHeader.number+'\n'))
-                  })
-                  .catch((e) => { reject(e); });
+                if (dbServices.dbCollections) {
+                  dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number);
+                }
               })
-              .catch((e) => { reject(e); });
+              .then(() => {
+                // logger.info(colors.green.bold('Highest Block Number
+                // for Tx History: '+blockHeader.number+'\n'))
+              })
+              .catch(e => reject(e));
           }
         })
         .on('endSubscribeBlockHeaders', () => { // Used for testing only
@@ -68,7 +70,7 @@ function subscribeBlockHeaders() {
         });
       logger.info(colors.green.bold('Subscribed to Block Headers\n'));
     } catch (e) {
-      logger.error('gethSubscribe.subscribeBlockHeaders() failed: ' + e);
+      logger.error(`gethSubscribe.subscribeBlockHeaders() failed: ${e}`);
       reject(e);
     }
   });
