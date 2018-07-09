@@ -17,6 +17,7 @@ const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 
 const CWBURL = process.env.CWB_URL;
+const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
 const TX_MAP = {};
 
 moment.locale('en_GB');
@@ -25,7 +26,7 @@ exports.initPubSubMQ = function () {
   return new Promise((resolve, reject) => {
     try {
       logger.info('Executing rmqServices.initMQ()');
-      amqp.connect(process.env.RABBITMQ_SERVER, (err, conn) => {
+      amqp.connect(MQ_URL, (err, conn) => {
         conn.createChannel((err, ch) => {
           pubSubChannel = ch;
           const msg = '{}';
@@ -81,7 +82,7 @@ exports.initSubPubMQ = () => {
   try {
     let connection;
     logger.info('Subscriber Started executing initRabbitMQ()');
-    amqp.connect(process.env.RABBITMQ_SERVER, (error, conn) => {
+    amqp.connect(MQ_URL, (error, conn) => {
       if (error) {
         logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
         return setTimeout(exports.initSubPubMQ, 2000);
