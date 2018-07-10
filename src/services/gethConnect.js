@@ -37,6 +37,11 @@ function setWeb3WebsocketConnection() {
   return new Promise(((resolve, reject) => {
     try {
       web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+      web3._provider.on('end', (eventObj) => {
+        logger.erro('Websocket disconnected!! Restarting connection');
+        logger.error(eventObj);
+        exports.setWeb3WebsocketConnection();
+      });
       module.exports.web3 = web3;
       logger.info('Successfully established connection to ' + gethURL + ' websocket');
       resolve();
