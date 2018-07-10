@@ -218,9 +218,9 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                   } else { // TRANSACTION VALUE === 0 THEREFORE TRANSACTION IS A SMART CONTRACT CALL
                     // (BECAUSE RECIPIENT ADDRESS === SMART CONTRACT ADDRESS
                     // AND TRANSACTION CARRIES INPUT DATA)
-                    const asset = ticker;
+	                  const asset = ticker;
                     if (fromPillarAccount) { // SENDER ADDRESS === PILLAR WALLET ADDRESS
-                      logger.info(colors.cyan(`SMART CONTRACT CALL: ${tx.hash}\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\n`));
+	                    logger.info(colors.cyan(`SMART CONTRACT CALL: ${tx.hash}\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\n`));
 
                       if (data.name === 'transfer') { // TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
                         value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
@@ -393,7 +393,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                       // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                       const to = data.params[0].value;
                       // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
-                      module.exports.filterAddress(to, isPublisher, recoverAddress)
+	                    module.exports.filterAddress(to, isPublisher, recoverAddress)
                         .then((result4) => {
                           toPillarAccount = result4.isPillarAddress;
                           if (toPillarAccount) { // RECIPIENT ADDRESS === PILLAR ACCOUNT ADDRESS
@@ -758,7 +758,7 @@ function filterAddress(address, isPublisher, recoverAddress = null) {
             }
           });
       } else if (isPublisher === false) {
-        dbServices.dbCollections.accounts.findByAddress(address.toLowerCase)
+        dbServices.dbCollections.accounts.findByAddress(address.toLowerCase())
           .then((result) => {
             if (result) {
               resolve({
@@ -768,7 +768,7 @@ function filterAddress(address, isPublisher, recoverAddress = null) {
                 ERC20SmartContractTicker: '',
               });
             } else {
-              dbServices.dbCollections.assets.findByAddress(address.toLowerCase)
+              dbServices.dbCollections.assets.findByAddress(address.toLowerCase())
                 .then((result2) => {
                   if (result2) {
                     const ticker = result2.symbol;

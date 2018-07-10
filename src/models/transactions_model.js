@@ -31,6 +31,8 @@ const transactionsSchema = Mongoose.Schema({
   nbConfirmations: Number,
 });
 */
+
+// The following lime needs to be commented for dbServices.test.js tests to pass (issue with Jest)
 transactionsSchema.index({ to: 1, from: 1 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);

@@ -1,15 +1,15 @@
-const SmartContracts = (function () {
+const Assets = (function () {
   return {
     find(params, callback) {
       if (callback == null) {
         const newCallback = params;
-        newCallback('', 'list of smacos');
+        newCallback('', 'list of assets');
       } else {
-        callback('', 'list of smacos');
+        callback('', 'list of assets');
       }
     },
     findOne(params, callback) {
-      callback('', `${params.ticker}smaco`);
+      callback('', `${params.symbol}asset`);
     },
     save() {
     },
@@ -20,4 +20,4 @@ const SmartContracts = (function () {
     },
   };
 }());
-module.exports.SmartContracts = SmartContracts;
+module.exports.Assets = Assets;

@@ -76,6 +76,8 @@ module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 function subscribeAllDBERC20SmartContracts() {
   try {
     const smartContractsArray = hashMaps.assets.values();
+    console.log('SMART CONTRACTS ARRAY')
+    console.log(smartContractsArray)
     smartContractsArray.forEach((ERC20SmartContract) => {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });

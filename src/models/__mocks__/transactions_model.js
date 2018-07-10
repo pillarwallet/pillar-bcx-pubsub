@@ -1,17 +1,17 @@
-const EthTransactions = (function () {
+const Transactions = (function () {
   return {
     find(query, callback) {
       if (callback == null) {
-        query('', 'list of tx');
+        query('', [{_id: "pillarId", txHash: "hash"}]);
       } else {
-        callback('', 'list of tx');
+        callback('', [{_id: "pillarId", txHash: "hash"}]);
       }
     },
     findOne(query, callback) {
       if (callback == null) {
-        query('', 'list of tx');
+        query('', [{_id: "pillarId", txHash: "hash"}]);
       } else {
-        callback('', 'list of tx');
+        callback('', [{_id: "pillarId", txHash: "hash"}]);
       }
     },
     save() {
@@ -25,4 +25,4 @@ const EthTransactions = (function () {
     },
   };
 }());
-module.exports.EthTransactions = EthTransactions;
+module.exports.Transactions = Transactions;

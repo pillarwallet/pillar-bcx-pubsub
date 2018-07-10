@@ -21,10 +21,12 @@ function getFCMIID() {
 }
 module.exports.getFCMIID = getFCMIID;
 
-function findByAddress() {
-  const address = 'address';
+function findByAddress(address) {
   return new Promise(((resolve) => {
-    resolve(address);
+    if (address === '0x81b7E08F65Bdf5648606c89998A9CC8164397647'.toLowerCase()) {
+	    resolve({ address, pillarId: 'pillarId' });
+    }
+    else resolve();
   }));
 }
 module.exports.findByAddress = findByAddress;
