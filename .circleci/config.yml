@@ -52,6 +52,11 @@ jobs:
       - run:
           name: publish pillar-bcx-pubsub.txt to s3
           command: /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt s3://pillar-sandbox-releases/pillar-bcx-pubsub.txt
+      - run:
+          name: Announce Deployment
+          command: |
+            chmod +x .circleci/announceDeployment.sh
+            .circleci/announceDeployment.sh "BCX-PUBSUB" "Production" "$(cat workspace/pillar-bcx-pubsub.txt)"
 
 workflows:
   version: 2
