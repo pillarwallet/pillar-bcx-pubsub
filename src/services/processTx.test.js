@@ -1,6 +1,6 @@
 
 const sinon = require('sinon');
-/*
+
 describe('Test filterAddress function', () => {
 	test("When a Pillar wallet address is passed and recoverAddress is passed as well and equals address," +
     " filterAddress should call dbServices.dbCollections.accounts.findByAddress once  and return " +
@@ -77,6 +77,77 @@ describe('Test filterAddress function', () => {
 			sinon.assert.calledOnce(spy2);
 			spy.restore();
 			spy2.restore();
+			done();
+		});
+	});
+
+	test("When a Pillar wallet address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once and hashMaps.accounts.get once" +
+		"  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null}", (done) => {
+		const hashMaps = require('../utils/hashMaps.js');
+		const stub = sinon.stub(hashMaps.accounts, 'has');
+		stub.returns(true)
+		const stub2 = sinon.stub(hashMaps.accounts, 'get');
+		stub2.returns('pillarId')
+		const address = '0x81b7E08F65Bdf5648606c89998A9CC8164397647';
+
+		const processTx = require('./processTx.js');
+
+		return processTx.filterAddress(address, true)
+		.then((result) => {
+			expect(result).toEqual({ 'isPillarAddress' : true, 'pillarId': 'pillarId', 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null});
+			sinon.assert.calledOnce(stub);
+			sinon.assert.calledOnce(stub2);
+			stub.restore();
+			stub2.restore();
+			done();
+		});
+	});
+
+	test("When a smart contract address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once, hashMaps.assets.has once " +
+		"and hashMaps.assets.get once and return {'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : true, 'ERC20SmartContractTicker': ticker}", (done) => {
+		const hashMaps = require('../utils/hashMaps.js');
+		const stub = sinon.stub(hashMaps.accounts, 'has');
+		stub.returns(false)
+		const stub2 = sinon.stub(hashMaps.assets, 'has');
+		stub2.returns(true)
+		// const stub3 = sinon.stub(hashMaps.assets, 'get'); // NOT IMPLEMENTED YET
+		// stub3.returns('assetTicker')
+		const address = '0x81b7E08F65Bdf5648606c89998A9CC8164397647';
+
+		const processTx = require('./processTx.js');
+
+		return processTx.filterAddress(address, true)
+		.then((result) => {
+			expect(result).toEqual({ 'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : true, 'ERC20SmartContractTicker': 'ticker'});
+			sinon.assert.calledOnce(stub);
+			sinon.assert.calledOnce(stub2);
+			// sinon.assert.calledOnce(stub3);
+			stub.restore();
+			stub2.restore();
+			// stub3.restore();
+			done();
+		});
+	});
+
+	test("When am unknown address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once, hashMaps.assets.has once " +
+		"and return {'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null}", (done) => {
+		const hashMaps = require('../utils/hashMaps.js');
+		const stub = sinon.stub(hashMaps.accounts, 'has');
+		stub.returns(false)
+		const stub2 = sinon.stub(hashMaps.assets, 'has');
+		stub2.returns(false)
+
+		const address = '0x81b7E08F65Bdf5648606c89998A9CC8164397647';
+
+		const processTx = require('./processTx.js');
+
+		return processTx.filterAddress(address, true)
+		.then((result) => {
+			expect(result).toEqual({ 'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null });
+			sinon.assert.calledOnce(stub);
+			sinon.assert.calledOnce(stub2);
+			stub.restore();
+			stub2.restore();
 			done();
 		});
 	});
@@ -669,7 +740,7 @@ describe('Test newPendingTx function', () => {
 		});
 	});
 });
-*/
+
 describe('Test checkPendingTx function', () => {
   test('When transaction has less than 1 block confirmations, checkPendingTx should call hashMaps.pendingTx.get once and  bcx.getTxInfo once ', (done) => {
 
@@ -914,19 +985,13 @@ describe('Test processNewPendingTxArray function', () => {
   });
 });
 
-describe('Test checkTokenTransferEvent function', () => {
-  test('When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once, dbCollections.ethAddresses.getFCMIID once and notif.sendNotification once', (done) => {
-	  const processTx = require('./processTx.js')
 
-	  const stub1 = sinon.stub(processTx, 'filterAddress');
-    stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    let web3;
-    const bcx = require('./bcx.js');
-    jest.mock('../controllers/transactions_ctrl.js');
-    const ethTransactions = require('../controllers/transactions_ctrl.js');
-    jest.mock('../controllers/accounts_ctrl.js');
-    const ethAddresses = require('../controllers/accounts_ctrl.js');
-    const dbCollections = { ethTransactions, ethAddresses };
+
+describe('Test checkTokenTransferEvent function', () => {
+  test('When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address,' +
+    ' checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once,' +
+    ' and rmqServices.sendPubSubMessage once', (done) => {
+
     const eventInfo = {
       value: 1000000000000000000,
       transactionHash: 'txHash',
@@ -937,105 +1002,119 @@ describe('Test checkTokenTransferEvent function', () => {
       },
     };
     const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
-    const stub3 = sinon.stub(dbCollections.ethTransactions, 'findByTxHash');
-    stub3.resolves({
+
+    jest.mock('./dbServices.js')
+    const dbCollections = require('./dbServices.js').dbCollections;
+
+    const stub2 = sinon.stub(dbCollections.transactions, 'findByTxHash');
+    stub2.resolves({
       tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'ETH',
     });
-    const stub4 = sinon.stub(dbCollections.ethAddresses, 'getFCMIID');
-    stub4.resolves('FCMIID');
+
+    const rmqServices = require('./rmqServices.js');
+    const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
+    stub3.returns()
+
+	  const processTx = require('./processTx.js')
+
+	  const stub1 = sinon.stub(processTx, 'filterAddress');
+	  stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
 
     return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
       .then(() => {
         sinon.assert.calledOnce(stub1);
-        sinon.assert.calledOnce(stub3);
-        sinon.assert.calledOnce(stub4);
+        sinon.assert.calledOnce(stub2);
+	      sinon.assert.calledOnce(stub3);
         stub1.restore();
-        stub3.restore();
-        stub4.restore();
+        stub2.restore();
+	      stub3.restore();
         done();
       });
   });
 
-  test('When transfer event IS regular token transfer (asset!=ETH), checkTokenTransferEvent should call processTx.filterAddress once,  call dbCollections.ethTransactions.findByTxHash once,  NOT call dbCollections.ethAddresses.getFCMIID  and  NOT call notif.sendNotification', (done) => {
+  test('When transfer event IS regular token transfer (asset!=ETH) to a Pillar address, checkTokenTransferEvent should call processTx.filterAddress once,' +
+    '  call dbCollections.ethTransactions.findByTxHash once,  NOT call rmqServices.sendPubSubMessage', (done) => {
+	  const eventInfo = {
+		  value: 1000000000000000000,
+		  transactionHash: 'txHash',
+		  returnValues: {
+			  _to: 'toAddress',
+			  _from: 'fromAddress',
+			  _value: 999,
+		  },
+	  };
+	  const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
+
+	  jest.mock('./dbServices.js')
+	  const dbCollections = require('./dbServices.js').dbCollections;
+
+	  const stub2 = sinon.stub(dbCollections.transactions, 'findByTxHash');
+	  stub2.resolves({
+		  tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'PLR',
+	  });
+
+	  const rmqServices = require('./rmqServices.js');
+	  const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
+	  stub3.returns()
+
 	  const processTx = require('./processTx.js')
 
 	  const stub1 = sinon.stub(processTx, 'filterAddress');
-    stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    let web3;
-    const bcx = require('./bcx.js');
-    jest.mock('../controllers/transactions_ctrl.js');
-    const ethTransactions = require('../controllers/transactions_ctrl.js');
-    jest.mock('../controllers/accounts_ctrl.js');
-    const ethAddresses = require('../controllers/accounts_ctrl.js');
-    const dbCollections = { ethTransactions, ethAddresses };
-    const eventInfo = {
-      value: 1000000000000000000,
-      transactionHash: 'txHash',
-      returnValues: {
-        _to: 'toAddress',
-        _from: 'fromAddress',
-        _value: 999,
-      },
-    };
-    const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
-    const stub3 = sinon.stub(dbCollections.ethTransactions, 'findByTxHash');
-    stub3.resolves({
-      tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'PLR',
-    });
-    const stub4 = sinon.stub(dbCollections.ethAddresses, 'getFCMIID');
-    stub4.resolves('FCMIID');
+	  stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
 
 	  return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
-      .then(() => {
-        sinon.assert.calledOnce(stub1);
-        sinon.assert.calledOnce(stub3);
-        sinon.assert.notCalled(stub4);
-        stub1.restore();
-        stub3.restore();
-        stub4.restore();
-        done();
-      });
+	  .then(() => {
+		  sinon.assert.calledOnce(stub1);
+		  sinon.assert.calledOnce(stub2);
+		  sinon.assert.notCalled(stub3);
+		  stub1.restore();
+		  stub2.restore();
+		  stub3.restore();
+		  done();
+	  });
   });
 
-  test('When recipient is not a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, NOT call dbCollections.ethTransactions.findByTxHash,  NOT call dbCollections.ethAddresses.getFCMIID  and  NOT call notif.sendNotification', (done) => {
+  test('When recipient is not a pillar address, checkTokenTransferEvent should call processTx.filterAddress once,' +
+	  ' NOT call dbCollections.ethTransactions.findByTxHash,  NOT call rmqServices.sendPubSubMessage', (done) => {
+	  const eventInfo = {
+		  value: 1000000000000000000,
+		  transactionHash: 'txHash',
+		  returnValues: {
+			  _to: 'toAddress',
+			  _from: 'fromAddress',
+			  _value: 999,
+		  },
+	  };
+	  const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
+
+	  jest.mock('./dbServices.js')
+	  const dbCollections = require('./dbServices.js').dbCollections;
+
+	  const stub2 = sinon.stub(dbCollections.transactions, 'findByTxHash');
+	  stub2.resolves({
+		  tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'ETH',
+	  });
+
+	  const rmqServices = require('./rmqServices.js');
+	  const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
+	  stub3.returns()
+
 	  const processTx = require('./processTx.js')
 
 	  const stub1 = sinon.stub(processTx, 'filterAddress');
-    stub1.resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-    let web3;
-    const bcx = require('./bcx.js');
-    jest.mock('../controllers/transactions_ctrl.js');
-    const ethTransactions = require('../controllers/transactions_ctrl.js');
-    jest.mock('../controllers/accounts_ctrl.js');
-    const ethAddresses = require('../controllers/accounts_ctrl.js');
-    const dbCollections = { ethTransactions, ethAddresses };
-    const eventInfo = {
-      value: 1000000000000000000,
-      transactionHash: 'txHash',
-      returnValues: {
-        _to: 'toAddress',
-        _from: 'fromAddress',
-        _value: 999,
-      },
-    };
-    const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
-    const stub3 = sinon.stub(dbCollections.ethTransactions, 'findByTxHash');
-    stub3.resolves({
-      tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'PLR',
-    });
-    const stub4 = sinon.stub(dbCollections.ethAddresses, 'getFCMIID');
-    stub4.resolves('FCMIID');
+	  stub1.resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
 
 	  return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
-      .then(() => {
-        sinon.assert.calledOnce(stub1);
-        sinon.assert.notCalled(stub3);
-        sinon.assert.notCalled(stub4);
-        stub1.restore();
-        stub3.restore();
-        stub4.restore();
-        done();
-      });
+	  .then(() => {
+		  sinon.assert.calledOnce(stub1);
+		  sinon.assert.notCalled(stub2);
+		  sinon.assert.notCalled(stub3);
+		  stub1.restore();
+		  stub2.restore();
+		  stub3.restore();
+		  done();
+	  });
   });
 });
+
 

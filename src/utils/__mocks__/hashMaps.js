@@ -6,6 +6,8 @@ exports.assets = {
 
 exports.accounts = {
 		has: (address) => {
+			console.log('HASHMAPS ADDRESS')
+			console.log(address)
 			if (address === '0x81b7E08F65Bdf5648606c89998A9CC8164397647'.toLowerCase()) {
 				return true;
 			} else {
