@@ -2,7 +2,7 @@
 Feature: Get Tx Count
   
   @accepted @automation-complete
-  Scenario: Register an acconunt and send a transaction
+  Scenario: Register an account and send a transaction
     Given An ethereum address
     When I register a new wallet
     And I connect to a node
