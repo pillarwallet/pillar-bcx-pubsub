@@ -26,10 +26,12 @@
 !.vscode/extensions.json
 
 # misc
+/cache
 /.sass-cache
 /connect.lock
 /coverage
 /_reports
+/reports
 /libpeerconnection.log
 npm-debug.log
 testem.log
@@ -37,9 +39,6 @@ testem.log
 /data
 /.env
 /bin/logs
-<<<<<<< HEAD
-/package-lock.json
-=======
 /src/logs
 /bcx_log.txt
 
@@ -139,4 +138,3 @@ dist/*.exe
 
 doc/
 /*-cov
->>>>>>> develop

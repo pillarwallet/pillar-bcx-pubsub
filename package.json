@@ -5,7 +5,9 @@
   "main": "./src/master.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "cucumber": "./node_modules/.bin/cucumber-js ./cucumber/features -r ./cucumber/step-definitions --tags=@automation-complete",
+    "cucumber:report": "chmod +x ./cucumber/runCukes.sh && ./cucumber/runCukes.sh $ENVIRONMENT ./reports"        
   },
   "repository": {
     "type": "git",
