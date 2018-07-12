@@ -159,6 +159,41 @@ const eth = (function () {
         }
       }));
     },
+
+    Contract() {
+      return (
+        {
+          methods: {
+            decimals: () => {
+              return({
+                  call: () => {
+                    return new Promise((resolve, reject) => {
+                      resolve('18');
+                    });
+                  },
+                });
+            },
+            name: () => {
+	            return({
+		            call: () => {
+		              return new Promise((resolve, reject) => {
+			              resolve('Mock Smart Contract');
+		              });
+		            },
+	            });
+            },
+            symbol: () => {
+	            return({
+		            call: () => { return new Promise((resolve, reject) => {
+			            resolve('MCK');
+		            });
+		            },
+	            });
+            },
+          },
+        }
+      );
+    },
   };
 }());
 module.exports.eth = eth;

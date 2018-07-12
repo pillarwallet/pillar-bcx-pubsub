@@ -6,14 +6,19 @@ const dbServices = require('./services/dbServices.js');
 
 
 exports.initServices = function () {
-  dbServices.dbConnect()
-    .then(() => {
-      logger.info('Connected to database');
-      rmqServices.initSubPubMQ();
-    })
-    .catch((err) => {
-      logger.error(err.message);
-    });
+  return new Promise((resolve, reject) => {
+		dbServices.dbConnect()
+		.then(() => {
+			logger.info('Connected to database');
+			rmqServices.initSubPubMQ();
+			resolve()
+		})
+		.catch((err) => {
+			logger.error(err.message);
+			reject()
+		});
+  });
+
 };
 
 this.initServices();

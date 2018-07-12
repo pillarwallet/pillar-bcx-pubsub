@@ -34,35 +34,39 @@ process.on('message', (data) => {
 });
 
 exports.initIPC = function () {
-  try {
-    logger.info('Started executing publisher.initIPC()');
+  return new Promise((resolve, reject) => {
+	  try {
+		  logger.info('Started executing publisher.initIPC()');
 
-    logger.info('Publisher requesting master a list of assets to monitor');
+		  logger.info('Publisher requesting master a list of assets to monitor');
 
-    process.send({
-      type: 'assets.request',
-      message: '',
-    });
+		  process.send({
+			  type: 'assets.request',
+			  message: '',
+		  });
 
-    logger.info('Publisher initializing the RMQ');
-    setTimeout(() => {
-      logger.info('Initializing RMQ.');
-      rmqServices.initPubSubMQ()
-        .then(() => {
-          exports.initSubscriptions();
-        });
-    }, 100);
+		  logger.info('Publisher initializing the RMQ');
+		  setTimeout(() => {
+			  logger.info('Initializing RMQ.');
+			  rmqServices.initPubSubMQ()
+			  .then(() => {
+				  exports.initSubscriptions();
+			  });
+		  }, 100);
 
-    logger.info('Publisher polling master for new wallets every 5 seconds');
-    setInterval(() => {
-      exports.poll();
-    }, 5000);
-  } catch (err) {
-    logger.error('Publisher.init() failed: ', err.message);
-    // throw err;
-  } finally {
-    logger.info('Exited publisher.initIPC()');
-  }
+		  logger.info('Publisher polling master for new wallets every 5 seconds');
+		  setInterval(() => {
+			  exports.poll();
+		  }, 5000);
+	  } catch (err) {
+		  logger.error('Publisher.init() failed: ', err.message);
+		  // throw err;
+      reject();
+	  } finally {
+		  logger.info('Exited publisher.initIPC()');
+		  resolve();
+	  }
+  })
 };
 
 exports.poll = function () {
@@ -75,19 +79,30 @@ exports.poll = function () {
 
 
 exports.initSubscriptions = function () {
-  /* CONNECT TO GETH NODE */
-  gethConnect.gethConnectDisplay()
-    .then(() => {
-      /* CONNECT TO DATABASE --> NEED TO REPLACE THIS WITH HASHTABLE */
-      dbServices.dbConnectDisplayAccounts()
-        .then(() => {
-          /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx();
-          gethSubscribe.subscribeBlockHeaders();
-        })
-        .catch((e) => { logger.error(e); });
-    })
-    .catch((e) => { logger.error(e); });
+	return new Promise((resolve, reject) => {
+		try{
+			/* CONNECT TO GETH NODE */
+			gethConnect.gethConnectDisplay()
+			.then(() => {
+				/* CONNECT TO DATABASE --> NEED TO REPLACE THIS WITH HASHTABLE */
+				dbServices.dbConnectDisplayAccounts()
+				.then(() => {
+					/* SUBSCRIBE TO GETH NODE EVENTS */
+					gethSubscribe.subscribePendingTx();
+					gethSubscribe.subscribeBlockHeaders();
+					resolve()
+				})
+				.catch((e) => {
+					logger.error(e);
+					reject(e);
+				});
+			})
+			.catch((e) => {
+				logger.error(e);
+				reject(e);
+			});
+		} catch (e) { reject(e); }
+	})
 };
 
 this.initIPC();
