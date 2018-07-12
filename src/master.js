@@ -184,9 +184,6 @@ exports.notify = function (idFrom, socket) {
           });
         }
       }
-    })
-    .catch(err => {
-      throw(err)
     });
   } catch (err) {
     logger.error(`master.notify() failed: ${err}`);

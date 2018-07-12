@@ -70,7 +70,7 @@ function recentAccounts(
   return new Promise(((resolve, reject) => {
     try {
       if (dbCollections) {
-        if (idFrom !== undefined && idFrom !== '') {
+        if ((typeof idFrom !== undefined) && idFrom !== '') {
           // fetch accounts registered after a given Id
           dbCollections.accounts.listRecent(idFrom)
             .then((ethAddressesArray) => {
@@ -92,7 +92,7 @@ function recentAccounts(
               } else {
                 logger.info(colors.cyan.bold.underline('NO ACCOUNTS IN DATABASE\n'));
               }
-	      resolve(ethAddressesArray);
+	            resolve(ethAddressesArray);
             })
             .catch((e) => { reject(e); });
         }
@@ -115,7 +115,7 @@ function contractsToMonitor(
   return new Promise(((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
     if (dbCollections) {
-      if (idFrom !== undefined && idFrom !== '') {
+      if ((typeof idFrom !== undefined) && idFrom !== '') {
         // fetch accounts registered after a given Id
         dbCollections.assets.listRecent(idFrom)
           .then((assetsArray) => {
@@ -124,7 +124,7 @@ function contractsToMonitor(
             } else {
               logger.info('dbServices.contractsToMonitor(): No assets available for monitoring');
             }
-              resolve(assetsArray);
+            resolve(assetsArray);
           })
           .catch((e) => { reject(e); });
       } else {
