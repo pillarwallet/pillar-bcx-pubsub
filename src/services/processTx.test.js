@@ -151,9 +151,7 @@ describe('Test filterAddress function', () => {
 			done();
 		});
 	});
-
 });
-
 
 describe('Test newPendingTx function', () => {
   test('When a transaction object involving 2 pillar addresses is passed and Publisher=true, newPendingTx should call ' +
@@ -1116,5 +1114,3 @@ describe('Test checkTokenTransferEvent function', () => {
 	  });
   });
 });
-
-
