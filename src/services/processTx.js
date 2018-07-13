@@ -804,11 +804,13 @@ function filterAddress(address, isPublisher, recoverAddress = null) {
           ERC20SmartContractTicker: null,
         });
       } else if (hashMaps.assets.has(address.toLowerCase())) {
+        const theAsset = hashMaps.assets.get(address.toLowerCase());
         resolve({
           isPillarAddress: false,
           pillarId: null,
           isERC20SmartContract: true,
-          ERC20SmartContractTicker: 'ticker', // NEED TO ADD ASSET TICKER IN HASHMAP
+          ERC20SmartContractTicker: theAsset.symbol, // NEED TO ADD ASSET TICKER IN HASHMAP
+          //ERC20SmartContractTicker: 'ticker', // NEED TO ADD ASSET TICKER IN HASHMAP
         });
       } else {
         resolve({
