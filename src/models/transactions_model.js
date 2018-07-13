@@ -2,7 +2,7 @@ const Mongoose = require('../services/dbServices.js').mongoose;
 
 // NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
-  pillarId: { type: String, required: true },
+  pillarId: { type: String, required: false },
   protocol: { type: String, required: true },
   fromAddress: { type: String, required: false },
   toAddress: { type: String, required: false },
