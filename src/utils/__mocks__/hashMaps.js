@@ -39,4 +39,7 @@ exports.pendingTx = {
 		}
 		return txObject;
 	},
+	keys: () => {
+		return ['txHash1', 'txHash2'];
+	}
 }

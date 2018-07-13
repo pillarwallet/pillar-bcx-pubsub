@@ -17,7 +17,7 @@ describe('Test init functions ', () => {
 	//	const stub3 = sinon.stub(publisher, 'poll');
 	//	stub3.resolves();
 
-		publisher.initIPC()
+		return publisher.initIPC()
 		.then(() => {
 			sinon.assert.called(spy);
 			sinon.assert.called(spy2);
@@ -52,13 +52,12 @@ describe('Test init functions ', () => {
 		const gethConnect = require('./services/gethConnect.js');
 		const stub1 = sinon.stub(gethConnect, 'gethConnectDisplay');
 		stub1.resolves();
-		const dbServices = require('./services/dbServices.js');
-		const stub2 = sinon.stub(dbServices, 'dbConnectDisplayAccounts');
-		stub2.resolves();
 		const gethSubscribe = require('./services/gethSubscribe.js');
-		const stub3 = sinon.stub(gethSubscribe, 'subscribePendingTx');
+		const stub2 = sinon.stub(gethSubscribe, 'subscribePendingTx');
+		stub2.resolves();
+		const stub3 = sinon.stub(gethSubscribe, 'subscribeBlockHeaders');
 		stub3.resolves();
-		const stub4 = sinon.stub(gethSubscribe, 'subscribeBlockHeaders');
+		const stub4 = sinon.stub(gethSubscribe, 'subscribeAllDBERC20SmartContracts');
 		stub4.resolves();
 
 		const publisher = require('./publisher.js');

@@ -37,32 +37,36 @@ process.on('message', (data) => {
 });
 
 exports.initIPC = function () {
-	try {
-		logger.info('Started executing publisher.initIPC()');
-		logger.info('Publisher requesting master a list of assets to monitor');
-		process.send({ type: 'assets.request' });
+  return new Promise((resolve, reject) => {
+    try {
+      logger.info('Started executing publisher.initIPC()');
+      logger.info('Publisher requesting master a list of assets to monitor');
+      process.send({ type: 'assets.request' });
 
-		logger.info('Publisher initializing the RMQ');
-		setTimeout(() => {
-			logger.info('Publisher Initializing RMQ.');
-			rmqServices.initPubSubMQ()
-			.then(() => {
-				if (hashMaps.assets.count() > 0) {
-					exports.initSubscriptions();
-				}
-			});
-		}, 100);
+      logger.info('Publisher initializing the RMQ');
+      setTimeout(() => {
+        logger.info('Publisher Initializing RMQ.');
+        rmqServices.initPubSubMQ()
+          .then(() => {
+            if (hashMaps.assets.count() > 0) {
+              exports.initSubscriptions();
+            }
+          });
+      }, 100);
 
-		logger.info('Publisher polling master for new wallets every 5 seconds');
-		setInterval(() => {
-			exports.poll();
-		}, 5000);
-	} catch (err) {
-		logger.error('Publisher.init() failed: ', err.message);
-		// throw err;
-	} finally {
-		logger.info('Exited publisher.initIPC()');
-	}
+      logger.info('Publisher polling master for new wallets every 5 seconds');
+      setInterval(() => {
+        exports.poll();
+      }, 5000);
+    } catch (err) {
+      logger.error('Publisher.init() failed: ', err.message);
+      // throw err;
+      reject(err);
+    } finally {
+      logger.info('Exited publisher.initIPC()');
+      resolve();
+    }
+  });
 };
 
 exports.poll = function () {
@@ -75,18 +79,27 @@ exports.poll = function () {
 };
 
 exports.initSubscriptions = function () {
-	logger.info('Publisher subscribing to geth websocket events...');
-	/* CONNECT TO GETH NODE */
-	gethConnect.gethConnectDisplay()
-	.then(() => {
-		/* SUBSCRIBE TO GETH NODE EVENTS */
-		gethSubscribe.subscribePendingTx();
-		gethSubscribe.subscribeBlockHeaders();
-		gethSubscribe.subscribeAllDBERC20SmartContracts();
-	})
-	.catch((e) => {
-		logger.error(e);
-	});
+  return new Promise((resolve, reject) => {
+    try {
+      logger.info('Publisher subscribing to geth websocket events...');
+      /* CONNECT TO GETH NODE */
+      gethConnect.gethConnectDisplay()
+        .then(() => {
+          /* SUBSCRIBE TO GETH NODE EVENTS */
+          gethSubscribe.subscribePendingTx();
+          gethSubscribe.subscribeBlockHeaders();
+          gethSubscribe.subscribeAllDBERC20SmartContracts();
+          resolve();
+        })
+        .catch((e) => {
+          logger.error(e);
+        });
+    } catch (err) {
+      logger.error('Publisher.initSubscriptions() failed: ', err.message);
+      // throw err;
+      reject(err);
+    }
+  });
 };
 
 this.initIPC();
