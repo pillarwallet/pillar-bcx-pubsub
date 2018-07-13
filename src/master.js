@@ -37,13 +37,6 @@ exports.init = function (options) {
       protocol = options.protocol;
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
-    /*
-    if ((options.minPort !== undefined) && (options.maxPort !== undefined) && (options.minPort >= 5500) && (options.minPort < options.maxPort)) {
-      currentPort = options.minPort;
-    } else {
-      throw ({ message: 'Invalid configuration parameters minPort, maxPort' });
-    }
-    */
 
     if (options.maxWallets == undefined || options.maxWallets <= 0) {
       throw ({ message: 'Invalid configuration parameter maxWallets' });
@@ -62,6 +55,7 @@ exports.init = function (options) {
 exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
+
     // start the first program pair of publisher and subscribers
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
@@ -88,26 +82,31 @@ exports.launch = function () {
 
     // handle events associated with the publisher child processes.
     exports.pubs[exports.index].on('message', (data) => {
-      logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
-      if(data.type == 'assets.request') {
-        //send list of assets to the publisher
-        logger.info('Master Sending list of assets to monitor to each publisher');
-        dbServices.contractsToMonitor('')
-          .then((assets) => {
+      try {
+        logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
+
+        if(data.type === 'assets.request') {
+          //send list of assets to publisher
+          logger.info('Master Sending list of assets to monitor to each publisher');
+
+          dbServices.contractsToMonitor('').then((assets) => {
             logger.info(assets.length + ' assets identified to be monitored');
-            exports.pubs[exports.index-1].send({ type: 'assets', message: assets});
+            exports.pubs[exports.index - 1].send({ type: 'assets', message: assets});
           });
-      }
-      if (data.type === 'wallet.request') {
-        logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${exports.index}`);
-        exports.notify(data.message, exports.pubs[exports.index - 1]);
-        //notify the same message to the housekeeper to perform catchup services for the new wallet
-        exports.notify(data.message,exports.housekeeper);
-      }
-      if (data.type === 'queue.full') {
-        logger.info(`Master Received ${data.message} from publisher: ${exports.index}`);
-        // fork new publisher-subscriber process pairs
-        this.launch();
+        }
+        if (data.type === 'wallet.request') {
+          logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${exports.index}`);
+          exports.notify(data.message, exports.pubs[exports.index - 1]);
+          //notify the same message to the housekeeper to perform catchup services for the new wallet
+          exports.notify(data.message,exports.housekeeper);
+        }
+        if (data.type === 'queue.full') {
+          logger.info(`Master Received ${data.message} from publisher: ${exports.index}`);
+          // fork new publisher-subscriber process pairs
+          this.launch();
+        }
+      } catch(e) {
+        logger.error('Master.launch() failed: ' + e);
       }
     });
 
@@ -159,19 +158,16 @@ exports.notify = function (idFrom, socket) {
 
     // read the wallet address model and bring up multiple publishers
     dbServices.recentAccounts(idFrom).then((theWallets) => {
-      logger.info('Master.notify(): received new wallets to monitor: ' + JSON.stringify(theWallets));
+      //logger.info('Master.notify(): received new wallets to monitor: ' + JSON.stringify(theWallets));
       if (theWallets !== undefined) {
         const message = [];
         for (let i = 0; i < theWallets.length; i++) {
 	        var theWallet = theWallets[i];
-	        logger.debug('Wallet: ' + theWallets[i]);
+	        //logger.debug('Wallet: ' + theWallets[i]);
           for (let j = 0; j < theWallet.addresses.length; j++) {
 	          var theAddress = theWallet.addresses[j];
-            logger.debug('The address protocol: ' + theAddress.protocol.trim());
-            logger.debug('Protocol: ' + protocol);
-            logger.debug('Match? : ' + (theAddress.protocol.trim() === protocol));
             if (theAddress.protocol.trim() === protocol) {
-              logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallet.addresses[j].address + '/pillarId: ' + theWallet.pillarId);
+              //logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallet.addresses[j].address + '/pillarId: ' + theWallet.pillarId);
               message.push({ id: theWallet._id, walletId: theWallet.addresses[j].address, pillarId: theWallet.pillarId });
             } else {
 		          logger.debug('Protocol doesnt match, ignoring,....');
@@ -188,9 +184,6 @@ exports.notify = function (idFrom, socket) {
           });
         }
       }
-    })
-    .catch(err => {
-      throw(err)
     });
   } catch (err) {
     logger.error(`master.notify() failed: ${err}`);

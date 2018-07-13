@@ -21,7 +21,7 @@ function getBlockSmartContractsAddressesArray(txHashArray, smartContractsAddress
       } else {
         gethConnect.web3.eth.getTransactionReceipt(txHashArray[index])
           .then((txReceipt) => {
-            if (txReceipt.contractAddress != null) {
+            if (txReceipt && txReceipt.contractAddress != null) {
               smartContractsAddressesArray.push(txReceipt.contractAddress);
             }
             resolve(getBlockSmartContractsAddressesArray(

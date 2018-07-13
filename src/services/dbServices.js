@@ -8,7 +8,7 @@ const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
-const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}`;
+const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}?w=majority`;
 let dbCollections;
 
 function dbConnect($arg = { useMongoClient: true }) {
@@ -70,7 +70,7 @@ function recentAccounts(
   return new Promise(((resolve, reject) => {
     try {
       if (dbCollections) {
-        if (idFrom !== undefined && idFrom !== '') {
+        if ((typeof idFrom !== undefined) && idFrom !== '') {
           // fetch accounts registered after a given Id
           dbCollections.accounts.listRecent(idFrom)
             .then((ethAddressesArray) => {
@@ -88,11 +88,11 @@ function recentAccounts(
 		          logger.info('Total accounts found to monitor: ' + ethAddressesArray.length);
               if(ethAddressesArray.length > 0) {
                 logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
-                logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
+                //logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
               } else {
                 logger.info(colors.cyan.bold.underline('NO ACCOUNTS IN DATABASE\n'));
               }
-	      resolve(ethAddressesArray);
+	            resolve(ethAddressesArray);
             })
             .catch((e) => { reject(e); });
         }
@@ -115,16 +115,23 @@ function contractsToMonitor(
   return new Promise(((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
     if (dbCollections) {
-      if (idFrom !== undefined && idFrom !== '') {
+      if ((typeof idFrom !== undefined) && idFrom !== '') {
         // fetch accounts registered after a given Id
         dbCollections.assets.listRecent(idFrom)
           .then((assetsArray) => {
+            if(assetsArray.length > 0) {
+              logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
+            } else {
+              logger.info('dbServices.contractsToMonitor(): No assets available for monitoring');
+            }
             resolve(assetsArray);
           })
           .catch((e) => { reject(e); });
       } else {
+        logger.info('dbServices.contractsToMonitor(): Fetching all assets from the database.')
         dbCollections.assets.listAll()
           .then((assetsArray) => {
+            logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
             resolve(assetsArray);
           })
           .catch((e) => { reject(e); });

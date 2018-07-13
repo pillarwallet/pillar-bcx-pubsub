@@ -13,8 +13,9 @@ const hashMaps = require('./utils/hashMaps.js');
 let latestId = '';
 
 process.on('message', (data) => {
-  logger.info('Publisher has received message from master........');
-  const message = data.message;
+  logger.info(`Publisher has received message from master: ${data.type}`);
+  const { message } = data;
+
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
@@ -23,6 +24,7 @@ process.on('message', (data) => {
       latestId = obj.id;
     }
   } else if (data.type === 'assets') {
+    logger.info('Publisher initializing assets.');
     // add the new asset to the assets hashmap
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
@@ -30,79 +32,61 @@ process.on('message', (data) => {
       hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
       gethSubscribe.subscribeERC20SmartContract(obj);
     }
+    exports.initSubscriptions();
   }
 });
 
 exports.initIPC = function () {
-  return new Promise((resolve, reject) => {
-	  try {
-		  logger.info('Started executing publisher.initIPC()');
+	try {
+		logger.info('Started executing publisher.initIPC()');
+		logger.info('Publisher requesting master a list of assets to monitor');
+		process.send({ type: 'assets.request' });
 
-		  logger.info('Publisher requesting master a list of assets to monitor');
+		logger.info('Publisher initializing the RMQ');
+		setTimeout(() => {
+			logger.info('Publisher Initializing RMQ.');
+			rmqServices.initPubSubMQ()
+			.then(() => {
+				if (hashMaps.assets.count() > 0) {
+					exports.initSubscriptions();
+				}
+			});
+		}, 100);
 
-		  process.send({
-			  type: 'assets.request',
-			  message: '',
-		  });
-
-		  logger.info('Publisher initializing the RMQ');
-		  setTimeout(() => {
-			  logger.info('Initializing RMQ.');
-			  rmqServices.initPubSubMQ()
-			  .then(() => {
-				  exports.initSubscriptions();
-			  });
-		  }, 100);
-
-		  logger.info('Publisher polling master for new wallets every 5 seconds');
-		  setInterval(() => {
-			  exports.poll();
-		  }, 5000);
-	  } catch (err) {
-		  logger.error('Publisher.init() failed: ', err.message);
-		  // throw err;
-      reject();
-	  } finally {
-		  logger.info('Exited publisher.initIPC()');
-		  resolve();
-	  }
-  })
+		logger.info('Publisher polling master for new wallets every 5 seconds');
+		setInterval(() => {
+			exports.poll();
+		}, 5000);
+	} catch (err) {
+		logger.error('Publisher.init() failed: ', err.message);
+		// throw err;
+	} finally {
+		logger.info('Exited publisher.initIPC()');
+	}
 };
 
 exports.poll = function () {
   // logger.info('Requesting new wallet :');
-  process.send({
-    type: 'wallet.request',
-    message: latestId,
-  });
+  if (hashMaps.assets.count() === 0) {
+    process.send({ type: 'assets.request' });
+  }
+  // request new wallets
+  process.send({ type: 'wallet.request', message: latestId });
 };
 
-
 exports.initSubscriptions = function () {
-	return new Promise((resolve, reject) => {
-		try{
-			/* CONNECT TO GETH NODE */
-			gethConnect.gethConnectDisplay()
-			.then(() => {
-				/* CONNECT TO DATABASE --> NEED TO REPLACE THIS WITH HASHTABLE */
-				dbServices.dbConnectDisplayAccounts()
-				.then(() => {
-					/* SUBSCRIBE TO GETH NODE EVENTS */
-					gethSubscribe.subscribePendingTx();
-					gethSubscribe.subscribeBlockHeaders();
-					resolve()
-				})
-				.catch((e) => {
-					logger.error(e);
-					reject(e);
-				});
-			})
-			.catch((e) => {
-				logger.error(e);
-				reject(e);
-			});
-		} catch (e) { reject(e); }
+	logger.info('Publisher subscribing to geth websocket events...');
+	/* CONNECT TO GETH NODE */
+	gethConnect.gethConnectDisplay()
+	.then(() => {
+		/* SUBSCRIBE TO GETH NODE EVENTS */
+		gethSubscribe.subscribePendingTx();
+		gethSubscribe.subscribeBlockHeaders();
+		gethSubscribe.subscribeAllDBERC20SmartContracts();
 	})
+	.catch((e) => {
+		logger.error(e);
+	});
 };
 
 this.initIPC();
