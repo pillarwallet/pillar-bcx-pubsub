@@ -19,8 +19,8 @@ process.on('message', (data) => {
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
-      logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
-      hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
+      logger.info(`Publisher received notification to monitor :${obj.pillarId.toLowerCase()} for pillarId: ${obj.pillarId}`);
+      hashMaps.accounts.set(obj.pillarId.toLowerCase(), obj.pillarId);
       latestId = obj.id;
     }
   } else if (data.type === 'assets') {

@@ -34,7 +34,7 @@ describe('Test accounts.listAll function', () => {
     jest.mock('../models/accounts_model.js');
     const accountsModel = require('../models/accounts_model.js');
     const spy = sinon.spy(accountsModel.accounts, 'findOne');
-    return accountsCtrl.findByWalletId('walletId')
+    return accountsCtrl.findByWalletId('pillarId')
       .then(() => {
         sinon.assert.calledOnce(spy);
         spy.restore();
@@ -101,7 +101,7 @@ describe('Test accounts.addAddress function', () => {
     jest.mock('../models/accounts_model.js');
     const accountsModel = require('../models/accounts_model.js');
     const spy = sinon.spy(accountsModel.accounts, 'update');
-    return accountsCtrl.updateFCMIID('walletID', 'publicAddress', 'newFCMIID')
+    return accountsCtrl.updateFCMIID('pillarId', 'publicAddress', 'newFCMIID')
       .then(() => {
         sinon.assert.calledOnce(spy);
         spy.restore();
@@ -114,7 +114,7 @@ describe('Test accounts.addAddress function', () => {
     jest.mock('../models/accounts_model.js');
     const accountsModel = require('../models/accounts_model.js');
     const spy = sinon.spy(accountsModel.accounts, 'remove');
-    return accountsCtrl.removeAddress('walletID')
+    return accountsCtrl.removeAddress('pillarId')
       .then(() => {
         sinon.assert.calledOnce(spy);
         spy.restore();

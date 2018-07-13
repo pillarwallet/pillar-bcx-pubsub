@@ -57,7 +57,7 @@ module.exports.findByAddress = findByAddress;
 function findByWalletId(pillarId) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ walletID: pillarId }, (err, result) => {
+      accounts.Accounts.findOne({ pillarId: pillarId }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByWalletId DB controller ERROR: ${err}`);
           reject(err);

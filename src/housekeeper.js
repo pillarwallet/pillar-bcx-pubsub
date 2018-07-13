@@ -16,8 +16,8 @@ process.on('message', (data) => {
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
-      logger.info(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
-      module.exports.recoverWallet(obj.walletId.toLowerCase(), 15);
+      logger.info(`Housekeeper received notification to monitor :${obj.pillarId.toLowerCase()} for pillarId: ${obj.pillarId}`);
+      module.exports.recoverWallet(obj.pillarId.toLowerCase(), 15);
     }
   }
 });
