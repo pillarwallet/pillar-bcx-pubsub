@@ -3,16 +3,16 @@ const ethAddressesController = require('./ethAddresses_ctrl');
 const { exitRequestError } = require('../utils/routingHelpers');
 
 async function registerNewWallet(req, res, next) {
-  const walletId = req.body.walletId || '';
+  const pillarId = req.body.pillarId || '';
   const ethAddress = req.body.ethAddress || '';
   const fcmIID = req.body.fcmIID || '';
 
-  if (!walletId || !ethAddress || !fcmIID) {
+  if (!pillarId || !ethAddress || !fcmIID) {
     return exitRequestError(next, 'Wrong parameters provided');
   }
 
   try {
-    ethAddressesController.addAddress(walletId, ethAddress, fcmIID)
+    ethAddressesController.addAddress(pillarId, ethAddress, fcmIID)
       .then(() => {
       	res.json({ result: 'success', message: 'NEW ACCOUNT REGISTERED!' });
       });
@@ -81,17 +81,17 @@ async function registerNewWallet(req, res, next) {
 module.exports.registerNewWallet = registerNewWallet;
 
 async function unregisterWallet(req, res, next) {
-  const walletId = req.body.walletId || '';
-  if (!walletId) {
+  const pillarId = req.body.pillarId || '';
+  if (!pillarId) {
     return exitRequestError(next, 'Wrong parameters provided');
   }
   try {
-    ethAddressesController.findByWalletId(walletId)
+    ethAddressesController.findByWalletId(pillarId)
 	  .then((wallet) => {
 		  if (!wallet) {
 			  return exitRequestError(next, 'Invalid wallet Id');
 		  }
-		  ethAddressesController.removeAddress(walletId)
+		  ethAddressesController.removeAddress(pillarId)
 		  .then(() => {
 			  res.json({ result: 'success', message: 'WALLET UN-REGISTERED' });
 		  });
@@ -101,15 +101,15 @@ async function unregisterWallet(req, res, next) {
 module.exports.unregisterWallet = unregisterWallet;
 
 async function updatefcmiid(req, res, next) {
-  const walletId = req.body.walletId || '';
+  const pillarId = req.body.pillarId || '';
   const newFCMIID = req.body.FCMIID || '';
 
-  if (!walletId || !newFCMIID) {
+  if (!pillarId || !newFCMIID) {
     return exitRequestError(next, 'Wrong parameters provided');
   }
 
   try {
-    await ethAddressesController.updateFCMIID(walletId, newFCMIID);
+    await ethAddressesController.updateFCMIID(pillarId, newFCMIID);
     res.json({ result: 'success', message: 'FCMIID UPDATED' });
   } catch (e) { exitRequestError(next, e); }
 }

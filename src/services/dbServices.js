@@ -174,7 +174,7 @@ function initDB(accountsArray, assetsArray) {
         ethAddresses.findByAddress(accountsArray[0].publicAddress)
           .then((result) => {
             if (result.length === 0) {
-              ethAddresses.addAddress(accountsArray[0].walletID, accountsArray[0].publicAddress, accountsArray[0].FCMIID);
+              ethAddresses.addAddress(accountsArray[0].pillarId, accountsArray[0].publicAddress, accountsArray[0].FCMIID);
             }
           }).catch((e) => { reject(e); });
         accountsArray.splice(0, 1);
