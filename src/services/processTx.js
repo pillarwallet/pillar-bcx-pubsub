@@ -223,7 +223,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                       logger.info(colors.cyan(`SMART CONTRACT CALL: ${tx.hash}\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\n`));
 
                       if (data.name === 'transfer') { // TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
-                        value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
+                        value = (parseFloat(data.params[1].value, 10) * (10 ** -18)).toString();
                         // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                         const to = data.params[0].value;
                         // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
@@ -240,7 +240,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                             asset,
                             contractAddress,
                             timestamp: tmstmp,
-                            value: parseInt(data.params[1].value, 10),
+                            value: parseFloat(data.params[1].value, 10),
                             gasPrice: tx.gasPrice,
                           };
                           rmqServices.sendPubSubMessage(txMsgFrom);
@@ -254,7 +254,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                             asset,
                             contractAddress,
                             timestamp: tmstmp,
-                            value: parseInt(data.params[1].value, 10),
+                            value: parseFloat(data.params[1].value, 10),
                             gasPrice: tx.gasPrice,
                           });
                         } else {
@@ -291,7 +291,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                   asset,
                                   contractAddress,
                                   timestamp: tmstmp,
-                                  value: parseInt(data.params[1].value, 10),
+                                  value: parseFloat(data.params[1].value, 10),
                                   gasPrice: tx.gasPrice,
                                 };
                                 rmqServices.sendPubSubMessage(txMsgTo);
@@ -305,7 +305,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                   asset,
                                   contractAddress,
                                   timestamp: tmstmp,
-                                  value: parseInt(data.params[1].value, 10),
+                                  value: parseFloat(data.params[1].value, 10),
                                   gasPrice: tx.gasPrice,
                                 });
                               } else {
@@ -389,7 +389,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                       }
                     } else if (data.name === 'transfer') { // TRANSACTION SENDER ADDRESS !== PILLAR ACCOUNT ADDRESS
                       // AND TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
-                      value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
+                      value = (parseFloat(data.params[1].value, 10) * (10 ** -18)).toString();
                       // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                       const to = data.params[0].value;
                       // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
@@ -409,7 +409,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                 asset,
                                 contractAddress,
                                 timestamp: tmstmp,
-                                value: parseInt(data.params[1].value, 10),
+                                value: parseFloat(data.params[1].value, 10),
                                 gasPrice: tx.gasPrice,
                               };
                               rmqServices.sendPubSubMessage(txMsgTo);
@@ -423,7 +423,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                 asset,
                                 contractAddress,
                                 timestamp: tmstmp,
-                                value: parseInt(data.params[1].value, 10),
+                                value: parseFloat(data.params[1].value, 10),
                                 gasPrice: tx.gasPrice,
                               });
                             } else {
