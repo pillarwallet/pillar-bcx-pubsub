@@ -37,9 +37,6 @@ testem.log
 /data
 /.env
 /bin/logs
-<<<<<<< HEAD
-/package-lock.json
-=======
 /src/logs
 /bcx_log.txt
 
@@ -139,4 +136,5 @@ dist/*.exe
 
 doc/
 /*-cov
->>>>>>> develop
+
+reports/*
