@@ -7,7 +7,6 @@ const gethURL = process.env.GETH_NODE_URL + ':' + process.env.GETH_NODE_PORT;
 
 let web3;
 
-
 function gethConnectDisplay() {
   logger.info('Connecting to geth node');
   return new Promise(((resolve, reject) => {
@@ -38,7 +37,7 @@ function setWeb3WebsocketConnection() {
     try {
       web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
       web3._provider.on('end', (eventObj) => {
-        logger.erro('Websocket disconnected!! Restarting connection');
+        logger.error('Websocket disconnected!! Restarting connection');
         logger.error(eventObj);
         exports.setWeb3WebsocketConnection();
       });

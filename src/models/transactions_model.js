@@ -31,7 +31,10 @@ const transactionsSchema = Mongoose.Schema({
   nbConfirmations: Number,
 });
 */
-transactionsSchema.index({ txHash: 1, toAddress: 1, fromAddress: 1 });
+transactionsSchema.index({ txHash: 1, type: 1});
+transactionsSchema.index({ toAddress: 1, type: 1});
+transactionsSchema.index({ fromAddress: 1, type: 1});
+transactionsSchema.index({ contractAddress: 1, type: 1});
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
 
