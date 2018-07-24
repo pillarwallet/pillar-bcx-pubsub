@@ -2,7 +2,7 @@ const Mongoose = require('../services/dbServices.js').mongoose;
 
 // NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
-  pillarId: { type: String, required: true },
+  pillarId: { type: String, required: false },
   protocol: { type: String, required: true },
   fromAddress: { type: String, required: false },
   toAddress: { type: String, required: false },
@@ -31,9 +31,10 @@ const transactionsSchema = Mongoose.Schema({
   nbConfirmations: Number,
 });
 */
-
-// The following lime needs to be commented for dbServices.test.js tests to pass (issue with Jest)
-transactionsSchema.index({ txHash: 1, toAddress: 1, fromAddress: 1 });
+transactionsSchema.index({ txHash: 1, type: 1});
+transactionsSchema.index({ toAddress: 1, type: 1});
+transactionsSchema.index({ fromAddress: 1, type: 1});
+transactionsSchema.index({ contractAddress: 1, type: 1});
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
 

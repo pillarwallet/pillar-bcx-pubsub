@@ -136,3 +136,5 @@ dist/*.exe
 
 doc/
 /*-cov
+
+reports/*
