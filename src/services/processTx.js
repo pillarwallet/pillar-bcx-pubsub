@@ -27,6 +27,53 @@ function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true, recove
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
+function newPendingTran(tx, protocol) {
+  const tmstmp = time.now();
+  var pillarId, asset, contractAddress, data, from, to, value;
+  from = tx.from;
+  to = tx.to;
+  if (hashMaps.accounts.has(tx.to)) {
+    //fetch the pillarId corresponding to the to address and
+    pillarId = hashMaps.accounts.get(tx.to);
+  } else if (hashMaps.accounts.has(tx.from)) {
+    pillarId = hashMaps.accounts.get(tx.from);
+  }
+  if(!hashMaps.assets.has(tx.from)) { 
+    asset = 'ETH';
+  } else {
+    //fetch the asset from the assets hashmap
+    const contractDetail = hashMaps.assets.get(tx.from);
+    contractAddress = contractDetail.contractAddress;
+    asset = contractDetail.symbol;
+    data = abiDecoder.decodeMethod(tx.input);
+    if ((data !== undefined) && (data.name === 'transfer')) { 
+      //smart contract call hence the asset must be the token name
+      to = data.params[0].value;
+      value = data.params[1].value * 10**contractDetail.decimals;
+    }
+  }
+  //send a message to the notifications queue reporting a new transactions
+  const txMsgTo = {
+    type: 'newTx',
+    pillarId: pillarId,
+    protocol: protocol, 
+    fromAddress: tx.from,
+    toAddress: tx.to,
+    txHash: tx.hash,
+    asset,
+    contractAddress: contractAddress,
+    timestamp: tmstmp,
+    value: tx.value,
+    gasPrice: tx.gasPrice,
+  };
+  logger.debug('Processing tx: ' + JSON.stringify(txMsgTo));
+  
+  rmqServices.sendPubSubMessage(txMsgTo);
+  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+  hashMaps.pendingTx.set(tx.hash, txMsgTo);
+}
+module.exports.newPendingTran = newPendingTran;
+
 function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
