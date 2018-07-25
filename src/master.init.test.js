@@ -1,48 +1,54 @@
-const sinon = require('sinon');
+const dbServices = require('./services/dbServices');
+const logger = require('./utils/logger');
+logger.transports.forEach((t) => (t.silent = true));
 
-describe('Test method: master.init()', () => {
-	test('Expect master.launch() to be called and master.init() to log start/exit', () => {
-		const logger = require('./utils/logger');
-		const spy = sinon.spy(logger, 'info');
+const info = logger.info;
+const error = logger.error;
 
-		const master = require('./master');
+describe('Method: master.init()', () => {
+    
+    var options;
+    var master;
+    var launch;
 
-		const stub = sinon.stub(master, 'launch');
-		stub.resolves();
+    beforeEach(() => {
 
-		const options = {
-			protocol: "Ethereum",
-			maxWallets: 1
-		};
+        logger.error = jest.fn();
+        logger.info = jest.fn();
+        dbServices.recentAccounts = jest.fn();
+        master = require('./master');
+        launch = master.launch;
+        master.launch = jest.fn();
+        options = {
+            protocol: "Ethereum",
+            maxWallets: 1
+        };
+    })
+    
+    afterEach(() => {
+        logger.info = info;
+        logger.error = error;
+        master.launch = launch;
+    });
 
-		master.init(options);
-		sinon.assert.called(stub);
-		sinon.assert.called(spy);
-		sinon.assert.calledWith(spy, 'Started executing master.init()');
-		sinon.assert.calledWith(spy, 'master.init(): Initializing master for Ethereum');
-		sinon.assert.calledWith(spy, 'master.init(): A new publisher will be spawned for every 1 wallets..');
-		sinon.assert.calledWith(spy, 'Exited master.init()');
+    it('Expect master.launch() to be called', () => {   
+        master.init(options);
+        expect(master.launch).toBeCalled();
+    });
 
-		spy.restore();
-		stub.restore();
+    it('Expect master.init() to throw an error (maxWallets)', () => {  
+       options.maxWallets = 0;
+       master.init(options);
+       expect(logger.error).toBeCalled();
+       expect(logger.error).toBeCalledWith('master.init() failed: Invalid configuration parameter maxWallets');
+    });
 
-	});
-
-	test('Expect master.init() to throw an error (maxWallets)', () => {
-		const logger = require('./utils/logger');
-		const spy = sinon.spy(logger, 'error');
-
-		const master = require('./master');
-
-		const options = {
-			protocol: "Ethereum",
-			maxWallets: 0
-		};
-
-		master.init(options);
-		sinon.assert.called(spy);
-		sinon.assert.calledWith(spy, 'master.init() failed: Invalid configuration parameter maxWallets');
-
-		spy.restore();
-	});
-});
+    it('Expect master.init() to log start/exit', () => {
+        master.init(options)
+        expect(logger.info).toBeCalled();
+        expect(logger.info).toBeCalledWith('Started executing master.init()');
+        expect(logger.info).toBeCalledWith('master.init(): Initializing master for Ethereum');
+        expect(logger.info).toBeCalledWith('master.init(): A new publisher will be spawned for every 1 wallets..');
+        expect(logger.info).toBeCalledWith('Exited master.init()');
+    });
+ });

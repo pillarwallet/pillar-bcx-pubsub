@@ -4,7 +4,7 @@
   "description": "Pillar BCX master, publisher and subscriber",
   "main": "./src/master.js",
   "scripts": {
-    "test": "jest -t=test",
+    "test": "jest",
     "test:coverage": "jest --coverage"
   },
   "repository": {
