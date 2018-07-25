@@ -8,7 +8,7 @@ const bcx = require('./bcx.js');
 const processTx = require('./processTx.js');
 const dbServices = require('./dbServices.js');
 const hashMaps = require('../utils/hashMaps.js');
-
+const protocol = 'Ethereum';
 
 function subscribePendingTx() {
   logger.info('Publisher subscribing to pending transactions.');
@@ -24,7 +24,7 @@ function subscribePendingTx() {
                 .then((txInfo) => {
                   if (txInfo != null) {
                     //processTx.newPendingTx(txInfo);
-                    processTx.newPendingTran(txInfo);
+                    processTx.newPendingTran(txInfo,protocol);
                   }
                 })
                 .catch((e) => { reject(e); });
@@ -96,8 +96,7 @@ function subscribeERC20SmartContract(ERC20SmartContract) {
   try {
     logger.info('gethSubscribe.subscribeERC20SmartContract() subscribed to events for contract: ' + ERC20SmartContract.contractAddress);
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
-      const ERC20SmartContractObject =
-        new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
+      const ERC20SmartContractObject = new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
           logger.debug('gethSubscribe: Token transfer event occurred for contract: ' + ERC20SmartContract.contractAddress);
