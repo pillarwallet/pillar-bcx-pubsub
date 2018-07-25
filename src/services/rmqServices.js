@@ -23,7 +23,6 @@ const TX_MAP = {};
 moment.locale('en_GB');
 
 exports.initPubSubMQ = function () {
-  return new Promise((resolve, reject) => {
     try {
       logger.info('Executing rmqServices.initMQ()');
       amqp.connect(MQ_URL, (err, conn) => {
@@ -34,17 +33,14 @@ exports.initPubSubMQ = function () {
           // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(pubSubQueue, Buffer.from(msg));
           logger.info(` [x] Sent ${msg}`);
-          resolve();
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
       });
     } catch (err) {
       logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
-      reject(err);
     } finally {
       logger.info('Exited rmqServices.initPubSubMQ()');
     }
-  });
 };
 
 exports.sendPubSubMessage = function (payload) {
