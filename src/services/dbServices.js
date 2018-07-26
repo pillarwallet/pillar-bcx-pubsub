@@ -16,12 +16,12 @@ function dbConnect($arg = { useMongoClient: true }) {
     try {
       // Setting up listeners
       module.exports.mongoose.connection.on('error', () => {
-        logger.info(colors.red.bold("ERROR: Couldn't establish connection to database :(\n"));
+        logger.error(("ERROR: Couldn't establish connection to database :("));
         reject(new Error("ERROR: Couldn't establish connection to database"));
       });
 
       module.exports.mongoose.connection.on('open', () => {
-        logger.info(colors.green.bold('Established connection to database!\n'));
+        logger.info(('Established connection to database!'));
         dbCollections = { accounts, assets, transactions };
         module.exports.dbCollections = dbCollections;
         resolve();
@@ -75,9 +75,9 @@ function recentAccounts(
           dbCollections.accounts.listRecent(idFrom)
             .then((ethAddressesArray) => {
               if(ethAddressesArray.length > 0) {
-                logger.info(colors.cyan.bold.underline(`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:\n`));
+                logger.info((`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:`));
               } else {
-                logger.info(colors.cyan.bold.underline('NO NEW ACCOUNTS:\n'));
+                logger.info(('NO NEW ACCOUNTS:'));
               }
               resolve(ethAddressesArray);
             })
@@ -87,10 +87,10 @@ function recentAccounts(
             .then((ethAddressesArray) => {
 		          logger.info('Total accounts found to monitor: ' + ethAddressesArray.length);
               if(ethAddressesArray.length > 0) {
-                logger.info(colors.cyan.bold.underline('FETCHING ALL ADDRESSES:\n'));
+                logger.info(('FETCHING ALL ADDRESSES:'));
                 //logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
               } else {
-                logger.info(colors.cyan.bold.underline('NO ACCOUNTS IN DATABASE\n'));
+                logger.info(('NO ACCOUNTS IN DATABASE'));
               }
 	            resolve(ethAddressesArray);
             })
@@ -150,9 +150,9 @@ module.exports.contractsToMonitor = contractsToMonitor;
 function initDB(accountsArray, assetsArray) {
   return new Promise(((resolve, reject) => {
     try {
-      logger.info(colors.yellow.bold('INITIALIZING DATABASE ADDRESSES COLLECTIONS...\n'));
+      logger.info('INITIALIZING DATABASE ADDRESSES COLLECTIONS.');
       if (accountsArray.length === 0 && assetsArray.length === 0) {
-        logger.info(colors.yellow.bold('DONE\n'));
+        logger.info('DONE');
         resolve();
       } else if (accountsArray.length === 0) {
         const smartContracts = require('../controllers/assets_ctrl.js');
@@ -188,20 +188,20 @@ module.exports.initDB = initDB;
 function initDBTxHistory() {
   return new Promise(((resolve, reject) => {
     try {
-      logger.info(colors.yellow.bold('INITIALIZING TX HISTORY DATABASE ...\n'));
+      logger.info('INITIALIZING TX HISTORY DATABASE ...');
       const txHistory = require('../controllers/transactions_ctrl.js');
       txHistory.findTxHistoryHeight()
         .then((result) => {
           if (result === 'NO_TX_HSTORY_HEIGHT') {
             txHistory.addZeroTxHistoryHeight()
               .then(() => {
-                logger.info(colors.yellow('-->Highest Block Number for ERC20 Tx History: 0\n'));
-                logger.info(colors.yellow.bold('TX HISTORY DATABASE INITIALIZED\n'));
+                logger.info('-->Highest Block Number for ERC20 Tx History: 0');
+                logger.info('TX HISTORY DATABASE INITIALIZED');
                 resolve();
               }).catch((e) => { reject(e); });
           } else {
-            logger.info(colors.yellow(`-->Highest Block Number for Tx History: ${result}\n`));
-            logger.info(colors.yellow.bold('TX HISTORY DATABASE INITIALIZED\n'));
+            logger.info(`-->Highest Block Number for Tx History: ${result}`);
+            logger.info('TX HISTORY DATABASE INITIALIZED');
             resolve();
           }
         })
@@ -229,21 +229,21 @@ module.exports.resetDBTxHistory = resetDBTxHistory;
 function initDBERC20SmartContracts() {
   return new Promise(((resolve, reject) => {
     try {
-      logger.info(colors.yellow.bold('INITIALIZING ERC20 SMART CONTRACTS DATABASE...\n'));
+      logger.info('INITIALIZING ERC20 SMART CONTRACTS DATABASE...');
       const smartContracts = require('../controllers/assets_ctrl.js');
       smartContracts.findERC20SmartContractsHistoryHeight()
         .then((result) => {
           if (result === 'NO_ERC20_CONTRACTS_HISTORY_HEIGHT') {
             smartContracts.addZeroSmartContractsCreationHistoryHeight()
               .then((zeroHeight) => {
-                logger.info(colors.yellow(`-->Highest Block Number for ERC20 Smart Contracts:${zeroHeight}\n`));
-                logger.info(colors.yellow.bold('ERC20 SMART CONTRACTS DATABASE INITIALIZED\n'));
+                logger.info(`-->Highest Block Number for ERC20 Smart Contracts:${zeroHeight}`);
+                logger.info('ERC20 SMART CONTRACTS DATABASE INITIALIZED');
                 resolve();
               })
               .catch((e) => { reject(e); });
           } else {
-            logger.info(colors.yellow(`-->Highest Block Number for ERC20 Smart Contracts: ${result}\n`));
-            logger.info(colors.yellow.bold('ERC20 SMART CONTRACTS DATABASE INITIALIZED\n'));
+            logger.info(`-->Highest Block Number for ERC20 Smart Contracts: ${result}`);
+            logger.info('ERC20 SMART CONTRACTS DATABASE INITIALIZED');
             resolve();
           }
         })
@@ -280,7 +280,7 @@ function emptyDB() {
               const transactions = require('../controllers/transactions_ctrl.js');
               transactions.emptyCollection()
                 .then(() => {
-                  logger.info(colors.red.bold('DATABASE IS NOW EMPTY\n'));
+                  logger.info(('DATABASE IS NOW EMPTY'));
                   resolve();
                 })
                 .catch((e) => { reject(e); });
@@ -299,7 +299,7 @@ function emptyDBTxHistory() {
       const transactions = require('../controllers/transactions_ctrl.js');
 	    transactions.emptyCollection()
         .then(() => {
-          logger.info(colors.red.bold('DATABASE TRANSACTION HISTORY IS NOW EMPTY\n'));
+          logger.info('DATABASE TRANSACTION HISTORY IS NOW EMPTY');
           resolve();
         })
         .catch((e) => { reject(e); });
@@ -314,7 +314,7 @@ function emptyDBERC20SmartContracts() {
       const assets = require('../controllers/assets_ctrl.js');
       assets.emptyCollection()
         .then(() => {
-          logger.info(colors.red.bold('SMART CONTRACTS DATABASE IS NOW EMPTY\n'));
+          logger.info('SMART CONTRACTS DATABASE IS NOW EMPTY');
           resolve();
         })
         .catch((e) => { reject(e); });

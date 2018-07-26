@@ -1,6 +1,7 @@
 const colors = require('colors');
 const assets = require('../models/assets_model');
 const logger = require('../utils/logger.js');
+const mongoose = require('mongoose');
 
 function listAll() {
   return new Promise(((resolve, reject) => {

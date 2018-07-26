@@ -8,7 +8,7 @@ const bcx = require('./bcx.js');
 const processTx = require('./processTx.js');
 const dbServices = require('./dbServices.js');
 const hashMaps = require('../utils/hashMaps.js');
-
+const protocol = 'Ethereum';
 
 function subscribePendingTx() {
   logger.info('Publisher subscribing to pending transactions.');
@@ -17,11 +17,14 @@ function subscribePendingTx() {
       gethConnect.gethConnectDisplay().then(function() {
         gethConnect.web3.eth.subscribe('pendingTransactions', (err, res) => {})
           .on('data', (txHash) => {
+            logger.debug('gethSubscribe: received notification for txHash: ' + txHash);
             if ((txHash !== null) && (txHash !== '')) {
+              logger.debug('gethSubscribe: fetch txInfo for hash: ' + txHash);
               bcx.getTxInfo(txHash)
                 .then((txInfo) => {
                   if (txInfo != null) {
-                    processTx.newPendingTx(txInfo);
+                    //processTx.newPendingTx(txInfo);
+                    processTx.newPendingTran(txInfo,protocol);
                   }
                 })
                 .catch((e) => { reject(e); });
@@ -31,7 +34,7 @@ function subscribePendingTx() {
             logger.info('END PENDING TX SUBSCRIBTION\n');
             resolve();
           });
-        logger.info(colors.green.bold('Subscribed to Pending Tx and Smart Contract Calls\n'));
+        logger.info('Subscribed to Pending Tx and Smart Contract Calls');
       });
     } catch (e) {
       logger.error(`gethSubscribe.subscribePendingTx() failed: ${e}`);
@@ -49,7 +52,7 @@ function subscribeBlockHeaders() {
       gethConnect.web3.eth.subscribe('newBlockHeaders', (err, res) => {})
         .on('data', (blockHeader) => {
           if (blockHeader && blockHeader.number && blockHeader.hash) {
-            logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
+            logger.info(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
             // Check for pending tx in database and update their status
             processTx.checkPendingTx(hashMaps.pendingTx.keys(), blockHeader.number)
               .then(() => {
@@ -57,18 +60,14 @@ function subscribeBlockHeaders() {
                   dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number);
                 }
               })
-              .then(() => {
-                // logger.info(colors.green.bold('Highest Block Number
-                // for Tx History: '+blockHeader.number+'\n'))
-              })
               .catch(e => reject(e));
           }
         })
         .on('endSubscribeBlockHeaders', () => { // Used for testing only
-          logger.info('END BLOCK HEADERS SUBSCRIBTION\n');
+          logger.info('END BLOCK HEADERS SUBSCRIBTION');
           resolve();
         });
-      logger.info(colors.green.bold('Subscribed to Block Headers\n'));
+      logger.info('Subscribed to Block Headers');
     } catch (e) {
       logger.error(`gethSubscribe.subscribeBlockHeaders() failed: ${e}`);
       reject(e);
@@ -88,7 +87,7 @@ function subscribeAllDBERC20SmartContracts() {
     smartContractsArray.forEach((ERC20SmartContract) => {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });
-    logger.info(colors.green.bold('Subscribed to DB ERC20 Smart Contracts Transfer Events\n'));
+    logger.info('Subscribed to DB ERC20 Smart Contracts Transfer Events');
   } catch (e) {
     logger.error('gethSubscribe.subscribeAllDBERC20SmartContracts() failed: ' + e);
   }
@@ -99,10 +98,10 @@ function subscribeERC20SmartContract(ERC20SmartContract) {
   try {
     logger.info('gethSubscribe.subscribeERC20SmartContract() subscribed to events for contract: ' + ERC20SmartContract.contractAddress);
     if (ERC20SmartContract.contractAddress !== 'contractAddress') {
-      const ERC20SmartContractObject =
-        new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
+      const ERC20SmartContractObject = new gethConnect.web3.eth.Contract(ERC20ABI, ERC20SmartContract.contractAddress);
       ERC20SmartContractObject.events.Transfer((error, result) => {
         if (!error) {
+          logger.debug('gethSubscribe: Token transfer event occurred for contract: ' + ERC20SmartContract.contractAddress);
           processTx.checkTokenTransferEvent(result, ERC20SmartContract);
         } else {
           logger.error('gethSubscribe.subscribeERC20SmartContract() failed: ' + error);

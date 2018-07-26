@@ -112,9 +112,8 @@ exports.launch = function () {
 
     exports.pubs[exports.index].on('close', (data) => {
       const pubId = (exports.index - 1);
-
+      logger.error(`Master: error occurred Publisher: ${pubId} closed with error: ${data}`);
       if (data !== undefined) {
-        logger.info(`Publisher: ${pubId} closed: ${data}`);
         exports.pubs[pubId] = fork(`${__dirname}/publisher.js`);
         // send the cached set of wallet addresses
         logger.info(`Restarted publisher ${pubId}`);

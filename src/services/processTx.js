@@ -27,6 +27,53 @@ function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true, recove
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
+function newPendingTran(tx, protocol) {
+  const tmstmp = time.now();
+  var pillarId, asset, contractAddress, data, from, to, value;
+  from = tx.from;
+  to = tx.to;
+  if (hashMaps.accounts.has(tx.to)) {
+    //fetch the pillarId corresponding to the to address and
+    pillarId = hashMaps.accounts.get(tx.to);
+  } else if (hashMaps.accounts.has(tx.from)) {
+    pillarId = hashMaps.accounts.get(tx.from);
+  }
+  if(!hashMaps.assets.has(tx.from)) { 
+    asset = 'ETH';
+  } else {
+    //fetch the asset from the assets hashmap
+    const contractDetail = hashMaps.assets.get(tx.from);
+    contractAddress = contractDetail.contractAddress;
+    asset = contractDetail.symbol;
+    data = abiDecoder.decodeMethod(tx.input);
+    if ((data !== undefined) && (data.name === 'transfer')) { 
+      //smart contract call hence the asset must be the token name
+      to = data.params[0].value;
+      value = data.params[1].value * 10**contractDetail.decimals;
+    }
+  }
+  //send a message to the notifications queue reporting a new transactions
+  const txMsgTo = {
+    type: 'newTx',
+    pillarId: pillarId,
+    protocol: protocol, 
+    fromAddress: tx.from,
+    toAddress: tx.to,
+    txHash: tx.hash,
+    asset,
+    contractAddress: contractAddress,
+    timestamp: tmstmp,
+    value: tx.value,
+    gasPrice: tx.gasPrice,
+  };
+  logger.debug('Processing tx: ' + JSON.stringify(txMsgTo));
+
+  rmqServices.sendPubSubMessage(txMsgTo);
+  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+  hashMaps.pendingTx.set(tx.hash, txMsgTo);
+}
+module.exports.newPendingTran = newPendingTran;
+
 function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
@@ -223,7 +270,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
 	                    logger.info(colors.cyan(`SMART CONTRACT CALL: ${tx.hash}\nFROM: PILLAR WALLET ${tx.from}\nTO: ${ticker} SMART CONTRACT ${contractAddress}\n`));
 
                       if (data.name === 'transfer') { // TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
-                        value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
+                        value = (parseFloat(data.params[1].value) * (10 ** -18)).toString();
                         // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                         const to = data.params[0].value;
                         // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
@@ -240,7 +287,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                             asset,
                             contractAddress,
                             timestamp: tmstmp,
-                            value: parseInt(data.params[1].value, 10),
+                            value: parseFloat(data.params[1].value),
                             gasPrice: tx.gasPrice,
                           };
                           rmqServices.sendPubSubMessage(txMsgFrom);
@@ -254,7 +301,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                             asset,
                             contractAddress,
                             timestamp: tmstmp,
-                            value: parseInt(data.params[1].value, 10),
+                            value: parseFloat(data.params[1].value),
                             gasPrice: tx.gasPrice,
                           });
                         } else {
@@ -291,7 +338,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                   asset,
                                   contractAddress,
                                   timestamp: tmstmp,
-                                  value: parseInt(data.params[1].value, 10),
+                                  value: parseFloat(data.params[1].value),
                                   gasPrice: tx.gasPrice,
                                 };
                                 rmqServices.sendPubSubMessage(txMsgTo);
@@ -305,7 +352,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                   asset,
                                   contractAddress,
                                   timestamp: tmstmp,
-                                  value: parseInt(data.params[1].value, 10),
+                                  value: parseFloat(data.params[1].value),
                                   gasPrice: tx.gasPrice,
                                 });
                               } else {
@@ -389,7 +436,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                       }
                     } else if (data.name === 'transfer') { // TRANSACTION SENDER ADDRESS !== PILLAR ACCOUNT ADDRESS
                       // AND TRANSACTION IS A TOKEN TRANSFER SMART CONTRACT CALL
-                      value = (parseInt(data.params[1].value, 10) * (10 ** -18)).toString();
+                      value = (parseFloat(data.params[1].value) * (10 ** -18)).toString();
                       // ^ TOKEN TRANSFER VALUE IS CARRIED IN TRANSACTION INPUT DATA
                       const to = data.params[0].value;
                       // ^ TOKEN TRANSFER RECIPIENT ADDRESS IS CARRIED IN TRANSACTION INPUT DATA
@@ -409,7 +456,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                 asset,
                                 contractAddress,
                                 timestamp: tmstmp,
-                                value: parseInt(data.params[1].value, 10),
+                                value: parseFloat(data.params[1].value),
                                 gasPrice: tx.gasPrice,
                               };
                               rmqServices.sendPubSubMessage(txMsgTo);
@@ -423,7 +470,7 @@ function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
                                 asset,
                                 contractAddress,
                                 timestamp: tmstmp,
-                                value: parseInt(data.params[1].value, 10),
+                                value: parseFloat(data.params[1].value),
                                 gasPrice: tx.gasPrice,
                               });
                             } else {
@@ -893,3 +940,49 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   }));
 }
 module.exports.checkTokenTransferEvent = checkTokenTransferEvent;
+
+//*************************************************************
+//* function to handle token transfer events.
+//*************************************************************
+function checkTokenTransfer(evnt, theContract, protocol) {
+  return new Promise(((resolve, reject) => {
+    var pillarId;
+    if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
+      pillarId = hashMaps.accounts.get(evnt.returnValues._to.toLowerCase());
+    } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
+      pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
+    } 
+    dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
+    // ETH TX SHOULD BE ALREADY IN DB BECAUSE
+    // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
+      .then((tx) => {
+        if (tx.asset === 'ETH') { 
+          // check is it is regular token transfer,
+          // if so (asset === TOKEN): resolve (because token transfer already processed),
+          // otherwise (asset === ETH) transfer needs to be processed here:
+          // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+          const txMsg = {
+            type: 'newTx',
+            pillarId, 
+            protocol: protocol, 
+            fromAddress: theContract.address,
+            toAddress: evnt.returnValues._to,
+            txHash: evnt.transactionHash,
+            asset: theContract.ticker,
+            contractAddress: theContract.address,
+            timestamp: tmstmp,
+            value: evnt.returnValues._value,
+            gasPrice: evnt.gasPrice,
+            status: 'confirmed',
+          };
+          logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+          rmqServices.sendPubSubMessage(txMsg);
+          resolve();
+        } else {
+          resolve();
+        }
+      })
+      .catch((e) => { reject(e); });
+  }));
+}
+module.exports.checkTokenTransfer = checkTokenTransfer;
