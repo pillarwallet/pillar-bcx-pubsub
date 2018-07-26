@@ -16,7 +16,7 @@ function dbConnect($arg = { useMongoClient: true }) {
     try {
       // Setting up listeners
       module.exports.mongoose.connection.on('error', () => {
-        logger.info(("ERROR: Couldn't establish connection to database :("));
+        logger.error(("ERROR: Couldn't establish connection to database :("));
         reject(new Error("ERROR: Couldn't establish connection to database"));
       });
 

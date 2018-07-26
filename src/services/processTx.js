@@ -67,7 +67,7 @@ function newPendingTran(tx, protocol) {
     gasPrice: tx.gasPrice,
   };
   logger.debug('Processing tx: ' + JSON.stringify(txMsgTo));
-  
+
   rmqServices.sendPubSubMessage(txMsgTo);
   // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
   hashMaps.pendingTx.set(tx.hash, txMsgTo);
@@ -940,3 +940,49 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   }));
 }
 module.exports.checkTokenTransferEvent = checkTokenTransferEvent;
+
+//*************************************************************
+//* function to handle token transfer events.
+//*************************************************************
+function checkTokenTransfer(evnt, theContract, protocol) {
+  return new Promise(((resolve, reject) => {
+    var pillarId;
+    if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
+      pillarId = hashMaps.accounts.get(evnt.returnValues._to.toLowerCase());
+    } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
+      pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
+    } 
+    dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
+    // ETH TX SHOULD BE ALREADY IN DB BECAUSE
+    // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
+      .then((tx) => {
+        if (tx.asset === 'ETH') { 
+          // check is it is regular token transfer,
+          // if so (asset === TOKEN): resolve (because token transfer already processed),
+          // otherwise (asset === ETH) transfer needs to be processed here:
+          // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+          const txMsg = {
+            type: 'newTx',
+            pillarId, 
+            protocol: protocol, 
+            fromAddress: theContract.address,
+            toAddress: evnt.returnValues._to,
+            txHash: evnt.transactionHash,
+            asset: theContract.ticker,
+            contractAddress: theContract.address,
+            timestamp: tmstmp,
+            value: evnt.returnValues._value,
+            gasPrice: evnt.gasPrice,
+            status: 'confirmed',
+          };
+          logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+          rmqServices.sendPubSubMessage(txMsg);
+          resolve();
+        } else {
+          resolve();
+        }
+      })
+      .catch((e) => { reject(e); });
+  }));
+}
+module.exports.checkTokenTransfer = checkTokenTransfer;
