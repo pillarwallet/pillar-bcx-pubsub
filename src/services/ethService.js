@@ -141,7 +141,7 @@ function checkPendingTx(pendingTxArray, blockNumber) {
                                 gasUsed,
                             };
                             rmqServices.sendPubSubMessage(txMsg);
-                            logger.info(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}\n`);
+                            logger.info(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}`);
                             hashMaps.pendingTx.delete(txHash);
                             resolve(checkPendingTx(pendingTxArray, blockNumber));
                         } else {
@@ -159,36 +159,26 @@ function checkPendingTx(pendingTxArray, blockNumber) {
                             gasUsed,
                         };
                         rmqServices.sendPubSubMessage(txMsg);
-                        logger.info((`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)\n`));
+                        logger.info((`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)`));
                         hashMaps.pendingTx.delete(txHash);
-                        resolve(checkPendingTx(pendingTxArray, blockNumber, isPublisher));
+                        resolve(checkPendingTx(pendingTxArray, blockNumber));
                       }
                     } else { // TX RECEIPT NOT FOUND
-                      const status = 'failed: tx receipt not found';
-                      const confBlockNumber = confBlockNb;
-                      const gasUsed = null;
-                      if (isPublisher) {
+                        const status = 'failed: tx receipt not found';
+                        const confBlockNumber = confBlockNb;
+                        const gasUsed = null;
                         // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                         const txMsg = {
-                          type: 'updateTx',
-                          txHash: item.txHash,
-                          confBlockNumber,
-                          status,
-                          gasUsed,
+                            type: 'updateTx',
+                            txHash: item.txHash,
+                            confBlockNumber,
+                            status,
+                            gasUsed,
                         };
                         rmqServices.sendPubSubMessage(txMsg);
-                      } else {
-                        // HOUSEKEEPER UPDATES TX IN DB
-                        dbServices.dbCollections.transactions.updateTx({
-                          txHash: item.txHash,
-                          blockNumber,
-                          status,
-                          gasUsed,
-                        });
-                      }
-                      logger.info(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)`);
-                      hashMaps.pendingTx.delete(txHash);
-                      resolve(checkPendingTx(pendingTxArray, blockNumber));
+                        logger.info(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)`);
+                        hashMaps.pendingTx.delete(txHash);
+                        resolve(checkPendingTx(pendingTxArray, blockNumber));
                     }
                   })
                   .catch((e) => { reject(e); });
@@ -197,29 +187,20 @@ function checkPendingTx(pendingTxArray, blockNumber) {
                 resolve(checkPendingTx(pendingTxArray, blockNumber));
               }
             } else { // TX INFO NOT FOUND
-              const status = 'failed: tx info not found';
-              const confBlockNumber = null;
-              const gasUsed = null;
-              if (isPublisher) {
+                const status = 'failed: tx info not found';
+                const confBlockNumber = null;
+                const gasUsed = null;
+                
                 // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
                 const txMsg = {
-                  type: 'updateTx',
-                  txHash: item.txHash,
-                  confBlockNumber,
-                  status,
-                  gasUsed,
+                    type: 'updateTx',
+                    txHash: item.txHash,
+                    confBlockNumber,
+                    status,
+                    gasUsed,
                 };
                 rmqServices.sendPubSubMessage(txMsg);
-              } else {
-                // HOUSEKEEPER UPDATES TX IN DB
-                dbServices.dbCollections.transactions.updateTx({
-                  txHash: item.txHash,
-                  blockNumber,
-                  status,
-                  gasUsed,
-                });
-              }
-              logger.info(colors.red.bold(`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)\n`));
+              logger.info((`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)`));
               hashMaps.pendingTx.delete(txHash);
               resolve(checkPendingTx(pendingTxArray, blockNumber));
             }
