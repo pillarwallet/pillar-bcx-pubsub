@@ -1,10 +1,9 @@
 const sinon = require('sinon');
 const logger = require('./utils/logger');
 logger.transports.forEach((t) => (t.silent = true));
-require('dotenv').config();
 
 describe('Test function calls', () => {
-	test('Expect dbConnect and initPubSubMQto be called by initServices()', (done) => {
+	test('Expect dbConnect and initPubSubMQ to be called by initServices()', (done) => {
 		const dbServices = require('./services/dbServices.js');
 		const stub = sinon.stub(dbServices, 'dbConnect');
 		stub.resolves();
@@ -21,7 +20,6 @@ describe('Test function calls', () => {
 			stub.restore();
 			stub2.restore();
 			done();
-		})
-
+		});
 	});
 });

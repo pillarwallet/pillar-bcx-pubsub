@@ -1,44 +1,35 @@
-const dbServices = require('./services/dbServices');
+const sinon = require('sinon');
 const logger = require('./utils/logger');
 logger.transports.forEach((t) => (t.silent = true));
 
-const info = logger.info;
-const error = logger.error;
-const recentAccounts = dbServices.recentAccounts;
+describe('Test method: master.notify()', () => {
+	test('Expect master.notify() to log start/exit and dbServices.recentAccounts to be called/resolved', () => {
+
+		const dbServices = require('./services/dbServices.js');
+		const stub = sinon.stub(dbServices, 'recentAccounts');
+		stub.resolves({wallets: 'wallets'});
+
+		const spy = sinon.spy(logger, 'info');
+
+		const master = require('./master');
+		const stub2 = sinon.stub(master, 'init');
+		stub2.resolves()
+
+		const id = "id";
+		const socket = "socket";
+
+		master.notify(id, socket);
+		sinon.assert.called(spy);
+		sinon.assert.calledWith(spy, 'Started executing master.notify()');
+		sinon.assert.calledWith(spy, 'Exited master.notify()');
+
+		sinon.assert.calledOnce(stub);
+		sinon.assert.calledWith(stub, 'id');
 
 
-describe("Method: master.notify()", () => {
+		spy.restore();
+		stub.restore();
+		stub2.restore();
+	});
 
-    var master;
-
-    beforeEach(()=> {
-        logger.info = jest.fn();
-        logger.error = jest.fn();
-        dbServices.recentAccounts = jest.fn();
-
-        master = require('./master');
-
-        const id = "id";
-        const socket = "socket";
-        master.notify(id, socket);
-    });
-
-    afterEach(() => {
-        logger.info = info;
-        logger.error = error;
-        dbServices.recentAccounts = recentAccounts;
-    });
-    it('Expect master.notify() to log start/exit', () => {
-        expect(logger.info).toBeCalled();
-        expect(logger.info).toBeCalledWith('Started executing master.notify()');
-        expect(logger.info).toBeCalledWith('Exited master.notify()');
-    });
-    it('Expect dbServices.recentAccounts to be called/resolved', () => {
-        expect(dbServices.recentAccounts).toBeCalled();
-        expect(dbServices.recentAccounts).toBeCalledWith("id");
-    });
-    it('Expect master.notify() to fail to start', () => {
-        expect(logger.error).toBeCalled();
-        expect(logger.error).toBeCalledWith("master.notify() failed: TypeError: Cannot read property 'then' of undefined");
-    });
 });
