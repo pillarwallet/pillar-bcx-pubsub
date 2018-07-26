@@ -1,21 +1,13 @@
 const sinon = require('sinon');
+const logger = require('./utils/logger');
+logger.transports.forEach((t) => (t.silent = true));
 
 describe('Test init functions ', () => {
 	test('Expect initIPC to call logger.info, process.send', (done) => {
 		const spy = sinon.spy(process, 'send');
-		const logger = require('./utils/logger');
 		const spy2 = sinon.spy(logger, 'info');
 
-	//	const rmqServices = require('./services/rmqServices.js');
-	//	const stub = sinon.stub(rmqServices, 'initPubSubMQ');
-	//	stub.resolves();
-
 		const publisher = require('./publisher.js');
-	//	const stub2 = sinon.stub(publisher, 'initSubscriptions');
-	//	stub2.resolves();
-
-	//	const stub3 = sinon.stub(publisher, 'poll');
-	//	stub3.resolves();
 
 		return publisher.initIPC()
 		.then(() => {
@@ -26,14 +18,8 @@ describe('Test init functions ', () => {
 			sinon.assert.calledWith(spy2, 'Publisher initializing the RMQ');
 			sinon.assert.calledWith(spy2, 'Publisher polling master for new wallets every 5 seconds');
 			sinon.assert.calledWith(spy2, 'Exited publisher.initIPC()');
-			// sinon.assert.calledOnce(stub);
-			// sinon.assert.calledOnce(stub2);
-			// sinon.assert.calledOnce(stub3);
 			spy.restore();
 			spy2.restore();
-		//	stub.restore();
-		//	stub2.restore();
-		//	stub3.restore();
 			done();
 		});
 	});
