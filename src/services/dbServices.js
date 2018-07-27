@@ -76,8 +76,6 @@ function recentAccounts(
             .then((ethAddressesArray) => {
               if(ethAddressesArray.length > 0) {
                 logger.info((`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:`));
-              } else {
-                logger.info(('NO NEW ACCOUNTS:'));
               }
               resolve(ethAddressesArray);
             })
@@ -87,10 +85,8 @@ function recentAccounts(
             .then((ethAddressesArray) => {
 		          logger.info('Total accounts found to monitor: ' + ethAddressesArray.length);
               if(ethAddressesArray.length > 0) {
-                logger.info(('FETCHING ALL ADDRESSES:'));
+                logger.info(('Fetching ' + ethAddressesArray.length + ' addresses.'));
                 //logger.info("Addresses: " + JSON.stringify(ethAddressesArray));
-              } else {
-                logger.info(('NO ACCOUNTS IN DATABASE'));
               }
 	            resolve(ethAddressesArray);
             })

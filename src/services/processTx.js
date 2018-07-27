@@ -29,48 +29,53 @@ module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
 function newPendingTran(tx, protocol) {
   const tmstmp = time.now();
-  var pillarId, asset, contractAddress, data, from, to, value;
+  var pillarId = '';
+  var asset, contractAddress, data, from, to, value;
   from = tx.from;
   to = tx.to;
-  if (hashMaps.accounts.has(tx.to)) {
+  if ((tx.to !== null) && hashMaps.accounts.has(tx.to.toLowerCase())) {
     //fetch the pillarId corresponding to the to address and
-    pillarId = hashMaps.accounts.get(tx.to);
-  } else if (hashMaps.accounts.has(tx.from)) {
-    pillarId = hashMaps.accounts.get(tx.from);
+    pillarId = hashMaps.accounts.get(tx.to.toLowerCase());
+  } else if ((tx.from !== null) && hashMaps.accounts.has(tx.from.toLowerCase())) {
+    pillarId = hashMaps.accounts.get(tx.from.toLowerCase());
   }
-  if(!hashMaps.assets.has(tx.from)) { 
+  if(!hashMaps.assets.has(tx.from.toLowerCase())) { 
     asset = 'ETH';
   } else {
     //fetch the asset from the assets hashmap
-    const contractDetail = hashMaps.assets.get(tx.from);
+    const contractDetail = hashMaps.assets.get(tx.from.toLowerCase());
     contractAddress = contractDetail.contractAddress;
     asset = contractDetail.symbol;
     data = abiDecoder.decodeMethod(tx.input);
     if ((data !== undefined) && (data.name === 'transfer')) { 
       //smart contract call hence the asset must be the token name
       to = data.params[0].value;
-      value = data.params[1].value * 10**contractDetail.decimals;
+      //value = data.params[1].value * 10**contractDetail.decimals;
     }
   }
-  //send a message to the notifications queue reporting a new transactions
-  const txMsgTo = {
-    type: 'newTx',
-    pillarId: pillarId,
-    protocol: protocol, 
-    fromAddress: tx.from,
-    toAddress: tx.to,
-    txHash: tx.hash,
-    asset,
-    contractAddress: contractAddress,
-    timestamp: tmstmp,
-    value: tx.value,
-    gasPrice: tx.gasPrice,
-  };
-  logger.debug('Processing tx: ' + JSON.stringify(txMsgTo));
+  
+  //logger.debug('processTx.newPendingTran(): ' + pillarId + ' tx: ' + JSON.stringify(tx));
+  if(pillarId !== '') {
+    //send a message to the notifications queue reporting a new transactions
+    const txMsgTo = {
+      type: 'newTx',
+      pillarId: pillarId,
+      protocol: protocol, 
+      fromAddress: from,
+      toAddress: to,
+      txHash: tx.hash,
+      asset,
+      contractAddress: contractAddress,
+      timestamp: tmstmp,
+      value: tx.value,
+      gasPrice: tx.gasPrice,
+    };
+    logger.debug('processTx.newPendingTran() notifying subscriber of a new relevant transaction: ' + JSON.stringify(txMsgTo));
 
-  rmqServices.sendPubSubMessage(txMsgTo);
-  // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
-  hashMaps.pendingTx.set(tx.hash, txMsgTo);
+    rmqServices.sendPubSubMessage(txMsgTo);
+    // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
+    hashMaps.pendingTx.set(tx.hash, txMsgTo);
+  }
 }
 module.exports.newPendingTran = newPendingTran;
 
@@ -647,7 +652,7 @@ function checkPendingTx(pendingTxArray, blockNumber, isPublisher = true) {
       const item = hashMaps.pendingTx.get(txHash);
       pendingTxArray.splice(0, 1);
 
-      bcx.getTxInfo(item.txHash)
+      web3.eth.getTransaction(item.txHash)
         .then((txInfo) => {
           if (txInfo != null) {
             if (txInfo.blockNumber != null) {
