@@ -17,7 +17,11 @@ const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 
 const CWBURL = process.env.CWB_URL;
-const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
+
+const MQ_URL = (!process.env.MQ_BCX_USERNAME && !process.env.MQ_BCX_PASSWORD) ?
+  process.env.RABBITMQ_SERVER :
+  `amqp://${process.env.MQ_BCX_USERNAME}:${process.env.MQ_BCX_PASSWORD}@${process.env.RABBITMQ_SERVER}`;
+
 const TX_MAP = {};
 
 moment.locale('en_GB');
