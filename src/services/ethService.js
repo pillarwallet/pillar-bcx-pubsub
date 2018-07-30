@@ -35,6 +35,18 @@ function connect() {
 }
 module.exports.connect = connect;
 
+function getWeb3() {
+    logger.info('ethService.getWeb3(): fetches the current instance of web3 object'); 
+    return new Promise(((resolve, reject) => {
+        if(module.exports.connect()) {
+            resolve(web3);
+        } else {
+            reject();
+        }
+    }));
+}
+module.exports.getWeb3 = getWeb3;
+
 function subscribePendingTxn () {
     logger.info('ethService.subscribePendingTxn(): Subscribing to list of pending transactions.'); 
     if(module.exports.connect()) {
@@ -109,6 +121,100 @@ function subscribeTransferEvents(theContract) {
       }
 }
 module.exports.subscribeTransferEvents = subscribeTransferEvents;
+
+function getBlockTx(blockNumber) {
+    return new Promise(((resolve, reject) => {
+        try {
+            if(module.exports.connect()) {
+                web3.eth.getBlock(blockNumber, true)
+                .then((result) => {
+                    // logger.info(result.transactions)
+                    if (result) {
+                        resolve(result.transactions);
+                    } else {
+                        reject('ethService.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED');
+                    }
+                })                
+            } else {
+                reject('ethService.getBlockTx Error: Connection to geth failed!');
+            }
+        } catch (e) { reject(e); }
+    }));
+}
+module.exports.getBlockTx = getBlockTx;
+
+function getBlockNumber(blockHash) {
+    return new Promise(((resolve, reject) => {
+        try {
+            if(module.exports.connect()) {
+                web3.eth.getBlock(blockHash)
+                .then((result) => {
+                    resolve(result.number);
+                });
+            } else {
+                reject('ethService.getBlockNumber Error: Connection to geth failed!'); 
+            }
+        } catch (e) { reject(e); }
+    }));
+}
+module.exports.getBlockNumber = getBlockNumber;
+
+function getLastBlockNumber() {
+    if(module.exports.connect()) {
+        return web3.eth.getBlockNumber();
+    } else {
+        logger.error('ethService.getLastBlockNumber(): connection to geth failed!');
+        return;
+    }
+}
+module.exports.getLastBlockNumber = getLastBlockNumber;
+
+function getTxReceipt(txHash) {
+    if(module.exports.connect()) {
+        return web3.eth.getTransactionReceipt(txHash);
+    } else {
+        logger.error('ethService.getTxReceipt(): connection to geth failed!');
+        return;        
+    }
+}
+module.exports.getTxReceipt = getTxReceipt;
+
+function getBlockTransactionCount(hashStringOrBlockNumber) {
+    if(module.exports.connect()) {
+        return web3.eth.getBlockTransactionCount(hashStringOrBlockNumber);
+    } else {
+        logger.error('ethService.getBlockTransactionCount(): connection to geth failed!');
+        return;        
+    }
+}
+module.exports.getBlockTransactionCount = getBlockTransactionCount;
+
+function getTransactionFromBlock(hashStringOrBlockNumber,index) {
+    if(module.exports.connect()) {
+        return web3.eth.getTransactionFromBlock(hashStringOrBlockNumber,index);
+    } else {
+        logger.error('ethService.getTransactionFromBlock(): connection to geth failed!');
+        return;        
+    }    
+}
+module.exports.getTransactionFromBlock = getTransactionFromBlock;
+
+function getPendingTxArray() {
+    return new Promise(((resolve, reject) => {
+        try {
+            if(module.exports.connect()) {
+                web3.eth.getBlock('pending', true)
+                .then((result) => {
+                    // logger.info(result)
+                    resolve(result.transactions);
+                });
+            } else {
+                reject('ethService.getPendingTxArray(): connection to geth failed!')
+            }
+        } catch (e) { reject(e); }
+    }));
+}
+module.exports.getPendingTxArray = getPendingTxArray;
 
 function checkPendingTx(pendingTxArray, blockNumber) {
     return new Promise(((resolve, reject) => {

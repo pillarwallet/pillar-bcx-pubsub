@@ -57,7 +57,7 @@ exports.launch = function () {
     logger.info('Started executing master.launch()');
 
     // start the first program pair of publisher and subscribers
-    exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
+    exports.housekeeper = fork(`${__dirname}/housekeeper.new.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
     fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
@@ -76,7 +76,7 @@ exports.launch = function () {
     exports.housekeeper.on('close', (data) => {
       if (data !== undefined) {
         logger.info(`Housekeeper closed: ${data}`);
-        exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
+        exports.housekeeper = fork(`${__dirname}/housekeeper.new.js`);
       }
     });
 

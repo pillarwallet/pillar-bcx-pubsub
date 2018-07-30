@@ -1,5 +1,6 @@
 const logger = require('../utils/logger.js');
 const gethConnect = require('./gethConnect.js');
+//const web3 = require('./ethService.js').getWeb3;
 
 
 function getTxInfo(txHash) {
@@ -96,7 +97,7 @@ function getBalance(address, asset, contractAddress) {
       if (asset === 'ETH') {
         gethConnect.web3.eth.getBalance(address)
           .then((result) => {
-            const ETHBalance = gethConnect.web3.utils.fromWei(gethConnect.web3.utils.toBN(result).toString(), 'ether');
+            const ETHBalance = web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
             logger.info(`WEB3 ${asset} BALANCE = ${ETHBalance}`);
             resolve(ETHBalance);
           })
@@ -117,7 +118,7 @@ function getBalance(address, asset, contractAddress) {
           },
           (err, result) => {
             if (result) {
-              const tokenBalance = gethConnect.web3.utils.fromWei(gethConnect.web3.utils.toBN(result).toString(), 'ether');
+              const tokenBalance = web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
               // logger.info('WEB3 '+asset+ 'TOKEN BALANCE = ' + tokenBalance+'\n')
               resolve(tokenBalance);
             } else {

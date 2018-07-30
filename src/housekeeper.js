@@ -7,17 +7,19 @@ const processTx = require('./services/processTx.js');
 const colors = require('colors');
 const accounts = require('./services/accounts.js');
 const ERC20ABI = require('./services/ERC20ABI');
+const LOOK_BACK_BLOCKS = 15;
+const ethService = require('./services/bcx.js');
 
 const logs = false;
 
 process.on('message', (data) => {
-  logger.info('Housekeeper has received message from master........');
+  logger.debug('Housekeeper has received message from master........');
   const message = data.message;
   if (data.type === 'accounts') {
     for (let i = 0; i < message.length; i++) {
       const obj = message[i];
-      logger.info(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
-      module.exports.recoverWallet(obj.walletId.toLowerCase(), 15);
+      logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
+      module.exports.recoverWallet(obj.walletId.toLowerCase(), LOOK_BACK_BLOCKS);
     }
   }
 });
@@ -68,12 +70,12 @@ exports.recoverWallet = function (recoverAddress, nbBlocks) {
               });
               processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false, recoverAddress)
                 .then((nbPendingTxFound) => {
-                  console.log(`DONE RECOVERING PENDING TX FOR NEW ACCOUNT ${recoverAddress}\n--> ${nbPendingTxFound} transactions found\n`);
+                  console.log(`DONE RECOVERING PENDING TX FOR NEW ACCOUNT ${recoverAddress}--> ${nbPendingTxFound} transactions found`);
                   bcx.getLastBlockNumber()
                     .then((lastBlockNb) => {
                       module.exports.dlTxHistory(lastBlockNb - nbBlocks, lastBlockNb, 0, false, recoverAddress) // SEND MSG TO PRODUCTION SEGMENT
                         .then((nbMinedTxFound) => {
-                          console.log(`DONE RECOVERING MINED TX FOR NEW ACCOUNT ${recoverAddress}\n--> ${nbMinedTxFound} transactions found\n`);
+                          console.log(`DONE RECOVERING MINED TX FOR NEW ACCOUNT ${recoverAddress}--> ${nbMinedTxFound} transactions found`);
                           resolve();
                         })
                         .catch((e) => {
@@ -107,7 +109,7 @@ exports.checkTxPool = function () {
   // and would not be added in TX History by dbServices.updateTxHistory
   return new Promise((resolve, reject) => {
     try {
-      logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...\n'));
+      logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...'));
       bcx.getPendingTxArray()
         .then((pendingTxArray) => {
           // CHECK IF TX ALREADY IN DB
@@ -127,7 +129,7 @@ exports.checkTxPool = function () {
               });
               processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false)
                 .then((nbTxFound) => {
-                  logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE\n--> ${nbTxFound} transactions found\n`));
+                  logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE--> ${nbTxFound} transactions found`));
                   resolve();
                 }).catch((e) => { reject(e); });
             }).catch((e) => { reject(e); });
@@ -142,14 +144,14 @@ exports.updateTxHistory = function () {
     try {
       bcx.getLastBlockNumber()
         .then((maxBlock) => {
-          logger.info(colors.red.bold(`LAST BLOCK NUMBER = ${maxBlock}\n`));
+          logger.info((`LAST BLOCK NUMBER = ${maxBlock}`));
           dbServices.dbCollections.transactions.findTxHistoryHeight()
             .then((startBlock) => {
-              logger.info(colors.red.bold(`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
+              logger.info((`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}`));
               this.dlTxHistory(startBlock, maxBlock, 0, logs)
                 .then((nbTxFound) => {
-                  logger.info(colors.red.bold('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!\n'));
-                  logger.info(colors.red(`-->${nbTxFound} transactions found\n`));
+                  logger.info(('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!'));
+                  logger.info((`-->${nbTxFound} transactions found`));
                   resolve();
                 })
                 .catch((e) => {
@@ -171,7 +173,7 @@ exports.dlTxHistory = function (startBlock, maxBlock, nbTx, logs = false, recove
         resolve(nbTx);
       } else {
         if (logs) {
-          logger.info(colors.red(`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}\n`));
+          logger.info((`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}`));
         }
         bcx.getBlockTx(startBlock)
           .then((txArray) => {
@@ -225,7 +227,7 @@ exports.dlERC20SmartContracts = function (startBlock, endBlock, nbERC20Found, lo
         resolve(nbERC20Found);
       } else {
         if (logs) {
-          logger.info(colors.blue(`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}\n`));
+          logger.info((`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}`));
         }
         gethConnect.web3.eth.getBlock(startBlock, false)
           .then((result) => {
@@ -272,7 +274,7 @@ exports.processSmartContractsAddressesArray = function (smartContractsAddressesA
                       const symbol = result3;
                       // logger.info('SYMBOL : '+symbol)
                       if (decimals !== undefined && name !== undefined && symbol !== undefined) {
-                        logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}\n`));
+                        logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}`));
                         if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
                           nbERC20Found += 1;
                           ERC20SmartContract = {
@@ -295,7 +297,7 @@ exports.processSmartContractsAddressesArray = function (smartContractsAddressesA
                             })
                             .catch((e) => { reject(e); });
                         } else {
-                          logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)\n'));
+                          logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)'));
                           resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
                         }
                       } else {
@@ -326,14 +328,14 @@ exports.updateERC20SmartContracts = function () {
     try {
       bcx.getLastBlockNumber()
         .then((maxBlock) => {
-          logger.info(colors.blue.bold(`LAST BLOCK NUMBER = ${maxBlock}\n`));
+          logger.info((`LAST BLOCK NUMBER = ${maxBlock}`));
           dbServices.dbCollections.assets.findERC20SmartContractsHistoryHeight()
             .then((startBlock) => {
-              logger.info(colors.blue.bold(`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}\n`));
+              logger.info((`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}`));
               this.dlERC20SmartContracts(startBlock, maxBlock, 0, logs)
                 .then((nbERC20Found) => {
-                  logger.info(colors.blue.bold('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!\n'));
-                  logger.info(colors.blue(`-->${nbERC20Found} ERC20 smart contracts found\n`));
+                  logger.info(('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!'));
+                  logger.info((`-->${nbERC20Found} ERC20 smart contracts found`));
                   resolve();
                 })
                 .catch((e) => { reject(e); });
@@ -352,23 +354,23 @@ exports.checkNewERC20SmartContracts = function () {
       gethConnect.web3.eth.subscribe('newBlockHeaders', (err, res) => {})
         .on('data', (blockHeader) => {
           if (blockHeader != null) {
-            logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}\n`));
+            logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`));
             // NOW, @ EACH NEW BLOCK MINED
             // Check for newly created ERC20 smart contracts
             this.dlERC20SmartContracts(blockHeader.number, blockHeader.number, logs)
               .then(() => {
                 dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
                   .then(() => {
-                    // logger.info(colors.green.bold('Highest Block Number for ERC20 Smart Contracts: '+blockHeader.number+'\n'))
+                    // logger.info(colors.green.bold('Highest Block Number for ERC20 Smart Contracts: '+blockHeader.number+''))
                   });
               });
           }
         })
         .on('endSubscribeBlockHeaders', () => { // Used for testing only
-          logger.info('END BLOCK HEADERS SUBSCRIBTION\n');
+          logger.info('END BLOCK HEADERS SUBSCRIBTION');
           resolve();
         });
-      logger.info(colors.green.bold('Subscribed to Block Headers\n'));
+      logger.info(colors.green.bold('Subscribed to Block Headers'));
     } catch (e) { reject(e); }
   });
   return (subscribePromise);

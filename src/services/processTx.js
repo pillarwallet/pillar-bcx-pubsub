@@ -27,6 +27,63 @@ function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true, recove
 }
 module.exports.processNewPendingTxArray = processNewPendingTxArray;
 
+function storeIfRelevant(tx,protocol) {
+  const tmstmp = time.now();
+  var pillarId = '';
+  var  data, value;
+  from = tx.from;
+  to = tx.to;
+  var status = (tx.status === '0x1' ? 'confirmed' : 'failed');
+  if ((tx.to !== null) && hashMaps.accounts.has(tx.to.toLowerCase())) {
+    //fetch the pillarId corresponding to the to address and
+    pillarId = hashMaps.accounts.get(tx.to.toLowerCase());
+  } else if ((tx.from !== null) && hashMaps.accounts.has(tx.from.toLowerCase())) {
+    pillarId = hashMaps.accounts.get(tx.from.toLowerCase());
+  }
+  if(!hashMaps.assets.has(tx.from.toLowerCase())) { 
+    asset = 'ETH';
+    value = tx.value;
+  } else {
+    //fetch the asset from the assets hashmap
+    const contractDetail = hashMaps.assets.get(tx.from.toLowerCase());
+    contractAddress = contractDetail.contractAddress;
+    asset = contractDetail.symbol;
+    data = abiDecoder.decodeMethod(tx.input);
+    if ((data !== undefined) && (data.name === 'transfer')) { 
+      //smart contract call hence the asset must be the token name
+      to = data.params[0].value;
+      value = data.params[1].value * 10**contractDetail.decimals;
+    }
+  }
+  
+  if(pillarId !== '') {
+    dbServices.dbCollections.transactions.findOneByTxHash(tx.transactionHash).then((txn) => {
+      if (txn === null) {
+        let entry = {
+          pillarId,
+          protocol,
+          toAddress: to,
+          fromAddress: from,
+          txHash: tx.transactionHash,
+          asset,
+          contractAddress: null,
+          timestamp: tmstmp,
+          value,
+          gasPrice: tx.gasPrice,
+          blockNumber: tx.blockNumber,
+          status
+        };
+        logger.debug('processTx.saveIfRelevant(): Saving transaction into the database: ' + entry);
+        dbServices.dbCollections.transactions.addTx(entry);
+      }
+      throw new Error('newTx: Transaction already exists');
+    })
+  } else {
+    logger.debug('processTx.storeIfRelevant(): ignoring txn as its not relevant!');
+  } 
+}
+module.exports.storeIfRelevant = storeIfRelevant;
+
 function newPendingTran(tx, protocol) {
   const tmstmp = time.now();
   var pillarId = '';
@@ -41,6 +98,7 @@ function newPendingTran(tx, protocol) {
   }
   if(!hashMaps.assets.has(tx.from.toLowerCase())) { 
     asset = 'ETH';
+    value = tx.value;
   } else {
     //fetch the asset from the assets hashmap
     const contractDetail = hashMaps.assets.get(tx.from.toLowerCase());
@@ -50,7 +108,7 @@ function newPendingTran(tx, protocol) {
     if ((data !== undefined) && (data.name === 'transfer')) { 
       //smart contract call hence the asset must be the token name
       to = data.params[0].value;
-      //value = data.params[1].value * 10**contractDetail.decimals;
+      value = data.params[1].value * 10**contractDetail.decimals;
     }
   }
   
@@ -67,7 +125,7 @@ function newPendingTran(tx, protocol) {
       asset,
       contractAddress: contractAddress,
       timestamp: tmstmp,
-      value: tx.value,
+      value: value,
       gasPrice: tx.gasPrice,
     };
     logger.debug('processTx.newPendingTran() notifying subscriber of a new relevant transaction: ' + JSON.stringify(txMsgTo));
