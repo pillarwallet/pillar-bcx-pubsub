@@ -1,11 +1,11 @@
-const colors = require('colors');
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
-const ERC20ABI = require('./ERC20ABI');
 const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
-const bcx = require('./bcx.js');
+//const bcx = require('./bcx.js');
+//const ERC20ABI = require('./ERC20ABI');
+//const colors = require('colors');
 const hashMaps = require('../utils/hashMaps.js');
 
 function processNewPendingTxArray(txArray, nbTxFound, isPublisher = true, recoverAddress = null) {
@@ -137,6 +137,53 @@ function newPendingTran(tx, protocol) {
 }
 module.exports.newPendingTran = newPendingTran;
 
+//*************************************************************
+//* function to handle token transfer events.
+//*************************************************************
+function checkTokenTransfer(evnt, theContract, protocol) {
+  return new Promise(((resolve, reject) => {
+    var pillarId;
+    if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
+      pillarId = hashMaps.accounts.get(evnt.returnValues._to.toLowerCase());
+    } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
+      pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
+    } 
+    dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
+    // ETH TX SHOULD BE ALREADY IN DB BECAUSE
+    // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
+      .then((tx) => {
+        if (tx.asset === 'ETH') { 
+          // check is it is regular token transfer,
+          // if so (asset === TOKEN): resolve (because token transfer already processed),
+          // otherwise (asset === ETH) transfer needs to be processed here:
+          // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+          const txMsg = {
+            type: 'newTx',
+            pillarId, 
+            protocol: protocol, 
+            fromAddress: theContract.address,
+            toAddress: evnt.returnValues._to,
+            txHash: evnt.transactionHash,
+            asset: theContract.ticker,
+            contractAddress: theContract.address,
+            timestamp: tmstmp,
+            value: evnt.returnValues._value,
+            gasPrice: evnt.gasPrice,
+            status: 'confirmed',
+          };
+          logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+          rmqServices.sendPubSubMessage(txMsg);
+          resolve();
+        } else {
+          resolve();
+        }
+      })
+      .catch((e) => { reject(e); });
+  }));
+}
+module.exports.checkTokenTransfer = checkTokenTransfer;
+
+/*
 function newPendingTx(tx, isPublisher = true, recoverAddress = null) {
   return new Promise(((resolve, reject) => {
     const tmstmp = time.now();
@@ -845,7 +892,7 @@ module.exports.checkPendingTx = checkPendingTx;
 
 
 function filterAddress(address, isPublisher, recoverAddress = null) {
-  /* CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE */
+  //CHECKS IF ADDRESS IS ONE OF THE MONITORED ADDRESSES REGISTERED IN THE DATABASE 
   return new Promise(((resolve, reject) => {
     try {
       if (recoverAddress && recoverAddress.toLowerCase() === address.toLowerCase()) {
@@ -942,7 +989,6 @@ function filterAddress(address, isPublisher, recoverAddress = null) {
 }
 module.exports.filterAddress = filterAddress;
 
-
 function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   // THIS IS TO CATCH TOKEN TRANSFERS THAT RESULT FROM SENDING ETH TO A
   // SMART CONTRACT (WHICH IN RETURN TRANSFERS TOKENS TO ETH SENDER)
@@ -1003,49 +1049,4 @@ function checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo) {
   }));
 }
 module.exports.checkTokenTransferEvent = checkTokenTransferEvent;
-
-//*************************************************************
-//* function to handle token transfer events.
-//*************************************************************
-function checkTokenTransfer(evnt, theContract, protocol) {
-  return new Promise(((resolve, reject) => {
-    var pillarId;
-    if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
-      pillarId = hashMaps.accounts.get(evnt.returnValues._to.toLowerCase());
-    } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
-      pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
-    } 
-    dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
-    // ETH TX SHOULD BE ALREADY IN DB BECAUSE
-    // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
-      .then((tx) => {
-        if (tx.asset === 'ETH') { 
-          // check is it is regular token transfer,
-          // if so (asset === TOKEN): resolve (because token transfer already processed),
-          // otherwise (asset === ETH) transfer needs to be processed here:
-          // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
-          const txMsg = {
-            type: 'newTx',
-            pillarId, 
-            protocol: protocol, 
-            fromAddress: theContract.address,
-            toAddress: evnt.returnValues._to,
-            txHash: evnt.transactionHash,
-            asset: theContract.ticker,
-            contractAddress: theContract.address,
-            timestamp: tmstmp,
-            value: evnt.returnValues._value,
-            gasPrice: evnt.gasPrice,
-            status: 'confirmed',
-          };
-          logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
-          rmqServices.sendPubSubMessage(txMsg);
-          resolve();
-        } else {
-          resolve();
-        }
-      })
-      .catch((e) => { reject(e); });
-  }));
-}
-module.exports.checkTokenTransfer = checkTokenTransfer;
+*/
