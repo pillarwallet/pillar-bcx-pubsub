@@ -37,7 +37,7 @@ jobs:
           root: workspace
           paths:
             - pillar-bcx-pubsub.txt
-  deploySandbox:
+  deployToStaging:
     working_directory: ~/pillar-bcx-pubsub
     docker:
         - image:  circleci/python:3.6.1
@@ -52,7 +52,10 @@ jobs:
             pip install awscli --upgrade --user
       - run:
           name: publish pillar-bcx-pubsub.txt to s3
-          command: /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt s3://pillar-sandbox-releases/pillar-bcx-pubsub.txt
+          command: |
+            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
+            /home/circleci/.local/bin/aws s3 cp ~/platform-core/workspace/pillar-bcx-pubsub.txt $STAGING_RELEASE_BUCKET/pillar-bcx-pubsub.txt
       - run:
           name: Announce Deployment
           command: |
@@ -61,7 +64,7 @@ jobs:
 
 workflows:
   version: 2
-  test_everything_deploy_develop:
+  test_and_deploy_staging:
     jobs:
       - build
       - publish:
@@ -71,6 +74,6 @@ workflows:
             branches:
               only:
                   - master
-      - deploySandbox:
+      - deployToStaging:
           requires:
              - publish
