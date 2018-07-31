@@ -124,12 +124,11 @@ exports.initSubPubMQ = () => {
                 }
 
                 entry.gasUsed = null;
-                entry.blockNumber = null;
-                entry.status = 'pending';
 
                 dbServices.dbCollections.transactions.findOneByTxHash(txHash)
                   .then((tx) => {
                     if (tx === null) {
+                      logger.debug('Subscriber saving transaction: ' + entry);
                       return dbServices.dbCollections.transactions.addTx(entry);
                     }
                     throw new Error('newTx: Transaction already exists');

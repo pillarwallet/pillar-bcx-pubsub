@@ -4,7 +4,7 @@ const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
 //const bcx = require('./bcx.js');
-//const ERC20ABI = require('./ERC20ABI');
+const ERC20ABI = require('./ERC20ABI');
 //const colors = require('colors');
 const hashMaps = require('../utils/hashMaps.js');
 
@@ -40,19 +40,20 @@ function storeIfRelevant(tx,protocol) {
   } else if ((tx.from !== null) && hashMaps.accounts.has(tx.from.toLowerCase())) {
     pillarId = hashMaps.accounts.get(tx.from.toLowerCase());
   }
-  if(!hashMaps.assets.has(tx.from.toLowerCase())) { 
+  if(!hashMaps.assets.has(tx.to.toLowerCase())) { 
     asset = 'ETH';
     value = tx.value;
   } else {
     //fetch the asset from the assets hashmap
-    const contractDetail = hashMaps.assets.get(tx.from.toLowerCase());
+    const contractDetail = hashMaps.assets.get(tx.to.toLowerCase());
     contractAddress = contractDetail.contractAddress;
     asset = contractDetail.symbol;
+    abiDecoder.addABI(ERC20ABI);
     data = abiDecoder.decodeMethod(tx.input);
     if ((data !== undefined) && (data.name === 'transfer')) { 
       //smart contract call hence the asset must be the token name
       to = data.params[0].value;
-      value = data.params[1].value * 10**contractDetail.decimals;
+      value = data.params[1].value;
     }
   }
   
@@ -96,22 +97,25 @@ function newPendingTran(tx, protocol) {
   } else if ((tx.from !== null) && hashMaps.accounts.has(tx.from.toLowerCase())) {
     pillarId = hashMaps.accounts.get(tx.from.toLowerCase());
   }
-
-  if(!hashMaps.assets.has(tx.from.toLowerCase())) { 
+  logger.debug('processTx.newPendingTran(): checking if asset: ' + tx.to.toLowerCase() + ' is part of our monitored list.');
+  if(!hashMaps.assets.has(tx.to.toLowerCase())) { 
     asset = 'ETH';
     value = tx.value;
   } else {
-    logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset.');
     //fetch the asset from the assets hashmap
-    const contractDetail = hashMaps.assets.get(tx.from.toLowerCase());
+    const contractDetail = hashMaps.assets.get(tx.to.toLowerCase());
     contractAddress = contractDetail.contractAddress;
     asset = contractDetail.symbol;
+    abiDecoder.addABI(ERC20ABI);
     data = abiDecoder.decodeMethod(tx.input);
     logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
+    logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
     if ((data !== undefined) && (data.name === 'transfer')) { 
       //smart contract call hence the asset must be the token name
       to = data.params[0].value;
-      value = data.params[1].value * 10**contractDetail.decimals;
+      value = data.params[1].value;
+    } else {
+      value = tx.value;
     }
   }
   
