@@ -54,8 +54,9 @@ function checkTxPool() {
         logger.info('Housekeeper.checkTxPool(): Checking txpool');
         dbServices.listPending(protocol).then((pendingTxArray) => {
             logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
-            processTx.processNewPendingTxArray(pendingTxArray,0,false).then((nbTxFound) => {
-                logger.info(`DONE UPDATING PENDING TX IN DATABASE--> ${nbTxFound} transactions found`);
+            pendingTxArray.forEach((item) => {
+                logger.debug('Housekeeper.checkTxPool for pending txn: ' + item);
+                processTx.newPendingTran(item,protocol);
             });
         });
     } catch(e) {

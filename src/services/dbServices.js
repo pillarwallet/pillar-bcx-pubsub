@@ -360,14 +360,18 @@ function listPendingTx(address, asset) {
 module.exports.listPendingTx = listPendingTx;
 
 function listPending(protocol) {
+  logger.debug('dbServices.listPending(): for protocol: ' + protocol);
   return new Promise(((resolve, reject) => {
     try {
       const transactions = require('../controllers/transactions_ctrl.js');
-      transactions.listPending(protocol)
-        .then((pendingTxArray) => {
+      transactions.listPending(protocol).then((pendingTxArray) => {
+          logger.debug('dbServices.listPending(): length = ' + pendingTxArray);
           resolve(pendingTxArray);
         });
-    } catch (e) { reject(e); }
+    } catch (e) { 
+      logger.error('listPending failed with error: ' + e);
+      reject(e); 
+    }
   }));  
 }
 module.exports.listPending = listPending;

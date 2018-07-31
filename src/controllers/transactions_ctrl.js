@@ -17,26 +17,17 @@ function listAll() {
 module.exports.listAll = listAll;
 
 function listPending(protocol = null) {
+  logger.debug('transactions_ctrl.listPending(): for protocol: ' + protocol);
   return new Promise(((resolve, reject) => {
     try {
-      if(protocol === null) {
-        transactions.Transactions.find({ status: 'pending' }, (err, result) => {
-          if (err) {
-            logger.info(`transactions.listPending DB controller ERROR: ${err}`);
-            reject(err);
-          }
-          resolve(result);
-        });
-      } else {
-        transactions.Transactions.find({ protocol: protocol, status: 'pending' }, (err, result) => {
-          if (err) {
-            logger.info(`transactions.listPending DB controller ERROR: ${err}`);
-            reject(err);
-          }
-          resolve(result);
-        });
-      }
-    } catch (e) { reject(e); }
+      transactions.Transactions.find({ protocol: protocol, status: 'pending' }).then((result) => {
+        logger.debug('transactions_ctrl.listPending(): fetching ' + result.length + ' records');
+        resolve(result);
+      });
+    } catch (e) {
+      logger.error('transaction_ctrl.listPending(): failed with error: ' + e);
+      reject(e); 
+    }
   }));
 }
 module.exports.listPending = listPending;
