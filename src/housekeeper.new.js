@@ -1,9 +1,8 @@
 #!/usr/bin/env node
+require('dotenv').config();
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
 const processTx = require('./services/processTx.js');
-const accounts = require('./services/accounts.js');
-const ERC20ABI = require('./services/ERC20ABI');
 const LOOK_BACK_BLOCKS = 15;
 const ethService = require('./services/ethService.js');
 const protocol = 'Ethereum';
@@ -19,6 +18,20 @@ process.on('message', (data) => {
       }
     }
 });
+
+function init() {
+    logger.info('Houskeeper.init(): Started executing the function');
+    try {
+        dbServices.dbConnect().then(() => {
+            this.checkTxPool();
+            this.updateTxHistory();
+        });
+    } catch(e) {
+        logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
+    }
+    logger.info('Houskeeper.init(): Finished executing the function');
+}
+module.exports.init = init;
 
 function recoverWallet (recoverAddress, nbBlocks) {
     try {
@@ -55,8 +68,30 @@ function checkTxPool() {
         dbServices.listPending(protocol).then((pendingTxArray) => {
             logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
             pendingTxArray.forEach((item) => {
-                logger.debug('Housekeeper.checkTxPool for pending txn: ' + item);
-                processTx.newPendingTran(item,protocol);
+                logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
+                //recheck the status of the transaction
+                ethService.getTxReceipt(item.txHash).then((receipt) => {
+                    if(receipt !== null) {
+                        logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
+                        //update the status of the transaction
+                        let status;
+                        if(receipt.status == '0x1') { 
+                            status = 'confirmed';
+                        } else {
+                            status = 'failed';
+                        }
+                        const gasUsed = receipt.gasUsed;
+                        const entry = {
+                            txHash: item.txHash,
+                            status,
+                            gasUsed,
+                            blockNumber: receipt.blockNumber
+                        };
+                        dbServices.dbCollections.transactions.updateTx(entry).then(() => {
+                            logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${txHash}`);
+                        });
+                    }
+                });
             });
         });
     } catch(e) {
@@ -81,34 +116,13 @@ function updateTxHistory() {
                     //loop from startBlock to maxBlock and process any new transactions into the database
                     for(var i = startBlock; i < maxBlock; i++) {
                         ethService.getBlockTx(i).then((txArray) => {
-                            txArray.forEach((theTx) => {
-                                logger.debug(('Housekeeper.updateTxHistory(): validating transaction : ' + theTx));
-                                processTx.newPendingTran(theTx,protocol);
-                                dbServices.dbCollections.transactions.listHistory().then((historyTxArray) => {
-                                    //loop through each pending transaction in the database and update latest status
-                                    historyTxArray.forEach((histTx) => {
-                                        logger.debug('Housekeeper.updateTxHistory(): Fetching tx receipt for : ' + histTx);
-                                        ethService.getTxReceipt(histTx).then((receipt) => {
-                                            if(receipt !== null) {
-                                                let status;
-                                                if(receipt.status == '0x1') { 
-                                                    status = 'confirmed';
-                                                } else {
-                                                    status = 'failed';
-                                                }
-                                                logger.debug('Housekeeper.updateTxHistory(): Transaction ' + receipt.transactionHash + ' completed with status: ' + status);
-                                                dbServices.dbCollections.transactions.updateTx({
-                                                    txHash: receipt.transactionHash,
-                                                    blockNumber: receipt.blockNumber,
-                                                    status,
-                                                    gasUsed: receipt.gasUsed,
-                                                });
-                                                hashMaps.pendingTx.delete(txHash);
-                                            } else {
-                                                logger.debug('Housekeeper.updateTxHistory(): Transaction ' + histTx + ' is still pending.');
-                                            }
-                                        });
-                                    });
+                            txArray.forEach((item) => {
+                                logger.debug(('Housekeeper.updateTxHistory(): validating transaction : ' + item));
+                                //format and add a new transaction to the database
+                                ethService.getTxReceipt(item.hash).then((receipt) => {
+                                    if(receipt !== null) {
+                                        processTx.storeIfRelevant(receipt,protocol);
+                                    }
                                 });
                             });
                         });
@@ -125,22 +139,9 @@ function updateTxHistory() {
 module.exports.updateTxHistory = updateTxHistory;
 
 //write code for fetching new smart contracts deployed
-
 function scanForContracts() {
     //subscribe to new blocks and check for contracts
 }
 module.exports.scanForContracts = scanForContracts;
-
-function init() {
-    logger.info('Houskeeper.init(): Started executing the function');
-    try {
-        this.checkTxPool();
-        this.updateTxHistory();
-    } catch(e) {
-        logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
-    }
-    logger.info('Houskeeper.init(): Finished executing the function');
-}
-module.exports.init = init;
 
 this.init();

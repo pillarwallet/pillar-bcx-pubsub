@@ -1,14 +1,17 @@
-const colors = require('colors');
 const logger = require('../utils/logger.js');
 require('dotenv').config();
 const mongoose = require('mongoose');
-
 module.exports.mongoose = mongoose;
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}?w=majority`;
+// Import DB controllers
+const accounts = require('../controllers/accounts_ctrl.js');
+const assets = require('../controllers/assets_ctrl.js');
+const transactions = require('../controllers/transactions_ctrl.js');
+
 let dbCollections;
 
 function dbConnect($arg = { useMongoClient: true }) {
@@ -27,12 +30,6 @@ function dbConnect($arg = { useMongoClient: true }) {
         resolve();
         // resolve({ accounts, assets, transactions });
       });
-
-      // Import DB controllers
-      const accounts = require('../controllers/accounts_ctrl.js');
-      const assets = require('../controllers/assets_ctrl.js');
-      const transactions = require('../controllers/transactions_ctrl.js');
-
       // Connect to database
       module.exports.mongoose.connect(mongoUrl, $arg);
     } catch (e) { reject(e); }
@@ -93,7 +90,7 @@ function recentAccounts(
             .catch((e) => { reject(e); });
         }
       } else {
-        module.exports.dbConnect($arg)
+        module.exports.dbConnect(mongoUrl)
           .then(() => {
             resolve(module.exports.recentAccounts());
           })
@@ -133,7 +130,7 @@ function contractsToMonitor(
           .catch((e) => { reject(e); });
       }
     } else {
-      module.exports.dbConnect($arg)
+      module.exports.dbConnect(mongoUrl)
         .then(() => {
           resolve(module.exports.contractsToMonitor());
         })
@@ -363,13 +360,12 @@ function listPending(protocol) {
   logger.debug('dbServices.listPending(): for protocol: ' + protocol);
   return new Promise(((resolve, reject) => {
     try {
-      const transactions = require('../controllers/transactions_ctrl.js');
       transactions.listPending(protocol).then((pendingTxArray) => {
-          logger.debug('dbServices.listPending(): length = ' + pendingTxArray);
-          resolve(pendingTxArray);
-        });
+            logger.debug('dbServices.listPending(): Found ' + pendingTxArray.length + ' transactions.');
+            resolve(pendingTxArray);
+      });
     } catch (e) { 
-      logger.error('listPending failed with error: ' + e);
+      logger.error('dbServices.listPending(): failed with error: ' + e);
       reject(e); 
     }
   }));  
@@ -380,12 +376,11 @@ function findMaxBlock(protocol) {
   logger.debug('dbServices.findMaxBlock(): for protocol: ' + protocol);
   return new Promise(((resolve, reject) => {
     try {
-      const transactions = require('../controllers/transactions_ctrl.js');
       transactions.findMaxBlock(protocol)
         .then((maxBlock) => {
           logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
           resolve(maxBlock);
-        });
+      });
     } catch (e) { reject(e); }
   }));  
 }

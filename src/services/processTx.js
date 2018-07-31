@@ -3,18 +3,17 @@ const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
-//const bcx = require('./bcx.js');
 const ERC20ABI = require('./ERC20ABI');
-//const colors = require('colors');
 const hashMaps = require('../utils/hashMaps.js');
 
 function storeIfRelevant(tx,protocol) {
     const tmstmp = time.now();
     var pillarId = '';
-    var    data, value;
+    var data, value;
     from = tx.from;
     to = tx.to;
     var status = (tx.status === '0x1' ? 'confirmed' : 'failed');
+    var hash = tx.transactionHash;
     if ((tx.to !== null) && hashMaps.accounts.has(tx.to.toLowerCase())) {
         //fetch the pillarId corresponding to the to address and
         pillarId = hashMaps.accounts.get(tx.to.toLowerCase());
@@ -39,14 +38,14 @@ function storeIfRelevant(tx,protocol) {
     }
     
     if(pillarId !== '') {
-        dbServices.dbCollections.transactions.findOneByTxHash(tx.transactionHash).then((txn) => {
+        dbServices.dbCollections.transactions.findOneByTxHash(hash).then((txn) => {
             if (txn === null) {
                 let entry = {
                     pillarId,
                     protocol,
                     toAddress: to,
                     fromAddress: from,
-                    txHash: tx.transactionHash,
+                    txHash: hash,
                     asset,
                     contractAddress: null,
                     timestamp: tmstmp,
@@ -71,13 +70,13 @@ function newPendingTran(tx, protocol) {
     logger.debug('processTx.newPendingTran(): validating transaction: ' + JSON.stringify(tx));
     const tmstmp = time.now();
     var pillarId = '';
-    var asset, contractAddress, data, from, to, value;
-    from = ((typeof tx.from !== undefined) ? tx.from : tx.fromAddress);
-    to = ((typeof tx.to !== undefined) ? tx.to: tx.toAddress);
-
+    var asset, contractAddress, data, from, to, value, hash;
+    from = ((typeof tx.from !== 'undefined') ? tx.from : tx.fromAddress);
+    to = ((typeof tx.to !== 'undefined') ? tx.to : tx.toAddress);
+    hash = ((typeof tx.hash !== 'undefined') ? tx.hash : tx.txHash);
     //ignore contract creation transactions, these have the to as null
     if(from !== null && to !== null) {
-      logger.debug('processTx.newPendingTran(): txn ' + tx.hash + ' from= ' + from + ' to= ' + to);
+      logger.debug('processTx.newPendingTran(): txn ' + hash+ ' from= ' + from + ' to= ' + to);
       if ((to !== null) && hashMaps.accounts.has(to.toLowerCase())) {
           //fetch the pillarId corresponding to the to address and
           pillarId = hashMaps.accounts.get(to.toLowerCase());
@@ -96,7 +95,7 @@ function newPendingTran(tx, protocol) {
           data = abiDecoder.decodeMethod(tx.input);
           logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
           logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
-          if ((data !== undefined) && (data.name === 'transfer')) { 
+          if ((data !== 'undefined') && (data.name === 'transfer')) { 
               //smart contract call hence the asset must be the token name
               to = data.params[0].value;
               value = data.params[1].value;
@@ -114,7 +113,7 @@ function newPendingTran(tx, protocol) {
               protocol: protocol, 
               fromAddress: from,
               toAddress: to,
-              txHash: tx.hash,
+              txHash: hash,
               asset,
               contractAddress: contractAddress,
               timestamp: tmstmp,

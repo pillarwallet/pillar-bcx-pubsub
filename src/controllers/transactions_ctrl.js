@@ -16,11 +16,11 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function listPending(protocol = null) {
+function listPending(protocol) {
   logger.debug('transactions_ctrl.listPending(): for protocol: ' + protocol);
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      transactions.Transactions.find({ protocol: protocol, status: 'pending' }).then((result) => {
+      transactions.Transactions.find({ protocol, status: 'pending' }).then((result) => {
         logger.debug('transactions_ctrl.listPending(): fetching ' + result.length + ' records');
         resolve(result);
       });
@@ -28,7 +28,7 @@ function listPending(protocol = null) {
       logger.error('transaction_ctrl.listPending(): failed with error: ' + e);
       reject(e); 
     }
-  }));
+  });
 }
 module.exports.listPending = listPending;
 
@@ -184,9 +184,9 @@ function findMaxBlock(protocol) {
   logger.debug('transactions_ctrl.findMaxBlock(): Fetching maxBlock for ' + protocol);
   return new Promise((resolve, reject) => {
     try {
-      transactions.Transactions.find({protocol: protocol}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
+      transactions.Transactions.find({protocol: protocol, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
         logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
-        resolve(maxBlock);
+        resolve(maxBlock.blockNumber);
       });
     } catch(e) {
       logger.debug('transactions_ctrl.findMaxBlock() failed with error: ' + e);

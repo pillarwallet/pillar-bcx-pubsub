@@ -44,7 +44,9 @@ exports.init = function (options) {
       logger.info(`master.init(): A new publisher will be spawned for every ${options.maxWallets} wallets..`);
       maxWalletsPerPub = options.maxWallets;
     }
-    this.launch();
+    dbServices.dbConnect().then(() => {
+      this.launch();
+    });
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
   } finally {
