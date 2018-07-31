@@ -81,12 +81,9 @@ function subscribeBlockHeaders() {
           if (blockHeader && blockHeader.number && blockHeader.hash) {
             logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
             // Check for pending tx in database and update their status
-            module.exports.checkPendingTx(hashMaps.pendingTx.keys(), blockHeader.number)
-              .then(() => {
-                if (dbServices.dbCollections) {
-                  dbServices.dbCollections.transactions.updateTxHistoryHeight(blockHeader.number);
-                }
-              });
+            module.exports.checkPendingTx(hashMaps.pendingTx.keys()).then(() => {
+                logger.debug('Finished validating pending transactions.')
+            });
           }
         })
         .catch((e) => {
@@ -216,102 +213,42 @@ function getPendingTxArray() {
 }
 module.exports.getPendingTxArray = getPendingTxArray;
 
-function checkPendingTx(pendingTxArray, blockNumber) {
+function checkPendingTx(pendingTxArray) {
     return new Promise(((resolve, reject) => {
       if (pendingTxArray.length === 0) {
         resolve();
       } else {
-        const txHash = pendingTxArray[0];
-        const item = hashMaps.pendingTx.get(txHash);
-        pendingTxArray.splice(0, 1);
-  
-        web3.eth.getTransaction(item.txHash)
-          .then((txInfo) => {
-            if (txInfo != null) {
-              if (txInfo.blockNumber != null) {
-                const confBlockNb = txInfo.blockNumber;
-                web3.eth.getTransactionReceipt(txInfo.hash)
-                  .then((receipt) => {
-                    if (receipt != null) {
-                      if (receipt.gasUsed <= txInfo.gas) { // TX MINED
-                        const nbConf = 1 + (blockNumber - confBlockNb);
-                        if (nbConf >= 1) {
-                            const status = 'confirmed';
-                            const confBlockNumber = confBlockNb;
-                            const gasUsed = receipt.gasUsed;
-                            const txMsg = {
-                                type: 'updateTx',
-                                txHash: item.txHash,
-                                confBlockNumber,
-                                status,
-                                gasUsed,
-                            };
-                            rmqServices.sendPubSubMessage(txMsg);
-                            logger.info(`TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${(blockNumber - nbConf) + 1}`);
-                            hashMaps.pendingTx.delete(txHash);
-                            resolve(checkPendingTx(pendingTxArray, blockNumber));
+        pendingTxArray.forEach((item) => {
+            logger.debug('ethService.checkPendingTx(): Checking status of transaction: ' + item);
+            if(module.exports.connect()) {
+                web3.eth.getTransactionReceipt(item).then((receipt) => {
+                    logger.debug('ethService.checkPendingTx(): receipt is ' + receipt);
+                    if(receipt !== null) {
+                        let status;
+                        if(receipt.status == '0x1') { 
+                            status = 'confirmed';
                         } else {
-                            logger.info('WARNING: txInfo.blockNumber>=lastBlockNumber');
+                            status = 'failed';
                         }
-                      } else { // OUT OF GAS
-                        const status = 'failed: out of gas';
-                        const confBlockNumber = confBlockNb;
                         const gasUsed = receipt.gasUsed;
                         const txMsg = {
                             type: 'updateTx',
-                            txHash: item.txHash,
-                            confBlockNumber,
+                            txHash: item,
                             status,
                             gasUsed,
+                            blockNumber: receipt.blockNumber
                         };
                         rmqServices.sendPubSubMessage(txMsg);
-                        logger.info((`TRANSACTION ${item.txHash} OUT OF GAS: FAILED! (status : out of gas)`));
+                        logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(txHash);
-                        resolve(checkPendingTx(pendingTxArray, blockNumber));
-                      }
-                    } else { // TX RECEIPT NOT FOUND
-                        const status = 'failed: tx receipt not found';
-                        const confBlockNumber = confBlockNb;
-                        const gasUsed = null;
-                        // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                        const txMsg = {
-                            type: 'updateTx',
-                            txHash: item.txHash,
-                            confBlockNumber,
-                            status,
-                            gasUsed,
-                        };
-                        rmqServices.sendPubSubMessage(txMsg);
-                        logger.info(`TRANSACTION ${item.txHash}: TX RECEIPT NOT FOUND: FAILED! (status : tx receipt not found)`);
-                        hashMaps.pendingTx.delete(txHash);
-                        resolve(checkPendingTx(pendingTxArray, blockNumber));
+                    } else {
+                        logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
                     }
-                  })
-                  .catch((e) => { reject(e); });
-              } else { // TX STILL PENDING
-                logger.info(`TX ${item.txHash} STILL PENDING (IN TX POOL)`);
-                resolve(checkPendingTx(pendingTxArray, blockNumber));
-              }
-            } else { // TX INFO NOT FOUND
-                const status = 'failed: tx info not found';
-                const confBlockNumber = null;
-                const gasUsed = null;
-                
-                // SEND UPDATED TX DATA TO SUBSCRIBER MSG QUEUE
-                const txMsg = {
-                    type: 'updateTx',
-                    txHash: item.txHash,
-                    confBlockNumber,
-                    status,
-                    gasUsed,
-                };
-                rmqServices.sendPubSubMessage(txMsg);
-              logger.info((`TRANSACTION ${item.txHash} NOT FOUND IN TX POOL OR BLOCKCHAIN: FAILED! (status : tx info not found)`));
-              hashMaps.pendingTx.delete(txHash);
-              resolve(checkPendingTx(pendingTxArray, blockNumber));
+                });
+            } else {
+                reject('ethService.checkPendingTx(): connection to geth failed!')
             }
-          })
-          .catch((e) => { reject(e); });
+        });
       }
     }));
   }

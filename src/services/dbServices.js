@@ -359,3 +359,31 @@ function listPendingTx(address, asset) {
 }
 module.exports.listPendingTx = listPendingTx;
 
+function listPending(protocol) {
+  return new Promise(((resolve, reject) => {
+    try {
+      const transactions = require('../controllers/transactions_ctrl.js');
+      transactions.listPending(protocol)
+        .then((pendingTxArray) => {
+          resolve(pendingTxArray);
+        });
+    } catch (e) { reject(e); }
+  }));  
+}
+module.exports.listPending = listPending;
+
+function findMaxBlock(protocol) {
+  logger.debug('dbServices.findMaxBlock(): for protocol: ' + protocol);
+  return new Promise(((resolve, reject) => {
+    try {
+      const transactions = require('../controllers/transactions_ctrl.js');
+      transactions.findMaxBlock(protocol)
+        .then((maxBlock) => {
+          logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+          resolve(maxBlock);
+        });
+    } catch (e) { reject(e); }
+  }));  
+}
+module.exports.findMaxBlock = findMaxBlock;
+

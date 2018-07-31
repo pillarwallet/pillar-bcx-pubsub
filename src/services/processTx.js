@@ -96,15 +96,18 @@ function newPendingTran(tx, protocol) {
   } else if ((tx.from !== null) && hashMaps.accounts.has(tx.from.toLowerCase())) {
     pillarId = hashMaps.accounts.get(tx.from.toLowerCase());
   }
+
   if(!hashMaps.assets.has(tx.from.toLowerCase())) { 
     asset = 'ETH';
     value = tx.value;
   } else {
+    logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset.');
     //fetch the asset from the assets hashmap
     const contractDetail = hashMaps.assets.get(tx.from.toLowerCase());
     contractAddress = contractDetail.contractAddress;
     asset = contractDetail.symbol;
     data = abiDecoder.decodeMethod(tx.input);
+    logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
     if ((data !== undefined) && (data.name === 'transfer')) { 
       //smart contract call hence the asset must be the token name
       to = data.params[0].value;
@@ -127,6 +130,7 @@ function newPendingTran(tx, protocol) {
       timestamp: tmstmp,
       value: value,
       gasPrice: tx.gasPrice,
+      blockNumber: tx.blockNumber
     };
     logger.debug('processTx.newPendingTran() notifying subscriber of a new relevant transaction: ' + JSON.stringify(txMsgTo));
 
@@ -169,6 +173,7 @@ function checkTokenTransfer(evnt, theContract, protocol) {
             timestamp: tmstmp,
             value: evnt.returnValues._value,
             gasPrice: evnt.gasPrice,
+            blockNumber: evnt.blockNumber,
             status: 'confirmed',
           };
           logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));

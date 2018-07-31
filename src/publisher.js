@@ -78,19 +78,6 @@ exports.poll = function () {
 
 exports.initSubscriptions = function () {
   logger.info('Publisher subscribing to geth websocket events...');
-
-  // /* CONNECT TO GETH NODE */
-  // gethConnect.gethConnectDisplay()
-  //   .then(() => {
-  //     /* SUBSCRIBE TO GETH NODE EVENTS */
-  //     gethSubscribe.subscribePendingTx();
-  //     gethSubscribe.subscribeBlockHeaders();
-  //     gethSubscribe.subscribeAllDBERC20SmartContracts();
-  //   })
-  //   .catch((e) => {
-  //     logger.error('Publisher: gethConnect failed: ' + e);
-  //   });
-
   //subscribe to pending transactions
   ethService.subscribePendingTxn();
   //subscribe to block headers

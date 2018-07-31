@@ -52,29 +52,16 @@ module.exports.recoverWallet = recoverWallet;
 function checkTxPool() {
     try {
         logger.info('Housekeeper.checkTxPool(): Checking txpool');
-        ethService.getPendingTxArray().then((pendingTxArray) => {
-            // CHECK IF TX ALREADY IN DB
-            const unknownPendingTxArray = [];
-            dbServices.dbCollections.transactions.listDbZeroConfTx().then((dbPendingTxArray) => {
-                pendingTxArray.forEach((pendingTx) => {
-                    let isDbPendingTx = false;
-                    dbPendingTxArray.forEach((dbPendingTx) => {
-                        if (pendingTx === dbPendingTx) {
-                            isDbPendingTx = true;
-                        }
-                    });
-                    if (isDbPendingTx === false) {
-                        unknownPendingTxArray.push(pendingTx);
-                    }
-                });
-                processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false)
-                .then((nbTxFound) => {
-                    logger.info(`DONE UPDATING PENDING TX IN DATABASE--> ${nbTxFound} transactions found`);
-                });
+        dbServices.listPending(protocol).then((pendingTxArray) => {
+            logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
+            processTx.processNewPendingTxArray(pendingTxArray,0,false).then((nbTxFound) => {
+                logger.info(`DONE UPDATING PENDING TX IN DATABASE--> ${nbTxFound} transactions found`);
             });
         });
     } catch(e) {
         logger.error('Housekeeper.checkTxPool(): Failed with error: ' + e);
+    } finally {
+        logger.info('Housekeeper.checkTxPool(): Finished txpool check.')
     }
 }
 module.exports.checkTxPool = checkTxPool;
@@ -84,7 +71,8 @@ function updateTxHistory() {
         logger.info('Housekeeper.updateTxHistory(): updating tx history');
         ethService.getLastBlockNumber().then((maxBlock) => {
             logger.info(`Housekeeper.updateTxHistory(): LAST BLOCK NUMBER = ${maxBlock}`);
-            dbServices.dbCollections.transactions.findTxHistoryHeight().then((startBlock) => {
+            dbServices.findMaxBlock(protocol).then((startBlock) => {
+                logger.debug('Max block: ' + startBlock);
                 if (startBlock > maxBlock) {
                     logger.debug('Housekeeper.updateTxHistory(): Nothing to catchup, already on the latest block');
                 } else {
@@ -123,19 +111,24 @@ function updateTxHistory() {
                                 });
                             });
                         });
-                        //update the last block height
-                        dbServices.dbCollections.transactions.updateTxHistoryHeight(i);
                     }
                 }
             });
         });
     }catch(e) {
         logger.error('Housekeeper.updateTxHistory() failed with error: ' + e);
+    } finally {
+        logger.info('Housekeeper.updateTxHistory(): finished update.')
     }
 }
 module.exports.updateTxHistory = updateTxHistory;
 
 //write code for fetching new smart contracts deployed
+
+function scanForContracts() {
+    //subscribe to new blocks and check for contracts
+}
+module.exports.scanForContracts = scanForContracts;
 
 function init() {
     logger.info('Houskeeper.init(): Started executing the function');
