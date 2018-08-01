@@ -39,7 +39,7 @@ testem.log
 /bin/logs
 /src/logs
 /bcx_log.txt
-/reports
+/reports/*
 
 # e2e
 /e2e/*.js

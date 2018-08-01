@@ -7,6 +7,13 @@ describe.only('Housekeeper unit tests', () => {
 	afterAll(() => {
 		jest.restoreAllMocks();
 	});
+	
+	it('process.on should have been called', () => {
+		const spy = jest.spyOn(process, 'on');
+		spy.mockImplementation();
+		spy.call();
+		expect(spy).toHaveBeenCalled();
+	});
 
 	describe('The init function tests', () => {
 		
