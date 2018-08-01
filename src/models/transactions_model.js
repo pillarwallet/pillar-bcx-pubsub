@@ -17,24 +17,11 @@ const transactionsSchema = Mongoose.Schema({
   gasUsed: { type: Number, required: false },
 });
 
-/* OLD DB SCHEMA
-const transactionsSchema = Mongoose.Schema({
-  to: String,
-  from: String,
-  asset: String,
-  contractAddress: String,
-  timestamp: Number,
-  value: Number,
-  status: String,
-  hash: String,
-  gasUsed: Number,
-  nbConfirmations: Number,
-});
-*/
 transactionsSchema.index({ txHash: 1, type: 1});
 transactionsSchema.index({ toAddress: 1, type: 1});
 transactionsSchema.index({ fromAddress: 1, type: 1});
 transactionsSchema.index({ contractAddress: 1, type: 1});
+transactionsSchema.index({ blockNumber: 1 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
 

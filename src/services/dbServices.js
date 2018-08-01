@@ -1,14 +1,17 @@
-const colors = require('colors');
+/** @module dbServices.js */
 const logger = require('../utils/logger.js');
 require('dotenv').config();
 const mongoose = require('mongoose');
-
 module.exports.mongoose = mongoose;
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}?w=majority`;
+const accounts = require('../controllers/accounts_ctrl.js');
+const assets = require('../controllers/assets_ctrl.js');
+const transactions = require('../controllers/transactions_ctrl.js');
+
 let dbCollections;
 
 function dbConnect($arg = { useMongoClient: true }) {
@@ -27,12 +30,6 @@ function dbConnect($arg = { useMongoClient: true }) {
         resolve();
         // resolve({ accounts, assets, transactions });
       });
-
-      // Import DB controllers
-      const accounts = require('../controllers/accounts_ctrl.js');
-      const assets = require('../controllers/assets_ctrl.js');
-      const transactions = require('../controllers/transactions_ctrl.js');
-
       // Connect to database
       module.exports.mongoose.connect(mongoUrl, $arg);
     } catch (e) { reject(e); }
@@ -62,11 +59,7 @@ function dbConnectDisplayAccounts($arg = { useMongoClient: true }) {
 }
 module.exports.dbConnectDisplayAccounts = dbConnectDisplayAccounts;
 
-function recentAccounts(
-  idFrom,
-  protocol,
-  $arg = { useMongoClient: true },
-) {
+function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
       if (dbCollections) {
@@ -93,7 +86,7 @@ function recentAccounts(
             .catch((e) => { reject(e); });
         }
       } else {
-        module.exports.dbConnect($arg)
+        module.exports.dbConnect(mongoUrl)
           .then(() => {
             resolve(module.exports.recentAccounts());
           })
@@ -104,10 +97,7 @@ function recentAccounts(
 }
 module.exports.recentAccounts = recentAccounts;
 
-function contractsToMonitor(
-  idFrom,
-  $arg = { useMongoClient: true },
-) {
+function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
     if (dbCollections) {
@@ -133,7 +123,7 @@ function contractsToMonitor(
           .catch((e) => { reject(e); });
       }
     } else {
-      module.exports.dbConnect($arg)
+      module.exports.dbConnect(mongoUrl)
         .then(() => {
           resolve(module.exports.contractsToMonitor());
         })
@@ -359,3 +349,32 @@ function listPendingTx(address, asset) {
 }
 module.exports.listPendingTx = listPendingTx;
 
+function listPending(protocol) {
+  logger.debug('dbServices.listPending(): for protocol: ' + protocol);
+  return new Promise(((resolve, reject) => {
+    try {
+      transactions.listPending(protocol).then((pendingTxArray) => {
+            logger.debug('dbServices.listPending(): Found ' + pendingTxArray.length + ' transactions.');
+            resolve(pendingTxArray);
+      });
+    } catch (e) { 
+      logger.error('dbServices.listPending(): failed with error: ' + e);
+      reject(e); 
+    }
+  }));  
+}
+module.exports.listPending = listPending;
+
+function findMaxBlock(protocol) {
+  logger.debug('dbServices.findMaxBlock(): for protocol: ' + protocol);
+  return new Promise(((resolve, reject) => {
+    try {
+      transactions.findMaxBlock(protocol)
+        .then((maxBlock) => {
+          logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+          resolve(maxBlock);
+      });
+    } catch (e) { reject(e); }
+  }));  
+}
+module.exports.findMaxBlock = findMaxBlock;

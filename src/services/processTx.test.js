@@ -740,6 +740,7 @@ describe('Test newPendingTx function', () => {
 });
 
 describe('Test checkPendingTx function', () => {
+<<<<<<< HEAD
   test('When transaction has less than 1 block confirmations, checkPendingTx should call hashMaps.pendingTx.get once and  bcx.getTxInfo once ', (done) => {
 
 	  const txObject = {
@@ -760,6 +761,202 @@ describe('Test checkPendingTx function', () => {
 		const processTx = require('./processTx.js')
 
     return processTx.checkPendingTx(['pendingTxHash'], 9999999999)
+=======
+  test('When transaction has 1less than 5 block confirmations, checkPendingTx should call ethService.getTxInfo twice then call web3.utils.hexToNumberString twice then call ethService.getTxReceipt twice then call ethService.getBlockNumber twice then call ethTransactions.updateTx twice then NOT call notif.sendNotification', (done) => {
+    jest.mock('web3');
+    const web3 = require('web3');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    const ethService = require('./ethService');
+    const stub2 = sinon.stub(ethService, 'getTxInfo');
+    stub2.onFirstCall().resolves(web3.transactions[0]);
+    stub2.onSecondCall().resolves(web3.transactions[1]);
+    stub2.onThirdCall().resolves(web3.transactions[2]);
+    const spy2 = sinon.spy(web3.utils, 'hexToNumberString');
+    const stub3 = sinon.stub(ethService, 'getTxReceipt');
+    stub3.resolves(web3.txReceipt);
+    const stub4 = sinon.stub(ethService, 'getBlockNumber');
+    stub4.resolves(web3.blockNumber - 1);
+    const spy3 = sinon.spy(ethTransactions, 'updateTx');
+    const notif = require('./notifications.js');
+    const stub5 = sinon.stub(notif, 'sendNotification');
+    stub5.resolves();
+    const blockNumber = web3.blockNumber;
+    const dbCollections = { ethAddresses, ethTransactions };
+    return ethTransactions.listPending()
+      .then(pendingTxArray => processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif)
+        .then(() => {
+          sinon.assert.callCount(stub2, 3);
+          sinon.assert.callCount(stub3, 3);
+          sinon.assert.callCount(stub4, 3);
+          sinon.assert.notCalled(stub5);
+          stub5.restore();
+          sinon.assert.callCount(spy2, 3);
+          sinon.assert.callCount(spy3, 3);
+          stub2.restore();
+          stub3.restore();
+          stub4.restore();
+          spy2.restore();
+          spy3.restore();
+          done();
+        }));
+  });
+
+  test('When transaction has 5 or more block confirmations, checkPendingTx should call ethService.getTxInfo twice then call web3.utils.hexToNumberString thrice then call ethService.getTxReceipt twice then call ethService.getBlockNumber thrice then call ethTransactions.updateTx thrice then call notif.sendNotification 6 times', (done) => {
+    jest.mock('web3');
+    const web3 = require('web3');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    const ethService = require('./ethService.js');
+    const stub2 = sinon.stub(ethService, 'getTxInfo');
+    stub2.onFirstCall().resolves(web3.transactions[0]);
+    stub2.onSecondCall().resolves(web3.transactions[1]);
+    stub2.onThirdCall().resolves(web3.transactions[2]);
+    const spy2 = sinon.spy(web3.utils, 'hexToNumberString');
+    const stub3 = sinon.stub(ethService, 'getTxReceipt');
+    stub3.resolves(web3.txReceipt);
+    const stub4 = sinon.stub(ethService, 'getBlockNumber');
+    stub4.resolves(web3.blockNumber - 6);
+    const spy3 = sinon.spy(ethTransactions, 'updateTx');
+    const notif = require('./notifications.js');
+    const stub5 = sinon.stub(notif, 'sendNotification');
+    stub5.resolves();
+    const blockNumber = web3.blockNumber;
+    const dbCollections = { ethAddresses, ethTransactions };
+    return ethTransactions.listPending()
+      .then(pendingTxArray => processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif)
+        .then(() => {
+          sinon.assert.callCount(stub2, 3);
+          sinon.assert.callCount(stub3, 3);
+          sinon.assert.callCount(stub4, 3);
+          sinon.assert.callCount(stub5, 6);
+          stub5.restore();
+          sinon.assert.callCount(spy2, 3);
+          sinon.assert.callCount(spy3, 3);
+          stub2.restore();
+          stub3.restore();
+          stub4.restore();
+          spy2.restore();
+          spy3.restore();
+          done();
+        }));
+  });
+
+  test('When sendNotif=false is passed, checkPendingTx should call ethService.getTxInfo twice then call web3.utils.hexToNumberString thrice then call ethService.getTxReceipt twice then call ethService.getBlockNumber thrice then call ethTransactions.updateTx thrice then NOT call notif.sendNotification', (done) => {
+    jest.mock('web3');
+    const web3 = require('web3');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    const ethService = require('./ethService.js');
+    const stub2 = sinon.stub(ethService, 'getTxInfo');
+    stub2.onFirstCall().resolves(web3.transactions[0]);
+    stub2.onSecondCall().resolves(web3.transactions[1]);
+    stub2.onThirdCall().resolves(web3.transactions[2]);
+    const spy2 = sinon.spy(web3.utils, 'hexToNumberString');
+    const stub3 = sinon.stub(ethService, 'getTxReceipt');
+    stub3.resolves(web3.txReceipt);
+    const stub4 = sinon.stub(ethService, 'getBlockNumber');
+    stub4.resolves(web3.blockNumber - 6);
+    const spy3 = sinon.spy(ethTransactions, 'updateTx');
+    const notif = require('./notifications.js');
+    const stub5 = sinon.stub(notif, 'sendNotification');
+    stub5.resolves();
+    const blockNumber = web3.blockNumber;
+    const dbCollections = { ethAddresses, ethTransactions };
+    return ethTransactions.listPending()
+      .then(pendingTxArray => processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif, false)
+        .then(() => {
+          sinon.assert.callCount(stub2, 3);
+          sinon.assert.callCount(stub3, 3);
+          sinon.assert.callCount(stub4, 3);
+          sinon.assert.notCalled(stub5);
+          stub5.restore();
+          sinon.assert.callCount(spy2, 3);
+          sinon.assert.callCount(spy3, 3);
+          stub2.restore();
+          stub3.restore();
+          stub4.restore();
+          spy2.restore();
+          spy3.restore();
+          done();
+        }));
+  });
+
+  test('When txInfo.blockNumber>lastBlockNumber , checkPendingTx should call ethService.getTxInfo twice then call web3.utils.hexToNumberString twice then call ethService.getTxReceipt twice then call ethService.getBlockNumber twice then NOT call ethTransactions.updateTx then NOT call notif.sendNotification', (done) => {
+    jest.mock('web3');
+    const web3 = require('web3');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    const ethService = require('.//ethService.js');
+    const stub2 = sinon.stub(ethService, 'getTxInfo');
+    stub2.onFirstCall().resolves(web3.transactions[0]);
+    stub2.onSecondCall().resolves(web3.transactions[1]);
+    stub2.onThirdCall().resolves(web3.transactions[2]);
+    const spy2 = sinon.spy(web3.utils, 'hexToNumberString');
+    const stub3 = sinon.stub(ethService, 'getTxReceipt');
+    stub3.resolves(web3.txReceipt);
+    const stub4 = sinon.stub(ethService, 'getBlockNumber');
+    stub4.resolves(web3.blockNumber + 2);
+    const spy3 = sinon.spy(ethTransactions, 'updateTx');
+    const notif = require('./notifications.js');
+    const stub5 = sinon.stub(notif, 'sendNotification');
+    stub5.resolves();
+    const blockNumber = web3.blockNumber;
+    const dbCollections = { ethAddresses, ethTransactions };
+    return ethTransactions.listPending()
+      .then(pendingTxArray => processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif)
+        .then(() => {
+          sinon.assert.callCount(stub2, 3);
+          sinon.assert.callCount(stub3, 3);
+          sinon.assert.callCount(stub4, 3);
+          sinon.assert.notCalled(stub5);
+          stub5.restore();
+          sinon.assert.callCount(spy2, 3);
+          sinon.assert.notCalled(spy3);
+          stub2.restore();
+          stub3.restore();
+          stub4.restore();
+          spy2.restore();
+          spy3.restore();
+          done();
+        }));
+  });
+
+  test('Whwn smart contract calls are identified, checkPendingTx should call ethService.getTxInfo twice then call web3.utils.hexToNumberString twice then call ethService.getTxReceipt twice then  call ethService.getBlockNumbertwice then call ethTransactions.updateTx twice then call notif.sendNotification 6 times', (done) => {
+    jest.mock('web3');
+    const web3 = require('web3');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    const ethService = require('.//ethService.js');
+    const stub2 = sinon.stub(ethService, 'getTxInfo');
+    stub2.onFirstCall().resolves(web3.transactions[0]);
+    stub2.onSecondCall().resolves(web3.transactions[1]);
+    stub2.onThirdCall().resolves(web3.transactions[2]);
+    const stub5 = sinon.stub(web3.utils, 'hexToNumberString');
+    stub5.returns('0'); // SMART CONTRACT CALL
+    const stub3 = sinon.stub(ethService, 'getTxReceipt');
+    stub3.resolves(web3.txReceipt);
+    const stub4 = sinon.stub(ethService, 'getBlockNumber');
+    stub4.resolves(web3.blockNumber - 6);
+    const spy3 = sinon.spy(ethTransactions, 'updateTx');
+    const notif = require('./notifications.js');
+    const stub6 = sinon.stub(notif, 'sendNotification');
+    stub6.resolves();
+    const blockNumber = web3.blockNumber;
+    const dbCollections = { ethAddresses, ethTransactions };
+    return ethTransactions.listPending()
+      .then(pendingTxArray => processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif)
+>>>>>>> develop
         .then(() => {
           sinon.assert.callCount(stub1, 1);
           sinon.assert.callCount(stub2, 1);
@@ -769,6 +966,7 @@ describe('Test checkPendingTx function', () => {
         });
   });
 
+<<<<<<< HEAD
 
 test('When transaction has more than 1 block confirmations and isPublisher = true, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,' +
 	'bcx.getTxReceipt once and rmqServices.sendPubSubMessage once', (done) => {
@@ -904,6 +1102,50 @@ test('When transaction has more than 1 block confirmations and isPublisher = tru
 		stub4.restore();
 		done();
 	});
+=======
+  test('When transactions are still pensding, checkPendingTx should NOT call ethService.getTxInfo then NOT call web3.utils.hexToNumberString then NOT call ethService.getTxReceipt then NOT call ethService.getBlockNumber then NOT call ethTransactions.updateTx then NOT call notif.sendNotification', (done) => {
+    jest.mock('web3');
+    const web3 = require('web3');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    const ethService = require('.//ethService.js');
+    const stub2 = sinon.stub(ethService, 'getTxInfo');
+    stub2.onFirstCall().resolves(web3.poolTransactions[0]);
+    stub2.onSecondCall().resolves(web3.poolTransactions[1]);
+    stub2.onThirdCall().resolves(web3.transactions[2]);
+    const stub5 = sinon.stub(web3.utils, 'hexToNumberString');
+    stub5.returns('0');
+    const stub3 = sinon.stub(ethService, 'getTxReceipt');
+    stub3.resolves(web3.txReceipt);
+    const stub4 = sinon.stub(ethService, 'getBlockNumber');
+    stub4.resolves(web3.blockNumber + 2);
+    const spy = sinon.spy(ethTransactions, 'updateTx');
+    const notif = require('./notifications.js');
+    const stub6 = sinon.stub(notif, 'sendNotification');
+    stub6.resolves();
+    const blockNumber = web3.blockNumber;
+    const pendingTxArray = [];
+    const dbCollections = { ethAddresses, ethTransactions };
+    return processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif)
+      .then(() => {
+        sinon.assert.notCalled(stub2);
+        sinon.assert.notCalled(stub3);
+        sinon.assert.notCalled(stub4);
+        sinon.assert.notCalled(stub5);
+        sinon.assert.notCalled(stub6);
+        stub6.restore();
+        sinon.assert.notCalled(spy);
+        stub2.restore();
+        stub3.restore();
+        stub4.restore();
+        stub5.restore();
+        spy.restore();
+        done();
+      });
+  });
+>>>>>>> develop
 });
 
 test('When transaction has more than 1 block confirmations and isPublisher = true and txInfo is not found, checkPendingTx should call hashMaps.pendingTx.get once,' +
@@ -986,10 +1228,24 @@ describe('Test processNewPendingTxArray function', () => {
 
 
 describe('Test checkTokenTransferEvent function', () => {
+<<<<<<< HEAD
   test('When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address,' +
     ' checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once,' +
     ' and rmqServices.sendPubSubMessage once', (done) => {
 
+=======
+  test('When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once, dbCollections.ethAddresses.getFCMIID once and notif.sendNotification once', (done) => {
+    const stub1 = sinon.stub(processTx, 'filterAddress');
+    stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+    let web3;
+    const ethService = require('./ethService.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    const dbCollections = { ethTransactions, ethAddresses };
+    const notif = require('./notifications.js');
+>>>>>>> develop
     const eventInfo = {
       value: 1000000000000000000,
       transactionHash: 'txHash',
@@ -1009,6 +1265,7 @@ describe('Test checkTokenTransferEvent function', () => {
       tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'ETH',
     });
 
+<<<<<<< HEAD
     const rmqServices = require('./rmqServices.js');
     const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
     stub3.returns()
@@ -1019,6 +1276,9 @@ describe('Test checkTokenTransferEvent function', () => {
 	  stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
 
     return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
+=======
+    return processTx.checkTokenTransferEvent(web3, ethService, dbCollections, notif, eventInfo, ERC20SmartcContractInfo)
+>>>>>>> develop
       .then(() => {
         sinon.assert.calledOnce(stub1);
         sinon.assert.calledOnce(stub2);
@@ -1030,6 +1290,7 @@ describe('Test checkTokenTransferEvent function', () => {
       });
   });
 
+<<<<<<< HEAD
   test('When transfer event IS regular token transfer (asset!=ETH) to a Pillar address, checkTokenTransferEvent should call processTx.filterAddress once,' +
     '  call dbCollections.ethTransactions.findByTxHash once,  NOT call rmqServices.sendPubSubMessage', (done) => {
 	  const eventInfo = {
@@ -1112,5 +1373,93 @@ describe('Test checkTokenTransferEvent function', () => {
 		  stub3.restore();
 		  done();
 	  });
+=======
+  test('When transfer event IS regular token transfer (asset!=ETH), checkTokenTransferEvent should call processTx.filterAddress once,  call dbCollections.ethTransactions.findByTxHash once,  NOT call dbCollections.ethAddresses.getFCMIID  and  NOT call notif.sendNotification', (done) => {
+    const stub1 = sinon.stub(processTx, 'filterAddress');
+    stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+    let web3;
+    const ethService = require('./ethService.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    const dbCollections = { ethTransactions, ethAddresses };
+    const notif = require('./notifications.js');
+    const eventInfo = {
+      value: 1000000000000000000,
+      transactionHash: 'txHash',
+      returnValues: {
+        _to: 'toAddress',
+        _from: 'fromAddress',
+        _value: 999,
+      },
+    };
+    const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
+    const stub3 = sinon.stub(dbCollections.ethTransactions, 'findByTxHash');
+    stub3.resolves({
+      tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'PLR',
+    });
+    const stub4 = sinon.stub(dbCollections.ethAddresses, 'getFCMIID');
+    stub4.resolves('FCMIID');
+    const stub5 = sinon.stub(notif, 'sendNotification');
+    stub5.resolves();
+
+    return processTx.checkTokenTransferEvent(web3, ethService, dbCollections, notif, eventInfo, ERC20SmartcContractInfo)
+      .then(() => {
+        sinon.assert.calledOnce(stub1);
+        sinon.assert.calledOnce(stub3);
+        sinon.assert.notCalled(stub4);
+        sinon.assert.notCalled(stub5);
+        stub1.restore();
+        stub3.restore();
+        stub4.restore();
+        stub5.restore();
+        done();
+      });
+  });
+
+  test('When recipient is not a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, NOT call dbCollections.ethTransactions.findByTxHash,  NOT call dbCollections.ethAddresses.getFCMIID  and  NOT call notif.sendNotification', (done) => {
+    const stub1 = sinon.stub(processTx, 'filterAddress');
+    stub1.resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
+    let web3;
+    const ethService = require('./ethService.js');
+    jest.mock('../controllers/transactions_ctrl.js');
+    const ethTransactions = require('../controllers/transactions_ctrl.js');
+    jest.mock('../controllers/ethAddresses_ctrl.js');
+    const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
+    const dbCollections = { ethTransactions, ethAddresses };
+    const notif = require('./notifications.js');
+    const eventInfo = {
+      value: 1000000000000000000,
+      transactionHash: 'txHash',
+      returnValues: {
+        _to: 'toAddress',
+        _from: 'fromAddress',
+        _value: 999,
+      },
+    };
+    const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
+    const stub3 = sinon.stub(dbCollections.ethTransactions, 'findByTxHash');
+    stub3.resolves({
+      tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'PLR',
+    });
+    const stub4 = sinon.stub(dbCollections.ethAddresses, 'getFCMIID');
+    stub4.resolves('FCMIID');
+    const stub5 = sinon.stub(notif, 'sendNotification');
+    stub5.resolves();
+
+    return processTx.checkTokenTransferEvent(web3, ethService, dbCollections, notif, eventInfo, ERC20SmartcContractInfo)
+      .then(() => {
+        sinon.assert.calledOnce(stub1);
+        sinon.assert.notCalled(stub3);
+        sinon.assert.notCalled(stub4);
+        sinon.assert.notCalled(stub5);
+        stub1.restore();
+        stub3.restore();
+        stub4.restore();
+        stub5.restore();
+        done();
+      });
+>>>>>>> develop
   });
 });

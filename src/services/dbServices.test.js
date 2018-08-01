@@ -333,6 +333,7 @@ describe('Test resetDBERC20SmartContracts function', () => {
       });
   });
 });
+<<<<<<< HEAD
 /*
 describe('Test dlERC20SmartContracts function', () => {
   test('Should call web3.eth.getBlock, bcx.getBlockSmartContractsAddressesArray and dbServices.processSmartContractsAddressesArray 10 times, then return 10', (done) => {
@@ -415,3 +416,5 @@ describe('Test updateERC20SmartContracts function', () => {
   });
 });
 */
+=======
+>>>>>>> develop

@@ -16,18 +16,19 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function listPending() {
-  return new Promise(((resolve, reject) => {
+function listPending(protocol) {
+  logger.debug('transactions_ctrl.listPending(): for protocol: ' + protocol);
+  return new Promise((resolve, reject) => {
     try {
-	    transactions.Transactions.find({ status: 'pending' }, (err, result) => {
-        if (err) {
-          logger.info(`transactions.listPending DB controller ERROR: ${err}`);
-          reject(err);
-        }
+      transactions.Transactions.find({ protocol, status: 'pending' }).then((result) => {
+        logger.debug('transactions_ctrl.listPending(): fetching ' + result.length + ' records');
         resolve(result);
       });
-    } catch (e) { reject(e); }
-  }));
+    } catch (e) {
+      logger.error('transaction_ctrl.listPending(): failed with error: ' + e);
+      reject(e); 
+    }
+  });
 }
 module.exports.listPending = listPending;
 
@@ -179,57 +180,25 @@ function emptyCollection() {
 }
 module.exports.emptyCollection = emptyCollection;
 
-function addZeroTxHistoryHeight() {
-  return new Promise(((resolve, reject) => {
+function findMaxBlock(protocol) {
+  logger.debug('transactions_ctrl.findMaxBlock(): Fetching maxBlock for ' + protocol);
+  return new Promise((resolve, reject) => {
     try {
-      const txHistHeight = new transactions.Transactions({
-        pillarId: 'pillarId', protocol: 'protocol', txHash: 'txHash', blockNumber: 3333207, status: 'blockNumber = highest block number for tx history',
-      });
-      txHistHeight.save((err) => {
-        if (err) {
-          logger.info(`transactions.addZeroTxHistoryHeight DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        resolve();
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.addZeroTxHistoryHeight = addZeroTxHistoryHeight;
-
-function updateTxHistoryHeight(blockNb) {
-  return new Promise(((resolve, reject) => {
-    try {
-	    transactions.Transactions.update({ status: 'blockNumber = highest block number for tx history' }, { blockNumber: blockNb }, (err) => {
-        if (err) {
-          logger.info(`transactions.updateTxHistoryHeight DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        resolve();
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.updateTxHistoryHeight = updateTxHistoryHeight;
-
-function findTxHistoryHeight() {
-  return new Promise(((resolve, reject) => {
-    try {
-	    transactions.Transactions.find({ status: 'blockNumber = highest block number for tx history' }, (err, result) => {
-        if (err) {
-          logger.info(`transactions.findTxHistoryHeight DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        if (result.length > 0) {
-          resolve(result[0].blockNumber);
+      transactions.Transactions.find({protocol: protocol, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
+        if(maxBlock !== 'undefined') {
+          logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
+          resolve(maxBlock.blockNumber);
         } else {
-          resolve('NO_TX_HSTORY_HEIGHT');
+          reject();
         }
       });
-    } catch (e) { reject(e); }
-  }));
+    } catch(e) {
+      logger.debug('transactions_ctrl.findMaxBlock() failed with error: ' + e);
+      reject(e);
+    }
+  });
 }
-module.exports.findTxHistoryHeight = findTxHistoryHeight;
+module.exports.findMaxBlock = findMaxBlock;
 
 function getBalance(address, asset) {
   return new Promise((resolve, reject) => {

@@ -1,34 +1,26 @@
 #!/usr/bin/env node
-/** ************************************************************************************ */
-/*  Pub-Sub master that is used to spawn new instances of publishers and subscribers  */
-/** ************************************************************************************ */
+/** @module master.js */
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
 const fs = require('fs');
-
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
-  /*
-  { name: 'minPort', type: Number },
-  { name: 'maxPort', type: Number },
-  */
   { name: 'maxWallets', type: Number },
 ];
 const commandLineArgs = require('command-line-args');
-
 const options = commandLineArgs(optionDefinitions, {partial: true});
-
 const dbServices = require('./services/dbServices');
-
-// protocol has to be setup during init, we will have one master per protocol
 let protocol = 'Ethereum';
 let maxWalletsPerPub = 500000;
-
 exports.housekeeper;
 exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
 
+/**
+ * Function that initializes the master after validating command line arguments.
+ * @param {any} options - List of command line arguments
+ */
 exports.init = function (options) {
   try {
     logger.info('Started executing master.init()');
@@ -44,7 +36,9 @@ exports.init = function (options) {
       logger.info(`master.init(): A new publisher will be spawned for every ${options.maxWallets} wallets..`);
       maxWalletsPerPub = options.maxWallets;
     }
-    this.launch();
+    dbServices.dbConnect().then(() => {
+      this.launch();
+    });
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
   } finally {
@@ -52,10 +46,12 @@ exports.init = function (options) {
   }
 };
 
+/**
+ * Function that spawns housekeeper, publisher and subscriber.
+ */
 exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
-
     // start the first program pair of publisher and subscribers
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
@@ -144,20 +140,23 @@ exports.launch = function () {
 
     exports.index++;
   } catch (err) {
-    // throw err;
-    logger.error(err.mesasage);
+    logger.error('Master.launch(): exited with error ' + err);
   } finally {
     logger.info('Exited master.launch()');
   }
 };
 
+/**
+ * function to notify the publisher of any new wallets added to database
+ * @param {String} idFrom - The last known pillarId corresponding to a wallet.
+ * @param {any} socket - Reference to the process id corresponding to the publisher
+ */
 exports.notify = function (idFrom, socket) {
   try {
     logger.info('Started executing master.notify()');
 
     // read the wallet address model and bring up multiple publishers
     dbServices.recentAccounts(idFrom).then((theWallets) => {
-      //logger.info('Master.notify(): received new wallets to monitor: ' + JSON.stringify(theWallets));
       if (theWallets !== undefined) {
         const message = [];
         for (let i = 0; i < theWallets.length; i++) {
@@ -166,7 +165,6 @@ exports.notify = function (idFrom, socket) {
           for (let j = 0; j < theWallet.addresses.length; j++) {
 	          var theAddress = theWallet.addresses[j];
             if (theAddress.protocol.trim() === protocol) {
-              //logger.info('master.notify() - notifying the publisher of a new wallet: ' + theWallet.addresses[j].address + '/pillarId: ' + theWallet.pillarId);
               message.push({ id: theWallet._id, walletId: theWallet.addresses[j].address, pillarId: theWallet.pillarId });
             } else {
 		          logger.debug('Protocol doesnt match, ignoring,....');
