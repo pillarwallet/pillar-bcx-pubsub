@@ -39,6 +39,7 @@ testem.log
 /bin/logs
 /src/logs
 /bcx_log.txt
+/reports
 
 # e2e
 /e2e/*.js
@@ -136,5 +137,3 @@ dist/*.exe
 
 doc/
 /*-cov
-
-reports/*

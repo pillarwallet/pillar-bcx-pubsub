@@ -8,21 +8,6 @@ const dbServices = require('./services/dbServices.js');
  * Function that initializes the subscriber service
  */
 exports.initServices = function () {
-<<<<<<< HEAD
-  return new Promise((resolve, reject) => {
-		dbServices.dbConnect()
-		.then(() => {
-			logger.info('Connected to database');
-			rmqServices.initSubPubMQ();
-			resolve()
-		})
-		.catch((err) => {
-			logger.error(err.message);
-			reject()
-		});
-  });
-
-=======
   dbServices.dbConnect()
     .then(() => {
       logger.info('Subscriber.initServices(): Connected to database');
@@ -31,7 +16,6 @@ exports.initServices = function () {
     .catch((err) => {
       logger.error(err.message);
     });
->>>>>>> develop
 };
 
 this.initServices();
