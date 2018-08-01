@@ -8,16 +8,9 @@ const assetsSchema = Mongoose.Schema({
   contractAddress: { type: String, required: true },
   totalSupply: { type: Number, required: false },
   url: { type: String, required: false },
+  category: {type: String, required: false}
 });
 
-/*
-const assetsSchema = Mongoose.Schema({
-  address: { type: String, required: true },
-  name: { type: String, required: true },
-  ticker: { type: String, required: true },
-  decimals: { type: Number, required: true },
-});
-*/
 const Assets = Mongoose.model('Assets', assetsSchema);
 
 module.exports.Assets = Assets;

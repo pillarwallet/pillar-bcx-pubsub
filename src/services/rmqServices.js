@@ -1,27 +1,23 @@
+/** @module rmqServices.js */
 require('dotenv').config();
 const amqp = require('amqplib/callback_api');
 const moment = require('moment');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
-
 const SHA256 = new jsHashes.SHA256();
-require('dotenv').config();
-
 const checksumKey = process.env.CHECKSUM_KEY;
-
 let pubSubChannel;
 const pubSubQueue = 'bcx-pubsub';
-
 const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
-
-const CWBURL = process.env.CWB_URL;
 const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
 const TX_MAP = {};
-
 moment.locale('en_GB');
 
+/**
+ * Initialize the pub-sub rabbit mq.
+ */
 exports.initPubSubMQ = function () {
   return new Promise((resolve, reject) => {
     try {
@@ -47,12 +43,20 @@ exports.initPubSubMQ = function () {
   });
 };
 
+/**
+ * Function that calculates the checksum for a given payload and then writes to queue
+ * @param {any} payload - the payload/message to be send to queue
+ */
 exports.sendPubSubMessage = function (payload) {
   const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
   payload.checksum = checksum;
   pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));
 };
 
+/**
+ * Function to generate the notification payload thats send to notification queue
+ * @param {any} payload -  The payload for the notification queue
+ */
 function getNotificationPayload(payload) {
   const p = {
     type: 'transactionEvent',
@@ -65,6 +69,9 @@ function getNotificationPayload(payload) {
   return p;
 }
 
+/**
+ * Function that resets the transaction map
+ */
 function resetTxMap() {
   for (const x in TX_MAP) {
     logger.info(`resetTxMap Loop: ${x}`);
@@ -78,6 +85,9 @@ function resetTxMap() {
   }
 }
 
+/**
+ * Function to initialize the subscriber publisher queue befpore consumption
+ */
 exports.initSubPubMQ = () => {
   try {
     let connection;
@@ -156,6 +166,11 @@ exports.initSubPubMQ = () => {
                     logger.info(`updateTx: Transaction produced to: ${notificationsQueue}`);
                   });
                 break;
+              case 'newAsset':
+                dbServices.dbCollections.assets.addContract(entry)
+                  .then(() => {
+                    logger.info(`New aseet added: `);
+                  });  
               default:
                 break;
             }
@@ -171,6 +186,10 @@ exports.initSubPubMQ = () => {
   }
 };
 
+/**
+ * Function that validates the checksum of the payload received.
+ * @param {any} payload - The IPC message received from the master
+ */
 exports.validatePubSubMessage = (payload) => {
   const checksum = payload.checksum;
   delete payload.checksum;

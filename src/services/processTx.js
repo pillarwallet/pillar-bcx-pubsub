@@ -1,3 +1,4 @@
+/** @module processTx.js */
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
@@ -6,7 +7,12 @@ const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./ERC20ABI');
 const hashMaps = require('../utils/hashMaps.js');
 
-function storeIfRelevant(tx,protocol) {
+/**
+ * Check if given transaction is relevant and store in the database
+ * @param {any} tx - the transaction object
+ * @param {any} protocol - the transaction object
+ */
+function storeIfRelevant(tx, protocol) {
     const tmstmp = time.now();
     var pillarId = '';
     var data, value;
@@ -65,6 +71,12 @@ function storeIfRelevant(tx,protocol) {
 }
 module.exports.storeIfRelevant = storeIfRelevant;
 
+/**
+ * Store the new pending transaction in memeory if the transaction corresponds
+ * to a monitored wallet.
+ * @param {any} tx - the transaction object
+ * @param {any} protocol - the transaction object
+ */
 function newPendingTran(tx, protocol) {
   try {
     logger.debug('processTx.newPendingTran(): validating transaction: ' + JSON.stringify(tx));
@@ -75,6 +87,10 @@ function newPendingTran(tx, protocol) {
     to = ((typeof tx.to !== 'undefined') ? tx.to : tx.toAddress);
     hash = ((typeof tx.hash !== 'undefined') ? tx.hash : tx.txHash);
     //ignore contract creation transactions, these have the to as null
+    if(to === null) {
+        logger.debug('processTx.newPendingTran(): txn ' + hash + ' looks like a probable contract deployment');
+        hashMaps.pendingAssets.set(hash,tx);
+    }
     if(from !== null && to !== null) {
       logger.debug('processTx.newPendingTran(): txn ' + hash+ ' from= ' + from + ' to= ' + to);
       if ((to !== null) && hashMaps.accounts.has(to.toLowerCase())) {
@@ -135,9 +151,12 @@ function newPendingTran(tx, protocol) {
 }
 module.exports.newPendingTran = newPendingTran;
 
-//*************************************************************
-//* function to handle token transfer events.
-//*************************************************************
+/**
+ * Validated if the wallets involved in a monitored token transfer needs to be persisted in database
+ * @param {any} evnt - the event associated with the token transfer
+ * @param {String} theContract - the smart contract address associated with the token
+ * @param {String} protocol - the protocol corresponding to the token blockchain
+ */
 function checkTokenTransfer(evnt, theContract, protocol) {
     return new Promise(((resolve, reject) => {
         var pillarId;

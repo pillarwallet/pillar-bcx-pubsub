@@ -1,388 +1,160 @@
 #!/usr/bin/env node
+/** @module housekeeper.js */
+require('dotenv').config();
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
-const bcx = require('./services/bcx.js');
-const gethConnect = require('./services/gethConnect.js');
 const processTx = require('./services/processTx.js');
-const colors = require('colors');
-const accounts = require('./services/accounts.js');
-const ERC20ABI = require('./services/ERC20ABI');
 const LOOK_BACK_BLOCKS = 15;
-const ethService = require('./services/bcx.js');
+const ethService = require('./services/ethService.js');
+const protocol = 'Ethereum';
 
-const logs = false;
-
+/**
+ * Method to handle IPC message received from master
+ * @param {any} message - The IPC message received from the master
+ */
 process.on('message', (data) => {
-  logger.debug('Housekeeper has received message from master........');
-  const message = data.message;
-  if (data.type === 'accounts') {
-    for (let i = 0; i < message.length; i++) {
-      const obj = message[i];
-      logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
-      module.exports.recoverWallet(obj.walletId.toLowerCase(), LOOK_BACK_BLOCKS);
+    logger.debug('Housekeeper has received message :' + JSON.stringify(data) + ' from master');
+    const message = data.message;
+    if (data.type === 'accounts') {
+      for (let i = 0; i < message.length; i++) {
+        const obj = message[i];
+        logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
+        module.exports.recoverWallet(obj.walletId.toLowerCase(), LOOK_BACK_BLOCKS);
+      }
     }
-  }
 });
 
-exports.init = function () {
-  return new Promise((resolve, reject) => {
+/**
+ * Function that initializes the houskeeper.
+ */
+function init() {
+    logger.info('Houskeeper.init(): Started executing the function');
     try {
-      gethConnect.gethConnectDisplay()
-        .then(() => {
-          /* CONNECT TO DATABASE */
-          dbServices.dbConnectDisplayAccounts()
-            .then(() => {
-              dbServices.initDB(accounts.accountsArray, accounts.contractsArray)
-                .then(() => {
-                  dbServices.initDBTxHistory()
-                    .then(() => {
-                      dbServices.initDBERC20SmartContracts()
-                        .then(() => {
-                          resolve();
-                        }).catch((e) => { reject(e); });
-                    }).catch((e) => { reject(e); });
-                }).catch((e) => { reject(e); });
-            }).catch((e) => { reject(e); });
-        }).catch((e) => { reject(e); });
-    } catch (e) { reject(e); }
-  });
-};
-
-exports.recoverWallet = function (recoverAddress, nbBlocks) {
-  return new Promise((resolve, reject) => {
-    try {
-      bcx.getPendingTxArray() // SEND MSG TO PRODUCTION SEGMENT
-        .then((pendingTxArray) => {
-          // CHECK IF TX ALREADY IN DB
-          const unknownPendingTxArray = [];
-          dbServices.dbCollections.transactions.listDbZeroConfTx()
-            .then((dbPendingTxArray) => {
-              pendingTxArray.forEach((pendingTx) => {
-                let isDbPendingTx = false;
-                dbPendingTxArray.forEach((dbPendingTx) => {
-                  if (pendingTx.hash === dbPendingTx.txHash) {
-                    isDbPendingTx = true;
-                  }
-                });
-                if (isDbPendingTx === false) {
-                  unknownPendingTxArray.push(pendingTx);
-                }
-              });
-              processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false, recoverAddress)
-                .then((nbPendingTxFound) => {
-                  console.log(`DONE RECOVERING PENDING TX FOR NEW ACCOUNT ${recoverAddress}--> ${nbPendingTxFound} transactions found`);
-                  bcx.getLastBlockNumber()
-                    .then((lastBlockNb) => {
-                      module.exports.dlTxHistory(lastBlockNb - nbBlocks, lastBlockNb, 0, false, recoverAddress) // SEND MSG TO PRODUCTION SEGMENT
-                        .then((nbMinedTxFound) => {
-                          console.log(`DONE RECOVERING MINED TX FOR NEW ACCOUNT ${recoverAddress}--> ${nbMinedTxFound} transactions found`);
-                          resolve();
-                        })
-                        .catch((e) => {
-                          reject(e);
-                        });
-                    })
-                    .catch((e) => {
-                      reject(e);
-                    });
-                })
-                .catch((e) => {
-                  reject(e);
-                });
-            })
-            .catch((e) => {
-              reject(e);
-            });
-        })
-        .catch((e) => {
-          reject(e);
+        dbServices.dbConnect().then(() => {
+            this.checkTxPool();
+            this.updateTxHistory();
         });
-    } catch (err) {
-      reject(err);
+    } catch(e) {
+        logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
     }
-  });
-};
+    logger.info('Houskeeper.init(): Finished executing the function');
+}
+module.exports.init = init;
 
-
-exports.checkTxPool = function () {
-  // At connection time: Check for pending Tx in TX pool which are not in DB
-  // and would not be added in TX History by dbServices.updateTxHistory
-  return new Promise((resolve, reject) => {
+/**
+ * Recover transactions corresponding to a wallet by going back blocks.
+ * @param {string} recoverAddress - The address to recover transactions for.
+ * @param {string} author - The number of blocks to go back to recover transactions.
+ */
+function recoverWallet (recoverAddress, nbBlocks) {
     try {
-      logger.info(colors.yellow.bold('UPDATING PENDING TX IN DATABASE...'));
-      bcx.getPendingTxArray()
-        .then((pendingTxArray) => {
-          // CHECK IF TX ALREADY IN DB
-          const unknownPendingTxArray = [];
-          dbServices.dbCollections.transactions.listDbZeroConfTx()
-            .then((dbPendingTxArray) => {
-              pendingTxArray.forEach((pendingTx) => {
-                let isDbPendingTx = false;
-                dbPendingTxArray.forEach((dbPendingTx) => {
-                  if (pendingTx === dbPendingTx) {
-                    isDbPendingTx = true;
-                  }
+        //loop 15 blocks back for the given wallet and update all transactions.
+        logger.debug('Housekeeper.recoverWallet(): Recovering transactions for the wallet: ' + recoverAddress + ' by looping back: ' + nbBlocks + ' blocks.');
+        ethService.getLastBlockNumber().then((startBlock) => {
+            var endBlock = startBlock - nbBlocks;
+            logger.debug('Recovering transactions from startBlock: ' + startBlock + ' to endBlock: ' + endBlock);
+            for(var i = startBlock; i > endBlock; i--) { 
+                logger.debug('Housekeeper.recoverWallet(): Fetching transactions from block: ' + i);
+                ethService.getBlockTransactionCount(i).then((txnCnt) => {
+                    logger.debug('Housekeeper.recoverWallet: Total transactions in block ' + i + ' is ' + txnCnt);
+                    for(var j=0;i<txnCnt;j++) {
+                        ethService.getTransactionFromBlock(i,j).then((txn) => {
+                            ethService.getTxReceipt(txn.hash).then((receipt) => {
+                                logger.debug('Housekeeper.recoverWallet(): Validating txn hash: ' + receipt.transactionHash);
+                                processTx.storeIfRelevant(receipt,protocol);
+                            });
+                        });
+                    }
                 });
-                if (isDbPendingTx === false) {
-                  unknownPendingTxArray.push(pendingTx);
-                }
-              });
-              processTx.processNewPendingTxArray(unknownPendingTxArray, 0, false)
-                .then((nbTxFound) => {
-                  logger.info(colors.yellow.bold(`DONE UPDATING PENDING TX IN DATABASE--> ${nbTxFound} transactions found`));
-                  resolve();
-                }).catch((e) => { reject(e); });
-            }).catch((e) => { reject(e); });
-        }).catch((e) => { reject(e); });
-    } catch (err) { reject(err); }
-  });
-};
-
-
-exports.updateTxHistory = function () {
-  return new Promise(((resolve, reject) => {
-    try {
-      bcx.getLastBlockNumber()
-        .then((maxBlock) => {
-          logger.info((`LAST BLOCK NUMBER = ${maxBlock}`));
-          dbServices.dbCollections.transactions.findTxHistoryHeight()
-            .then((startBlock) => {
-              logger.info((`UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}`));
-              this.dlTxHistory(startBlock, maxBlock, 0, logs)
-                .then((nbTxFound) => {
-                  logger.info(('TRANSACTIONS HISTORY UPDATED SUCCESSFULLY!'));
-                  logger.info((`-->${nbTxFound} transactions found`));
-                  resolve();
-                })
-                .catch((e) => {
-                  reject(e);
-                });
-            })
-            .catch((e) => {
-              reject(e);
-            });
-        });
-    } catch (e) { reject(e); }
-  }));
-};
-
-exports.dlTxHistory = function (startBlock, maxBlock, nbTx, logs = false, recoverAddress = null) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (startBlock > maxBlock) {
-        resolve(nbTx);
-      } else {
-        if (logs) {
-          logger.info((`DOWNLOADING TX HISTORY FOR BLOCK # ${startBlock}`));
-        }
-        bcx.getBlockTx(startBlock)
-          .then((txArray) => {
-            module.exports.processTxHistory(txArray, 0, 0, recoverAddress)
-              .then((nbBlockTx) => {
-                nbTx += nbBlockTx;
-                dbServices.dbCollections.transactions.listHistory()
-                  .then((historyTxArray) => {
-                    processTx.checkPendingTx(historyTxArray, maxBlock, false, recoverAddress)
-                      .then(() => {
-                        dbServices.dbCollections.transactions.updateTxHistoryHeight(startBlock)
-                          .then(() => {
-                            resolve(this.dlTxHistory(startBlock + 1, maxBlock, nbTx, logs, recoverAddress));
-                          })
-                          .catch((e) => { reject(e); });
-                      })
-                      .catch((e) => { reject(e); });
-                  })
-                  .catch((e) => { reject(e); });
-              })
-              .catch((e) => { reject(e); });
-          })
-          .catch((e) => { reject(e); });
-      }
-    } catch (e) { reject(e); }
-  }));
-};
-
-exports.processTxHistory = function (txArray, nbTx, index, recoverAddress = null) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (index === txArray.length) {
-        resolve(nbTx);
-      } else {
-        processTx.newPendingTx(txArray[index], false, recoverAddress)
-          .then((pillarWalletTx) => {
-            if (pillarWalletTx) {
-              nbTx += 1;
             }
-            resolve(this.processTxHistory(txArray, nbTx, index + 1, recoverAddress));
-          });
-      }
-    } catch (e) { reject(e); }
-  }));
-};
-
-exports.dlERC20SmartContracts = function (startBlock, endBlock, nbERC20Found, logs = false) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (startBlock > endBlock) {
-        resolve(nbERC20Found);
-      } else {
-        if (logs) {
-          logger.info((`LOOKING FOR NEW ERC20 SMART CONTRACTS : BLOCK # ${startBlock}/${endBlock}`));
-        }
-        gethConnect.web3.eth.getBlock(startBlock, false)
-          .then((result) => {
-            bcx.getBlockSmartContractsAddressesArray(result.transactions, [], 0)
-              .then((smartContractsAddressesArray) => {
-                this.processSmartContractsAddressesArray(smartContractsAddressesArray, 0, 0)
-                  .then((nbFound) => {
-                    nbERC20Found += nbFound;
-                    dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight(startBlock)
-                      .then(() => {
-                        resolve(this.dlERC20SmartContracts(startBlock + 1, endBlock, nbERC20Found, logs));
-                      })
-                      .catch((e) => { reject(e); });
-                  })
-                  .catch((e) => { reject(e); });
-              })
-              .catch((e) => { reject(e); });
-          })
-          .catch((e) => { reject(e); });
-      }
-    } catch (e) { reject(e); }
-  }));
-};
-
-exports.processSmartContractsAddressesArray = function (smartContractsAddressesArray, index, nbERC20Found) {
-  return new Promise(((resolve, reject) => {
-    try {
-      if (index >= smartContractsAddressesArray.length) {
-        resolve(nbERC20Found);
-      } else {
-        try {
-          let ERC20SmartContract
-            = new gethConnect.web3.eth.Contract(ERC20ABI, smartContractsAddressesArray[index]);
-          ERC20SmartContract.methods.decimals().call()
-            .then((result) => {
-              const decimals = result;
-              // logger.info('DECIMALS : '+decimals)
-              ERC20SmartContract.methods.name().call()
-                .then((result2) => {
-                  const name = result2;
-                  // logger.info('NAME : '+name)
-                  ERC20SmartContract.methods.symbol().call()
-                    .then((result3) => {
-                      const symbol = result3;
-                      // logger.info('SYMBOL : '+symbol)
-                      if (decimals !== undefined && name !== undefined && symbol !== undefined) {
-                        logger.info(colors.magenta.bold(`NEW ERC20 SMART CONTRACT FOUND: ${name}, symbol = ${symbol}, decimals = ${decimals}`));
-                        if (name.length > 0 && symbol.length > 0 && decimals.length > 0) {
-                          nbERC20Found += 1;
-                          ERC20SmartContract = {
-                            protocol: 'Ethereum',
-                            name,
-                            symbol,
-                            decimals,
-                            contractAddress: smartContractsAddressesArray[index],
-                          };
-                          dbServices.dbCollections.assets.addContract(ERC20SmartContract)
-                            .then(() => {
-                              logger.info(`Notifying master about a new smart contract: ${JSON.stringify(ERC20SmartContract)}`);
-                              // SEND IPC NOTIFICATION TO PUB-MASTER FOR
-                              // ERC20 SMART CONTRACT SUBSCRIPTION
-                              process.send({
-                                type: 'accounts',
-                                message: ERC20SmartContract,
-                              });
-                              resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-                            })
-                            .catch((e) => { reject(e); });
-                        } else {
-                          logger.info(colors.magenta('-->discarded (invalid name, symbol or decimals)'));
-                          resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-                        }
-                      } else {
-                        resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-                      }
-                    })
-                    .catch(() => {
-                      resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-                    });
-                })
-                .catch(() => {
-                  resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-                });
-            })
-            .catch(() => {
-              resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-            });
-        } catch (e) {
-          resolve(this.processSmartContractsAddressesArray(smartContractsAddressesArray, index + 1, nbERC20Found));
-        }
-      }
-    } catch (e) { reject(e); }
-  }));
-};
-
-exports.updateERC20SmartContracts = function () {
-  return new Promise(((resolve, reject) => {
-    try {
-      bcx.getLastBlockNumber()
-        .then((maxBlock) => {
-          logger.info((`LAST BLOCK NUMBER = ${maxBlock}`));
-          dbServices.dbCollections.assets.findERC20SmartContractsHistoryHeight()
-            .then((startBlock) => {
-              logger.info((`UPDATING ERC20 SMART CONTRACTS DB FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}`));
-              this.dlERC20SmartContracts(startBlock, maxBlock, 0, logs)
-                .then((nbERC20Found) => {
-                  logger.info(('ERC20 SMART CONTRACTS DB UPDATED SUCCESSFULLY!'));
-                  logger.info((`-->${nbERC20Found} ERC20 smart contracts found`));
-                  resolve();
-                })
-                .catch((e) => { reject(e); });
-            })
-            .catch((e) => { reject(e); });
-        })
-        .catch((e) => { reject(e); });
-    } catch (e) { reject(e); }
-  }));
-};
-
-exports.checkNewERC20SmartContracts = function () {
-  // CHECKS FOR NEW ERC20 SMART CONTRACTS PUBLISHED @ EACH NEW BLOCK
-  const subscribePromise = new Promise((resolve, reject) => {
-    try {
-      gethConnect.web3.eth.subscribe('newBlockHeaders', (err, res) => {})
-        .on('data', (blockHeader) => {
-          if (blockHeader != null) {
-            logger.info(colors.gray(`NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`));
-            // NOW, @ EACH NEW BLOCK MINED
-            // Check for newly created ERC20 smart contracts
-            this.dlERC20SmartContracts(blockHeader.number, blockHeader.number, logs)
-              .then(() => {
-                dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight(blockHeader.number)
-                  .then(() => {
-                    // logger.info(colors.green.bold('Highest Block Number for ERC20 Smart Contracts: '+blockHeader.number+''))
-                  });
-              });
-          }
-        })
-        .on('endSubscribeBlockHeaders', () => { // Used for testing only
-          logger.info('END BLOCK HEADERS SUBSCRIBTION');
-          resolve();
+            logger.debug('Housekeeper.recoverWallet(): finished recovering wallet: ' + recoverAddress);
         });
-      logger.info(colors.green.bold('Subscribed to Block Headers'));
-    } catch (e) { reject(e); }
-  });
-  return (subscribePromise);
-};
+    } catch(e) {
+        logger.debug('Housekeeper.recoverWallet(): Failed with error ' + e);
+    }
+}
+module.exports.recoverWallet = recoverWallet;
 
-this.init()
-  .then(() => {
-    this.checkTxPool(); // CHECKS TX POOL FOR TRANSACTIONS AND STORES THEM IN DB
-    this.updateTxHistory(); // CHECKS BLOCKCHAIN FOR TRANSACTIONS AND STORES THEM IN DB
-    this.updateERC20SmartContracts(); // CHECKS BLOCKCHAIN FOR ERC20 SMART CONTRACTS AND STORES THEM IN DB
-    this.checkNewERC20SmartContracts();
-    // CHECKS FOR NEW ERC20 SMART CONTRACTS @ EACH NEW BLOCK, AND STORES THEM IN DB
-  })
-  .catch((e) => { logger.error(e); });
+/**
+ * Check the transactions pool and update pending transactions.
+ */
+function checkTxPool() {
+    try {
+        logger.info('Housekeeper.checkTxPool(): Checking txpool');
+        dbServices.listPending(protocol).then((pendingTxArray) => {
+            logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
+            pendingTxArray.forEach((item) => {
+                logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
+                //recheck the status of the transaction
+                ethService.getTxReceipt(item.txHash).then((receipt) => {
+                    if(receipt !== null) {
+                        logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
+                        //update the status of the transaction
+                        let status;
+                        if(receipt.status == '0x1') { 
+                            status = 'confirmed';
+                        } else {
+                            status = 'failed';
+                        }
+                        const gasUsed = receipt.gasUsed;
+                        const entry = {
+                            txHash: item.txHash,
+                            status,
+                            gasUsed,
+                            blockNumber: receipt.blockNumber
+                        };
+                        dbServices.dbCollections.transactions.updateTx(entry).then(() => {
+                            logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${txHash}`);
+                        });
+                    }
+                });
+            });
+        });
+    } catch(e) {
+        logger.error('Housekeeper.checkTxPool(): Failed with error: ' + e);
+    } finally {
+        logger.info('Housekeeper.checkTxPool(): Finished txpool check.')
+    }
+}
+module.exports.checkTxPool = checkTxPool;
 
+/**
+ * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
+ */
+function updateTxHistory() {
+    try {
+        logger.info('Housekeeper.updateTxHistory(): updating tx history');
+        ethService.getLastBlockNumber().then((maxBlock) => {
+            logger.info(`Housekeeper.updateTxHistory(): LAST BLOCK NUMBER = ${maxBlock}`);
+            dbServices.findMaxBlock(protocol).then((startBlock) => {
+                logger.debug('Max block: ' + startBlock);
+                if (startBlock > maxBlock) {
+                    logger.debug('Housekeeper.updateTxHistory(): Nothing to catchup, already on the latest block');
+                } else {
+                    logger.info((`Housekeeper.updateTxHistory(): UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}`));
+                    //loop from startBlock to maxBlock and process any new transactions into the database
+                    for(var i = startBlock; i < maxBlock; i++) {
+                        ethService.getBlockTx(i).then((txArray) => {
+                            txArray.forEach((item) => {
+                                logger.debug(('Housekeeper.updateTxHistory(): validating transaction : ' + item));
+                                //format and add a new transaction to the database
+                                ethService.getTxReceipt(item.hash).then((receipt) => {
+                                    if(receipt !== null) {
+                                        processTx.storeIfRelevant(receipt,protocol);
+                                    }
+                                });
+                            });
+                        });
+                    }
+                }
+            });
+        });
+    }catch(e) {
+        logger.error('Housekeeper.updateTxHistory() failed with error: ' + e);
+    } finally {
+        logger.info('Housekeeper.updateTxHistory(): finished update.')
+    }
+}
+module.exports.updateTxHistory = updateTxHistory;
+
+this.init();

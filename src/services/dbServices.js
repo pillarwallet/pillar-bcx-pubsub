@@ -1,3 +1,4 @@
+/** @module dbServices.js */
 const logger = require('../utils/logger.js');
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -7,7 +8,6 @@ const mongoPwd = process.env.MONGO_PWD;
 const serverIP = process.env.SERVER;
 const dbName = process.env.DBNAME;
 const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}?w=majority`;
-// Import DB controllers
 const accounts = require('../controllers/accounts_ctrl.js');
 const assets = require('../controllers/assets_ctrl.js');
 const transactions = require('../controllers/transactions_ctrl.js');
@@ -59,11 +59,7 @@ function dbConnectDisplayAccounts($arg = { useMongoClient: true }) {
 }
 module.exports.dbConnectDisplayAccounts = dbConnectDisplayAccounts;
 
-function recentAccounts(
-  idFrom,
-  protocol,
-  $arg = { useMongoClient: true },
-) {
+function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     try {
       if (dbCollections) {
@@ -101,10 +97,7 @@ function recentAccounts(
 }
 module.exports.recentAccounts = recentAccounts;
 
-function contractsToMonitor(
-  idFrom,
-  $arg = { useMongoClient: true },
-) {
+function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
   return new Promise(((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
     if (dbCollections) {
@@ -385,4 +378,3 @@ function findMaxBlock(protocol) {
   }));  
 }
 module.exports.findMaxBlock = findMaxBlock;
-

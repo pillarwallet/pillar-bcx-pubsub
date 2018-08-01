@@ -1,18 +1,16 @@
 #!/usr/bin/env node
-/** ************************************************************************************ */
-/*  Publisher                                                                          */
-/** ************************************************************************************ */
+/** @module publisher.js */
 require('dotenv').config();
 const logger = require('./utils/logger');
-const gethConnect = require('./services/gethConnect.js');
-const dbServices = require('./services/dbServices.js');
-const gethSubscribe = require('./services/gethSubscribe.js');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
-
 let latestId = '';
 
+/**
+ * Function handling IPC notification that are received from the master
+ * @param {any} message - The IPC message that sent from the master
+ */
 process.on('message', (data) => {
   try {
     logger.info(`Publisher has received message from master: ${data.type}`);
@@ -40,6 +38,9 @@ process.on('message', (data) => {
   }
 });
 
+/**
+ * Function that initializes inter process communication queue
+ */
 exports.initIPC = function () {
   try {
     logger.info('Started executing publisher.initIPC()');
@@ -67,6 +68,9 @@ exports.initIPC = function () {
   }
 };
 
+/**
+ * Function that continuosly polls master for new wallets/assets.
+ */
 exports.poll = function () {
   // logger.info('Requesting new wallet :');
   if (hashMaps.assets.count() === 0) {
@@ -76,6 +80,9 @@ exports.poll = function () {
   process.send({ type: 'wallet.request', message: latestId });
 };
 
+/**
+ * Function that initializes the geth subscriptions
+ */
 exports.initSubscriptions = function () {
   logger.info('Publisher subscribing to geth websocket events...');
   //subscribe to pending transactions

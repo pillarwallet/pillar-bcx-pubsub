@@ -185,8 +185,12 @@ function findMaxBlock(protocol) {
   return new Promise((resolve, reject) => {
     try {
       transactions.Transactions.find({protocol: protocol, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
-        logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
-        resolve(maxBlock.blockNumber);
+        if(maxBlock !== 'undefined') {
+          logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
+          resolve(maxBlock.blockNumber);
+        } else {
+          reject();
+        }
       });
     } catch(e) {
       logger.debug('transactions_ctrl.findMaxBlock() failed with error: ' + e);
