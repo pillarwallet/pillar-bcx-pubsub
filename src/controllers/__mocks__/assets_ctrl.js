@@ -1,10 +1,10 @@
 function listAll() {
   const addressesArray = [
     {
-      address: '0xd55ebfba026cf4c321d939dcd488394bb358ebf8'.toUpperCase(), name: 'Pillar', ticker: 'PLR', decimals: 18,
+      address: '0xd55ebfba026cf4c321d939dcd488394bb358ebf8'.toUpperCase(), name: 'Pillar', symbol: 'PLR', decimals: 18,
     },
     {
-      address: '0x583cbBb8a8443B38aBcC0c956beCe47340ea1367'.toUpperCase(), name: 'BokkyPooBah Test Token', ticker: 'BOKKY', decimals: 18,
+      address: '0x583cbBb8a8443B38aBcC0c956beCe47340ea1367'.toUpperCase(), name: 'BokkyPooBah Test Token', symbol: 'BOKKY', decimals: 18,
     },
   ];
   return new Promise(((resolve) => {
@@ -20,10 +20,13 @@ function findByTicker() {
 }
 module.exports.findByTicker = findByTicker;
 
-function findByAddress() {
+function findByAddress(address) {
   const ticker = 'PLR';
   return new Promise(((resolve) => {
-    resolve({ ticker });
+	  if (address === '0xd55ebfba026cf4c321d939dcd488394bb358ebf8'.toLowerCase()) {
+		  resolve({ symbol: ticker });
+    }
+	  else resolve();
   }));
 }
 module.exports.findByAddress = findByAddress;

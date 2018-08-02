@@ -159,6 +159,41 @@ const eth = (function () {
         }
       }));
     },
+
+    Contract() {
+      return (
+        {
+          methods: {
+            decimals: () => {
+              return({
+                  call: () => {
+                    return new Promise((resolve, reject) => {
+                      resolve('18');
+                    });
+                  },
+                });
+            },
+            name: () => {
+	            return({
+		            call: () => {
+		              return new Promise((resolve, reject) => {
+			              resolve('Mock Smart Contract');
+		              });
+		            },
+	            });
+            },
+            symbol: () => {
+	            return({
+		            call: () => { return new Promise((resolve, reject) => {
+			            resolve('MCK');
+		            });
+		            },
+	            });
+            },
+          },
+        }
+      );
+    },
   };
 }());
 module.exports.eth = eth;
@@ -897,6 +932,25 @@ const zeroValueContractCall = {
 };
 
 module.exports.zeroValueContractCall = zeroValueContractCall;
+
+const tokenTransfer = {
+	blockHash: '0x0',
+	blockNumber: null,
+	from: '0xdc8F20170C0946ACCF9627b3EB1513CFD1c0499f',
+	gas: 399795,
+	gasPrice: '20000000000',
+	hash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+	input: '0xc8fea2fb000000000000000000000000e03c23519e18d64f144d2800e30e81b0065c48b5000000000000000000000000ebbdf302c940c6bfd49c6b165f457fdb324649bc0000000000000000000000000000000000000000000045428ce4001fbef71f80',
+	nonce: 82055,
+	to: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
+	transactionIndex: 14,
+	value: '0',
+	v: '0x1b',
+	r: '0xb301428c3c38200d0d4c0604980cc25dfa11dad4f05c08d0c5a0987984a9ebf2',
+	s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
+};
+module.exports.tokenTransfer = tokenTransfer;
+
 
 const txReceipt = {
   blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',

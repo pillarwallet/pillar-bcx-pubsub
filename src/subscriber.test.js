@@ -1,46 +1,24 @@
-require('dotenv').config();
-const dbServices = require('./services/dbServices.js');
-var subscriber = require("./subscriber.js");
-var amqp = require('amqplib/callback_api');
-const logger = require('./utils/logger');
-logger.transports.forEach((t) => (t.silent = true));
- 
-describe('Function Calls', () => {
+const sinon = require('sinon');
 
-  it('Expect dbConnect to be called by initServices()', () => {
+describe('Test function calls', () => {
+	test('Expect dbConnect and initPubSubMQto be called by initServices()', (done) => {
+		const dbServices = require('./services/dbServices.js');
+		const stub = sinon.stub(dbServices, 'dbConnect');
+		stub.resolves();
 
-    const spyConnect = jest.spyOn(dbServices, 'dbConnect').mockImplementation(() => Promise.resolve({ success: true }));
-    subscriber.initServices();
-    expect(spyConnect).toBeCalled();
-    spyConnect.mockRestore() 
-  });
+		const rmqServices = require('./services/rmqServices.js');
+		const stub2 = sinon.stub(rmqServices, 'initSubPubMQ');
+		stub2.resolves();
 
-  it('Expect amqp.connect to be called by initRabbitMQ()', () => {
+		const subscriber = require('./subscriber.js')
+		subscriber.initServices()
+		.then(() => {
+			sinon.assert.calledTwice(stub);
+			sinon.assert.calledTwice(stub2);
+			stub.restore();
+			stub2.restore();
+			done();
+		})
 
-    const spyConnect = jest.spyOn(amqp, 'connect');
-        subscriber.initRabbitMQ("dummyArg");
-        expect(spyConnect).toBeCalled();
-        expect(spyConnect).toBeCalledWith(process.env.RABBITMQ_SERVER, expect.anything());
-        spyConnect.mockRestore();
-  });
-
-})
-
-describe('Checksum', () => {
-
-  it('Expect a valid checksum', () => {
-    const payload = {
-        key: "value",
-        checksum: "d7c5c1fcae6ee55d7522ecf8e27977f2143685e7bbd6ceee2d52317859c1ad0a"  
-    }
-    expect(subscriber.validate(payload)).toBe(true);
-  });
-
-  it('Expect an invalid checksum', () => {
-    const payload = {
-        key: "value",
-        checksum: "hello"  
-    }
-    expect(subscriber.validate(payload)).toBe(false);
-  });
-})
+	});
+});

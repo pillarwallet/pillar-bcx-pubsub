@@ -3,11 +3,14 @@ const events = require('events');
 const connection = new events.EventEmitter();
 
 connection.connect = function (dbUrl) {
+	this.emit('open');
+	/*
   if (dbUrl === 'mongodb://127.0.0.1:27017/PillarBCX') {
     this.emit('open');
   } else {
     this.emit('error');
   }
+  */
 };
 module.exports.connection = connection;
 

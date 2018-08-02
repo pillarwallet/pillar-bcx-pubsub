@@ -82,6 +82,8 @@ function subscribeAllDBERC20SmartContracts() {
   try {
     logger.info('Publisher subscribing to ERC20 events.');
     const smartContractsArray = hashMaps.assets.values();
+    console.log('SMART CONTRACTS ARRAY')
+    console.log(smartContractsArray)
     smartContractsArray.forEach((ERC20SmartContract) => {
       module.exports.subscribeERC20SmartContract(ERC20SmartContract);
     });

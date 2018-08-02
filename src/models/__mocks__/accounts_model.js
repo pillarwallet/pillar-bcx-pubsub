@@ -1,4 +1,4 @@
-exports.EthAddresses = (function () {
+exports.Accounts = (function () {
   return {
     find(address, callback) {
       if (callback == null) {

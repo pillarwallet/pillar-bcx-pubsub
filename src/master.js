@@ -57,7 +57,7 @@ exports.launch = function () {
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
     fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
-  
+
     // handle events associated with the housekeeper child process.
     exports.housekeeper.on('message', (data) => {
       logger.info(`Housekeeper has sent a message: ${data}`);
@@ -137,7 +137,7 @@ exports.launch = function () {
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
     });
-    
+
     exports.index++;
   } catch (err) {
     logger.error('Master.launch(): exited with error ' + err);

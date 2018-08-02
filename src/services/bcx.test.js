@@ -1,28 +1,31 @@
 const sinon = require('sinon');
-const bcx = require('./bcx');
 
 
 describe('Test getTxInfo function', () => {
   test('Should call getTransaction once and return mocked tx object', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
-    const spy = sinon.spy(web3.eth, 'getTransaction');
-    return bcx.getTxInfo(web3, web3.txHash)
-      .then((result) => {
-        sinon.assert.calledOnce(spy);
-        expect(result).toEqual(web3.txObject);
-        spy.restore();
-        done();
-      });
+	  jest.mock('./gethConnect.js');
+    const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
+	  const spy = sinon.spy(web3.eth, 'getTransaction');
+	  return bcx.getTxInfo(web3.txHash)
+	  .then((result) => {
+		  sinon.assert.calledOnce(spy);
+		  expect(result).toEqual(web3.txObject);
+		  spy.restore();
+		  done();
+	  })
+
+
   });
 });
 
 describe('Test getBlockTx function', () => {
   test('Should call getBlock once and return mocked transactions object', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+    const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     const spy = sinon.spy(web3.eth, 'getBlock');
-    return bcx.getBlockTx(web3, web3.blockNumber)
+    return bcx.getBlockTx(web3.blockNumber)
       .then((result) => {
         sinon.assert.calledOnce(spy);
         expect(result).toEqual(web3.transactions);
@@ -32,12 +35,32 @@ describe('Test getBlockTx function', () => {
   });
 });
 
+describe('Test getBlockSmartContractsAddressesArray function', () => {
+	test('Should call web3.eth.getTransactionReceipt twice and return mocked smart contracts addresses array', (done) => {
+		jest.mock('./gethConnect.js');
+		const web3 = require('./gethConnect').web3;
+		const bcx = require('./bcx');
+		const stub = sinon.stub(web3.eth, 'getTransactionReceipt');
+		stub.resolves({ contractAddress: 'contractAddress' });
+
+		const txHashArray = ['txHash1', 'txHash2'];
+		return bcx.getBlockSmartContractsAddressesArray(txHashArray, [], 0)
+		.then((result) => {
+			sinon.assert.calledTwice(stub);
+			expect(result).toEqual(['contractAddress', 'contractAddress']);
+			stub.restore();
+			done();
+		});
+	});
+});
+
 describe('Test getBlockNumber function', () => {
   test('Should call web3.eth.getBlock once and return mocked block number', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     const spy = sinon.spy(web3.eth, 'getBlock');
-    return bcx.getBlockNumber(web3, web3.blockHash)
+    return bcx.getBlockNumber(web3.blockHash)
       .then((result) => {
         sinon.assert.calledOnce(spy);
         expect(result).toEqual(web3.blockNumber);
@@ -46,13 +69,15 @@ describe('Test getBlockNumber function', () => {
       });
   });
 });
+
 
 describe('Test getLastBlockNumber function', () => {
   test('Should call web3.eth.getBlockNumber once and return mocked block number', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     const spy = sinon.spy(web3.eth, 'getBlockNumber');
-    return bcx.getLastBlockNumber(web3)
+    return bcx.getLastBlockNumber()
       .then((result) => {
         expect(result).toEqual(web3.blockNumber);
         sinon.assert.calledOnce(spy);
@@ -62,13 +87,16 @@ describe('Test getLastBlockNumber function', () => {
   });
 });
 
+
+
 describe('Test getTxReceipt function', () => {
   test('Should call web3.eth.getTransactionReceipt once and return mocked txReceipt object', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     const spy = sinon.spy(web3.eth, 'getTransactionReceipt');
     // console.log(web3)
-    return bcx.getTxReceipt(web3, web3.txHash)
+    return bcx.getTxReceipt(web3.txHash)
       .then((result) => {
         expect(result).toEqual(web3.txReceipt);
         sinon.assert.calledOnce(spy);
@@ -78,20 +106,23 @@ describe('Test getTxReceipt function', () => {
   });
 
   test('Promise should reject when wrong transaction hash is passed', () => {
-    jest.mock('web3');
-    const web3 = require('web3');
-    return expect(bcx.getTxReceipt(web3, 'notATxHash')).rejects.toThrowError('Not A Tx Hash');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
+    return expect(bcx.getTxReceipt('notATxHash')).rejects.toThrowError('Not A Tx Hash');
   });
 });
 
+
 describe('Test getPendingTxArray function', () => {
   test('Should call web3.eth.getBlock once and return mocked transactions array', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     const stub = sinon.stub(web3.eth, 'getBlock');
     stub.resolves({ transactions: web3.poolTransactions });
     // console.log(web3)
-    return bcx.getPendingTxArray(web3, web3.txHash)
+    return bcx.getPendingTxArray(web3.txHash)
       .then((result) => {
         expect(result).toEqual(web3.poolTransactions);
         sinon.assert.calledOnce(stub);
@@ -101,10 +132,12 @@ describe('Test getPendingTxArray function', () => {
   });
 });
 
+
 describe('Test getBalance function', () => {
   test('getBalance call for ETH should call web3.eth.getBalance once, web3.utils.fromWei once and web3.utils.toBN once', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     const stub1 = sinon.stub(web3.eth, 'getBalance');
     stub1.resolves(100000000000000000);
     const stub2 = sinon.stub(web3.utils, 'fromWei');
@@ -112,7 +145,7 @@ describe('Test getBalance function', () => {
     const stub3 = sinon.stub(web3.utils, 'toBN');
     stub3.resolves(100000000000000000);
 
-    return bcx.getBalance('0xaddress', 'ETH', web3)
+    return bcx.getBalance('0xaddress', 'ETH', '0xSmartContractAddress')
       .then((result) => {
         expect(result).toEqual(1);
         sinon.assert.calledOnce(stub1);
@@ -126,8 +159,9 @@ describe('Test getBalance function', () => {
   });
 
   test('getBalance call for ERC20 token should call smartContracts.findByTicker once, web3.eth.call once , web3.utils.fromWei once and web3.utils.toBN once', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
+	  jest.mock('./gethConnect.js');
+	  const web3 = require('./gethConnect').web3;
+	  const bcx = require('./bcx');
     jest.mock('../controllers/assets_ctrl.js');
     const spy2 = sinon.spy(web3.eth, 'call');
     // stub1.resolves(100000000000000000)
@@ -136,7 +170,7 @@ describe('Test getBalance function', () => {
     const stub2 = sinon.stub(web3.utils, 'toBN');
     stub2.resolves(100000000000000000);
 
-    return bcx.getBalance('0xaddress', 'BOKKY', web3, '0xSmartContractAddress')
+    return bcx.getBalance('0xaddress', 'BOKKY', '0xSmartContractAddress')
       .then((result) => {
         expect(result).toEqual(1);
         sinon.assert.calledOnce(stub1);
@@ -152,21 +186,5 @@ describe('Test getBalance function', () => {
   });
 });
 
-describe('Test getBlockSmartContractsAddressesArray function', () => {
-  test('Should call web3.eth.getTransactionReceipt twice and return mocked smart contracts addresses array', (done) => {
-    jest.mock('web3');
-    const web3 = require('web3');
-    const stub = sinon.stub(web3.eth, 'getTransactionReceipt');
-    stub.resolves({ contractAddress: 'contractAddress' });
 
-    const txHashArray = ['txHash1', 'txHash2'];
-    console.log(txHashArray);
-    return bcx.getBlockSmartContractsAddressesArray(web3, txHashArray, [], 0)
-      .then((result) => {
-        sinon.assert.calledTwice(stub);
-        expect(result).toEqual(['contractAddress', 'contractAddress']);
-        stub.restore();
-        done();
-      });
-  });
-});
+
