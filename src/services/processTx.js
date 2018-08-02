@@ -8,6 +8,47 @@ const ERC20ABI = require('./ERC20ABI');
 const hashMaps = require('../utils/hashMaps.js');
 
 /**
+ * Store the token event if either of the wallets are being monitored
+ * @param {any} event - the token transfer event
+ */
+function storeTokenEvent(event,asset,protocol) {
+    try {
+        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((txn) => {
+            var pillarId, status;
+            var tmstmp = time.now();
+            status = 'confirmed';
+            if(txn === null) {
+                if ((event.returnValues._to !== null) && hashMaps.accounts.has(event.returnValues._to.toLowerCase())) {
+                    //fetch the pillarId corresponding to the to address and
+                    pillarId = hashMaps.accounts.get(event.returnValues._to.toLowerCase());
+                } else if ((event.returnValues._from !== null) && hashMaps.accounts.has(event.returnValues._from.toLowerCase())) {
+                    pillarId = hashMaps.accounts.get(event.returnValues._from.toLowerCase());
+                }
+                let entry = {
+                    pillarId,
+                    protocol,
+                    toAddress: event.returnValues._to,
+                    fromAddress: event.returnValues._from,
+                    txHash: event.transactionHash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    value: event.returnValues._value,
+                    blockNumber: event.blockNumber,
+                    status
+                };
+                logger.debug('processTx.storeTokenEvent(): Saving transaction into the database: ' + entry);
+                dbServices.dbCollections.transactions.addTx(entry);  
+            } else {
+                logger.debug('processTx.storeTokenEvent(): Transaction ' + event.transactionHash + ' already exists in the database, ignoring!');
+            }
+        });
+    }catch(e) {
+        logger.error('processTx.storeTokenEvent(): Failed with error ' + e);
+    }
+}
+module.exports.storeTokenEvent = storeTokenEvent;
+/**
  * Check if given transaction is relevant and store in the database
  * @param {any} tx - the transaction object
  * @param {any} protocol - the transaction object

@@ -19,6 +19,19 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
+function listAssets(protocol) {
+  return new Promise(((resolve, reject) => {
+    try {
+      logger.debug('assets_ctrl.listAssets(): Finding assets for protocol: ' + protocol);
+	    assets.Assets.find({ protocol }).then((result) => {
+        logger.debug('assets_ctrl.listAssets(): Found : ' + result.length + ' records');
+        resolve(result);
+      });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.listAssets = listAssets;
+
 function listRecent(idFrom) {
   return new Promise(((resolve, reject) => {
     try {

@@ -118,9 +118,9 @@ function subscribeTransferEvents(theContract) {
         if(module.exports.connect()) {
             if (web3.utils.isAddress(theContract)) {
                 const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
-                ERC20SmartContractObject.events.Transfer((error, result) => {
+                ERC20SmartContractObject.events.Transfer({},(error, result) => {
+                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + ' result: ' + result + ' error: ' + error);
                     if (!error) {
-                        logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + 'result: ' + result);
                         processTx.checkTokenTransfer(result, theContract, protocol);
                     } else {
                         logger.error('ethService.subscribeTransferEvents() failed: ' + error);
@@ -397,3 +397,24 @@ function addERC721(txn) {
     }
 }
 module.exports.addERC721 = addERC721;
+
+/**
+ * Get past transfer events associated with token
+ * @param {String} address - the smart contract address to get events
+ * @param {String} eventName - the eventName
+ * @param {Number} blockNumber - the block number from which to listen to contract events
+ */
+function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
+    const contract = new web3.eth.Contract(ERC20ABI,address);
+    contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
+        if(!error) {
+            logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
+            events.forEach((event) => {
+                processTx.storeTokenEvent(event,contract.symbol,protocol);
+            });
+        } else {
+            logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
+        }
+    });
+}
+module.exports.getPastEvents = getPastEvents;

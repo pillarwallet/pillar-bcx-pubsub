@@ -6,6 +6,7 @@ const dbServices = require('./services/dbServices.js');
 const processTx = require('./services/processTx.js');
 const LOOK_BACK_BLOCKS = 15;
 const ethService = require('./services/ethService.js');
+const hashMap = require('./utils/hashMaps.js');
 const protocol = 'Ethereum';
 
 /**
@@ -33,6 +34,7 @@ function init() {
         dbServices.dbConnect().then(() => {
             this.checkTxPool();
             this.updateTxHistory();
+            setInterval(this.recoverAssetEvents(),5000);
         });
     } catch(e) {
         logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
@@ -156,5 +158,29 @@ function updateTxHistory() {
     }
 }
 module.exports.updateTxHistory = updateTxHistory;
+
+/**
+ * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
+ */
+function recoverAssetEvents() {
+    try {
+        logger.info('Housekeeper.recoverAssetEvents() started recovering asset events since last run.');
+        dbServices.listAssets(protocol).then((assets) => {
+        //dbServices.contractsToMonitor('').then((assets) => {    
+            assets.forEach((asset) => {
+                logger.debug('Housekeeper.recoverAssetEvents() : recoving past events of asset ' + asset.symbol);
+                dbServices.findMaxBlock(protocol,asset.symbol).then((blockNumber) => {
+                    logger.debug('Housekeeper.recoverAssetEvents(): recovering since ' + blockNumber);
+                    ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber);
+                });
+            });
+        });
+    }catch(e) {
+        logger.error('Housekeeper.recoverAssetEvents() failed with error: ' + e);
+    } finally {
+        logger.info('Housekeeper.recoverAssetEvents() finished recovering all token transfers');
+    }
+}
+module.exports.recoverAssetEvents = recoverAssetEvents;
 
 this.init();

@@ -323,6 +323,22 @@ function getTxHistory(address1, fromtmstmp, address2, asset) {
 }
 module.exports.getTxHistory = getTxHistory;
 
+function listAssets(protocol) {
+  logger.debug('dbServices.listAssets(): for protocol: ' + protocol);
+  return new Promise(((resolve, reject) => {
+    try {
+        dbCollections.assets.listAssets(protocol).then((result) => {
+          logger.debug('dbServices.listAssets(): Found ' + result.length + ' assets.');
+          resolve(result);
+        });
+    } catch (e) { 
+      logger.error('dbServices.listAssets(): failed with error: ' + e);
+      reject(e); 
+    }
+  }));  
+}
+module.exports.listAssets = listAssets;
+
 function listPendingTx(address, asset) {
   return new Promise(((resolve, reject) => {
     try {
@@ -353,7 +369,7 @@ function listPending(protocol) {
   logger.debug('dbServices.listPending(): for protocol: ' + protocol);
   return new Promise(((resolve, reject) => {
     try {
-      transactions.listPending(protocol).then((pendingTxArray) => {
+      dbCollections.transactions.listPending(protocol).then((pendingTxArray) => {
             logger.debug('dbServices.listPending(): Found ' + pendingTxArray.length + ' transactions.');
             resolve(pendingTxArray);
       });
@@ -365,15 +381,29 @@ function listPending(protocol) {
 }
 module.exports.listPending = listPending;
 
-function findMaxBlock(protocol) {
+function findMaxBlock(protocol,asset = null) {
   logger.debug('dbServices.findMaxBlock(): for protocol: ' + protocol);
   return new Promise(((resolve, reject) => {
     try {
-      transactions.findMaxBlock(protocol)
-        .then((maxBlock) => {
-          logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
-          resolve(maxBlock);
-      });
+      if(asset == null) {
+        dbCollections.transactions.findMaxBlock(protocol).then((maxBlock) => {
+            if(maxBlock !== 'undefined') {
+              logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+            } else {
+              maxBlock = 0;
+            }
+            resolve(maxBlock);
+        });
+      } else {
+        dbCollections.transactions.findMaxBlock(protocol,asset).then((maxBlock) => {
+            if(maxBlock !== 'undefined') {
+              logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+            } else {
+              maxBlock = 0;
+            }
+            resolve(maxBlock);
+        });
+      }
     } catch (e) { reject(e); }
   }));  
 }
