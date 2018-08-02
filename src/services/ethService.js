@@ -404,13 +404,14 @@ module.exports.addERC721 = addERC721;
  * @param {String} eventName - the eventName
  * @param {Number} blockNumber - the block number from which to listen to contract events
  */
-function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
+async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
     const contract = new web3.eth.Contract(ERC20ABI,address);
+    const asset = await contract.methods.symbol().call();
     contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
         if(!error) {
             logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
             events.forEach((event) => { 
-                processTx.storeTokenEvent(event,contract.symbol,protocol);
+                processTx.storeTokenEvent(event,asset,protocol);
             });
         } else {
             logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
