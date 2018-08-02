@@ -10,8 +10,11 @@ const hashMaps = require('../utils/hashMaps.js');
 /**
  * Store the token event if either of the wallets are being monitored
  * @param {any} event - the token transfer event
+ * @param {String} asset - the asset symbol
+ * @param {String} protocol - the protocol
+ * @param {any} txn - the transaction receipt
  */
-function storeTokenEvent(event,asset,protocol) {
+function storeTokenEvent(event,asset,protocol,txn) {
     try {
         logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);
         dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((txn) => {

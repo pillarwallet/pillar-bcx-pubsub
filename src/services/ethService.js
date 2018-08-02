@@ -411,7 +411,9 @@ async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
         if(!error) {
             logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
             events.forEach((event) => { 
-                processTx.storeTokenEvent(event,asset,protocol);
+                this.getTransactionReceipt(event.transactionHash).then((txn) => {
+                    processTx.storeTokenEvent(event,asset,protocol,txn);
+                });
             });
         } else {
             logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
