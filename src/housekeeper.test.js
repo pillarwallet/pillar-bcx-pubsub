@@ -17,7 +17,7 @@ describe.only('Housekeeper unit tests', () => {
 
 	describe('The init function tests', () => {
 		
-		it('should return true', () => {
+		it('should have been called once', () => {
 			const spy = jest.spyOn(housekeeper, 'init');
 			spy.mockImplementation();
 			spy.call();
@@ -29,8 +29,10 @@ describe.only('Housekeeper unit tests', () => {
 		
 		it('should have been called once', () => {
 			const spy = jest.spyOn(housekeeper, 'recoverWallet');
+			const recoverAddress = "0x0000000000000000000000000000000000000000";
+			const nBlocks = 1;
 			spy.mockImplementation();
-			spy.call();
+			spy.call(recoverAddress, nBlocks);
 			expect(spy).toHaveBeenCalledTimes(1);
 		});
 	});
