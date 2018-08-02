@@ -40,8 +40,8 @@ function storeTokenEvent(event,asset,protocol,txn) {
                     value: event.returnValues._value,
                     blockNumber: event.blockNumber,
                     status,
-                    gasPrice: 0,
-                    gasUsed: 0
+                    gasPrice: txn.gasPrice,
+                    gasUsed: txn.gasUsed
                 };
                 logger.debug('processTx.storeTokenEvent(): Saving transaction into the database: ' + entry);
                 dbServices.dbCollections.transactions.addTx(entry);  
