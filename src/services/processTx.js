@@ -158,6 +158,7 @@ module.exports.newPendingTran = newPendingTran;
  * @param {String} protocol - the protocol corresponding to the token blockchain
  */
 function checkTokenTransfer(evnt, theContract, protocol) {
+    logger.debug('processTx.checkTokenTransfer(): received event: ' + JSON.stringify(evnt));
     return new Promise(((resolve, reject) => {
         var pillarId;
         if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
@@ -165,38 +166,34 @@ function checkTokenTransfer(evnt, theContract, protocol) {
         } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
             pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
         } 
-        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
-        // ETH TX SHOULD BE ALREADY IN DB BECAUSE
-        // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
-            .then((tx) => {
-                if (tx.asset === 'ETH') { 
-                    // check is it is regular token transfer,
-                    // if so (asset === TOKEN): resolve (because token transfer already processed),
-                    // otherwise (asset === ETH) transfer needs to be processed here:
-                    // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
-                    const txMsg = {
-                        type: 'newTx',
-                        pillarId, 
-                        protocol: protocol, 
-                        fromAddress: theContract.address,
-                        toAddress: evnt.returnValues._to,
-                        txHash: evnt.transactionHash,
-                        asset: theContract.ticker,
-                        contractAddress: theContract.address,
-                        timestamp: tmstmp,
-                        value: evnt.returnValues._value,
-                        gasPrice: evnt.gasPrice,
-                        blockNumber: evnt.blockNumber,
-                        status: 'confirmed',
-                    };
-                    logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
-                    rmqServices.sendPubSubMessage(txMsg);
-                    resolve();
-                } else {
-                    resolve();
-                }
-            })
-            .catch((e) => { reject(e); });
+        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then((tx) => {
+            if (tx.asset === 'ETH') { 
+                // check is it is regular token transfer,
+                // if so (asset === TOKEN): resolve (because token transfer already processed),
+                // otherwise (asset === ETH) transfer needs to be processed here:
+                // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                const txMsg = {
+                    type: 'newTx',
+                    pillarId, 
+                    protocol: protocol, 
+                    fromAddress: theContract.address,
+                    toAddress: evnt.returnValues._to,
+                    txHash: evnt.transactionHash,
+                    asset: theContract.ticker,
+                    contractAddress: theContract.address,
+                    timestamp: tmstmp,
+                    value: evnt.returnValues._value,
+                    gasPrice: evnt.gasPrice,
+                    blockNumber: evnt.blockNumber,
+                    status: 'confirmed',
+                };
+                logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+                rmqServices.sendPubSubMessage(txMsg);
+                resolve();
+            } else {
+                resolve();
+            }
+        });
     }));
 }
 module.exports.checkTokenTransfer = checkTokenTransfer;
