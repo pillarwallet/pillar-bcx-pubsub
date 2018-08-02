@@ -13,6 +13,7 @@ const hashMaps = require('../utils/hashMaps.js');
  */
 function storeTokenEvent(event,asset,protocol) {
     try {
+        logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);
         dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((txn) => {
             var pillarId, status;
             var tmstmp = time.now();
@@ -35,7 +36,9 @@ function storeTokenEvent(event,asset,protocol) {
                     timestamp: tmstmp,
                     value: event.returnValues._value,
                     blockNumber: event.blockNumber,
-                    status
+                    status,
+                    gasPrice: 0,
+                    gasUsed: 0
                 };
                 logger.debug('processTx.storeTokenEvent(): Saving transaction into the database: ' + entry);
                 dbServices.dbCollections.transactions.addTx(entry);  

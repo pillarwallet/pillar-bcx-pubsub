@@ -409,7 +409,7 @@ function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
     contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
         if(!error) {
             logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
-            events.forEach((event) => {
+            events.forEach((event) => { 
                 processTx.storeTokenEvent(event,contract.symbol,protocol);
             });
         } else {
