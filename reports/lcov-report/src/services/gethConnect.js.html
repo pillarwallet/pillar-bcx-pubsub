@@ -20,14 +20,14 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">22.58% </span>
+        <span class="strong">21.88% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>7/31</span>
+        <span class='fraction'>7/32</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/2</span>
+        <span class='fraction'>0/6</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>0/9</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">22.58% </span>
+        <span class="strong">21.88% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>7/31</span>
+        <span class='fraction'>7/32</span>
       </div>
     </div>
     <p class="quiet">
@@ -99,7 +99,12 @@
 <a name='L51'></a><a href='#L51'>51</a>
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a>
-<a name='L54'></a><a href='#L54'>54</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -112,17 +117,22 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -140,9 +150,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -164,24 +174,29 @@ let web3;
 function <span class="fstat-no" title="function not covered" >gethConnectDisplay(</span>) {
 <span class="cstat-no" title="statement not covered" >  logger.info('Connecting to geth node');</span>
 <span class="cstat-no" title="statement not covered" >  return new Promise((<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    module.exports.setWeb3WebsocketConnection()</span>
-      .then(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
-<span class="cstat-no" title="statement not covered" >        module.exports.web3.eth.getBlockNumber()</span>
-          .then(<span class="fstat-no" title="function not covered" >(r</span>esult) =&gt; {
-<span class="cstat-no" title="statement not covered" >            if (result != null) {</span>
-<span class="cstat-no" title="statement not covered" >              logger.info(colors.green.bold(`Established connection with local Ethereum node!\nCurrent Block number :${result}\n`));</span>
-<span class="cstat-no" title="statement not covered" >              resolve();</span>
-            } else {
-<span class="cstat-no" title="statement not covered" >              logger.error(colors.red.bold('Failed to establish connection with local Ethereum node :(\n'));</span>
-<span class="cstat-no" title="statement not covered" >              reject();</span>
-            }
-          })
-          .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; { <span class="cstat-no" title="statement not covered" >reject(e); </span>});
-      })
-      .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; { 
-<span class="cstat-no" title="statement not covered" >        logger.error('gethConnect.gethConnectDisplay() failed: ' + e);</span>
-<span class="cstat-no" title="statement not covered" >        reject(e); </span>
-      });
+<span class="cstat-no" title="statement not covered" >    if((web3 === undefined) || (!web3.isConnected())) {</span>
+<span class="cstat-no" title="statement not covered" >      module.exports.setWeb3WebsocketConnection()</span>
+        .then(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >          module.exports.web3.eth.getBlockNumber()</span>
+            .then(<span class="fstat-no" title="function not covered" >(r</span>esult) =&gt; {
+<span class="cstat-no" title="statement not covered" >              if (result != null) {</span>
+<span class="cstat-no" title="statement not covered" >                logger.info(`Established connection with local Ethereum node! Current Block number :${result}`);</span>
+<span class="cstat-no" title="statement not covered" >                resolve();</span>
+              } else {
+<span class="cstat-no" title="statement not covered" >                logger.error('Failed to establish connection with local Ethereum node :');</span>
+<span class="cstat-no" title="statement not covered" >                reject();</span>
+              }
+            })
+            .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; { <span class="cstat-no" title="statement not covered" >reject(e); </span>});
+        })
+        .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; { 
+<span class="cstat-no" title="statement not covered" >          logger.error('gethConnect.gethConnectDisplay() failed: ' + e);</span>
+<span class="cstat-no" title="statement not covered" >          reject(e); </span>
+        }); 
+    } else {
+<span class="cstat-no" title="statement not covered" >      logger.info('Connection to geth node already exists!!');</span>
+<span class="cstat-no" title="statement not covered" >      resolve();</span>
+    }
   }));
 }
 module.exports.gethConnectDisplay = gethConnectDisplay;
@@ -190,16 +205,16 @@ function <span class="fstat-no" title="function not covered" >setWeb3WebsocketCo
 <span class="cstat-no" title="statement not covered" >  return new Promise((<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));</span>
-<span class="cstat-no" title="statement not covered" >      web3._provider.on('end', <span class="fstat-no" title="function not covered" >(e</span>ventObj) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >        logger.error('Websocket disconnected!! Restarting connection');</span>
-<span class="cstat-no" title="statement not covered" >        logger.error(eventObj);</span>
-<span class="cstat-no" title="statement not covered" >        exports.setWeb3WebsocketConnection();</span>
-      });
 <span class="cstat-no" title="statement not covered" >      module.exports.web3 = web3;</span>
+<span class="cstat-no" title="statement not covered" >      web3._provider.on('end', <span class="fstat-no" title="function not covered" >(e</span>ventObj) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        logger.error('Websocket disconnected!! Restarting connection....');</span>
+        //logger.error(eventObj);
+        //exports.setWeb3WebsocketConnection();
+      });
 <span class="cstat-no" title="statement not covered" >      logger.info('Successfully established connection to ' + gethURL + ' websocket');</span>
 <span class="cstat-no" title="statement not covered" >      resolve();</span>
     } catch (e) {
-<span class="cstat-no" title="statement not covered" >      logger.error(colors.red.bold(`${e}\nFailed to establish connection with local Ethereum node :(\n`));</span>
+<span class="cstat-no" title="statement not covered" >      logger.error(`Failed to establish connection with local Ethereum node :${e}`);</span>
 <span class="cstat-no" title="statement not covered" >      reject(e);</span>
     }
   }));
@@ -211,7 +226,7 @@ module.exports.setWeb3WebsocketConnection = setWeb3WebsocketConnection;
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Tue Jul 24 2018 14:29:26 GMT+0100 (BST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Aug 02 2018 17:42:21 GMT+0100 (BST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

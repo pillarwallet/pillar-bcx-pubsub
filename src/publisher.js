@@ -33,21 +33,8 @@ process.on('message', (data) => {
         ethService.subscribeTransferEvents(obj.contractAddress);
       }
     }
-<<<<<<< HEAD
   }catch(e) {
     logger.error('Publisher: Error occured in publisher: ' + e);
-=======
-  } else if (data.type === 'assets') {
-    logger.info('Publisher initializing assets.');
-    // add the new asset to the assets hashmap
-    for (let i = 0; i < message.length; i++) {
-      const obj = message[i];
-      logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`);
-      hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
-      gethSubscribe.subscribeERC20SmartContract(obj);
-    }
-    exports.initSubscriptions();
->>>>>>> fix-unit-tests
   }
 });
 
@@ -61,7 +48,6 @@ exports.initIPC = function () {
       logger.info('Publisher requesting master a list of assets to monitor');
       process.send({ type: 'assets.request' });
 
-<<<<<<< HEAD
     logger.info('Publisher initializing the RMQ');
     setTimeout(() => {
       logger.info('Publisher Initializing RMQ.');
@@ -70,18 +56,6 @@ exports.initIPC = function () {
           exports.initSubscriptions();
         });
     }, 100);
-=======
-      logger.info('Publisher initializing the RMQ');
-      setTimeout(() => {
-        logger.info('Publisher Initializing RMQ.');
-        rmqServices.initPubSubMQ()
-          .then(() => {
-            if (hashMaps.assets.count() > 0) {
-              exports.initSubscriptions();
-            }
-          });
-      }, 100);
->>>>>>> fix-unit-tests
 
       logger.info('Publisher polling master for new wallets every 5 seconds');
       setInterval(() => {
@@ -114,7 +88,6 @@ exports.poll = function () {
  * Function that initializes the geth subscriptions
  */
 exports.initSubscriptions = function () {
-<<<<<<< HEAD
   logger.info('Publisher subscribing to geth websocket events...');
   //subscribe to pending transactions
   ethService.subscribePendingTxn();
@@ -128,29 +101,6 @@ exports.initSubscriptions = function () {
     });
   }
   logger.info('Publisher completed websocket subscriptions.');
-=======
-  return new Promise((resolve, reject) => {
-    try {
-      logger.info('Publisher subscribing to geth websocket events...');
-      /* CONNECT TO GETH NODE */
-      gethConnect.gethConnectDisplay()
-        .then(() => {
-          /* SUBSCRIBE TO GETH NODE EVENTS */
-          gethSubscribe.subscribePendingTx();
-          gethSubscribe.subscribeBlockHeaders();
-          gethSubscribe.subscribeAllDBERC20SmartContracts();
-          resolve();
-        })
-        .catch((e) => {
-          logger.error(e);
-        });
-    } catch (err) {
-      logger.error('Publisher.initSubscriptions() failed: ', err.message);
-      // throw err;
-      reject(err);
-    }
-  });
->>>>>>> fix-unit-tests
 };
 
 this.initIPC();

@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>6/6</span>
+        <span class='fraction'>0/6</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -35,16 +35,16 @@
         <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>6/6</span>
+        <span class='fraction'>0/6</span>
       </div>
     </div>
     <p class="quiet">
       Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
     </p>
   </div>
-  <div class='status-line high'></div>
+  <div class='status-line low'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -86,12 +86,10 @@
 <a name='L38'></a><a href='#L38'>38</a>
 <a name='L39'></a><a href='#L39'>39</a>
 <a name='L40'></a><a href='#L40'>40</a>
-<a name='L41'></a><a href='#L41'>41</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L41'></a><a href='#L41'>41</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -115,21 +113,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const logger = require('../utils/logger.js');
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger.js');</span>
 &nbsp;
-var colors = require('colors');
-let accountsArray = [
+var colors = <span class="cstat-no" title="statement not covered" >require('colors');</span>
+let accountsArray = <span class="cstat-no" title="statement not covered" >[</span>
     {'walletID' : '00000000001','publicAddress' : '0xabA31e585c4a221d9e196EA46c98793e0A0490bD', 'FCMIID' : 'fNUMAw_LLT8:APA91bFT8wlE3IG0BSvEeoJ2LPZVPrmiX9lOLKMbP3zWOCI_FC_6-foSQIoOU5p9DN_9O0lFpHxSkmQwh5gzs8Ff7E8IReo_IpFkHi5DWfhNvd1KLIcXzGSS3olR_kVv2tXCgM4xFZc2'},
     {'walletID' : '00000000002','publicAddress' : '0x486592D425272B856fd15eD7bFb2E6ac5CfC187E', 'FCMIID' : 'ex-CrIVlQY0:APA91bE53-oua_1iee8s6wqaWG2TKXK81H4xF491ruatbSuKbg5OK02J5kpxJzlLmOdXDMqXYk-lj15vbz1eFeNa_GhI5K28ISzJFPQsRP2hrStAcgp_WtJKXa9wGnVuE_krmBD7oqrT'},
 /*
@@ -155,9 +155,9 @@ let accountsArray = [
     {'walletID' : '00000000022','publicAddress' : '0x787f88347aa3eefcc16e9e71c672138181bce266','FCMIID' : 'FCMIID'}
    */
 ];
-module.exports.accountsArray = accountsArray;
+<span class="cstat-no" title="statement not covered" >module.exports.accountsArray = accountsArray;</span>
 &nbsp;
-const contractsArray = [
+const contractsArray = <span class="cstat-no" title="statement not covered" >[</span>
   {
     address: '0x9471ea41772925e3ff477772681740c9f520d3af'.toUpperCase(), name: 'Pillar', ticker: 'PLR', decimals: 18,
   },
@@ -165,14 +165,14 @@ const contractsArray = [
     address: '0x583cbBb8a8443B38aBcC0c956beCe47340ea1367'.toUpperCase(), name: 'BokkyPooBah Test Token', ticker: 'BOKKY', decimals: 18,
   },
 ];
-module.exports.contractsArray = contractsArray;
+<span class="cstat-no" title="statement not covered" >module.exports.contractsArray = contractsArray;</span>
 &nbsp;</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Tue Jul 24 2018 14:29:26 GMT+0100 (BST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Aug 02 2018 17:42:21 GMT+0100 (BST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

@@ -96,38 +96,19 @@ header {
 	width: 20%;
 	text-align: right;
 }
-</style></head><header><h1 id="title">Jest results</h1></header><div id="metadata-container"><div id="timestamp">Start: 2018-07-24 14:29:21</div><div id="summary">
-				111 tests --
-				109 passed /
-				2 failed /
+</style></head><header><h1 id="title">Jest results</h1></header><div id="metadata-container"><div id="timestamp">Start: 2018-08-02 17:42:06</div><div id="summary">
+				109 tests --
+				27 passed /
+				82 failed /
 				0 pending
-			</div></div><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/accounts_ctrl.test.js</div><div class="suite-time">0.94s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">listAll function should call accounts.find once and return [{'FCMIID': 'FCMIID', 'address': 'address'}]<div class="failureMessages"/></td><td class="result">passed in 0.271s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">findByAddress function should call accounts.findOne once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">findByWalletId function should call accounts.findOne once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">emptyCollection function should call accounts.remove once<div class="failureMessages"/></td><td class="result">passed in 0.007s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">removeAddress function should call accounts.remove once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js</div><div class="suite-time">0.961s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listAll function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.28s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listPending function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listHistory function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listDbZeroConfTx function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">findById function should call transactionsModel.Transactions.findOne once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">findByTxHash function should call transactionsModel.Transactions.findOne once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">updateTx function should call transactionsModel.Transactions.update once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">txFailed function should call  transactionsModel.Transactions.update once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">emptyCollection function should call transactionsModel.Transactions.remove<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">updateTxHistoryHeight function should call transactionsModel.Transactions.update once<div class="failureMessages"/></td><td class="result">passed in 0s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">findTxHistoryHeight function should call transactionsModel.Transactions.find once'<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'address2', 'ALL', 0) should call transactionsModel.Transactions.find twice'<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'fromtmstmp', 'address2', 'ALL') should call transactionsModel.Transactions.find twice'<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'fromtmstmp', 'All', 'asset') function should call transactionsModel.Transactions.find twice'<div class="failureMessages"/></td><td class="result">passed in 0s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'fromtmstmp', 'All', 'ALL') function should call transactionsModel.Transactions.find twice'<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/bcx.test.js</div><div class="suite-time">0.942s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test getTxInfo function</td><td class="test">Should call getTransaction once and return mocked tx object<div class="failureMessages"/></td><td class="result">passed in 0.27s</td></tr><tr class="passed"><td class="suite">Test getBlockTx function</td><td class="test">Should call getBlock once and return mocked transactions object<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test getBlockSmartContractsAddressesArray function</td><td class="test">Should call web3.eth.getTransactionReceipt twice and return mocked smart contracts addresses array<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test getBlockNumber function</td><td class="test">Should call web3.eth.getBlock once and return mocked block number<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test getLastBlockNumber function</td><td class="test">Should call web3.eth.getBlockNumber once and return mocked block number<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test getTxReceipt function</td><td class="test">Should call web3.eth.getTransactionReceipt once and return mocked txReceipt object<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test getTxReceipt function</td><td class="test">Promise should reject when wrong transaction hash is passed<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test getPendingTxArray function</td><td class="test">Should call web3.eth.getBlock once and return mocked transactions array<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test getBalance function</td><td class="test">getBalance call for ETH should call web3.eth.getBalance once, web3.utils.fromWei once and web3.utils.toBN once<div class="failureMessages"/></td><td class="result">passed in 0.009s</td></tr><tr class="passed"><td class="suite">Test getBalance function</td><td class="test">getBalance call for ERC20 token should call smartContracts.findByTicker once, web3.eth.call once , web3.utils.fromWei once and web3.utils.toBN once<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/assets_ctrl.test.js</div><div class="suite-time">0.95s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">listAll function should call assetsModel.SmartContracts.find once and return mocked list of assets<div class="failureMessages"/></td><td class="result">passed in 0.282s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">emptyCollection function should call assetsModel.Assets.remove once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">findByTicker function should call assetsModel.Assets.findOne once and return mocked asset<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">findByAddress function should call assetsModel.Assets.findOne once<div class="failureMessages"/></td><td class="result">passed in 0.005s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">updateERC20SmartContractsHistoryHeight function should call assetsModel.Assets.update once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">findERC20SmartContractsHistoryHeight function should call assetsModel.Assets.find once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/master.init.test.js</div><div class="suite-time">0.349s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test method: master.init()</td><td class="test">Expect master.launch() to be called and master.init() to log start/exit<div class="failureMessages"/></td><td class="result">passed in 0.178s</td></tr><tr class="passed"><td class="suite">Test method: master.init()</td><td class="test">Expect master.init() to throw an error (maxWallets)<div class="failureMessages"/></td><td class="result">passed in 0.005s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/subscriber.test.js</div><div class="suite-time">0.664s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test function calls</td><td class="test">Expect dbConnect and initPubSubMQto be called by initServices()<div class="failureMessages"/></td><td class="result">passed in 0.478s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js</div><div class="suite-time">1.743s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test filterAddress function</td><td class="test">When a Pillar wallet address is passed and recoverAddress is passed as well and equals address, filterAddress should call dbServices.dbCollections.accounts.findByAddress once  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"/></td><td class="result">passed in 0.753s</td></tr><tr class="passed"><td class="suite">Test filterAddress function</td><td class="test">When a Pillar wallet address is passed and Publisher = false, filterAddress should call accounts.findByAddress once and NOT call assets.findByAddress  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test filterAddress function</td><td class="test">When a smart contract address is passed and Publisher = false, filterAddress should call accounts.findByAddress once, assets.findByAddress once  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test filterAddress function</td><td class="test">When an unknown address is passed and Publisher = false, filterAddress should call accounts.findByAddress once, assets.findByAddress once  and return {'isPillarAddress' : false, 'pillarId': '', 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test filterAddress function</td><td class="test">When a Pillar wallet address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once and hashMaps.accounts.get once  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null}<div class="failureMessages"/></td><td class="result">passed in 0.014s</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When a smart contract address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once, hashMaps.assets.has once and hashMaps.assets.get once and return {'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : true, 'ERC20SmartContractTicker': ticker}<div class="failureMessages"><pre class="failureMsg">Error: expect(received).toEqual(expected)
-
-Expected value to equal:
-  {"ERC20SmartContractTicker": "ticker", "isERC20SmartContract": true, "isPillarAddress": false, "pillarId": null}
-Received:
-  {"ERC20SmartContractTicker": null, "isERC20SmartContract": false, "isPillarAddress": false, "pillarId": null}
-
-Difference:
-
-- Expected
-+ Received
-
-  Object {
--   "ERC20SmartContractTicker": "ticker",
--   "isERC20SmartContract": true,
-+   "ERC20SmartContractTicker": null,
-+   "isERC20SmartContract": false,
-    "isPillarAddress": false,
-    "pillarId": null,
-  }
-    at processTx.filterAddress.then.result (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:121:19)
+			</div></div><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/bcx.test.js</div><div class="suite-time warn">6.139s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test getTxInfo function</td><td class="test">Should call getTransaction once and return mocked tx object<div class="failureMessages"/></td><td class="result">passed in 2.694s</td></tr><tr class="passed"><td class="suite">Test getBlockTx function</td><td class="test">Should call getBlock once and return mocked transactions object<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test getBlockSmartContractsAddressesArray function</td><td class="test">Should call web3.eth.getTransactionReceipt twice and return mocked smart contracts addresses array<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test getBlockNumber function</td><td class="test">Should call web3.eth.getBlock once and return mocked block number<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test getLastBlockNumber function</td><td class="test">Should call web3.eth.getBlockNumber once and return mocked block number<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test getTxReceipt function</td><td class="test">Should call web3.eth.getTransactionReceipt once and return mocked txReceipt object<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test getTxReceipt function</td><td class="test">Promise should reject when wrong transaction hash is passed<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test getPendingTxArray function</td><td class="test">Should call web3.eth.getBlock once and return mocked transactions array<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="failed"><td class="suite">Test getBalance function</td><td class="test">getBalance call for ETH should call web3.eth.getBalance once, web3.utils.fromWei once and web3.utils.toBN once<div class="failureMessages"><pre class="failureMsg">ReferenceError: web3 is not defined
+    at gethConnect.web3.eth.getBalance.then.result (/Users/partha/Documents/pillar-bcx-pubsub/src/services/bcx.js:100:32)
     at &lt;anonymous&gt;
-    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When am unknown address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once, hashMaps.assets.has once and return {'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null}<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap has which is already wrapped
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test getBalance function</td><td class="test">getBalance call for ERC20 token should call smartContracts.findByTicker once, web3.eth.call once , web3.utils.fromWei once and web3.utils.toBN once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap fromWei which is already wrapped
     at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
     at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
     at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
-    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:135:22)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/bcx.test.js:168:25)
     at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
     at new Promise (&lt;anonymous&gt;)
     at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
@@ -140,10 +121,1133 @@ Difference:
 Error: Stack Trace for original
     at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
     at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/bcx.test.js:143:25)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/accounts_ctrl.test.js</div><div class="suite-time warn">6.148s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">listAll function should call accounts.find once and return [{'FCMIID': 'FCMIID', 'address': 'address'}]<div class="failureMessages"/></td><td class="result">passed in 2.804s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">findByAddress function should call accounts.findOne once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">findByWalletId function should call accounts.findOne once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">emptyCollection function should call accounts.remove once<div class="failureMessages"/></td><td class="result">passed in 0.006s</td></tr><tr class="passed"><td class="suite">Test accounts.listAll function</td><td class="test">removeAddress function should call accounts.remove once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/assets_ctrl.test.js</div><div class="suite-time warn">6.242s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">listAll function should call assetsModel.SmartContracts.find once and return mocked list of assets<div class="failureMessages"/></td><td class="result">passed in 2.894s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">emptyCollection function should call assetsModel.Assets.remove once<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">findByTicker function should call assetsModel.Assets.findOne once and return mocked asset<div class="failureMessages"/></td><td class="result">passed in 0.005s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">findByAddress function should call assetsModel.Assets.findOne once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">updateERC20SmartContractsHistoryHeight function should call assetsModel.Assets.update once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test assets_ctrl</td><td class="test">findERC20SmartContractsHistoryHeight function should call assetsModel.Assets.find once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js</div><div class="suite-time warn">6.886s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listAll function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 3.235s</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listPending function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"><pre class="failureMsg">TypeError: query is not a function
+    at Object.find (/Users/partha/Documents/pillar-bcx-pubsub/src/models/__mocks__/transactions_model.js:5:9)
+    at Function.invoke (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:210:51)
+    at Object.proxy [as find] (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:80:57)
+    at Promise (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:23:33)
+    at new Promise (&lt;anonymous&gt;)
+    at Object.listPending (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:21:10)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:23:27)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listHistory function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:36:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">listDbZeroConfTx function should call transactionsModel.Transactions.find once and return mocked list of transactions<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:50:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">findById function should call transactionsModel.Transactions.findOne once and return mocked list of transactions<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">findByTxHash function should call transactionsModel.Transactions.findOne once and return mocked list of transactions<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:78:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">updateTx function should call transactionsModel.Transactions.update once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">txFailed function should call  transactionsModel.Transactions.update once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test transactions_ctrl functions</td><td class="test">emptyCollection function should call transactionsModel.Transactions.remove<div class="failureMessages"/></td><td class="result">passed in 0s</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">updateTxHistoryHeight function should call transactionsModel.Transactions.update once<div class="failureMessages"><pre class="failureMsg">TypeError: transactionsCtrl.updateTxHistoryHeight is not a function
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:159:20)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">findTxHistoryHeight function should call transactionsModel.Transactions.find once'<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:168:21)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'address2', 'ALL', 0) should call transactionsModel.Transactions.find twice'<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:178:21)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'fromtmstmp', 'address2', 'ALL') should call transactionsModel.Transactions.find twice'<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:189:21)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'fromtmstmp', 'All', 'asset') function should call transactionsModel.Transactions.find twice'<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:199:21)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test transactions_ctrl functions</td><td class="test">getTxHistory('address1', 'fromtmstmp', 'All', 'ALL') function should call transactionsModel.Transactions.find twice'<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap find which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:209:21)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at runMicrotasksCallback (internal/process/next_tick.js:121:5)
+    at _combinedTickCallback (internal/process/next_tick.js:131:7)
+    at process._tickCallback (internal/process/next_tick.js:180:9)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.test.js:22:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js</div><div class="suite-time warn">7.061s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test dbConnect function</td><td class="test">dbConnect should call mongoose.connect once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:7:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test getTxHistory function</td><td class="test">Should call ethTransactions.getTxHistory once<div class="failureMessages"><pre class="failureMsg">TypeError: dbServices.getTxHistory is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:156:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test listPendingTx function</td><td class="test">listPendingTx called for ETH should call ethTransactions.listPending once and return one mocked pending transaction<div class="failureMessages"><pre class="failureMsg">TypeError: dbServices.listPendingTx is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:171:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test listPendingTx function</td><td class="test">listPendingTx called for BOKKY token should call ethTransactions.listPending once and return one mocked pending tx<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap listPending which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:183:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:170:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test initDBTxHistoryfunction</td><td class="test">When NO_TX_HISTORY_HEIGHT is returned by findTxHistoryHeight, initDBTxHistory should call  txHistory.addZeroTxHistoryHeight() once and txHistory.findTxHistoryHeight once<div class="failureMessages"><pre class="failureMsg">TypeError: dbServices.initDBTxHistory is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:202:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test initDBTxHistoryfunction</td><td class="test">When blockNb is returned by findTxHistoryHeight, initDBTxHistory should NOT call txHistory.addZeroTxHistoryHeight() and call txHistory.findTxHistoryHeight once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap addZeroTxHistoryHeight which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:216:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:198:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test emptyDBTxHistory function</td><td class="test">Should call  ethTransactions.emptyCollection() once<div class="failureMessages"><pre class="failureMsg">TypeError: dbServices.emptyDBTxHistory is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:238:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test resetDBTxHistory function</td><td class="test">Should call dbServices.emptyDBTxHistory() once and dbServices.initDBTxHistory() once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property emptyDBTxHistory
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:250:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test initDBERC20SmartContracts function</td><td class="test">When NO_ERC20_CONTRACTS_HISTORY_HEIGHT is returned by findERC20SmartContractsHistoryHeight, initDBERC20SmartContracts should call  smartContracts.addZeroSmartContractsCreationHistoryHeight() once and smartContracts.findERC20SmartContractsHistoryHeight once<div class="failureMessages"><pre class="failureMsg">TypeError: dbServices.initDBERC20SmartContracts is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:274:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test initDBERC20SmartContracts function</td><td class="test">When blockNb is returned by findERC20SmartContractsHistoryHeight, initDBERC20SmartContracts should NOT call smartContracts.addZeroSmartContractsCreationHistoryHeight() and call smartContracts.findERC20SmartContractsHistoryHeight once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap addZeroSmartContractsCreationHistoryHeight which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:288:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:270:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test emptyDBERC20SmartContracts function</td><td class="test">Should call  smartContracts.emptyCollection() once<div class="failureMessages"><pre class="failureMsg">TypeError: dbServices.emptyDBERC20SmartContracts is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:310:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test resetDBERC20SmartContracts function</td><td class="test">Should call dbServices.emptyDBERC20SmartContracts() once and dbServices.initDBERC20SmartContracts() once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property emptyDBERC20SmartContracts
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js:322:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethSubscribe.test.js</div><div class="suite-time">1.142s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test subscribeBlockHeaders function</td><td class="test">subscribeBlockHeaders function should call bcx.getBlockTx, dbCollections.ethTransactions.listDbZeroConfTx, dbCollections.ethTransactions.listPending dbCollections.ethTransactions.updateTxHistoryHeight, processTx.checkBlockTx and processTx.checkPendingTx thrice, and call dbServices.updateTxHistory once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property checkPendingTx
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethSubscribe.test.js:17:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test subscribePendingTx funtion</td><td class="test">subscribePendingTx function should call bcx.getTxInfo and processTx.newPendingTx once (because of a mocked 'new pending transaction' event being fired by web3 mock)<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property newPendingTx
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethSubscribe.test.js:42:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="passed"><td class="suite">Test subscribeAllDBERC20SmartContracts function</td><td class="test">subscribeAllDBERC20SmartContracts Should call dbCollections.smartContracts.listAll() once and subscribeERC20SmartContract thrice<div class="failureMessages"/></td><td class="result">passed in 0.221s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/master.init.test.js</div><div class="suite-time">1.003s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test method: master.init()</td><td class="test">Expect master.launch() to be called and master.init() to log start/exit<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/master.js:12:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/master.init.test.js:8:18)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test method: master.init()</td><td class="test">Expect master.init() to throw an error (maxWallets)<div class="failureMessages"><pre class="failureMsg">TypeError: master.init is not a function
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/master.init.test.js:42:10)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/publisher.test.js</div><div class="suite-time">1.109s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test init functions </td><td class="test">Expect initIPC to call logger.info, process.send<div class="failureMessages"><pre class="failureMsg">Jest encountered an unexpected token
+
+This usually means that you are trying to import a file which Jest cannot parse, e.g. it's not plain JavaScript.
+
+By default, if Jest sees a Babel config, it will use that to transform your files, ignoring "node_modules".
+
+Here's what you can do:
+ • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+ • If you need a custom transformation specify a "transform" option in your config.
+ • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+You'll find more details and examples of these config options in the docs:
+https://facebook.github.io/jest/docs/en/configuration.html
+
+Details:
+
+SyntaxError: /Users/partha/Documents/pillar-bcx-pubsub/src/publisher.js: Unexpected token (36:0)
+
+  34 |       }
+  35 |     }
+&gt; 36 | &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+     | ^
+  37 |   }catch(e) {
+  38 |     logger.error('Publisher: Error occured in publisher: ' + e);
+  39 | =======
+    at Parser.raise (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:778:15)
+    at Parser.unexpected (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2063:16)
+    at Parser.parseExprAtom (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:3125:20)
+    at Parser.parseExprSubscripts (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2725:21)
+    at Parser.parseMaybeUnary (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2704:21)
+    at Parser.parseExprOps (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2616:21)
+    at Parser.parseMaybeConditional (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2588:21)
+    at Parser.parseMaybeAssign (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2546:21)
+    at Parser.parseExpression (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:2499:21)
+    at Parser.parseStatementContent (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/babylon/lib/index.js:4040:21)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test init functions </td><td class="test">Expect poll to call process.send<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap send which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/publisher.test.js:42:21)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/publisher.test.js:5:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test init functions </td><td class="test">Expect initSubscriptions to call gethConnect.gethConnectDisplay(), dbServices.dbConnectDisplayAccounts(), gethSubscribe.subscribePendingTx() and gethSubscribe.subscribeBlockHeaders<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.js:4:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethSubscribe.js:8:19)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/publisher.test.js:55:25)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.test.js</div><div class="suite-time">0.155s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test transactions</td><td class="test">transactions should be defined<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/master.notify.test.js</div><div class="suite-time">0.594s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test method: master.notify()</td><td class="test">Expect master.notify() to log start/exit and dbServices.recentAccounts to be called/resolved<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/master.notify.test.js:5:22)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethConnect.test.js</div><div class="suite-time">0.194s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test setWeb3WebsocketConnection</td><td class="test">setWeb3WebsocketConnection function should be defined<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js</div><div class="suite-time warn">7.675s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test init function </td><td class="test">Expect init to call gethConnect.gethConnectDisplay, dbServices.dbConnectDisplayAccountsdbServices.initDB, dbServices.initDBTxHistory and dbServices.initDBERC20SmartContracts<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'then' of undefined
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:23:10)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test recoverWallet function </td><td class="test">Expect recoverWallet to call bcx.getPendingTxArray, dbServices.dbCollections.transactions.listDbZeroConfTx,processTx.processNewPendingTxArray, bcx.getLastBlockNumber and dlTxHistory<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property processNewPendingTxArray
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:56:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkTxPool function </td><td class="test">Expect checkTxPool to call bcx.getPendingTxArray, dbServices.dbCollections.transactions.listDbZeroConfTx, and processTx.processNewPendingTxArray<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap getPendingTxArray which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:85:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:46:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test updateTxHistory function </td><td class="test">Expect updateTxHistory to call bcx.getLastBlockNumber, dbServices.dbCollections.transactions.findTxHistoryHeightand dlTxHistory<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap getLastBlockNumber which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:117:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:48:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test dlTxHistory function </td><td class="test">Expect dlTxHistory to call bcx.getBlockTx, processTxHistory, dbServices.dbCollections.transactions.listHistoryprocessTx.checkPendingTx, dbServices.dbCollections.transactions.updateTxHistoryHeight<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property checkPendingTx
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:156:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test processTxHistory function </td><td class="test">Expect processTxHistory to call processTx.newPendingTx, <div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property newPendingTx
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:188:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test dlERC20SmartContracts function </td><td class="test">Expect dlERC20SmartContracts to call gethConnect.web3.eth.getBlock, bcx.getBlockSmartContractsAddressesArray,processSmartContractsAddressesArray and dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property processSmartContractsAddressesArray
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:221:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test processSmartContractsAddressesArray function </td><td class="test">Expect processSmartContractsAddressesArray to call gethConnect.web3.eth.Contract, dbServices.dbCollections.assets.addContract and process.send<div class="failureMessages"><pre class="failureMsg">TypeError: housekeeper.processSmartContractsAddressesArray is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:256:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test updateERC20SmartContracts function </td><td class="test">Expect updateERC20SmartContracts to call bcx.getLastBlockNumber, dbServices.dbCollections.assets.findERC20SmartContractsHistoryHeight,and dlERC20SmartContracts<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap getLastBlockNumber which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:274:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js:48:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/subscriber.test.js</div><div class="suite-time">0.412s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test function calls</td><td class="test">Expect dbConnect and initPubSubMQto be called by initServices()<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/subscriber.test.js:5:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/master.launch.test.js</div><div class="suite-time">0.415s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test method: master.launch()</td><td class="test">Expect master.launch() to call fork() with: housekeeper, publisher, and subscriber<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/master.js:12:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/master.launch.test.js:9:18)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/rmqServices.test.js</div><div class="suite-time">0.543s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test checksum</td><td class="test">Expect a valid checksum<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot read property 'index' of undefined
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.js:20:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/controllers/transactions_ctrl.js:1:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.js:13:22)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.&lt;anonymous&gt; (/Users/partha/Documents/pillar-bcx-pubsub/src/services/rmqServices.js:7:20)
+    at Runtime._execModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:629:13)
+    at Runtime.requireModule (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:373:14)
+    at Runtime.requireModuleOrMock (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-runtime/build/index.js:460:19)
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/services/rmqServices.test.js:9:23)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checksum</td><td class="test">Expect an invalid checksum<div class="failureMessages"><pre class="failureMsg">TypeError: rmqServices.validatePubSubMessage is not a function
+    at Object.test (/Users/partha/Documents/pillar-bcx-pubsub/src/services/rmqServices.test.js:19:22)
+    at Object.asyncFn (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/jasmine_async.js:108:37)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js</div><div class="suite-time warn">8.308s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When a Pillar wallet address is passed and recoverAddress is passed as well and equals address, filterAddress should call dbServices.dbCollections.accounts.findByAddress once  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"><pre class="failureMsg">TypeError: processTx.filterAddress is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:15:20)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When a Pillar wallet address is passed and Publisher = false, filterAddress should call accounts.findByAddress once and NOT call assets.findByAddress  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap findByAddress which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:28:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:11:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When a smart contract address is passed and Publisher = false, filterAddress should call accounts.findByAddress once, assets.findByAddress once  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap findByAddress which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:48:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:11:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When an unknown address is passed and Publisher = false, filterAddress should call accounts.findByAddress once, assets.findByAddress once  and return {'isPillarAddress' : false, 'pillarId': '', 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': ''}<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap findByAddress which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:68:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.spy (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/spy.js:42:16)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:11:21)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When a Pillar wallet address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once and hashMaps.accounts.get once  and return {'isPillarAddress' : true, 'pillarId': pillarId, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null}<div class="failureMessages"><pre class="failureMsg">TypeError: processTx.filterAddress is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:95:20)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When a smart contract address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once, hashMaps.assets.has once and hashMaps.assets.get once and return {'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : true, 'ERC20SmartContractTicker': ticker}<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap has which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
     at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:109:22)
     at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
     at new Promise (&lt;anonymous&gt;)
     at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
     at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
     at &lt;anonymous&gt;
-    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 2 pillar addresses is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage twice<div class="failureMessages"/></td><td class="result">passed in 0.016s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 2 pillar addresses is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx twice<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar address as the recipient is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar addresses as the recipient is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar address as the sender is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar addresses as the sender is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object NOT involving a pillar addresses is passed , newPendingTx should call processTx.filterAddress twice<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar address as the sender and an ERC20 smart contract as the recipient is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar addresses as the sender and an ERC20 smart contract as the recipient is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving an unknown address as the sender and an ERC20 smart contract as the recipient is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving an unknown addresses as the sender and an ERC20 smart contract as the recipient is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from an unknown address to a pillar address is passed and Publisher=true, newPendingTx should call processTx.filterAddress thrice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from an unknown address to a pillar address is passed and Publisher=false, newPendingTx should call processTx.filterAddress thrice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer between two pillar addresses is passed and Publisher=true, newPendingTx should call processTx.filterAddress thrice and  call rmqServices.sendPubSubMessage twice<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer between two pillar addresses is passed and Publisher=false, newPendingTx should call processTx.filterAddress thrice and  call dbServices.dbCollections.transactions.addTx twice<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from a pillar address to an unknown address is passed and Publisher=true, newPendingTx should call processTx.filterAddress thrice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from a pillar address to an unknown address is passed and Publisher=false, newPendingTx should call processTx.filterAddress thrice and  call dbServices.dbCollections.transactions.addTx twice<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from a pillar address is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from a pillar address is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from an unknown address is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  NOT call rmqServices.sendPubSubMessage<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from an unknown address is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and NOT call dbServices.dbCollections.transactions.addTx<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has less than 1 block confirmations, checkPendingTx should call hashMaps.pendingTx.get once and  bcx.getTxInfo once <div class="failureMessages"/></td><td class="result">passed in 0.011s</td></tr><tr class="passed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,bcx.getTxReceipt once and rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true and txReceipt is not found, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once, bcx.getTxReceipt once and rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true and gasUsed &gt; gasLimit, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,bcx.getTxReceipt once and rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true and txInfo is not found, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once, NOT call bcx.getTxReceipt  and call rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test processNewPendingTxArray function</td><td class="test">Should call processTx.newPendingTx twice<div class="failureMessages"/></td><td class="result">passed in 0.006s</td></tr><tr class="passed"><td class="suite">Test checkTokenTransferEvent function</td><td class="test">When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once, and rmqServices.sendPubSubMessage once<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test checkTokenTransferEvent function</td><td class="test">When transfer event IS regular token transfer (asset!=ETH) to a Pillar address, checkTokenTransferEvent should call processTx.filterAddress once,  call dbCollections.ethTransactions.findByTxHash once,  NOT call rmqServices.sendPubSubMessage<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test checkTokenTransferEvent function</td><td class="test">When recipient is not a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, NOT call dbCollections.ethTransactions.findByTxHash,  NOT call rmqServices.sendPubSubMessage<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/housekeeper.test.js</div><div class="suite-time">1.754s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test init function </td><td class="test">Expect init to call gethConnect.gethConnectDisplay, dbServices.dbConnectDisplayAccountsdbServices.initDB, dbServices.initDBTxHistory and dbServices.initDBERC20SmartContracts<div class="failureMessages"/></td><td class="result">passed in 0.885s</td></tr><tr class="passed"><td class="suite">Test recoverWallet function </td><td class="test">Expect recoverWallet to call bcx.getPendingTxArray, dbServices.dbCollections.transactions.listDbZeroConfTx,processTx.processNewPendingTxArray, bcx.getLastBlockNumber and dlTxHistory<div class="failureMessages"/></td><td class="result">passed in 0.152s</td></tr><tr class="passed"><td class="suite">Test checkTxPool function </td><td class="test">Expect checkTxPool to call bcx.getPendingTxArray, dbServices.dbCollections.transactions.listDbZeroConfTx, and processTx.processNewPendingTxArray<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr><tr class="passed"><td class="suite">Test updateTxHistory function </td><td class="test">Expect updateTxHistory to call bcx.getLastBlockNumber, dbServices.dbCollections.transactions.findTxHistoryHeightand dlTxHistory<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test dlTxHistory function </td><td class="test">Expect dlTxHistory to call bcx.getBlockTx, processTxHistory, dbServices.dbCollections.transactions.listHistoryprocessTx.checkPendingTx, dbServices.dbCollections.transactions.updateTxHistoryHeight<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test processTxHistory function </td><td class="test">Expect processTxHistory to call processTx.newPendingTx, <div class="failureMessages"/></td><td class="result">passed in 0.007s</td></tr><tr class="passed"><td class="suite">Test dlERC20SmartContracts function </td><td class="test">Expect dlERC20SmartContracts to call gethConnect.web3.eth.getBlock, bcx.getBlockSmartContractsAddressesArray,processSmartContractsAddressesArray and dbServices.dbCollections.assets.updateERC20SmartContractsHistoryHeight<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test processSmartContractsAddressesArray function </td><td class="test">Expect processSmartContractsAddressesArray to call gethConnect.web3.eth.Contract, dbServices.dbCollections.assets.addContract and process.send<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test updateERC20SmartContracts function </td><td class="test">Expect updateERC20SmartContracts to call bcx.getLastBlockNumber, dbServices.dbCollections.assets.findERC20SmartContractsHistoryHeight,and dlERC20SmartContracts<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/publisher.test.js</div><div class="suite-time">0.815s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test init functions </td><td class="test">Expect initIPC to call logger.info, process.send<div class="failureMessages"/></td><td class="result">passed in 0.636s</td></tr><tr class="passed"><td class="suite">Test init functions </td><td class="test">Expect poll to call process.send<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test init functions </td><td class="test">Expect initSubscriptions to call gethConnect.gethConnectDisplay(), dbServices.dbConnectDisplayAccounts(), gethSubscribe.subscribePendingTx() and gethSubscribe.subscribeBlockHeaders<div class="failureMessages"/></td><td class="result">passed in 0.005s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/master.notify.test.js</div><div class="suite-time">0.311s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test method: master.notify()</td><td class="test">Expect master.notify() to log start/exit and dbServices.recentAccounts to be called/resolved<div class="failureMessages"/></td><td class="result">passed in 0.158s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethConnect.test.js</div><div class="suite-time">0.177s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test setWeb3WebsocketConnection</td><td class="test">setWeb3WebsocketConnection function should be defined<div class="failureMessages"/></td><td class="result">passed in 0.008s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/rmqServices.test.js</div><div class="suite-time">0.598s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test checksum</td><td class="test">Expect a valid checksum<div class="failureMessages"/></td><td class="result">passed in 0.412s</td></tr><tr class="passed"><td class="suite">Test checksum</td><td class="test">Expect an invalid checksum<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/models/assets_model.test.js</div><div class="suite-time">0.167s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test assets</td><td class="test">assets should be defined<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/master.launch.test.js</div><div class="suite-time">0.324s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test method: master.launch()</td><td class="test">Expect master.launch() to call fork() with: housekeeper, publisher, and subscriber<div class="failureMessages"/></td><td class="result">passed in 0.157s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/models/transactions_model.test.js</div><div class="suite-time">0.102s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test transactions</td><td class="test">transactions should be defined<div class="failureMessages"/></td><td class="result">passed in 0.005s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/gethSubscribe.test.js</div><div class="suite-time">1.259s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test subscribeBlockHeaders function</td><td class="test">subscribeBlockHeaders function should call bcx.getBlockTx, dbCollections.ethTransactions.listDbZeroConfTx, dbCollections.ethTransactions.listPending dbCollections.ethTransactions.updateTxHistoryHeight, processTx.checkBlockTx and processTx.checkPendingTx thrice, and call dbServices.updateTxHistory once<div class="failureMessages"/></td><td class="result">passed in 0.888s</td></tr><tr class="passed"><td class="suite">Test subscribePendingTx funtion</td><td class="test">subscribePendingTx function should call bcx.getTxInfo and processTx.newPendingTx once (because of a mocked 'new pending transaction' event being fired by web3 mock)<div class="failureMessages"/></td><td class="result">passed in 0.185s</td></tr><tr class="passed"><td class="suite">Test subscribeAllDBERC20SmartContracts function</td><td class="test">subscribeAllDBERC20SmartContracts Should call dbCollections.smartContracts.listAll() once and subscribeERC20SmartContract thrice<div class="failureMessages"/></td><td class="result">passed in 0.008s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/models/accounts_model.test.js</div><div class="suite-time">0.185s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test accounts</td><td class="test">accounts should be defined<div class="failureMessages"/></td><td class="result">passed in 0.003s</td></tr></table><div class="suite-info"><div class="suite-path">/Users/partha/Documents/pillar-bcx-pubsub/src/services/dbServices.test.js</div><div class="suite-time">2.425s</div></div><table class="suite-table" cellspacing="0" cellpadding="0"><tr class="passed"><td class="suite">Test dbConnect function</td><td class="test">dbConnect should call mongoose.connect once<div class="failureMessages"/></td><td class="result">passed in 1.749s</td></tr><tr class="passed"><td class="suite">Test getTxHistory function</td><td class="test">Should call ethTransactions.getTxHistory once<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test listPendingTx function</td><td class="test">listPendingTx called for ETH should call ethTransactions.listPending once and return one mocked pending transaction<div class="failureMessages"/></td><td class="result">passed in 0.004s</td></tr><tr class="passed"><td class="suite">Test listPendingTx function</td><td class="test">listPendingTx called for BOKKY token should call ethTransactions.listPending once and return one mocked pending tx<div class="failureMessages"/></td><td class="result">passed in 0s</td></tr><tr class="passed"><td class="suite">Test initDBTxHistoryfunction</td><td class="test">When NO_TX_HISTORY_HEIGHT is returned by findTxHistoryHeight, initDBTxHistory should call  txHistory.addZeroTxHistoryHeight() once and txHistory.findTxHistoryHeight once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test initDBTxHistoryfunction</td><td class="test">When blockNb is returned by findTxHistoryHeight, initDBTxHistory should NOT call txHistory.addZeroTxHistoryHeight() and call txHistory.findTxHistoryHeight once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test emptyDBTxHistory function</td><td class="test">Should call  ethTransactions.emptyCollection() once<div class="failureMessages"/></td><td class="result">passed in 0.002s</td></tr><tr class="passed"><td class="suite">Test resetDBTxHistory function</td><td class="test">Should call dbServices.emptyDBTxHistory() once and dbServices.initDBTxHistory() once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test initDBERC20SmartContracts function</td><td class="test">When NO_ERC20_CONTRACTS_HISTORY_HEIGHT is returned by findERC20SmartContractsHistoryHeight, initDBERC20SmartContracts should call  smartContracts.addZeroSmartContractsCreationHistoryHeight() once and smartContracts.findERC20SmartContractsHistoryHeight once<div class="failureMessages"/></td><td class="result">passed in 0.005s</td></tr><tr class="passed"><td class="suite">Test initDBERC20SmartContracts function</td><td class="test">When blockNb is returned by findERC20SmartContractsHistoryHeight, initDBERC20SmartContracts should NOT call smartContracts.addZeroSmartContractsCreationHistoryHeight() and call smartContracts.findERC20SmartContractsHistoryHeight once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test emptyDBERC20SmartContracts function</td><td class="test">Should call  smartContracts.emptyCollection() once<div class="failureMessages"/></td><td class="result">passed in 0.001s</td></tr><tr class="passed"><td class="suite">Test resetDBERC20SmartContracts function</td><td class="test">Should call dbServices.emptyDBERC20SmartContracts() once and dbServices.initDBERC20SmartContracts() once<div class="failureMessages"/></td><td class="result">passed in 0s</td></tr></table></html>
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:87:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test filterAddress function</td><td class="test">When am unknown address is passed and Publisher = true, filterAddress should call hashMaps.accounts.has once, hashMaps.assets.has once and return {'isPillarAddress' : false, 'pillarId': null, 'isERC20SmartContract' : false, 'ERC20SmartContractTicker': null}<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap has which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:135:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:87:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 2 pillar addresses is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:163:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 2 pillar addresses is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:187:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar address as the recipient is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:212:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar addresses as the recipient is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:236:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar address as the sender is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:261:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar addresses as the sender is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:285:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object NOT involving a pillar addresses is passed , newPendingTx should call processTx.filterAddress twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:310:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar address as the sender and an ERC20 smart contract as the recipient is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:329:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving 1 pillar addresses as the sender and an ERC20 smart contract as the recipient is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:353:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving an unknown address as the sender and an ERC20 smart contract as the recipient is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:378:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving an unknown addresses as the sender and an ERC20 smart contract as the recipient is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:402:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from an unknown address to a pillar address is passed and Publisher=true, newPendingTx should call processTx.filterAddress thrice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:427:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from an unknown address to a pillar address is passed and Publisher=false, newPendingTx should call processTx.filterAddress thrice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:459:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer between two pillar addresses is passed and Publisher=true, newPendingTx should call processTx.filterAddress thrice and  call rmqServices.sendPubSubMessage twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:491:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer between two pillar addresses is passed and Publisher=false, newPendingTx should call processTx.filterAddress thrice and  call dbServices.dbCollections.transactions.addTx twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:523:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from a pillar address to an unknown address is passed and Publisher=true, newPendingTx should call processTx.filterAddress thrice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:555:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a token transfer from a pillar address to an unknown address is passed and Publisher=false, newPendingTx should call processTx.filterAddress thrice and  call dbServices.dbCollections.transactions.addTx twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:587:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from a pillar address is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:619:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from a pillar address is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and  call dbServices.dbCollections.transactions.addTx once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:651:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from an unknown address is passed and Publisher=true, newPendingTx should call processTx.filterAddress twice and  NOT call rmqServices.sendPubSubMessage<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:683:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test newPendingTx function</td><td class="test">When a transaction object involving a zero-value contract call from an unknown address is passed and Publisher=false, newPendingTx should call processTx.filterAddress twice and NOT call dbServices.dbCollections.transactions.addTx<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:715:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has less than 1 block confirmations, checkPendingTx should call hashMaps.pendingTx.get once and  bcx.getTxInfo once <div class="failureMessages"><pre class="failureMsg">TypeError: processTx.checkPendingTx is not a function
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:762:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,bcx.getTxReceipt once and rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap get which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:788:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:753:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true and txReceipt is not found, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once, bcx.getTxReceipt once and rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap get which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:831:23)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:753:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true and gasUsed &gt; gasLimit, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,bcx.getTxReceipt once and rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap get which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:879:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:753:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkPendingTx function</td><td class="test">When transaction has more than 1 block confirmations and isPublisher = true and txInfo is not found, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once, NOT call bcx.getTxReceipt  and call rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap get which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:924:22)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:753:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test processNewPendingTxArray function</td><td class="test">Should call processTx.newPendingTx twice<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property newPendingTx
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:973:25)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkTokenTransferEvent function</td><td class="test">When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once, and rmqServices.sendPubSubMessage once<div class="failureMessages"><pre class="failureMsg">TypeError: Cannot stub non-existent own property filterAddress
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:29:15)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:1018:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkTokenTransferEvent function</td><td class="test">When transfer event IS regular token transfer (asset!=ETH) to a Pillar address, checkTokenTransferEvent should call processTx.filterAddress once,  call dbCollections.ethTransactions.findByTxHash once,  NOT call rmqServices.sendPubSubMessage<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap findByTxHash which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:1049:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:1007:25)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr><tr class="failed"><td class="suite">Test checkTokenTransferEvent function</td><td class="test">When recipient is not a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, NOT call dbCollections.ethTransactions.findByTxHash,  NOT call rmqServices.sendPubSubMessage<div class="failureMessages"><pre class="failureMsg">TypeError: Attempted to wrap findByTxHash which is already wrapped
+    at checkWrappedMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:39:21)
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:85:13)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:1091:24)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+--------------
+Error: Stack Trace for original
+    at wrapMethod (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/util/core/wrap-method.js:110:31)
+    at Object.stub (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/sinon/lib/sinon/stub.js:65:44)
+    at Object.done (/Users/partha/Documents/pillar-bcx-pubsub/src/services/processTx.test.js:1007:25)
+    at resolve (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:56:12)
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:43:19)
+    at promise.then (/Users/partha/Documents/pillar-bcx-pubsub/node_modules/jest-jasmine2/build/queue_runner.js:87:41)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</pre></div></td><td class="result">failed</td></tr></table></html>
