@@ -338,19 +338,23 @@ module.exports.checkNewAssets = checkNewAssets;
  * Validated if a given transaction corresponds to the deployment of a token contract
  * @param {any} txn - the transaction receipt
  */
-function addERC20(txn) {
+async function addERC20(txn) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC20ABI,receipt.contractAddress);
+        const symbol = await contract.methods.symbol().call();
+        const name = await contract.methods.name().call();
+        const decimals = await contract.methods.decimals().call();
+        const totalSupply = await contract.methods.totalSupply().call();
 
         if(receipt.status == '0x1') { 
             const txMsg = {
                 type: 'newAsset',
-                name: contract.name,
-                symbol: contract.symbol,
-                decimals: contract.decimals,
+                name,
+                symbol,
+                decimals,
                 contractAddress: receipt.contractAddress,
-                totalSupply: contract.totalSupply,
+                totalSupply,
                 category: 'Token',
                 protocol: protocol
             };
@@ -370,16 +374,18 @@ module.exports.addERC20 = addERC20;
  * Validated if a given transaction corresponds to the deployment of a collectible contract
  * @param {any} txn - the transaction receipt
  */
-function addERC721(txn) {
+async function addERC721(txn) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC721ABI,receipt.contractAddress);
+        const symbol = await contract.methods.symbol().call();
+        const name = await contract.methods.name().call();
 
         if(receipt.status == '0x1') { 
             const txMsg = {
                 type: 'newAsset',
-                name: contract.name,
-                symbol: contract.symbol,
+                name,
+                symbol,
                 decimals: 0,
                 contractAddress: receipt.contractAddress,
                 totalSupply: 1,
