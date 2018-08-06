@@ -120,13 +120,14 @@ function storeGasInfo(blockHeader) {
         web3.eth.getBlockTransactionCount(blockHeader.number).then((txnCnt) => {
             if(txnCnt !== null) {
                 entry = {
+                    type: 'tranStat',
                     protocol,
                     gasLimit: blockHeader.gasLimit,
                     gasUsed: blockHeader.gasUsed,
                     blockNumber: blockHeader.number,
                     transactionCount: txnCnt
                 };
-                //TODO  - add code for RMQ message to store latest gas information
+                rmqServices.sendPubSubMessage(entry);
             }
         });
     }catch(e) {

@@ -413,14 +413,8 @@ module.exports.findMaxBlock = findMaxBlock;
 function addTransactionStats(record) {
   try {
     logger.debug('dbServices.addTransactionStats() adding transaction statistics');
-    if(dbCollections) {
-      dbCollections.gasinfo.add(record);
-    } else {
-      logger.debug('dbServices.addTransactionStats(), no db connection reconnecting to store.')
-      module.exports.dbConnect(mongoUrl).then(() => {
-        gasinfo.add(record);
-      });
-    }
+    dbCollections.gasinfo.add(record);
+    logger.debug('dbServices.addTransactionStats() successfully added');
   }catch(e) {
     logger.error('dbServices.addTransactionStats failed with error ' + e);
   }
