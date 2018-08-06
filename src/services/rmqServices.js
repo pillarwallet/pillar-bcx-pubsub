@@ -173,7 +173,6 @@ exports.initSubPubMQ = () => {
                   }); 
                 break;
               case 'tranStat':
-                  delete entry.type;
                   logger.debug('Subscriber adding a new transaction stats entry');
                   dbServices.addTransactionStats(entry);
                   break;

@@ -1,6 +1,5 @@
 const logger = require('../utils/logger.js');
 const gasinfo = require('../models/gasinfo_model');
-const mongoose = require('mongoose');
 
 function add(record) {
     logger.debug('GasInfo.adding a new record: ' + JSON.stringify(record));
@@ -12,9 +11,13 @@ function add(record) {
             logger.info(`GasInfo.add DB controller ERROR: ${err}`);
             reject(err);
           }
+          logger.debug('GasInfo: successfully added a new record');
           resolve();
         });
-      } catch (e) { reject(e); }
+      } catch (e) { 
+        logger.error('GasInfo: error ' + e);
+        reject(e); 
+      }
     });
   }
   module.exports.add = add;
