@@ -8,6 +8,20 @@ const ERC20ABI = require('./ERC20ABI');
 const hashMaps = require('../utils/hashMaps.js');
 
 /**
+ * Store the gas information corresponding to the block
+ * @param {any} entry - the json string corresponding to gas information.
+ */
+function storeTransactionStats(entry) {
+    try {
+        logger.debug('processTx.storeTransactionStats() storing the transaction ' + entry);
+        dbServices.
+
+    }catch(e) {
+        logger.error('processTx.storeTransactionStats(): failed storing transaction details');
+    }
+}
+module.exports.storeTransactionStats = storeTransactionStats;
+/**
  * Store the token event if either of the wallets are being monitored
  * @param {any} event - the token transfer event
  * @param {String} asset - the asset symbol
