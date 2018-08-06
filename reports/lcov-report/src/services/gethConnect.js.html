@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">21.88% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>7/32</span>
+        <span class='fraction'>0/32</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>0/9</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">21.88% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>7/32</span>
+        <span class='fraction'>0/32</span>
       </div>
     </div>
     <p class="quiet">
@@ -104,12 +104,12 @@
 <a name='L56'></a><a href='#L56'>56</a>
 <a name='L57'></a><a href='#L57'>57</a>
 <a name='L58'></a><a href='#L58'>58</a>
-<a name='L59'></a><a href='#L59'>59</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<a name='L59'></a><a href='#L59'>59</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -141,44 +141,44 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const Web3 = require('web3');
-const colors = require('colors');
-const logger = require('../utils/logger.js');
-require('dotenv').config();
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const Web3 = <span class="cstat-no" title="statement not covered" >require('web3');</span>
+const colors = <span class="cstat-no" title="statement not covered" >require('colors');</span>
+const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger.js');</span>
+<span class="cstat-no" title="statement not covered" >require('dotenv').config();</span>
 &nbsp;
-const gethURL = process.env.GETH_NODE_URL + ':' + process.env.GETH_NODE_PORT;
+const gethURL = <span class="cstat-no" title="statement not covered" >process.env.GETH_NODE_URL + ':' + process.env.GETH_NODE_PORT;</span>
 &nbsp;
 let web3;
 &nbsp;
-function <span class="fstat-no" title="function not covered" >gethConnectDisplay(</span>) {
+function <span class="fstat-no" title="function not covered" >gethConnectDisplay() {</span>
 <span class="cstat-no" title="statement not covered" >  logger.info('Connecting to geth node');</span>
 <span class="cstat-no" title="statement not covered" >  return new Promise((<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    if((web3 === undefined) || (!web3.isConnected())) {</span>
 <span class="cstat-no" title="statement not covered" >      module.exports.setWeb3WebsocketConnection()</span>
-        .then(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+        .then(<span class="fstat-no" title="function not covered" >() =&gt; </span>{
 <span class="cstat-no" title="statement not covered" >          module.exports.web3.eth.getBlockNumber()</span>
-            .then(<span class="fstat-no" title="function not covered" >(r</span>esult) =&gt; {
+            .then((<span class="fstat-no" title="function not covered" >result) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >              if (result != null) {</span>
 <span class="cstat-no" title="statement not covered" >                logger.info(`Established connection with local Ethereum node! Current Block number :${result}`);</span>
 <span class="cstat-no" title="statement not covered" >                resolve();</span>
@@ -187,9 +187,9 @@ function <span class="fstat-no" title="function not covered" >gethConnectDisplay
 <span class="cstat-no" title="statement not covered" >                reject();</span>
               }
             })
-            .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; { <span class="cstat-no" title="statement not covered" >reject(e); </span>});
+            .catch((<span class="fstat-no" title="function not covered" >e) =&gt; { <span class="cstat-no" title="statement not covered" >reject(e); });</span></span>
         })
-        .catch(<span class="fstat-no" title="function not covered" >(e</span>) =&gt; { 
+        .catch((<span class="fstat-no" title="function not covered" >e) =&gt; { </span>
 <span class="cstat-no" title="statement not covered" >          logger.error('gethConnect.gethConnectDisplay() failed: ' + e);</span>
 <span class="cstat-no" title="statement not covered" >          reject(e); </span>
         }); 
@@ -199,14 +199,14 @@ function <span class="fstat-no" title="function not covered" >gethConnectDisplay
     }
   }));
 }
-module.exports.gethConnectDisplay = gethConnectDisplay;
+<span class="cstat-no" title="statement not covered" >module.exports.gethConnectDisplay = gethConnectDisplay;</span>
 &nbsp;
-function <span class="fstat-no" title="function not covered" >setWeb3WebsocketConnection(</span>) {
+function <span class="fstat-no" title="function not covered" >setWeb3WebsocketConnection() {</span>
 <span class="cstat-no" title="statement not covered" >  return new Promise((<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));</span>
 <span class="cstat-no" title="statement not covered" >      module.exports.web3 = web3;</span>
-<span class="cstat-no" title="statement not covered" >      web3._provider.on('end', <span class="fstat-no" title="function not covered" >(e</span>ventObj) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      web3._provider.on('end', (<span class="fstat-no" title="function not covered" >eventObj) =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >        logger.error('Websocket disconnected!! Restarting connection....');</span>
         //logger.error(eventObj);
         //exports.setWeb3WebsocketConnection();
@@ -219,14 +219,14 @@ function <span class="fstat-no" title="function not covered" >setWeb3WebsocketCo
     }
   }));
 }
-module.exports.setWeb3WebsocketConnection = setWeb3WebsocketConnection;
+<span class="cstat-no" title="statement not covered" >module.exports.setWeb3WebsocketConnection = setWeb3WebsocketConnection;</span>
 &nbsp;</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Aug 02 2018 17:43:00 GMT+0100 (BST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Aug 03 2018 12:00:36 GMT+0100 (BST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

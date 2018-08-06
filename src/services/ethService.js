@@ -97,6 +97,8 @@ function subscribeBlockHeaders() {
                 logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
             });
             module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+            //capture gas price statistics
+            module.exports.storeGasInfo(blockHeader);
           }
         })
         .catch((e) => {
@@ -107,6 +109,31 @@ function subscribeBlockHeaders() {
     }
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
+
+/**
+ * Determin the gas price and store the details.
+ * @param {any} blockHeader - the event object corresponding to the current block
+ */
+function storeGasInfo(blockHeader) {
+    let entry;
+    try {
+        web3.eth.getBlockTransactionCount(blockHeader.number).then((txnCnt) => {
+            if(txnCnt !== null) {
+                entry = {
+                    protocol,
+                    gasLimit: blockHeader.gasLimit,
+                    gasUsed: blockHeader.gasUsed,
+                    blockNumber: blockHeader.number,
+                    transactionCount: txnCnt
+                };
+                //TODO  - add code for RMQ message to store latest gas information
+            }
+        });
+    }catch(e) {
+        logger.error('ethService.storeGasInfo() failed with error ' + e);
+    }
+}
+module.exports.storeGasInfo = storeGasInfo; 
 
 /**
  * Subscribe to token transfer event corresponding to a given smart contract.
@@ -336,9 +363,9 @@ module.exports.checkNewAssets = checkNewAssets;
 
 /**
  * Validated if a given transaction corresponds to the deployment of a token contract
- * @param {any} txn - the transaction receipt
+ * @param {any} receipt - the transaction receipt
  */
-async function addERC20(txn) {
+async function addERC20(receipt) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC20ABI,receipt.contractAddress);
@@ -417,7 +444,7 @@ async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
         if(!error) {
             logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
             events.forEach((event) => { 
-                this.getTransactionReceipt(event.transactionHash).then((txn) => {
+                this.getTxReceipt(event.transactionHash).then((txn) => {
                     processTx.storeTokenEvent(event,asset,protocol,txn);
                 });
             });
