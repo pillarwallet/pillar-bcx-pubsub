@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">10.58% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>11/104</span>
+        <span class='fraction'>0/104</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>0/8</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">10.58% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>11/104</span>
+        <span class='fraction'>0/104</span>
       </div>
     </div>
     <p class="quiet">
@@ -292,13 +292,13 @@
 <a name='L244'></a><a href='#L244'>244</a>
 <a name='L245'></a><a href='#L245'>245</a>
 <a name='L246'></a><a href='#L246'>246</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -346,7 +346,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -409,7 +409,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -489,7 +489,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -536,14 +536,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span></td><td class="text"><pre class="prettyprint lang-js">/** @module processTx.js */
-const time = require('unix-timestamp');
-const logger = require('../utils/logger.js');
-const dbServices = require('./dbServices.js');
-const rmqServices = require('./rmqServices.js');
-const abiDecoder = require('abi-decoder');
-const ERC20ABI = require('./ERC20ABI');
-const hashMaps = require('../utils/hashMaps.js');
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/** @module processTx.js */
+const time = <span class="cstat-no" title="statement not covered" >require('unix-timestamp');</span>
+const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger.js');</span>
+const dbServices = <span class="cstat-no" title="statement not covered" >require('./dbServices.js');</span>
+const rmqServices = <span class="cstat-no" title="statement not covered" >require('./rmqServices.js');</span>
+const abiDecoder = <span class="cstat-no" title="statement not covered" >require('abi-decoder');</span>
+const ERC20ABI = <span class="cstat-no" title="statement not covered" >require('./ERC20ABI');</span>
+const hashMaps = <span class="cstat-no" title="statement not covered" >require('../utils/hashMaps.js');</span>
 &nbsp;
 /**
  * Store the token event if either of the wallets are being monitored
@@ -552,10 +552,10 @@ const hashMaps = require('../utils/hashMaps.js');
  * @param {String} protocol - the protocol
  * @param {any} txn - the transaction receipt
  */
-function <span class="fstat-no" title="function not covered" >storeTokenEvent(</span>event,asset,protocol,txn) {
+function <span class="fstat-no" title="function not covered" >storeTokenEvent(event,asset,protocol,txn) {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >        logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);</span>
-<span class="cstat-no" title="statement not covered" >        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then(<span class="fstat-no" title="function not covered" >(t</span>xn) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((<span class="fstat-no" title="function not covered" >txn) =&gt; {</span></span>
             var pillarId, status;
             var tmstmp = <span class="cstat-no" title="statement not covered" >time.now();</span>
 <span class="cstat-no" title="statement not covered" >            status = 'confirmed';</span>
@@ -591,19 +591,19 @@ function <span class="fstat-no" title="function not covered" >storeTokenEvent(</
 <span class="cstat-no" title="statement not covered" >        logger.error('processTx.storeTokenEvent(): Failed with error ' + e);</span>
     }
 }
-module.exports.storeTokenEvent = storeTokenEvent;
+<span class="cstat-no" title="statement not covered" >module.exports.storeTokenEvent = storeTokenEvent;</span>
 /**
  * Check if given transaction is relevant and store in the database
  * @param {any} tx - the transaction object
  * @param {any} protocol - the transaction object
  */
-function <span class="fstat-no" title="function not covered" >storeIfRelevant(</span>tx, protocol) {
+function <span class="fstat-no" title="function not covered" >storeIfRelevant(tx, protocol) {</span>
     const tmstmp = <span class="cstat-no" title="statement not covered" >time.now();</span>
     var pillarId = <span class="cstat-no" title="statement not covered" >'';</span>
     var data, value;
 <span class="cstat-no" title="statement not covered" >    from = tx.from;</span>
 <span class="cstat-no" title="statement not covered" >    to = tx.to;</span>
-    var status = (<span class="cstat-no" title="statement not covered" >tx.status === '0x1' ? 'confirmed' : 'failed')</span>;
+    var status = (<span class="cstat-no" title="statement not covered" >tx.status === '0x1' ? 'confirmed' : 'failed');</span>
     var hash = <span class="cstat-no" title="statement not covered" >tx.transactionHash;</span>
 <span class="cstat-no" title="statement not covered" >    if ((tx.to !== null) &amp;&amp; hashMaps.accounts.has(tx.to.toLowerCase())) {</span>
         //fetch the pillarId corresponding to the to address and
@@ -629,7 +629,7 @@ function <span class="fstat-no" title="function not covered" >storeIfRelevant(</
     }
     
 <span class="cstat-no" title="statement not covered" >    if(pillarId !== '') {</span>
-<span class="cstat-no" title="statement not covered" >        dbServices.dbCollections.transactions.findOneByTxHash(hash).then(<span class="fstat-no" title="function not covered" >(t</span>xn) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        dbServices.dbCollections.transactions.findOneByTxHash(hash).then((<span class="fstat-no" title="function not covered" >txn) =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >            if (txn === null) {</span>
                 let entry = <span class="cstat-no" title="statement not covered" >{</span>
                     pillarId,
@@ -654,7 +654,7 @@ function <span class="fstat-no" title="function not covered" >storeIfRelevant(</
 <span class="cstat-no" title="statement not covered" >        logger.debug('processTx.storeIfRelevant(): ignoring txn as its not relevant!');</span>
     } 
 }
-module.exports.storeIfRelevant = storeIfRelevant;
+<span class="cstat-no" title="statement not covered" >module.exports.storeIfRelevant = storeIfRelevant;</span>
 &nbsp;
 /**
  * Store the new pending transaction in memeory if the transaction corresponds
@@ -662,7 +662,7 @@ module.exports.storeIfRelevant = storeIfRelevant;
  * @param {any} tx - the transaction object
  * @param {any} protocol - the transaction object
  */
-function <span class="fstat-no" title="function not covered" >newPendingTran(</span>tx, protocol) {
+function <span class="fstat-no" title="function not covered" >newPendingTran(tx, protocol) {</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
 <span class="cstat-no" title="statement not covered" >    logger.debug('processTx.newPendingTran(): validating transaction: ' + JSON.stringify(tx));</span>
     const tmstmp = <span class="cstat-no" title="statement not covered" >time.now();</span>
@@ -734,7 +734,7 @@ function <span class="fstat-no" title="function not covered" >newPendingTran(</s
 <span class="cstat-no" title="statement not covered" >    logger.error('processTx.newPendingTran(): failed with error ' + e + ' for txn: ' + tx.hash);</span>
   }
 }
-module.exports.newPendingTran = newPendingTran;
+<span class="cstat-no" title="statement not covered" >module.exports.newPendingTran = newPendingTran;</span>
 &nbsp;
 /**
  * Validated if the wallets involved in a monitored token transfer needs to be persisted in database
@@ -742,7 +742,7 @@ module.exports.newPendingTran = newPendingTran;
  * @param {String} theContract - the smart contract address associated with the token
  * @param {String} protocol - the protocol corresponding to the token blockchain
  */
-function <span class="fstat-no" title="function not covered" >checkTokenTransfer(</span>evnt, theContract, protocol) {
+function <span class="fstat-no" title="function not covered" >checkTokenTransfer(evnt, theContract, protocol) {</span>
 <span class="cstat-no" title="statement not covered" >    logger.debug('processTx.checkTokenTransfer(): received event: ' + JSON.stringify(evnt));</span>
 <span class="cstat-no" title="statement not covered" >    return new Promise((<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
         var pillarId;
@@ -751,7 +751,7 @@ function <span class="fstat-no" title="function not covered" >checkTokenTransfer
         } else <span class="cstat-no" title="statement not covered" >if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {</span>
 <span class="cstat-no" title="statement not covered" >            pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());</span>
         } 
-<span class="cstat-no" title="statement not covered" >        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then(<span class="fstat-no" title="function not covered" >(t</span>x) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then((<span class="fstat-no" title="function not covered" >tx) =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >            if (tx.asset === 'ETH') { </span>
                 // check is it is regular token transfer,
                 // if so (asset === TOKEN): resolve (because token transfer already processed),
@@ -781,13 +781,13 @@ function <span class="fstat-no" title="function not covered" >checkTokenTransfer
         });
     }));
 }
-module.exports.checkTokenTransfer = checkTokenTransfer;</pre></td></tr>
+<span class="cstat-no" title="statement not covered" >module.exports.checkTokenTransfer = checkTokenTransfer;</span></pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Aug 02 2018 17:43:00 GMT+0100 (BST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Aug 03 2018 12:00:36 GMT+0100 (BST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

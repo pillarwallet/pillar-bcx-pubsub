@@ -97,6 +97,8 @@ function subscribeBlockHeaders() {
                 logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
             });
             module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+            //capture gas price statistics
+            module.exports.storeGasInfo(blockHeader);
           }
         })
         .catch((e) => {
@@ -107,6 +109,31 @@ function subscribeBlockHeaders() {
     }
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
+
+/**
+ * Determin the gas price and store the details.
+ * @param {any} blockHeader - the event object corresponding to the current block
+ */
+function storeGasInfo(blockHeader) {
+    let entry;
+    try {
+        web3.eth.getBlockTransactionCount(blockHeader.number).then((txnCnt) => {
+            if(txnCnt !== null) {
+                entry = {
+                    protocol,
+                    gasLimit: blockHeader.gasLimit,
+                    gasUsed: blockHeader.gasUsed,
+                    blockNumber: blockHeader.number,
+                    transactionCount: txnCnt
+                };
+                processTx.saveTransactionStats(entry);
+            }
+        });
+    }catch(e) {
+        logger.error('ethService.storeGasInfo() failed with error ' + e);
+    }
+}
+module.exports.storeGasInfo = storeGasInfo; 
 
 /**
  * Subscribe to token transfer event corresponding to a given smart contract.

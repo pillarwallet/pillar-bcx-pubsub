@@ -20,14 +20,14 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">16.67% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>17/102</span>
+        <span class='fraction'>0/102</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">4.35% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>1/23</span>
+        <span class='fraction'>0/23</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">0% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>0/19</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">16.67% </span>
+        <span class="strong">0% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>17/102</span>
+        <span class='fraction'>0/102</span>
       </div>
     </div>
     <p class="quiet">
@@ -247,26 +247,26 @@
 <a name='L199'></a><a href='#L199'>199</a>
 <a name='L200'></a><a href='#L200'>200</a>
 <a name='L201'></a><a href='#L201'>201</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -295,10 +295,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -336,8 +336,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -438,7 +438,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -447,26 +447,26 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/** @module rmqServices.js */
-require('dotenv').config();
-const amqp = require('amqplib/callback_api');
-const moment = require('moment');
-const jsHashes = require('jshashes');
-const logger = require('../utils/logger.js');
-const dbServices = require('./dbServices.js');
-const SHA256 = new jsHashes.SHA256();
-const checksumKey = process.env.CHECKSUM_KEY;
+<span class="cstat-no" title="statement not covered" >require('dotenv').config();</span>
+const amqp = <span class="cstat-no" title="statement not covered" >require('amqplib/callback_api');</span>
+const moment = <span class="cstat-no" title="statement not covered" >require('moment');</span>
+const jsHashes = <span class="cstat-no" title="statement not covered" >require('jshashes');</span>
+const logger = <span class="cstat-no" title="statement not covered" >require('../utils/logger.js');</span>
+const dbServices = <span class="cstat-no" title="statement not covered" >require('./dbServices.js');</span>
+const SHA256 = <span class="cstat-no" title="statement not covered" >new jsHashes.SHA256();</span>
+const checksumKey = <span class="cstat-no" title="statement not covered" >process.env.CHECKSUM_KEY;</span>
 let pubSubChannel;
-const pubSubQueue = 'bcx-pubsub';
-const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
-  process.env.NOTIFICATIONS_QUEUE : <span class="branch-1 cbranch-no" title="branch not covered" >'bcx-notifications';</span>
-const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
-const TX_MAP = {};
-moment.locale('en_GB');
+const pubSubQueue = <span class="cstat-no" title="statement not covered" >'bcx-pubsub';</span>
+const notificationsQueue = <span class="cstat-no" title="statement not covered" >typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?</span>
+  process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
+const MQ_URL = <span class="cstat-no" title="statement not covered" >'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;</span>
+const TX_MAP = <span class="cstat-no" title="statement not covered" >{};</span>
+<span class="cstat-no" title="statement not covered" >moment.locale('en_GB');</span>
 &nbsp;
 /**
  * Initialize the pub-sub rabbit mq.
  */
-exports.initPubSubMQ = <span class="fstat-no" title="function not covered" >fu</span>nction () {
+<span class="cstat-no" title="statement not covered" >exports.initPubSubMQ = <span class="fstat-no" title="function not covered" >function () </span>{</span>
 <span class="cstat-no" title="statement not covered" >  return new Promise(<span class="fstat-no" title="function not covered" >(r</span>esolve, reject) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      logger.info('Executing rmqServices.initMQ()');</span>
@@ -495,7 +495,7 @@ exports.initPubSubMQ = <span class="fstat-no" title="function not covered" >fu</
  * Function that calculates the checksum for a given payload and then writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
-exports.sendPubSubMessage = <span class="fstat-no" title="function not covered" >fu</span>nction (payload) {
+<span class="cstat-no" title="statement not covered" >exports.sendPubSubMessage = <span class="fstat-no" title="function not covered" >function (</span>payload) {</span>
   const checksum = <span class="cstat-no" title="statement not covered" >SHA256.hex(checksumKey + JSON.stringify(payload));</span>
 <span class="cstat-no" title="statement not covered" >  payload.checksum = checksum;</span>
 <span class="cstat-no" title="statement not covered" >  pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));</span>
@@ -505,7 +505,7 @@ exports.sendPubSubMessage = <span class="fstat-no" title="function not covered" 
  * Function to generate the notification payload thats send to notification queue
  * @param {any} payload -  The payload for the notification queue
  */
-function <span class="fstat-no" title="function not covered" >getNotificationPayload(</span>payload) {
+function <span class="fstat-no" title="function not covered" >getNotificationPayload(payload) {</span>
   const p = <span class="cstat-no" title="statement not covered" >{</span>
     type: 'transactionEvent',
     meta: {
@@ -520,7 +520,7 @@ function <span class="fstat-no" title="function not covered" >getNotificationPay
 /**
  * Function that resets the transaction map
  */
-function <span class="fstat-no" title="function not covered" >resetTxMap(</span>) {
+function <span class="fstat-no" title="function not covered" >resetTxMap() {</span>
 <span class="cstat-no" title="statement not covered" >  for (const x in TX_MAP) {</span>
 <span class="cstat-no" title="statement not covered" >    logger.info(`resetTxMap Loop: ${x}`);</span>
     const timestamp = <span class="cstat-no" title="statement not covered" >moment().diff(TX_MAP[x].timestamp, 'minutes');</span>
@@ -536,7 +536,7 @@ function <span class="fstat-no" title="function not covered" >resetTxMap(</span>
 /**
  * Function to initialize the subscriber publisher queue befpore consumption
  */
-exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+<span class="cstat-no" title="statement not covered" >exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >() =&gt; </span>{</span>
 <span class="cstat-no" title="statement not covered" >  try {</span>
     let connection;
 <span class="cstat-no" title="statement not covered" >    logger.info('Subscriber Started executing initRabbitMQ()');</span>
@@ -548,11 +548,11 @@ exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</
 <span class="cstat-no" title="statement not covered" >      if (conn) {</span>
 <span class="cstat-no" title="statement not covered" >        connection = conn;</span>
       }
-<span class="cstat-no" title="statement not covered" >      connection.on('error', <span class="fstat-no" title="function not covered" >(e</span>rr) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      connection.on('error', (<span class="fstat-no" title="function not covered" >err) =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >        logger.error(`Subscriber RMQ connection errored out: ${err}`);</span>
 <span class="cstat-no" title="statement not covered" >        return setTimeout(exports.initSubPubMQ, 2000);</span>
       });
-<span class="cstat-no" title="statement not covered" >      connection.on('close', <span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      connection.on('close', <span class="fstat-no" title="function not covered" >() =&gt; </span>{</span>
 <span class="cstat-no" title="statement not covered" >        logger.error('Subscriber RMQ Connection closed');</span>
 <span class="cstat-no" title="statement not covered" >        return setTimeout(exports.initSubPubMQ, 2000);</span>
       });
@@ -561,7 +561,7 @@ exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      connection.createChannel(<span class="fstat-no" title="function not covered" >(e</span>rr, ch) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >        ch.assertQueue(pubSubQueue, { durable: true });</span>
-<span class="cstat-no" title="statement not covered" >        ch.consume(pubSubQueue, <span class="fstat-no" title="function not covered" >(m</span>sg) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        ch.consume(pubSubQueue, (<span class="fstat-no" title="function not covered" >msg) =&gt; {</span></span>
 <span class="cstat-no" title="statement not covered" >          logger.info(`Subscriber received rmq message: ${msg.content}`);</span>
 <span class="cstat-no" title="statement not covered" >          if (typeof msg.content !== 'undefined' &amp;&amp; msg.content !== '' &amp;&amp;</span>
             exports.validatePubSubMessage(JSON.parse(msg.content))) {
@@ -584,14 +584,14 @@ exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</
 <span class="cstat-no" title="statement not covered" >                entry.gasUsed = null;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >                dbServices.dbCollections.transactions.findOneByTxHash(txHash)</span>
-                  .then(<span class="fstat-no" title="function not covered" >(t</span>x) =&gt; {
+                  .then((<span class="fstat-no" title="function not covered" >tx) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >                    if (tx === null) {</span>
 <span class="cstat-no" title="statement not covered" >                      logger.debug('Subscriber saving transaction: ' + entry);</span>
 <span class="cstat-no" title="statement not covered" >                      return dbServices.dbCollections.transactions.addTx(entry);</span>
                     }
 <span class="cstat-no" title="statement not covered" >                    throw new Error('newTx: Transaction already exists');</span>
                   })
-                  .then(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+                  .then(<span class="fstat-no" title="function not covered" >() =&gt; </span>{
 <span class="cstat-no" title="statement not covered" >                    logger.info(`newTx: Transaction inserted: ${txHash}`);</span>
 <span class="cstat-no" title="statement not covered" >                    ch.assertQueue(notificationsQueue, { durable: true });</span>
 <span class="cstat-no" title="statement not covered" >                    ch.sendToQueue(</span>
@@ -600,11 +600,11 @@ exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</
                     );
 <span class="cstat-no" title="statement not covered" >                    logger.info(`newTx: Transaction produced to: ${notificationsQueue}`);</span>
                   })
-                  .catch(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >logger.error(`${JSON.stringify(e)}`))</span>;
+                  .catch(<span class="fstat-no" title="function not covered" >e =&gt; <span class="cstat-no" title="statement not covered" ></span>logger.error(`${JSON.stringify(e)}`));</span>
 <span class="cstat-no" title="statement not covered" >                break;</span>
               case 'updateTx':
 <span class="cstat-no" title="statement not covered" >                dbServices.dbCollections.transactions.updateTx(entry)</span>
-                  .then(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+                  .then(<span class="fstat-no" title="function not covered" >() =&gt; </span>{
 <span class="cstat-no" title="statement not covered" >                    logger.info(`Transaction updated: ${txHash}`);</span>
 <span class="cstat-no" title="statement not covered" >                    ch.assertQueue(notificationsQueue, { durable: true });</span>
 <span class="cstat-no" title="statement not covered" >                    ch.sendToQueue(</span>
@@ -616,7 +616,7 @@ exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</
 <span class="cstat-no" title="statement not covered" >                break;</span>
               case 'newAsset':
 <span class="cstat-no" title="statement not covered" >                dbServices.dbCollections.assets.addContract(entry)</span>
-                  .then(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+                  .then(<span class="fstat-no" title="function not covered" >() =&gt; </span>{
 <span class="cstat-no" title="statement not covered" >                    logger.info(`New aseet added: `);</span>
                   });  
               default:
@@ -638,7 +638,7 @@ exports.initSubPubMQ = <span class="fstat-no" title="function not covered" >()</
  * Function that validates the checksum of the payload received.
  * @param {any} payload - The IPC message received from the master
  */
-exports.validatePubSubMessage = <span class="fstat-no" title="function not covered" >(p</span>ayload) =&gt; {
+<span class="cstat-no" title="statement not covered" >exports.validatePubSubMessage = (<span class="fstat-no" title="function not covered" >payload) =&gt; {</span></span>
   const checksum = <span class="cstat-no" title="statement not covered" >payload.checksum;</span>
 <span class="cstat-no" title="statement not covered" >  delete payload.checksum;</span>
 <span class="cstat-no" title="statement not covered" >  if (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum) {</span>
@@ -652,7 +652,7 @@ exports.validatePubSubMessage = <span class="fstat-no" title="function not cover
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Thu Aug 02 2018 17:43:00 GMT+0100 (BST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Aug 03 2018 12:00:36 GMT+0100 (BST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

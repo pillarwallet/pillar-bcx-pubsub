@@ -17,11 +17,11 @@ const hashMaps = require('../utils/hashMaps.js');
 function storeTokenEvent(event,asset,protocol,txn) {
     try {
         logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);
-        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((txn) => {
+        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((tran) => {
             var pillarId, status;
             var tmstmp = time.now();
             status = 'confirmed';
-            if(txn === null) {
+            if(tran === null) {
                 if ((event.returnValues._to !== null) && hashMaps.accounts.has(event.returnValues._to.toLowerCase())) {
                     //fetch the pillarId corresponding to the to address and
                     pillarId = hashMaps.accounts.get(event.returnValues._to.toLowerCase());
