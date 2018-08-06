@@ -11,6 +11,7 @@ const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}
 const accounts = require('../controllers/accounts_ctrl.js');
 const assets = require('../controllers/assets_ctrl.js');
 const transactions = require('../controllers/transactions_ctrl.js');
+const gasinfo = require('../controllers/gasinfo_ctrl.js');
 
 let dbCollections;
 
@@ -25,7 +26,7 @@ function dbConnect($arg = { useMongoClient: true }) {
 
       module.exports.mongoose.connection.on('open', () => {
         logger.info(('Established connection to database!'));
-        dbCollections = { accounts, assets, transactions };
+        dbCollections = { accounts, assets, transactions, gasinfo };
         module.exports.dbCollections = dbCollections;
         resolve();
         // resolve({ accounts, assets, transactions });

@@ -14,8 +14,9 @@ const hashMaps = require('../utils/hashMaps.js');
 function storeTransactionStats(entry) {
     try {
         logger.debug('processTx.storeTransactionStats() storing the transaction ' + entry);
-        dbServices.
-
+        dbServices.gasinfo.add(entry).then(() => {
+            logger.debug('processTx.storeTransactionStats(): Successfully saved the transaction stats.')
+        });
     }catch(e) {
         logger.error('processTx.storeTransactionStats(): failed storing transaction details');
     }
