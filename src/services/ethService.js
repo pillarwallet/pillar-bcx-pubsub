@@ -99,9 +99,9 @@ function subscribeBlockHeaders() {
             module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
           }
         })
-        .catch((e) => {
-            logger.error('ethService.subscribeBlockHeaders(): failed with error: ' + e);
-        })
+        // .catch((e) => {
+        //     logger.error('ethService.subscribeBlockHeaders(): failed with error: ' + e);
+        // })
     } else {
         logger.error('ethService.subscribeBlockHeaders(): Connection to geth failed!');
     }

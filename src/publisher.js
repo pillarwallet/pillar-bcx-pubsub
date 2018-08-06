@@ -52,9 +52,7 @@ exports.initIPC = function () {
     setTimeout(() => {
       logger.info('Publisher Initializing RMQ.');
       rmqServices.initPubSubMQ()
-        .then(() => {
-          exports.initSubscriptions();
-        });
+      exports.initSubscriptions();
     }, 100);
 
       logger.info('Publisher polling master for new wallets every 5 seconds');

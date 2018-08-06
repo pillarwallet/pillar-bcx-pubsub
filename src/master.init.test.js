@@ -1,22 +1,21 @@
 const sinon = require('sinon');
 const master = require('./master');
 const logger = require('./utils/logger');
+const dbServices = require('./services/dbServices');
 logger.transports.forEach((t) => (t.silent = true));
 
 describe('Test method: master.init()', () => {
+
 	test('Expect master.launch() to be called and master.init() to log start/exit', () => {
 		
-        const spy = sinon.spy(logger, 'info');
-		const stub = sinon.stub(master, 'launch');
-		stub.resolves();
-
+		var mock = sinon.mock(dbServices);
+		const spy = sinon.spy(logger, 'info');
 		const options = {
 			protocol: "Ethereum",
 			maxWallets: 1
 		};
 		
 		master.init(options);
-		sinon.assert.called(stub);
 		sinon.assert.called(spy);
 		sinon.assert.calledWith(spy, 'Started executing master.init()');
 		sinon.assert.calledWith(spy, 'master.init(): Initializing master for Ethereum');
@@ -24,7 +23,7 @@ describe('Test method: master.init()', () => {
 		sinon.assert.calledWith(spy, 'Exited master.init()');
 
 		spy.restore();
-		stub.restore();
+		mock.restore();
 
 	});
 

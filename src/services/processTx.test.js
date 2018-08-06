@@ -740,28 +740,6 @@ describe('Test newPendingTx function', () => {
 });
 
 describe('Test checkPendingTx function', () => {
-<<<<<<< HEAD
-  test('When transaction has less than 1 block confirmations, checkPendingTx should call hashMaps.pendingTx.get once and  bcx.getTxInfo once ', (done) => {
-
-	  const txObject = {
-		  txHash: 'txHash',
-	  }
-	  const txInfo = {
-		  blockNumber: null
-	  }
-
-    const hashMaps = require('../utils/hashMaps.js');
-	  const stub1 = sinon.stub(hashMaps.pendingTx, 'get');
-		stub1.returns(txObject)
-
-    const bcx = require('./bcx.js');
-    const stub2 = sinon.stub(bcx, 'getTxInfo');
-    stub2.resolves(txInfo);
-
-		const processTx = require('./processTx.js')
-
-    return processTx.checkPendingTx(['pendingTxHash'], 9999999999)
-=======
   test('When transaction has 1less than 5 block confirmations, checkPendingTx should call ethService.getTxInfo twice then call web3.utils.hexToNumberString twice then call ethService.getTxReceipt twice then call ethService.getBlockNumber twice then call ethTransactions.updateTx twice then NOT call notif.sendNotification', (done) => {
     jest.mock('web3');
     const web3 = require('web3');
@@ -956,153 +934,15 @@ describe('Test checkPendingTx function', () => {
     const dbCollections = { ethAddresses, ethTransactions };
     return ethTransactions.listPending()
       .then(pendingTxArray => processTx.checkPendingTx(web3, ethService, dbCollections, pendingTxArray, blockNumber, notif)
->>>>>>> develop
         .then(() => {
           sinon.assert.callCount(stub1, 1);
           sinon.assert.callCount(stub2, 1);
           stub1.restore();
           stub2.restore();
 	        done();
-        });
+        }));
   });
 
-<<<<<<< HEAD
-
-test('When transaction has more than 1 block confirmations and isPublisher = true, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,' +
-	'bcx.getTxReceipt once and rmqServices.sendPubSubMessage once', (done) => {
-
-	const txObject = {
-		txHash: 'txHash',
-	}
-	const txInfo = {
-		blockNumber: 1,
-		gas: 21000,
-	}
-	const txReceipt = {
-		gasUsed: 21000,
-	}
-
-	const hashMaps = require('../utils/hashMaps.js');
-	const stub1 = sinon.stub(hashMaps.pendingTx, 'get');
-	stub1.returns(txObject)
-
-	const bcx = require('./bcx.js');
-	const stub2 = sinon.stub(bcx, 'getTxInfo');
-	stub2.resolves(txInfo);
-
-	const stub3 = sinon.stub(bcx, 'getTxReceipt');
-	stub3.resolves(txReceipt);
-
-	const rmqServices = require('./rmqServices.js')
-	const stub4 = sinon.stub(rmqServices, 'sendPubSubMessage');
-	stub4.returns();
-
-	const processTx = require('./processTx.js')
-
-	return processTx.checkPendingTx(['pendingTxHash'], 9999999999)
-	.then(() => {
-		sinon.assert.callCount(stub1, 1);
-		sinon.assert.callCount(stub2, 1);
-		sinon.assert.callCount(stub3, 1);
-		sinon.assert.callCount(stub4, 1);
-		stub1.restore();
-		stub2.restore();
-		stub3.restore();
-		stub4.restore();
-		done();
-	});
-});
-
-
-	test('When transaction has more than 1 block confirmations and isPublisher = true and txReceipt is not found, checkPendingTx should call ' +
-		'hashMaps.pendingTx.get once,  bcx.getTxInfo once, bcx.getTxReceipt once and rmqServices.sendPubSubMessage once', (done) => {
-
-		const txObject = {
-			txHash: 'txHash',
-		}
-		const txInfo = {
-			blockNumber: 1,
-			gas: 21000,
-		}
-
-		const hashMaps = require('../utils/hashMaps.js');
-		const stub1 = sinon.stub(hashMaps.pendingTx, 'get');
-		stub1.returns(txObject)
-
-		const bcx = require('./bcx.js');
-		const stub2 = sinon.stub(bcx, 'getTxInfo');
-		stub2.resolves(txInfo);
-
-		const stub3 = sinon.stub(bcx, 'getTxReceipt');
-		stub3.resolves(null);
-
-		const rmqServices = require('./rmqServices.js')
-		const stub4 = sinon.stub(rmqServices, 'sendPubSubMessage');
-		stub4.returns();
-
-		const processTx = require('./processTx.js')
-
-		return processTx.checkPendingTx(['pendingTxHash'], 9999999999)
-		.then(() => {
-			sinon.assert.callCount(stub1, 1);
-			sinon.assert.callCount(stub2, 1);
-			sinon.assert.callCount(stub3, 1);
-			sinon.assert.callCount(stub4, 1);
-			stub1.restore();
-			stub2.restore();
-			stub3.restore();
-			stub4.restore();
-			done();
-		});
-	});
-
-
-
-
-test('When transaction has more than 1 block confirmations and isPublisher = true and gasUsed > gasLimit, checkPendingTx should call hashMaps.pendingTx.get once,  bcx.getTxInfo once,' +
-	'bcx.getTxReceipt once and rmqServices.sendPubSubMessage once', (done) => {
-
-	const txObject = {
-		txHash: 'txHash',
-	}
-	const txInfo = {
-		blockNumber: 1,
-		gas: 21000,
-	}
-	const txReceipt = {
-		gasUsed: 21001,
-	}
-
-	const hashMaps = require('../utils/hashMaps.js');
-	const stub1 = sinon.stub(hashMaps.pendingTx, 'get');
-	stub1.returns(txObject)
-
-	const bcx = require('./bcx.js');
-	const stub2 = sinon.stub(bcx, 'getTxInfo');
-	stub2.resolves(txInfo);
-
-	const stub3 = sinon.stub(bcx, 'getTxReceipt');
-	stub3.resolves(txReceipt);
-
-	const rmqServices = require('./rmqServices.js')
-	const stub4 = sinon.stub(rmqServices, 'sendPubSubMessage');
-	stub4.returns();
-
-	const processTx = require('./processTx.js')
-
-	return processTx.checkPendingTx(['pendingTxHash'], 9999999999)
-	.then(() => {
-		sinon.assert.callCount(stub1, 1);
-		sinon.assert.callCount(stub2, 1);
-		sinon.assert.callCount(stub3, 1);
-		sinon.assert.callCount(stub4, 1);
-		stub1.restore();
-		stub2.restore();
-		stub3.restore();
-		stub4.restore();
-		done();
-	});
-=======
   test('When transactions are still pensding, checkPendingTx should NOT call ethService.getTxInfo then NOT call web3.utils.hexToNumberString then NOT call ethService.getTxReceipt then NOT call ethService.getBlockNumber then NOT call ethTransactions.updateTx then NOT call notif.sendNotification', (done) => {
     jest.mock('web3');
     const web3 = require('web3');
@@ -1145,7 +985,6 @@ test('When transaction has more than 1 block confirmations and isPublisher = tru
         done();
       });
   });
->>>>>>> develop
 });
 
 test('When transaction has more than 1 block confirmations and isPublisher = true and txInfo is not found, checkPendingTx should call hashMaps.pendingTx.get once,' +
@@ -1192,9 +1031,6 @@ test('When transaction has more than 1 block confirmations and isPublisher = tru
 		done();
 	});
 });
-});
-
-
 
 describe('Test processNewPendingTxArray function', () => {
   test('Should call processTx.newPendingTx twice', (done) => {
@@ -1228,12 +1064,6 @@ describe('Test processNewPendingTxArray function', () => {
 
 
 describe('Test checkTokenTransferEvent function', () => {
-<<<<<<< HEAD
-  test('When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address,' +
-    ' checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once,' +
-    ' and rmqServices.sendPubSubMessage once', (done) => {
-
-=======
   test('When transfer event IS NOT a regular token transfer (asset=ETH) and recipient is a pillar address, checkTokenTransferEvent should call processTx.filterAddress once, dbCollections.ethTransactions.findByTxHash once, dbCollections.ethAddresses.getFCMIID once and notif.sendNotification once', (done) => {
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
@@ -1245,7 +1075,6 @@ describe('Test checkTokenTransferEvent function', () => {
     const ethAddresses = require('../controllers/ethAddresses_ctrl.js');
     const dbCollections = { ethTransactions, ethAddresses };
     const notif = require('./notifications.js');
->>>>>>> develop
     const eventInfo = {
       value: 1000000000000000000,
       transactionHash: 'txHash',
@@ -1265,7 +1094,6 @@ describe('Test checkTokenTransferEvent function', () => {
       tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'ETH',
     });
 
-<<<<<<< HEAD
     const rmqServices = require('./rmqServices.js');
     const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
     stub3.returns()
@@ -1276,9 +1104,6 @@ describe('Test checkTokenTransferEvent function', () => {
 	  stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
 
     return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
-=======
-    return processTx.checkTokenTransferEvent(web3, ethService, dbCollections, notif, eventInfo, ERC20SmartcContractInfo)
->>>>>>> develop
       .then(() => {
         sinon.assert.calledOnce(stub1);
         sinon.assert.calledOnce(stub2);
@@ -1290,90 +1115,6 @@ describe('Test checkTokenTransferEvent function', () => {
       });
   });
 
-<<<<<<< HEAD
-  test('When transfer event IS regular token transfer (asset!=ETH) to a Pillar address, checkTokenTransferEvent should call processTx.filterAddress once,' +
-    '  call dbCollections.ethTransactions.findByTxHash once,  NOT call rmqServices.sendPubSubMessage', (done) => {
-	  const eventInfo = {
-		  value: 1000000000000000000,
-		  transactionHash: 'txHash',
-		  returnValues: {
-			  _to: 'toAddress',
-			  _from: 'fromAddress',
-			  _value: 999,
-		  },
-	  };
-	  const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
-
-	  jest.mock('./dbServices.js')
-	  const dbCollections = require('./dbServices.js').dbCollections;
-
-	  const stub2 = sinon.stub(dbCollections.transactions, 'findByTxHash');
-	  stub2.resolves({
-		  tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'PLR',
-	  });
-
-	  const rmqServices = require('./rmqServices.js');
-	  const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
-	  stub3.returns()
-
-	  const processTx = require('./processTx.js')
-
-	  const stub1 = sinon.stub(processTx, 'filterAddress');
-	  stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-
-	  return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
-	  .then(() => {
-		  sinon.assert.calledOnce(stub1);
-		  sinon.assert.calledOnce(stub2);
-		  sinon.assert.notCalled(stub3);
-		  stub1.restore();
-		  stub2.restore();
-		  stub3.restore();
-		  done();
-	  });
-  });
-
-  test('When recipient is not a pillar address, checkTokenTransferEvent should call processTx.filterAddress once,' +
-	  ' NOT call dbCollections.ethTransactions.findByTxHash,  NOT call rmqServices.sendPubSubMessage', (done) => {
-	  const eventInfo = {
-		  value: 1000000000000000000,
-		  transactionHash: 'txHash',
-		  returnValues: {
-			  _to: 'toAddress',
-			  _from: 'fromAddress',
-			  _value: 999,
-		  },
-	  };
-	  const ERC20SmartcContractInfo = { address: 'address', symbol: 'symbol', decimals: 18 };
-
-	  jest.mock('./dbServices.js')
-	  const dbCollections = require('./dbServices.js').dbCollections;
-
-	  const stub2 = sinon.stub(dbCollections.transactions, 'findByTxHash');
-	  stub2.resolves({
-		  tmstmp: 'tmstmp', nbConfirmations: 1, receipt: 'receipt', asset: 'ETH',
-	  });
-
-	  const rmqServices = require('./rmqServices.js');
-	  const stub3 = sinon.stub(rmqServices, 'sendPubSubMessage');
-	  stub3.returns()
-
-	  const processTx = require('./processTx.js')
-
-	  const stub1 = sinon.stub(processTx, 'filterAddress');
-	  stub1.resolves({ isPillarAddress: false, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
-
-	  return processTx.checkTokenTransferEvent(eventInfo, ERC20SmartcContractInfo)
-	  .then(() => {
-		  sinon.assert.calledOnce(stub1);
-		  sinon.assert.notCalled(stub2);
-		  sinon.assert.notCalled(stub3);
-		  stub1.restore();
-		  stub2.restore();
-		  stub3.restore();
-		  done();
-	  });
-=======
   test('When transfer event IS regular token transfer (asset!=ETH), checkTokenTransferEvent should call processTx.filterAddress once,  call dbCollections.ethTransactions.findByTxHash once,  NOT call dbCollections.ethAddresses.getFCMIID  and  NOT call notif.sendNotification', (done) => {
     const stub1 = sinon.stub(processTx, 'filterAddress');
     stub1.resolves({ isPillarAddress: true, isERC20SmartContract: false, ERC20SmartContractTicker: '' });
@@ -1460,6 +1201,5 @@ describe('Test checkTokenTransferEvent function', () => {
         stub5.restore();
         done();
       });
->>>>>>> develop
   });
 });

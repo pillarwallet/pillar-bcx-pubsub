@@ -118,7 +118,7 @@ function getBalance(address, asset, contractAddress) {
           },
           (err, result) => {
             if (result) {
-              const tokenBalance = web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
+              const tokenBalance = gethConnect.web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
               // logger.info('WEB3 '+asset+ 'TOKEN BALANCE = ' + tokenBalance+'\n')
               resolve(tokenBalance);
             } else {

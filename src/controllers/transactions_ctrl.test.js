@@ -212,4 +212,3 @@ describe('Test transactions_ctrl functions', () => {
 		spy.restore();
 	});
 });
-
