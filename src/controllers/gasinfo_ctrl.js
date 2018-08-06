@@ -3,6 +3,7 @@ const gasinfo = require('../models/gasinfo_model');
 const mongoose = require('mongoose');
 
 function add(record) {
+    logger.debug('GasInfo.adding a new record: ' + JSON.stringify(record));
     return new Promise((resolve, reject) => {
       try {
         const rec = new gasinfo.GasInfo(record);

@@ -126,7 +126,7 @@ function storeGasInfo(blockHeader) {
                     blockNumber: blockHeader.number,
                     transactionCount: txnCnt
                 };
-                processTx.saveTransactionStats(entry);
+                //TODO  - add code for RMQ message to store latest gas information
             }
         });
     }catch(e) {
@@ -363,9 +363,9 @@ module.exports.checkNewAssets = checkNewAssets;
 
 /**
  * Validated if a given transaction corresponds to the deployment of a token contract
- * @param {any} txn - the transaction receipt
+ * @param {any} receipt - the transaction receipt
  */
-async function addERC20(txn) {
+async function addERC20(receipt) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC20ABI,receipt.contractAddress);
@@ -444,7 +444,7 @@ async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
         if(!error) {
             logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
             events.forEach((event) => { 
-                this.getTransactionReceipt(event.transactionHash).then((txn) => {
+                this.getTxReceipt(event.transactionHash).then((txn) => {
                     processTx.storeTokenEvent(event,asset,protocol,txn);
                 });
             });

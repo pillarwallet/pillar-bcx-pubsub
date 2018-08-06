@@ -13,12 +13,11 @@ const hashMaps = require('../utils/hashMaps.js');
  */
 function storeTransactionStats(entry) {
     try {
-        logger.debug('processTx.storeTransactionStats() storing the transaction ' + entry);
-        dbServices.gasinfo.add(entry).then(() => {
-            logger.debug('processTx.storeTransactionStats(): Successfully saved the transaction stats.')
-        });
+        logger.debug('processTx.storeTransactionStats() storing the transaction ' + JSON.stringify(entry));
+        dbServices.addTransactionStats(entry);
+        logger.debug('processTx.storeTransactionStats(): Successfully saved the transaction stats.');
     }catch(e) {
-        logger.error('processTx.storeTransactionStats(): failed storing transaction details');
+        logger.error('processTx.storeTransactionStats(): failed storing transaction details ' + e);
     }
 }
 module.exports.storeTransactionStats = storeTransactionStats;
