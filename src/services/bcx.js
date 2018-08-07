@@ -97,6 +97,7 @@ function getBalance(address, asset, contractAddress) {
       if (asset === 'ETH') {
         gethConnect.web3.eth.getBalance(address)
           .then((result) => {
+            web3 = require('./gethConnect').web3;
             const ETHBalance = web3.utils.fromWei(web3.utils.toBN(result).toString(), 'ether');
             logger.info(`WEB3 ${asset} BALANCE = ${ETHBalance}`);
             resolve(ETHBalance);

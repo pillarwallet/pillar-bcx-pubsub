@@ -2,16 +2,16 @@ const Transactions = (function () {
   return {
     find(query, callback) {
       if (callback == null) {
-        query('', [{_id: "pillarId", txHash: "hash"}]);
+        query('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
       } else {
-        callback('', [{_id: "pillarId", txHash: "hash"}]);
+        callback('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
       }
     },
     findOne(query, callback) {
       if (callback == null) {
-        query('', [{_id: "pillarId", txHash: "hash"}]);
+        query('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
       } else {
-        callback('', [{_id: "pillarId", txHash: "hash"}]);
+        callback('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
       }
     },
     save() {
