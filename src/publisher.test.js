@@ -3,12 +3,10 @@ const logger = require('./utils/logger');
 logger.transports.forEach((t) => (t.silent = true));
 
 describe('Test init functions ', () => {
-	test('Expect initIPC to call logger.info, process.send', (done) => {
+	test('Expect initIPC to call logger.info, process.send', () => {
 		const spy = sinon.spy(process, 'send');
 		const spy2 = sinon.spy(logger, 'info');
-
 		const publisher = require('./publisher.js');
-
 		return publisher.initIPC()
 		.then(() => {
 			sinon.assert.called(spy);
@@ -20,7 +18,6 @@ describe('Test init functions ', () => {
 			sinon.assert.calledWith(spy2, 'Exited publisher.initIPC()');
 			spy.restore();
 			spy2.restore();
-			done();
 		});
 	});
 
@@ -32,33 +29,15 @@ describe('Test init functions ', () => {
 		spy.restore();
 	});
 
-	test('Expect initSubscriptions to call gethConnect.gethConnectDisplay(), dbServices.dbConnectDisplayAccounts(),' +
-		' gethSubscribe.subscribePendingTx() and gethSubscribe.subscribeBlockHeaders', (done) => {
-
-		const gethConnect = require('./services/gethConnect.js');
-		const stub1 = sinon.stub(gethConnect, 'gethConnectDisplay');
-		stub1.resolves();
-		const gethSubscribe = require('./services/gethSubscribe.js');
-		const stub2 = sinon.stub(gethSubscribe, 'subscribePendingTx');
-		stub2.resolves();
-		const stub3 = sinon.stub(gethSubscribe, 'subscribeBlockHeaders');
-		stub3.resolves();
-		const stub4 = sinon.stub(gethSubscribe, 'subscribeAllDBERC20SmartContracts');
-		stub4.resolves();
-
+	test('Expect initSubscriptions to call ethServices.subscribePendingTxn and ethServices.subscribeBlockHeaders', () => {
 		const publisher = require('./publisher.js');
-		return publisher.initSubscriptions()
-		.then(() => {
-			sinon.assert.called(stub1);
-			sinon.assert.called(stub2);
-			sinon.assert.called(stub3);
-			sinon.assert.called(stub4);
-			stub1.restore();
-			stub2.restore();
-			stub3.restore();
-			stub4.restore();
-			done();
-		})
-
+		const ethServices = require('./services/ethService.js');
+		const stub1 = sinon.stub(ethServices, 'subscribePendingTxn');
+		const stub2 = sinon.stub(ethServices, 'subscribeBlockHeaders');
+		publisher.initSubscriptions();
+		sinon.assert.called(stub1);
+		sinon.assert.called(stub2);
+		stub1.restore();
+		stub2.restore();
 	});
 });
