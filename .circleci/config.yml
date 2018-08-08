@@ -7,8 +7,31 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build steps
-          command: echo "need some unit tests that can run in CI environment, then it will be useful to install dependencies and run them."
+          name: Authenticate with registry
+          command: |
+            curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD https://pillarproject.jfrog.io/pillarproject/api/npm/auth >> ./.npmrc
+            echo "registry=https://pillarproject.jfrog.io/pillarproject/api/npm/npm/" >> ./.npmrc
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install dependenciues
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+#      - run:
+#          name: eslint
+#          command: npm run lint
+      - run:
+          name: unit-test
+          command: npm run test:coverage
+#      - run:
+#          name: plato
+#          command:  npm run plato
+      - store_artifacts:
+          path: ./reports/
+          destination: reports
 
   publish:
     working_directory: ~/pillar-bcx-pubsub
