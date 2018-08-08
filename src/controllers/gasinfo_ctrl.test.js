@@ -1,6 +1,12 @@
-const sinon = require('sinon');
+const gasInfoCtrl = require('./gasinfo_ctrl');
 
-describe('Test gasinfo_ctrl functions', () => {
-	test('add', (done) => {
-    });
+describe('The subscribeAllDBERC20SmartContracts function tests', () => {
+  it('should have been called once', () => {
+    const spy = jest.spyOn(gasInfoCtrl, 'add');
+
+    spy.mockImplementation();
+    spy.call({});
+
+    expect(spy).toHaveBeenCalled();
+  });
 });
