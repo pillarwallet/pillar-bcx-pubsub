@@ -77,8 +77,8 @@ function storeIfRelevant(tx, protocol) {
     const tmstmp = time.now();
     var pillarId = '';
     var data, value;
-    from = tx.from;
-    to = tx.to;
+    var from = tx.from;
+    var to = tx.to;
     var status = (tx.status === '0x1' ? 'confirmed' : 'failed');
     var hash = tx.transactionHash;
     if ((tx.to !== null) && hashMaps.accounts.has(tx.to.toLowerCase())) {
