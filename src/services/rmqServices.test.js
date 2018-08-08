@@ -2,20 +2,22 @@ const sinon = require('sinon');
 
 describe('Test checksum', () => {
 	test('Expect a valid checksum', () => {
+		checksumKey = 'abc';
 		const payload = {
 			key: 'value',
-			checksum: 'd7c5c1fcae6ee55d7522ecf8e27977f2143685e7bbd6ceee2d52317859c1ad0a',
+			checksum: 'fe21f62624f1cec80d424229c7294dea74621b544c3a5694144dfb4ed97a8486',
 		};
 		const rmqServices = require('./rmqServices.js');
-		expect(rmqServices.validatePubSubMessage(payload)).toBe(true);
+		expect(rmqServices.validatePubSubMessage(payload, checksumKey)).toBe(true);
 	});
 
 	test('Expect an invalid checksum', () => {
+		checksumKey = 'abc';
 		const payload = {
 			key: 'value',
 			checksum: 'hello',
 		};
 		const rmqServices = require('./rmqServices.js');
-		expect(rmqServices.validatePubSubMessage(payload)).toBe(false);
+		expect(rmqServices.validatePubSubMessage(payload, checksumKey)).toBe(false);
 	});
 });

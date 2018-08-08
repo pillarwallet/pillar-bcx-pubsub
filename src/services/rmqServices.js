@@ -112,7 +112,7 @@ exports.initSubPubMQ = () => {
         ch.consume(pubSubQueue, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
           if (typeof msg.content !== 'undefined' && msg.content !== '' &&
-            exports.validatePubSubMessage(JSON.parse(msg.content))) {
+            exports.validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
             const entry = JSON.parse(msg.content);
             const { type, txHash } = entry;
             delete entry.type;
@@ -191,7 +191,7 @@ exports.initSubPubMQ = () => {
  * Function that validates the checksum of the payload received.
  * @param {any} payload - The IPC message received from the master
  */
-exports.validatePubSubMessage = (payload) => {
+exports.validatePubSubMessage = (payload, checksumKey) => {
   const checksum = payload.checksum;
   delete payload.checksum;
   if (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum) {
