@@ -8,6 +8,67 @@ const ERC20ABI = require('./ERC20ABI');
 const hashMaps = require('../utils/hashMaps.js');
 
 /**
+ * Store the gas information corresponding to the block
+ * @param {any} entry - the json string corresponding to gas information.
+ */
+function storeTransactionStats(entry) {
+    try {
+        logger.debug('processTx.storeTransactionStats() storing the transaction ' + JSON.stringify(entry));
+        dbServices.addTransactionStats(entry);
+        logger.debug('processTx.storeTransactionStats(): Successfully saved the transaction stats.');
+    }catch(e) {
+        logger.error('processTx.storeTransactionStats(): failed storing transaction details ' + e);
+    }
+}
+module.exports.storeTransactionStats = storeTransactionStats;
+/**
+ * Store the token event if either of the wallets are being monitored
+ * @param {any} event - the token transfer event
+ * @param {String} asset - the asset symbol
+ * @param {String} protocol - the protocol
+ * @param {any} txn - the transaction receipt
+ */
+function storeTokenEvent(event,asset,protocol,txn) {
+    try {
+        logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);
+        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((tran) => {
+            var pillarId, status;
+            var tmstmp = time.now();
+            status = 'confirmed';
+            if(tran === null) {
+                if ((event.returnValues._to !== null) && hashMaps.accounts.has(event.returnValues._to.toLowerCase())) {
+                    //fetch the pillarId corresponding to the to address and
+                    pillarId = hashMaps.accounts.get(event.returnValues._to.toLowerCase());
+                } else if ((event.returnValues._from !== null) && hashMaps.accounts.has(event.returnValues._from.toLowerCase())) {
+                    pillarId = hashMaps.accounts.get(event.returnValues._from.toLowerCase());
+                }
+                let entry = {
+                    pillarId,
+                    protocol,
+                    toAddress: event.returnValues._to,
+                    fromAddress: event.returnValues._from,
+                    txHash: event.transactionHash,
+                    asset,
+                    contractAddress: null,
+                    timestamp: tmstmp,
+                    value: event.returnValues._value,
+                    blockNumber: event.blockNumber,
+                    status,
+                    gasPrice: txn.gasPrice,
+                    gasUsed: txn.gasUsed
+                };
+                logger.debug('processTx.storeTokenEvent(): Saving transaction into the database: ' + entry);
+                dbServices.dbCollections.transactions.addTx(entry);  
+            } else {
+                logger.debug('processTx.storeTokenEvent(): Transaction ' + event.transactionHash + ' already exists in the database, ignoring!');
+            }
+        });
+    }catch(e) {
+        logger.error('processTx.storeTokenEvent(): Failed with error ' + e);
+    }
+}
+module.exports.storeTokenEvent = storeTokenEvent;
+/**
  * Check if given transaction is relevant and store in the database
  * @param {any} tx - the transaction object
  * @param {any} protocol - the transaction object
@@ -16,8 +77,8 @@ function storeIfRelevant(tx, protocol) {
     const tmstmp = time.now();
     var pillarId = '';
     var data, value;
-    from = tx.from;
-    to = tx.to;
+    var from = tx.from;
+    var to = tx.to;
     var status = (tx.status === '0x1' ? 'confirmed' : 'failed');
     var hash = tx.transactionHash;
     if ((tx.to !== null) && hashMaps.accounts.has(tx.to.toLowerCase())) {
@@ -158,6 +219,7 @@ module.exports.newPendingTran = newPendingTran;
  * @param {String} protocol - the protocol corresponding to the token blockchain
  */
 function checkTokenTransfer(evnt, theContract, protocol) {
+    logger.debug('processTx.checkTokenTransfer(): received event: ' + JSON.stringify(evnt));
     return new Promise(((resolve, reject) => {
         var pillarId;
         if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
@@ -165,38 +227,34 @@ function checkTokenTransfer(evnt, theContract, protocol) {
         } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
             pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
         } 
-        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash)
-        // ETH TX SHOULD BE ALREADY IN DB BECAUSE
-        // ETH WAS SENT TO SMART CONTRACT BY PILLAR WALLET
-            .then((tx) => {
-                if (tx.asset === 'ETH') { 
-                    // check is it is regular token transfer,
-                    // if so (asset === TOKEN): resolve (because token transfer already processed),
-                    // otherwise (asset === ETH) transfer needs to be processed here:
-                    // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
-                    const txMsg = {
-                        type: 'newTx',
-                        pillarId, 
-                        protocol: protocol, 
-                        fromAddress: theContract.address,
-                        toAddress: evnt.returnValues._to,
-                        txHash: evnt.transactionHash,
-                        asset: theContract.ticker,
-                        contractAddress: theContract.address,
-                        timestamp: tmstmp,
-                        value: evnt.returnValues._value,
-                        gasPrice: evnt.gasPrice,
-                        blockNumber: evnt.blockNumber,
-                        status: 'confirmed',
-                    };
-                    logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
-                    rmqServices.sendPubSubMessage(txMsg);
-                    resolve();
-                } else {
-                    resolve();
-                }
-            })
-            .catch((e) => { reject(e); });
+        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then((tx) => {
+            if (tx.asset === 'ETH') { 
+                // check is it is regular token transfer,
+                // if so (asset === TOKEN): resolve (because token transfer already processed),
+                // otherwise (asset === ETH) transfer needs to be processed here:
+                // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                const txMsg = {
+                    type: 'newTx',
+                    pillarId, 
+                    protocol: protocol, 
+                    fromAddress: theContract.address,
+                    toAddress: evnt.returnValues._to,
+                    txHash: evnt.transactionHash,
+                    asset: theContract.ticker,
+                    contractAddress: theContract.address,
+                    timestamp: tmstmp,
+                    value: evnt.returnValues._value,
+                    gasPrice: evnt.gasPrice,
+                    blockNumber: evnt.blockNumber,
+                    status: 'confirmed',
+                };
+                logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+                rmqServices.sendPubSubMessage(txMsg);
+                resolve();
+            } else {
+                resolve();
+            }
+        });
     }));
 }
 module.exports.checkTokenTransfer = checkTokenTransfer;

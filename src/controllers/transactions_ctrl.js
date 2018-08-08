@@ -106,6 +106,7 @@ function findOneByTxHash(txHash) {
 }
 
 module.exports.findOneByTxHash = findOneByTxHash;
+
 function addTx(txObject) {
   return new Promise((resolve, reject) => {
     try {
@@ -179,19 +180,30 @@ function emptyCollection() {
   }));
 }
 module.exports.emptyCollection = emptyCollection;
-
-function findMaxBlock(protocol) {
-  logger.debug('transactions_ctrl.findMaxBlock(): Fetching maxBlock for ' + protocol);
+ 
+function findMaxBlock(protocol,asset = null) {
+  logger.debug('transactions_ctrl.findMaxBlock(): Fetching maxBlock for ' + protocol + ' asset: ' + asset);
   return new Promise((resolve, reject) => {
     try {
-      transactions.Transactions.find({protocol: protocol, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
-        if(maxBlock !== 'undefined') {
-          logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
-          resolve(maxBlock.blockNumber);
-        } else {
-          reject();
-        }
-      });
+      if(asset === null) {
+        transactions.Transactions.find({protocol: protocol, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
+          if(maxBlock !== 'undefined' && maxBlock !== '') {
+            logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
+            resolve(maxBlock.blockNumber);
+          } else {
+            reject();
+          }
+        });
+      } else {
+        transactions.Transactions.find({protocol, asset, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
+          if(maxBlock.length === 0) { 
+            resolve(0);
+          } else {
+            logger.debug('Transactions.findMaxBlock(): ' + maxBlock.length);
+            resolve(maxBlock.blockNumber);
+          }
+        });
+      }
     } catch(e) {
       logger.debug('transactions_ctrl.findMaxBlock() failed with error: ' + e);
       reject(e);

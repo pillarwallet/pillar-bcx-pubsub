@@ -97,6 +97,8 @@ function subscribeBlockHeaders() {
                 logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
             });
             module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+            //capture gas price statistics
+            module.exports.storeGasInfo(blockHeader);
           }
         })
         // .catch((e) => {
@@ -109,6 +111,32 @@ function subscribeBlockHeaders() {
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
 /**
+ * Determin the gas price and store the details.
+ * @param {any} blockHeader - the event object corresponding to the current block
+ */
+function storeGasInfo(blockHeader) {
+    let entry;
+    try {
+        web3.eth.getBlockTransactionCount(blockHeader.number).then((txnCnt) => {
+            if(txnCnt !== null) {
+                entry = {
+                    type: 'tranStat',
+                    protocol,
+                    gasLimit: blockHeader.gasLimit,
+                    gasUsed: blockHeader.gasUsed,
+                    blockNumber: blockHeader.number,
+                    transactionCount: txnCnt
+                };
+                rmqServices.sendPubSubMessage(entry);
+            }
+        });
+    }catch(e) {
+        logger.error('ethService.storeGasInfo() failed with error ' + e);
+    }
+}
+module.exports.storeGasInfo = storeGasInfo; 
+
+/**
  * Subscribe to token transfer event corresponding to a given smart contract.
  * @param {any} theContract - the smart contract address
  */
@@ -118,9 +146,9 @@ function subscribeTransferEvents(theContract) {
         if(module.exports.connect()) {
             if (web3.utils.isAddress(theContract)) {
                 const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
-                ERC20SmartContractObject.events.Transfer((error, result) => {
+                ERC20SmartContractObject.events.Transfer({},(error, result) => {
+                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + ' result: ' + result + ' error: ' + error);
                     if (!error) {
-                        logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + 'result: ' + result);
                         processTx.checkTokenTransfer(result, theContract, protocol);
                     } else {
                         logger.error('ethService.subscribeTransferEvents() failed: ' + error);
@@ -336,21 +364,25 @@ module.exports.checkNewAssets = checkNewAssets;
 
 /**
  * Validated if a given transaction corresponds to the deployment of a token contract
- * @param {any} txn - the transaction receipt
+ * @param {any} receipt - the transaction receipt
  */
-function addERC20(txn) {
+async function addERC20(receipt) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC20ABI,receipt.contractAddress);
+        const symbol = await contract.methods.symbol().call();
+        const name = await contract.methods.name().call();
+        const decimals = await contract.methods.decimals().call();
+        const totalSupply = await contract.methods.totalSupply().call();
 
         if(receipt.status == '0x1') { 
             const txMsg = {
                 type: 'newAsset',
-                name: contract.name,
-                symbol: contract.symbol,
-                decimals: contract.decimals,
+                name,
+                symbol,
+                decimals,
                 contractAddress: receipt.contractAddress,
-                totalSupply: contract.totalSupply,
+                totalSupply,
                 category: 'Token',
                 protocol: protocol
             };
@@ -370,16 +402,18 @@ module.exports.addERC20 = addERC20;
  * Validated if a given transaction corresponds to the deployment of a collectible contract
  * @param {any} txn - the transaction receipt
  */
-function addERC721(txn) {
+async function addERC721(txn) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC721ABI,receipt.contractAddress);
+        const symbol = await contract.methods.symbol().call();
+        const name = await contract.methods.name().call();
 
         if(receipt.status == '0x1') { 
             const txMsg = {
                 type: 'newAsset',
-                name: contract.name,
-                symbol: contract.symbol,
+                name,
+                symbol,
                 decimals: 0,
                 contractAddress: receipt.contractAddress,
                 totalSupply: 1,
@@ -397,3 +431,27 @@ function addERC721(txn) {
     }
 }
 module.exports.addERC721 = addERC721;
+
+/**
+ * Get past transfer events associated with token
+ * @param {String} address - the smart contract address to get events
+ * @param {String} eventName - the eventName
+ * @param {Number} blockNumber - the block number from which to listen to contract events
+ */
+async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
+    const contract = new web3.eth.Contract(ERC20ABI,address);
+    const asset = await contract.methods.symbol().call();
+    contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
+        if(!error) {
+            logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
+            events.forEach((event) => { 
+                this.getTxReceipt(event.transactionHash).then((txn) => {
+                    processTx.storeTokenEvent(event,asset,protocol,txn);
+                });
+            });
+        } else {
+            logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
+        }
+    });
+}
+module.exports.getPastEvents = getPastEvents;

@@ -166,7 +166,12 @@ exports.initSubPubMQ = () => {
                 dbServices.dbCollections.assets.addContract(entry)
                   .then(() => {
                     logger.info(`New aseet added: `);
-                  });  
+                  }); 
+                break;
+              case 'tranStat':
+                  logger.debug('Subscriber adding a new transaction stats entry');
+                  dbServices.addTransactionStats(entry);
+                  break;
               default:
                 break;
             }
