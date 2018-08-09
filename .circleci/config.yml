@@ -37,7 +37,32 @@ jobs:
           root: workspace
           paths:
             - pillar-bcx-pubsub.txt
-  deploySandbox:
+#  deployToStaging:
+#    working_directory: ~/pillar-bcx-pubsub
+#    docker:
+#        - image:  circleci/python:3.6.1
+#    steps:
+#      - checkout
+#      - attach_workspace:
+#          at: ~/pillar-bcx-pubsub/workspace
+#      - run:
+#          name: install aws cli
+#          command: |
+#            sudo pip install --upgrade pip
+#            pip install awscli --upgrade --user
+#      - run:
+#          name: publish pillar-bcx-pubsub.txt to s3
+#          command: |
+#            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
+#            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
+#            /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt $STAGING_RELEASE_BUCKET/pillar-bcx-pubsub.txt
+#      - run:
+#          name: Announce Deployment
+#          command: |
+#            chmod +x .circleci/announceDeployment.sh
+#            .circleci/announceDeployment.sh "BCX-PUBSUB" "Staging" "$(cat workspace/pillar-bcx-pubsub.txt)"
+
+  deployToProduction:
     working_directory: ~/pillar-bcx-pubsub
     docker:
         - image:  circleci/python:3.6.1
@@ -52,7 +77,10 @@ jobs:
             pip install awscli --upgrade --user
       - run:
           name: publish pillar-bcx-pubsub.txt to s3
-          command: /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt s3://pillar-sandbox-releases/pillar-bcx-pubsub.txt
+          command: |
+            export AWS_ACCESS_KEY_ID=$PRODUCTION_AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$PRODUCTION_AWS_SECRET_ACCESS_KEY
+            /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt $PRODUCTION_RELEASE_BUCKET/pillar-bcx-pubsub.txt
       - run:
           name: Announce Deployment
           command: |
@@ -71,6 +99,9 @@ workflows:
             branches:
               only:
                   - master
-      - deploySandbox:
+#      - deployToStaging:
+#          requires:
+#             - publish
+      - deployToProduction:
           requires:
              - publish
