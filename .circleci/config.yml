@@ -66,4 +66,3 @@ workflows:
             branches:
               only:
                   - master
-                  - deploys_no_longer_responsibility_of_this_repo
