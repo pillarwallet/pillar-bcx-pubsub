@@ -52,6 +52,10 @@ exports.init = function (options) {
 exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
+
+    if (!fs.existsSync('./cache')){
+      fs.mkdirSync('./cache');
+    }
     // start the first program pair of publisher and subscribers
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
