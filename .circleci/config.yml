@@ -50,44 +50,14 @@ jobs:
           command: curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD https://pillarproject.jfrog.io/pillarproject/api/npm/auth >> ~/pillar-bcx-pubsub/.npmrc
       - run:
           name: Publish Package to Artifactory
-          command: npm publish   --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
-      - run:
-          name: create version file
           command: |
-            mkdir -p workspace
-            echo $(node -e "console.log(require('./package.json').name)")@$(node -e "console.log(require('./package.json').version)") >> workspace/pillar-bcx-pubsub.txt
-      - persist_to_workspace:
-          root: workspace
-          paths:
-            - pillar-bcx-pubsub.txt
-  deployToStaging:
-    working_directory: ~/pillar-bcx-pubsub
-    docker:
-        - image:  circleci/python:3.6.1
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/pillar-bcx-pubsub/workspace
-      - run:
-          name: install aws cli
-          command: |
-            sudo pip install --upgrade pip
-            pip install awscli --upgrade --user
-      - run:
-          name: publish pillar-bcx-pubsub.txt to s3
-          command: |
-            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
-            /home/circleci/.local/bin/aws s3 cp ~/pillar-bcx-pubsub/workspace/pillar-bcx-pubsub.txt $STAGING_RELEASE_BUCKET/pillar-bcx-pubsub.txt
-      - run:
-          name: Announce Deployment
-          command: |
+            npm publish --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
             chmod +x .circleci/announceDeployment.sh
-            .circleci/announceDeployment.sh "BCX-PUBSUB" "Staging" "$(cat workspace/pillar-bcx-pubsub.txt)"
+            .circleci/announceDeployment.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)")@$(node -e "console.log(require('./package.json').version)")"
 
 workflows:
   version: 2
-  test_everything_deploy_develop:
+  test_and_publish:
     jobs:
       - build
       - publish:
@@ -97,6 +67,4 @@ workflows:
             branches:
               only:
                   - master
-      - deployToStaging:
-          requires:
-             - publish
+                  - deploys_no_longer_responsibility_of_this_repo
