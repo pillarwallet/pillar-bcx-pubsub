@@ -14,7 +14,7 @@ const transactions = require('../controllers/transactions_ctrl.js');
 const gasinfo = require('../controllers/gasinfo_ctrl.js');
 let dbCollections;
 
-function dbConnect($arg = { useMongoClient: true }) {
+function dbConnect($arg = { useNewUrlParser: true }) {
     return new Promise(((resolve, reject) => {
       try {
         // Connect to database
@@ -37,7 +37,7 @@ function dbConnect($arg = { useMongoClient: true }) {
 }
 module.exports.dbConnect = dbConnect;
 
-function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
+function recentAccounts(idFrom, protocol, $arg = { useNewUrlParser: true }) {
     return new Promise(((resolve, reject) => {
       try {
         if (dbCollections) {
@@ -74,7 +74,7 @@ function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
 }
 module.exports.recentAccounts = recentAccounts;
 
-function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
+function contractsToMonitor(idFrom, $arg = { useNewUrlParser: true }) {
     return new Promise(((resolve, reject) => {
       // code to fetch list of contracts/assets to monitor
       if (dbCollections) {
