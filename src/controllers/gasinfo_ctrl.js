@@ -21,3 +21,22 @@ function add(record) {
     });
   }
   module.exports.add = add;
+
+  function getGasInfo(nBlocks) {
+    return new Promise((resolve, reject) => {
+      try {
+        nBlocks = nBlocks > 200 ? 200 : nBlocks;
+        gasinfo.GasInfo.find().sort({_id:-1}).limit(nBlocks)
+        .then(response => {
+          resolve(response);
+        })
+        .catch(err =>{
+          logger.error(`GasInfo: error ${err}`);
+        })
+      } catch (e) { 
+        logger.error('GasInfo: error ' + e);
+        reject(e); 
+      }
+    })
+  }
+  module.exports.getGasInfo = getGasInfo;
