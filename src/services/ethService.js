@@ -142,14 +142,14 @@ module.exports.storeGasInfo = storeGasInfo;
  */
 function subscribeTransferEvents(theContract) { 
     try {
-        logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + JSON.stringify(theContract.contractAddress));
+        logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + theContract);
         if(module.exports.connect()) {
-            if (web3.utils.isAddress(theContract.contractAddress)) {
-                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract.contractAddress);
+            if (web3.utils.isAddress(theContract)) {
+                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
                 ERC20SmartContractObject.events.Transfer({},(error, result) => {
-                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract.contractAddress + ' result: ' + result + ' error: ' + error);
+                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + ' result: ' + result + ' error: ' + error);
                     if (!error) {
-                        processTx.checkTokenTransfer(result, theContract.contractAddress, protocol);
+                        processTx.checkTokenTransfer(result, theContract, protocol);
                     } else {
                         logger.error('ethService.subscribeTransferEvents() failed: ' + error);
                     }
