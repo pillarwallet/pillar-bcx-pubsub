@@ -5,6 +5,7 @@ const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
+
 let latestId = '';
 
 /**
