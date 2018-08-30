@@ -59,7 +59,13 @@ module.exports.getWeb3 = getWeb3;
 function subscribePendingTxn () {
     logger.info('ethService.subscribePendingTxn(): Subscribing to list of pending transactions.'); 
     if(module.exports.connect()) {
-        web3.eth.subscribe('pendingTransactions', (err, res) => {})
+        web3.eth.subscribe('pendingTransactions', (err, res) => {
+            if(!err) { 
+                logger.debug('ethService.subscribePendingTxn(): pendingTransactions subscription status : ' + res);
+            } else {
+                logger.error('ethService.subscribePendingTxn(): pendingTransactions subscription errored : ' + err);
+            }
+          })
           .on('data', (txHash) => {
             logger.debug('ethService.subscribePendingTxn(): received notification for txHash: ' + txHash);
             if ((txHash !== null) && (txHash !== '')) {
@@ -74,6 +80,9 @@ function subscribePendingTxn () {
                     logger.error('ethService.subscribePendingTxn() failed with error: ' + e);
                 });
             }
+          })
+          .on("error", (err) => {
+              logger.error('ethService.subscribePendingTxn() failed with error: ' + err);
           });
         logger.info('ethService.subscribePendingTxn() has successfully subscribed to pendingTransaction events');
     } else {
@@ -88,7 +97,13 @@ module.exports.subscribePendingTxn = subscribePendingTxn;
 function subscribeBlockHeaders() {
     logger.info('ethService.subscribeBlockHeaders(): Subscribing to block headers.'); 
     if(module.exports.connect()) {
-        web3.eth.subscribe('newBlockHeaders', (err, res) => {})
+        web3.eth.subscribe('newBlockHeaders', (err, res) => {
+            if(!err) { 
+                logger.debug('ethService.subscribeBlockHeaders(): newBlockHeader subscription status : ' + res);
+            } else {
+                logger.error('ethService.subscribeBlockHeaders(): newBlockHeader subscription errored : ' + err);
+            }
+        })
         .on('data', (blockHeader) => {
           if (blockHeader && blockHeader.number && blockHeader.hash) {
             logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
@@ -101,9 +116,9 @@ function subscribeBlockHeaders() {
             module.exports.storeGasInfo(blockHeader);
           }
         })
-        // .catch((e) => {
-        //     logger.error('ethService.subscribeBlockHeaders(): failed with error: ' + e);
-        // })
+        .on("error", (err) => {
+            logger.error('ethService.subscribePendingTxn() failed with error: ' + err);
+        });
     } else {
         logger.error('ethService.subscribeBlockHeaders(): Connection to geth failed!');
     }
