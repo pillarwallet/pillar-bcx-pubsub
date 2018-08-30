@@ -42,23 +42,27 @@ function storeTokenEvent(event,asset,protocol,txn) {
                 } else if ((event.returnValues._from !== null) && hashMaps.accounts.has(event.returnValues._from.toLowerCase())) {
                     pillarId = hashMaps.accounts.get(event.returnValues._from.toLowerCase());
                 }
-                let entry = {
-                    pillarId,
-                    protocol,
-                    toAddress: event.returnValues._to,
-                    fromAddress: event.returnValues._from,
-                    txHash: event.transactionHash,
-                    asset,
-                    contractAddress: null,
-                    timestamp: tmstmp,
-                    value: event.returnValues._value,
-                    blockNumber: event.blockNumber,
-                    status,
-                    gasPrice: txn.gasPrice,
-                    gasUsed: txn.gasUsed
-                };
-                logger.debug('processTx.storeTokenEvent(): Saving transaction into the database: ' + entry);
-                dbServices.dbCollections.transactions.addTx(entry);  
+                if(pillarId !== undefined) {
+                    let entry = {
+                        pillarId,
+                        protocol,
+                        toAddress: event.returnValues._to,
+                        fromAddress: event.returnValues._from,
+                        txHash: event.transactionHash,
+                        asset,
+                        contractAddress: null,
+                        timestamp: tmstmp,
+                        value: event.returnValues._value,
+                        blockNumber: event.blockNumber,
+                        status,
+                        gasPrice: txn.gasPrice,
+                        gasUsed: txn.gasUsed
+                    };
+                    logger.debug('processTx.storeTokenEvent(): Saving transaction into the database: ' + entry);
+                    dbServices.dbCollections.transactions.addTx(entry);  
+                } else {
+                    logger.debug('processTx.storeTokenEvent(): Not relevant ignoring transaction: ' + event.transactionHash);
+                }
             } else {
                 logger.debug('processTx.storeTokenEvent(): Transaction ' + event.transactionHash + ' already exists in the database, ignoring!');
             }

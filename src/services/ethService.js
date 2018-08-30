@@ -142,7 +142,7 @@ module.exports.storeGasInfo = storeGasInfo;
  */
 function subscribeTransferEvents(theContract) { 
     try {
-        logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + theContract);
+        logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + JSON.stringify(theContract));
         if(module.exports.connect()) {
             if (web3.utils.isAddress(theContract)) {
                 const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
@@ -154,6 +154,8 @@ function subscribeTransferEvents(theContract) {
                         logger.error('ethService.subscribeTransferEvents() failed: ' + error);
                     }
                 });
+            } else {
+                logger.debug('ethService.subscribeTransferEvents() unable to subscribe to events for contract: ' + JSON.stringify(theContract));
             }
         } else {
             logger.error('ethService.subscribeTransferEvents(): Connection to geth failed!');
