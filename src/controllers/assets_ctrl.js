@@ -65,11 +65,11 @@ function addContract(ERC20SmartContract) {
               logger.info(`smartContracts.addContract DB controller ERROR: ${e}`);
               reject(e);
             }
-            logger.info(colors.magenta('-->added to database\n'));
+            logger.info('-->added to database');
             resolve();
           });
         } else {
-          logger.info(colors.magenta('-->discarded (already in database)\n'));
+          logger.info('-->discarded (already in database)');
           resolve();
         }
       })
@@ -121,57 +121,3 @@ function findByTicker(ticker) {
   }));
 }
 module.exports.findByTicker = findByTicker;
-
-function addZeroSmartContractsCreationHistoryHeight() {
-  return new Promise(((resolve, reject) => {
-    try {
-      const zeroHeight = 3339557;
-      const smartContractsCreationHistoryHeight = new assets.Assets({
-        protocol: 'protocol', contractAddress: 'contractAddress', name: 'name', symbol: 'decimals = highest block number for ERC20 smart contracts creation history', decimals: zeroHeight,
-      });
-      smartContractsCreationHistoryHeight.save((err) => {
-        if (err) {
-          logger.info(`smartContracts.addZeroSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        resolve(zeroHeight);
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.addZeroSmartContractsCreationHistoryHeight = addZeroSmartContractsCreationHistoryHeight;
-
-function updateERC20SmartContractsHistoryHeight(blockNb) {
-  return new Promise(((resolve, reject) => {
-    try {
-	    assets.Assets.update({ symbol: 'decimals = highest block number for ERC20 smart contracts creation history' }, { decimals: blockNb }, (err) => {
-        if (err) {
-          logger.info(`smartContracts.updateSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        // logger.info('Highest Block Number for Tx History updated to '+blockNb+'\n')
-        resolve();
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.updateERC20SmartContractsHistoryHeight = updateERC20SmartContractsHistoryHeight;
-
-function findERC20SmartContractsHistoryHeight() {
-  return new Promise(((resolve, reject) => {
-    try {
-	    assets.Assets.find({ symbol: 'decimals = highest block number for ERC20 smart contracts creation history' }, (err, result) => {
-        if (err) {
-          logger.info(`smartContracts.findSmartContractsCreationHistoryHeight DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        if (result.length > 0) {
-          resolve(result[0].decimals);
-        } else {
-          resolve('NO_ERC20_CONTRACTS_HISTORY_HEIGHT');
-        }
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.findERC20SmartContractsHistoryHeight = findERC20SmartContractsHistoryHeight;
