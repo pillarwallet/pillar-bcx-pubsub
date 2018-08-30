@@ -142,21 +142,24 @@ module.exports.storeGasInfo = storeGasInfo;
  */
 function subscribeTransferEvents(theContract) { 
     try {
+        var contractAddress;
         logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + JSON.stringify(theContract));
         if(module.exports.connect()) {
             if (web3.utils.isAddress(theContract)) {
-                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
-                ERC20SmartContractObject.events.Transfer({},(error, result) => {
-                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + ' result: ' + result + ' error: ' + error);
-                    if (!error) {
-                        processTx.checkTokenTransfer(result, theContract, protocol);
-                    } else {
-                        logger.error('ethService.subscribeTransferEvents() failed: ' + error);
-                    }
-                });
+                contractAddress = theContract;
             } else {
-                logger.debug('ethService.subscribeTransferEvents() unable to subscribe to events for contract: ' + JSON.stringify(theContract));
+                logger.debug('ethService.subscribeTransferEvents() Invalid contract address, reformatting: ' + JSON.stringify(theContract));
+                contractAddress = theContract.contractAddress;
             }
+            const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, contractAddress);
+            ERC20SmartContractObject.events.Transfer({},(error, result) => {
+                logger.debug('ethService: Token transfer event occurred for contract: ' + contractAddress + ' result: ' + result + ' error: ' + error);
+                if (!error) {
+                    processTx.checkTokenTransfer(result, contractAddress, protocol);
+                } else {
+                    logger.error('ethService.subscribeTransferEvents() failed: ' + error);
+                }
+            });
         } else {
             logger.error('ethService.subscribeTransferEvents(): Connection to geth failed!');
         }
