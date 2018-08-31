@@ -180,6 +180,9 @@ function newPendingTran(tx, protocol) {
             if(data.name  === 'transfer'){ 
                 //smart contract call hence the asset must be the token name
                 to = data.params[0].value;
+                if(pillarId === '') {
+                    pillarId = hashMaps.accounts.get(to);
+                }
                 value = data.params[1].value;
             } else {
                 value = tx.value;  
