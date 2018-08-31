@@ -176,10 +176,14 @@ function newPendingTran(tx, protocol) {
           data = abiDecoder.decodeMethod(tx.input);
           logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
           logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
-          if ((data !== 'undefined') && (data.name === 'transfer')) { 
-              //smart contract call hence the asset must be the token name
-              to = data.params[0].value;
-              value = data.params[1].value;
+          if ((typeof data !== undefined) && (tx.input !== '0x')) {
+            if(data.name  === 'transfer'){ 
+                //smart contract call hence the asset must be the token name
+                to = data.params[0].value;
+                value = data.params[1].value;
+            } else {
+                value = tx.value;  
+            }
           } else {
               value = tx.value;
           }
