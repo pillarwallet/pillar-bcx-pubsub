@@ -318,32 +318,20 @@ function checkPendingTx(pendingTxArray) {
                 web3.eth.getTransactionReceipt(item).then((receipt) => {
                     logger.debug('ethService.checkPendingTx(): receipt is ' + receipt);
                     if(receipt !== null) {
-                        let status,txtMsg;
+                        let status;
                         const gasUsed = receipt.gasUsed;
                         if(receipt.status == '0x1') { 
                             status = 'confirmed';
                         } else {
                             status = 'failed';
                         }
-                        if(typeof receipt.logs.data !== undefined) {
-                            value = parseInt(receipt.logs.data);
-                            txMsg = {
-                                type: 'updateTx',
-                                txHash: item,
-                                status,
-                                value,
-                                gasUsed,
-                                blockNumber: receipt.blockNumber
-                            };
-                        } else {
-                            txMsg = {
+                        const txMsg = {
                                 type: 'updateTx',
                                 txHash: item,
                                 status,
                                 gasUsed,
                                 blockNumber: receipt.blockNumber
-                            };
-                        }         
+                            };         
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item);

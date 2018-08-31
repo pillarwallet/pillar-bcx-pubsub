@@ -136,8 +136,10 @@ exports.initSubPubMQ = () => {
                     if (tx === null) {
                       logger.debug('Subscriber saving transaction: ' + entry);
                       return dbServices.dbCollections.transactions.addTx(entry);
+                    } else {
+                      return dbServices.dbCollections.transactions.updateTx(entry);
                     }
-                    throw new Error('newTx: Transaction already exists');
+                    //throw new Error('newTx: Transaction already exists');
                   })
                   .then(() => {
                     logger.info(`newTx: Transaction inserted: ${txHash}`);
