@@ -353,7 +353,7 @@ module.exports.checkPendingTx = checkPendingTx;
  * @param {any} pendingAssets - an array of transaction hashes
  */
 function checkNewAssets(pendingAssets) {
-    logger.info('ethService.checkNewAsset(): pending asset count: ' + pendingAsset.length);
+    logger.info('ethService.checkNewAsset(): pending asset count: ' + pendingAssets.length);
     return new Promise(((resolve, reject) => {
       if (pendingAssets.length === 0) {
         resolve();
