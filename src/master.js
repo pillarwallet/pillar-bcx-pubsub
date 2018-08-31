@@ -123,7 +123,7 @@ exports.launch = function () {
           }
           logger.info(`Data from cache: ${data}`);
           if (data !== '') {
-            const message = JSON.parse(data);
+            const message = data;
             logger.info(`sending message: ${JSON.stringify(message)} to publisher: ${pubId}`);
             exports.pubs[pubId].send({ type: 'accounts', message });
           }
