@@ -105,16 +105,16 @@ function subscribeBlockHeaders() {
             }
         })
         .on('data', (blockHeader) => {
-          if (blockHeader && blockHeader.number && blockHeader.hash) {
-            logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
-            // Check for pending tx in database and update their status
-            module.exports.checkPendingTx(hashMaps.pendingTx.keys()).then(() => {
-                logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
-            });
-            module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
-            //capture gas price statistics
-            module.exports.storeGasInfo(blockHeader);
-          }
+            if (blockHeader && blockHeader.number && blockHeader.hash) {
+                logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
+                // Check for pending tx in database and update their status
+                module.exports.checkPendingTx(hashMaps.pendingTx.keys()).then(() => {
+                    logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
+                });
+                module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+                //capture gas price statistics
+                module.exports.storeGasInfo(blockHeader);
+            }
         })
         .on("error", (err) => {
             logger.error('ethService.subscribePendingTxn() failed with error: ' + err);
