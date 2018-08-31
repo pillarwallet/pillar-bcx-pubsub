@@ -34,7 +34,10 @@ function init() {
         dbServices.dbConnect().then(() => {
             this.checkTxPool();
             this.updateTxHistory();
-            setInterval(function() { module.exports.recoverAssetEvents(); },50000);
+            setInterval(() => { 
+                module.exports.recoverAssetEvents(); 
+                },50000
+            );
         });
     } catch(e) {
         logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
