@@ -334,7 +334,7 @@ function checkPendingTx(pendingTxArray) {
                         };
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
-                        hashMaps.pendingTx.delete(txHash);
+                        hashMaps.pendingTx.delete(item);
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
                     }

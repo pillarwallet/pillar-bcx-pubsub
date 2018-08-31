@@ -230,34 +230,36 @@ function checkTokenTransfer(evnt, theContract, protocol) {
             pillarId = hashMaps.accounts.get(evnt.returnValues._to.toLowerCase());
         } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
             pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
-        } 
-        dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then((tx) => {
-            if (tx.asset === 'ETH') { 
-                // check is it is regular token transfer,
-                // if so (asset === TOKEN): resolve (because token transfer already processed),
-                // otherwise (asset === ETH) transfer needs to be processed here:
-                // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
-                const txMsg = {
-                    type: 'newTx',
-                    pillarId, 
-                    protocol: protocol, 
-                    fromAddress: theContract.address,
-                    toAddress: evnt.returnValues._to,
-                    txHash: evnt.transactionHash,
-                    asset: theContract.ticker,
-                    contractAddress: theContract.address,
-                    timestamp: tmstmp,
-                    value: evnt.returnValues._value,
-                    gasPrice: evnt.gasPrice,
-                    blockNumber: evnt.blockNumber,
-                    status: 'confirmed',
-                };
-                logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
-                rmqServices.sendPubSubMessage(txMsg);
-                resolve();
-            } else {
-                resolve();
-            }
+        }
+        dbServices.dbConnect().then(() => { 
+            dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then((tx) => {
+                if (tx.asset === 'ETH') { 
+                    // check is it is regular token transfer,
+                    // if so (asset === TOKEN): resolve (because token transfer already processed),
+                    // otherwise (asset === ETH) transfer needs to be processed here:
+                    // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
+                    const txMsg = {
+                        type: 'newTx',
+                        pillarId, 
+                        protocol: protocol, 
+                        fromAddress: theContract.address,
+                        toAddress: evnt.returnValues._to,
+                        txHash: evnt.transactionHash,
+                        asset: theContract.ticker,
+                        contractAddress: theContract.address,
+                        timestamp: tmstmp,
+                        value: evnt.returnValues._value,
+                        gasPrice: evnt.gasPrice,
+                        blockNumber: evnt.blockNumber,
+                        status: 'confirmed',
+                    };
+                    logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+                    rmqServices.sendPubSubMessage(txMsg);
+                    resolve();
+                } else {
+                    resolve();
+                }
+            });
         });
     }));
 }
