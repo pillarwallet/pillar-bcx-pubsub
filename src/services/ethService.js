@@ -105,6 +105,7 @@ function subscribeBlockHeaders() {
             }
         })
         .on('data', (blockHeader) => {
+            logger.info(`ethService.subscribeBlockHeaders(): new block : ${blockHeader.number}`);
             if (blockHeader && blockHeader.number && blockHeader.hash) {
                 logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
                 // Check for pending tx in database and update their status
@@ -130,6 +131,7 @@ module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
  * @param {any} blockHeader - the event object corresponding to the current block
  */
 function storeGasInfo(blockHeader) {
+    logger.info('ethService.storeGasInfo(): fetching gas information for block number ' + blockHeader.number);
     let entry;
     try {
         web3.eth.getBlockTransactionCount(blockHeader.number).then((txnCnt) => {
@@ -305,6 +307,7 @@ module.exports.getPendingTxArray = getPendingTxArray;
  * @param {any} pendingTxArray - an array of transaction hashes
  */
 function checkPendingTx(pendingTxArray) {
+    logger.info('ethService.checkPendingTx(): pending tran count: ' + pendingTxArray.length);
     return new Promise(((resolve, reject) => {
       if (pendingTxArray.length === 0) {
         resolve();
@@ -350,6 +353,7 @@ module.exports.checkPendingTx = checkPendingTx;
  * @param {any} pendingAssets - an array of transaction hashes
  */
 function checkNewAssets(pendingAssets) {
+    logger.info('ethService.checkNewAsset(): pending asset count: ' + pendingAsset.length);
     return new Promise(((resolve, reject) => {
       if (pendingAssets.length === 0) {
         resolve();
