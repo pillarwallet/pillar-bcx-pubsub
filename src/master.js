@@ -3,6 +3,8 @@
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
 const fs = require('fs');
+const heapdump = require('heapdump');
+const memwatch = require('memwatch-next');
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
   { name: 'maxWallets', type: Number },
@@ -16,7 +18,31 @@ exports.housekeeper;
 exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
+const fname = `logs/master-heapdump.log`;
 
+/**
+ * Dump the heap for analyses
+ */
+process.on('exit', (code) => {
+  logger.info('Master exited with code: ' + code);
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Heap dump written to', fname);
+  });
+});
+
+/**
+ * subscribe to memory leak events
+ */
+memwatch.on('leak',function(info) {
+  logger.info('Master: MEMORY LEAK: ' + JSON.stringify(info));
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Heap dump written to', fname);
+  });
+});
+
+memwatch.on('stats',function(stats) {
+  logger.info('Master: GARBAGE COLLECTION: ' + JSON.stringify(stats));
+});
 /**
  * Function that initializes the master after validating command line arguments.
  * @param {any} options - List of command line arguments
@@ -78,6 +104,10 @@ exports.launch = function () {
         logger.info(`Housekeeper closed: ${data}`);
         exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
       }
+      
+      heapdump.writeSnapshot((err, fname ) => {
+        logger.info('Heap dump written to', fname);
+      });
     });
 
     // handle events associated with the publisher child processes.
@@ -129,6 +159,9 @@ exports.launch = function () {
           }
         });
       }
+      heapdump.writeSnapshot((err, fname ) => {
+        logger.info('Heap dump written to', fname);
+      });
     });
 
     // handle events related to the subscriber child processes
@@ -140,6 +173,9 @@ exports.launch = function () {
         logger.info(`Subscriber: ${subId} closed: ${data}`);
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
+      heapdump.writeSnapshot((err, fname ) => {
+        logger.info('Heap dump written to', fname);
+      });
     });
 
     exports.index++;
