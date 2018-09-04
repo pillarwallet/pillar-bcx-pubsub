@@ -5,6 +5,7 @@ const fork = require('child_process').fork;
 const fs = require('fs');
 const heapdump = require('heapdump');
 const memwatch = require('memwatch-next');
+const hashMaps = require('./utils/hashMaps.js');
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
   { name: 'maxWallets', type: Number },
@@ -35,6 +36,8 @@ process.on('exit', (code) => {
  */
 memwatch.on('leak',function(info) {
   logger.info('Master: MEMORY LEAK: ' + JSON.stringify(info));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
+              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
   heapdump.writeSnapshot((err, fname ) => {
     logger.info('Heap dump written to', fname);
   });
@@ -42,6 +45,8 @@ memwatch.on('leak',function(info) {
 
 memwatch.on('stats',function(stats) {
   logger.info('Master: GARBAGE COLLECTION: ' + JSON.stringify(stats));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
+              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
 });
 /**
  * Function that initializes the master after validating command line arguments.
