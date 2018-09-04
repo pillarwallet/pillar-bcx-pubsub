@@ -408,7 +408,7 @@ async function addERC20(receipt) {
             rmqServices.sendPubSubMessage(txMsg);
             logger.info(`ethService.addERC20(): Identified a new ERC20 asset (${receipt.contractAddress}) in block: ${receipt.blockNumber}`);
         }
-        hashMaps.pendinAssets.delete(txn.hash);
+        hashMaps.pendingAssets.delete(txn.hash);
         return true;
     }catch(e) {
         logger.error('ethService.addERC20(): deployed contract ' + receipt.contractAddress + ' is not ERC20.');
@@ -428,7 +428,7 @@ async function addERC721(txn) {
         const symbol = await contract.methods.symbol().call();
         const name = await contract.methods.name().call();
 
-        if(receipt.status == '0x1') { 
+        if(receipt.status === '0x1') { 
             const txMsg = {
                 type: 'newAsset',
                 name,
@@ -442,7 +442,7 @@ async function addERC721(txn) {
             rmqServices.sendPubSubMessage(txMsg);
             logger.info(`ethService.addERC721(): Identified a new ERC20 asset (${receipt.contractAddress}) in block: ${receipt.blockNumber}`);
         }
-        hashMaps.pendinAssets.delete(txn.hash);
+        hashMaps.pendingAssets.delete(txn.hash);
         return true;
     }catch(e) {
         logger.error('ethService.addERC721(): deployed contract ' + receipt.contractAddress + ' is not ERC721.');
