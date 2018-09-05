@@ -55,7 +55,9 @@ memwatch.on('stats',function(stats) {
  */
 exports.logHeap = function() {
   var diff = hd.end();
-  logger.info('Master Heap Diff : ' + diff);
+  logger.info('Master Heap Diff : ' + JSON.stringify(diff));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
+              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
   hd = null;
   hd = new memwatch.HeapDiff();
 }
