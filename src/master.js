@@ -163,11 +163,11 @@ exports.launch = function () {
       }
     });
 
-    exports.pubs[exports.index].on('exit', (code,signal) => {
+    exports.pubs[exports.index].on('close', (data) => {
       const pubId = (exports.index - 1);
-      logger.error(`Master: error occurred Publisher: ${pubId} closed with code: ${code}, signal: ${signal}`);
-      /*
-      if (code !== 0) {
+      logger.error(`Master: error occurred Publisher: ${pubId} closed with code: ${data}`);
+      
+      if (data !== undefined) {
         exports.pubs[pubId] = fork(`${__dirname}/publisher.js`);
         // send the cached set of wallet addresses
         logger.info(`Restarted publisher ${pubId}`);
@@ -183,22 +183,22 @@ exports.launch = function () {
           }
         });
       }
-      */
+      
       heapdump.writeSnapshot((err, fname ) => {
         logger.info('Heap dump written to', fname);
       });
     });
 
     // handle events related to the subscriber child processes
-    exports.subs[exports.index].on('exit', (code,signal) => {
+    exports.subs[exports.index].on('close', (data) => {
       const subId = (exports.index - 1);
-      /*
-      if (code !== 0) {
+      
+      if (data !== undefined) {
         // restart the failed subscriber process
-        logger.info(`Subscriber: ${subId} closed with code: ${code}, signal: ${signal}`);
+        logger.info(`Subscriber: ${subId} closed with code: ${data}`);
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
-      */
+     
       heapdump.writeSnapshot((err, fname ) => {
         logger.info('Heap dump written to', fname);
       });
