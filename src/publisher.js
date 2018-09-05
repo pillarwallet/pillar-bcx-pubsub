@@ -7,6 +7,38 @@ const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 
 let latestId = '';
+const heapdump = require('heapdump');
+const memwatch = require('memwatch-next');
+const fname = `logs/master-heapdump.log`;
+let hd;
+
+/**
+ * Dump the heap for analyses
+ */
+process.on('exit', (code) => {
+  logger.info('Master exited with code: ' + code);
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Heap dump written to', fname);
+  });
+});
+
+/**
+ * subscribe to memory leak events
+ */
+memwatch.on('leak',function(info) {
+  logger.info('Publisher: MEMORY LEAK: ' + JSON.stringify(info));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
+              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Heap dump written to', fname);
+  });
+});
+
+memwatch.on('stats',function(stats) {
+  logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
+              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
+});
 
 /**
  * Function handling IPC notification that are received from the master
@@ -40,6 +72,19 @@ process.on('message', (data) => {
 });
 
 /**
+ * Function to dump heap statistics to the log file every 1 hour
+ */
+exports.logHeap = function() {
+  var diff = hd.end();
+  logger.info('Publisher Heap Diff : ' + JSON.stringify(diff));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
+              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
+  hd = null;
+  hd = new memwatch.HeapDiff();
+};
+
+
+/**
  * Function that initializes inter process communication queue
  */
 exports.initIPC = function () {
@@ -49,17 +94,21 @@ exports.initIPC = function () {
       logger.info('Publisher requesting master a list of assets to monitor');
       process.send({ type: 'assets.request' });
 
-    logger.info('Publisher initializing the RMQ');
-    setTimeout(() => {
-      logger.info('Publisher Initializing RMQ.');
-      rmqServices.initPubSubMQ()
-      exports.initSubscriptions();
-    }, 100);
+      logger.info('Publisher initializing the RMQ');
+      setTimeout(() => {
+        logger.info('Publisher Initializing RMQ.');
+        rmqServices.initPubSubMQ()
+        exports.initSubscriptions();
+      }, 100);
 
       logger.info('Publisher polling master for new wallets every 5 seconds');
       setInterval(() => {
         exports.poll();
       }, 5000);
+
+      hd = new memwatch.HeapDiff();
+      setInterval(() => {this.logHeap();},3000000);
+
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
       // throw err;

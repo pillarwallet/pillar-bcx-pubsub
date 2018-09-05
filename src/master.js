@@ -60,7 +60,7 @@ exports.logHeap = function() {
               ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
   hd = null;
   hd = new memwatch.HeapDiff();
-}
+};
 
 /**
  * Function that initializes the master after validating command line arguments.
