@@ -134,15 +134,18 @@ exports.initIPC = function () {
  * Function that continuosly polls master for new wallets/assets.
  */
 exports.poll = function () {
-  // logger.info('Requesting new wallet :');
   if (hashMaps.assets.count() === 0) {
     process.send({ type: 'assets.request' });
   }
   // request new wallets
+  logger.info('Publisher.poll() - Reporting the size of hashmaps  -    ***************************');
+  console.log('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true)); 
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
+  logger.info('************************************************************************************************************');
   process.send({ type: 'wallet.request', message: latestId });
 };
 

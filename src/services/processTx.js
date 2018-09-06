@@ -239,7 +239,7 @@ function checkTokenTransfer(evnt, theContract, protocol) {
             pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
         }
         dbServices.dbConnect().then(() => { 
-            dbServices.dbCollections.transactions.findByTxHash(eventInfo.transactionHash).then((tx) => {
+            dbServices.dbCollections.transactions.findByTxHash(evnt.transactionHash).then((tx) => {
                 if (tx.asset === 'ETH') { 
                     // check is it is regular token transfer,
                     // if so (asset === TOKEN): resolve (because token transfer already processed),
