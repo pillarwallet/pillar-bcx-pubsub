@@ -3,10 +3,6 @@
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
 const fs = require('fs');
-const heapdump = require('heapdump');
-const memwatch = require('memwatch-next');
-const fname = `logs/master-heapdump.log`;
-let hd;
 const hashMaps = require('./utils/hashMaps.js');
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
@@ -21,47 +17,6 @@ exports.housekeeper;
 exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
-
-/**
- * Dump the heap for analyses
- */
-process.on('exit', (code) => {
-  logger.info('Master exited with code: ' + code);
-  heapdump.writeSnapshot((err, fname ) => {
-    logger.info('Heap dump written to', fname);
-  });
-});
-
-/**
- * subscribe to memory leak events
- */
-memwatch.on('leak',function(info) {
-  logger.info('Master: MEMORY LEAK: ' + JSON.stringify(info));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
-              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
-  heapdump.writeSnapshot((err, fname ) => {
-    logger.info('Heap dump written to', fname);
-  });
-});
-
-memwatch.on('stats',function(stats) {
-  logger.info('Master: GARBAGE COLLECTION: ' + JSON.stringify(stats));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
-              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
-});
-
-/**
- * Function to dump heap statistics to the log file every 1 hour
- */
-exports.logHeap = function() {
-  var diff = hd.end();
-  logger.info('Master Heap Diff : ' + JSON.stringify(diff));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
-              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
-  hd = null;
-  hd = new memwatch.HeapDiff();
-};
-
 /**
  * Function that initializes the master after validating command line arguments.
  * @param {any} options - List of command line arguments
@@ -84,9 +39,6 @@ exports.init = function (options) {
     dbServices.dbConnect().then(() => {
       this.launch();
     });
-    hd = new memwatch.HeapDiff();
-
-    setInterval(() => {this.logHeap();},6000000);
 
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
@@ -184,9 +136,6 @@ exports.launch = function () {
         });
       }
       
-      heapdump.writeSnapshot((err, fname ) => {
-        logger.info('Heap dump written to', fname);
-      });
     });
 
     // handle events related to the subscriber child processes
@@ -198,10 +147,6 @@ exports.launch = function () {
         logger.info(`Subscriber: ${subId} closed with code: ${data}`);
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
-     
-      heapdump.writeSnapshot((err, fname ) => {
-        logger.info('Heap dump written to', fname);
-      });
     });
 
     exports.index++;

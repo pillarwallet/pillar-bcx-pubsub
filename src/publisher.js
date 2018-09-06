@@ -9,16 +9,15 @@ const hashMaps = require('./utils/hashMaps.js');
 let latestId = '';
 const heapdump = require('heapdump');
 const memwatch = require('memwatch-next');
-const fname = `logs/master-heapdump.log`;
 let hd;
 
 /**
  * Dump the heap for analyses
  */
 process.on('exit', (code) => {
-  logger.info('Master exited with code: ' + code);
+  logger.info('Publisher exited with code: ' + code);
   heapdump.writeSnapshot((err, fname ) => {
-    logger.info('Heap dump written to', fname);
+    logger.info('Publisher Heap dump written to', fname);
   });
 });
 
@@ -27,8 +26,8 @@ process.on('exit', (code) => {
  */
 memwatch.on('leak',function(info) {
   logger.info('Publisher: MEMORY LEAK: ' + JSON.stringify(info));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
-              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   heapdump.writeSnapshot((err, fname ) => {
     logger.info('Heap dump written to', fname);
   });
@@ -36,8 +35,8 @@ memwatch.on('leak',function(info) {
 
 memwatch.on('stats',function(stats) {
   logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
-              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
 });
 
 /**
@@ -77,8 +76,8 @@ process.on('message', (data) => {
 exports.logHeap = function() {
   var diff = hd.end();
   logger.info('Publisher Heap Diff : ' + JSON.stringify(diff));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.count() + ', Assets= ' + hashMaps.assets.count() + 
-              ', PendingTx= ' + hashMaps.pendingTx.count() + ', PendingAssets= ' + hashMaps.pendingAssets.count());
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   hd = null;
   hd = new memwatch.HeapDiff();
 };
@@ -129,6 +128,8 @@ exports.poll = function () {
     process.send({ type: 'assets.request' });
   }
   // request new wallets
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   process.send({ type: 'wallet.request', message: latestId });
 };
 
