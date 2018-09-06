@@ -9,6 +9,7 @@ const hashMaps = require('./utils/hashMaps.js');
 let latestId = '';
 const heapdump = require('heapdump');
 const memwatch = require('memwatch-next');
+const sizeof = require('sizeof');
 let hd;
 
 /**
@@ -26,8 +27,10 @@ process.on('exit', (code) => {
  */
 memwatch.on('leak',function(info) {
   logger.info('Publisher: MEMORY LEAK: ' + JSON.stringify(info));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+  logger.info('Hashmap counts: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
   heapdump.writeSnapshot((err, fname ) => {
     logger.info('Heap dump written to', fname);
   });
@@ -37,6 +40,8 @@ memwatch.on('stats',function(stats) {
   logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
 });
 
 /**
@@ -82,6 +87,8 @@ exports.logHeap = function() {
   logger.info('Publisher Heap Diff : ' + JSON.stringify(diff));
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
   hd = null;
   hd = new memwatch.HeapDiff();
 };
@@ -134,6 +141,8 @@ exports.poll = function () {
   // request new wallets
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
   process.send({ type: 'wallet.request', message: latestId });
 };
 

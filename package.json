@@ -65,6 +65,7 @@
     "serve-favicon": "~2.4.5",
     "sinon": "^6.1.4",
     "sinon-test": "^2.2.1",
+    "sizeof": "^1.0.0",
     "socket.io": "^2.1.0",
     "triple-beam": "^1.2.0",
     "unix-timestamp": "^0.2.0",
