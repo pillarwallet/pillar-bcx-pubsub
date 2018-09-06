@@ -185,7 +185,7 @@ exports.notify = function (idFrom, socket) {
         if (message.length > 0) {
           logger.info(`master.notify(): Sending IPC notification to monitor ${message.length} wallets.`);
           socket.send({ type: 'accounts', message: message });
-          fs.appendFile(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
+          fs.appendFileSync(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
             if (err) {
               throw ({ message: 'Caching of wallets failed!' });
             }
