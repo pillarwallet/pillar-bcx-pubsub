@@ -362,7 +362,7 @@ function checkNewAssets(pendingAssets) {
             logger.debug('ethService.checkNewAssets(): Checking status of transaction: ' + item);
             if(module.exports.connect()) {
                 web3.eth.getTransactionReceipt(item).then((receipt) => {
-                    logger.debug('ethService.checkNewAssets(): receipt is ' + receipt);
+                    logger.debug('ethService.checkNewAssets(): receipt is ' + JSON.stringify(receipt));
                     if(receipt !== null && receipt.contractAddress !== null) {
                         //check if contract is an ERC20
                         if(!module.exports.addERC20(receipt)) {
