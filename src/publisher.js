@@ -51,7 +51,7 @@ process.on('message', (data) => {
     if (data.type === 'accounts') {
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
-        if(obj !=== undefined) {
+        if(obj !== undefined) {
           hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
           logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
           latestId = obj.id;
@@ -62,7 +62,7 @@ process.on('message', (data) => {
       // add the new asset to the assets hashmap
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
-        if(obj !=== undefined) {
+        if(obj !== undefined) {
           hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
           logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}, assetsSize: ${hashMaps.assets.keys().length}`);
           ethService.subscribeTransferEvents(obj.contractAddress);
