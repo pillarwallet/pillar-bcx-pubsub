@@ -412,6 +412,7 @@ async function addERC20(receipt) {
         return true;
     }catch(e) {
         logger.error('ethService.addERC20(): deployed contract ' + receipt.contractAddress + ' is not ERC20.');
+        hashMaps.pendingAssets.delete(txn.hash);
         return false;
     }
 }
@@ -446,6 +447,7 @@ async function addERC721(txn) {
         return true;
     }catch(e) {
         logger.error('ethService.addERC721(): deployed contract ' + receipt.contractAddress + ' is not ERC721.');
+        hashMaps.pendingAssets.delete(txn.hash);
         return false;
     }
 }
