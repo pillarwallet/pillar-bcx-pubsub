@@ -51,18 +51,22 @@ process.on('message', (data) => {
     if (data.type === 'accounts') {
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
-        hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
-        logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
-        latestId = obj.id;
+        if(obj !=== undefined) {
+          hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
+          logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
+          latestId = obj.id;
+        }
       }
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
       // add the new asset to the assets hashmap
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
-        hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
-        logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}, assetsSize: ${hashMaps.assets.keys().length}`);
-        ethService.subscribeTransferEvents(obj.contractAddress);
+        if(obj !=== undefined) {
+          hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
+          logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}, assetsSize: ${hashMaps.assets.keys().length}`);
+          ethService.subscribeTransferEvents(obj.contractAddress);
+        }
       }
     }
   }catch(e) {
