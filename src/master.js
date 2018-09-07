@@ -58,9 +58,11 @@ exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
 
+    /*
     if (!fs.existsSync('./cache')){
       fs.mkdirSync('./cache');
     }
+    */
     // start the first program pair of publisher and subscribers
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
@@ -208,7 +210,7 @@ exports.notify = function (idFrom, socket) {
           socket.send({ type: 'accounts', message: message });
 
           //cache the wallets to redis
-          logger.info(`Caching message to redis: ${message}`);
+          logger.info(`Caching message to redis: ${JSON.stringify(message)}`);
           client.hset(`pub_${exports.index}`,JSON.stringify(message),redis.print); 
           /*
           fs.appendFileSync(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
