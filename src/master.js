@@ -58,15 +58,10 @@ exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
 
-    /*
-    if (!fs.existsSync('./cache')){
-      fs.mkdirSync('./cache');
-    }
-    */
     // start the first program pair of publisher and subscribers
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
-    exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
-    exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
+    exports.pubs[exports.index] = fork(`${__dirname}/publisher.js --runId=${exports.index}`);
+    exports.subs[exports.index] = fork(`${__dirname}/subscriber.js --runId=${exports.index}`);
     
     //fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
 
@@ -143,20 +138,6 @@ exports.launch = function () {
           });
           client.quit();
         });
-        
-        /*
-        fs.readFile(`./cache/pub_${pubId}`, 'utf8', (err, data) => {
-          if (err) {
-            logger.error(`Error reading from file: ${err}`);
-          }
-          logger.info(`Data from cache: ${data}`);
-          if (data !== '') {
-            const message = data;
-            logger.info(`sending message: ${JSON.stringify(message)} to publisher: ${pubId}`);
-            exports.pubs[pubId].send({ type: 'accounts', message });
-          }
-        });
-        */
       }
       
     });
@@ -208,17 +189,6 @@ exports.notify = function (idFrom, socket) {
         if (message.length > 0) {
           logger.info(`master.notify(): Sending IPC notification to monitor ${message.length} wallets.`);
           socket.send({ type: 'accounts', message: message });
-
-          //cache the wallets to redis
-          logger.info(`Caching message to redis: ${JSON.stringify(message)}`);
-          client.hset(`pub_${exports.index}`,JSON.stringify(message),redis.print); 
-          /*
-          fs.appendFileSync(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
-            if (err) {
-              throw ({ message: 'Caching of wallets failed!' });
-            }
-          });
-          */
         }
       }
     });

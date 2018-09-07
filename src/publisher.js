@@ -6,6 +6,13 @@ const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
+const optionDefinitions = [
+  { name: 'runId', type: Number }
+];
+const commandLineArgs = require('command-line-args');
+const options = commandLineArgs(optionDefinitions, {partial: false});
+
+let runId = 0;
 let latestId = '';
 const heapdump = require('heapdump');
 const memwatch = require('memwatch-next');
@@ -62,6 +69,9 @@ process.on('message', (data) => {
           latestId = obj.id;
         }
       }
+      //cache the list of wallets to the redis server
+      logger.info(`Caching latest list of wallets ${hashMaps.accounts.keys().length} to redis server`);
+      client.set(runId,JSON.stringify(hashMaps.accounts));
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
       // add the new asset to the assets hashmap
@@ -103,26 +113,31 @@ exports.initIPC = function () {
       logger.info('Started executing publisher.initIPC()');
       logger.info('Publisher requesting master a list of assets to monitor');
 
-      process.send({ type: 'assets.request' });
+      if(options.runId === undefined) {
+        throw ({ message: 'Invalid runId parameter.' });
+      } else {
+        runId = options.runId;
+      }
 
-      logger.info('Publisher initializing the RMQ');
+      process.send({ type: 'assets.request' });
       setTimeout(() => {
         logger.info('Publisher Initializing RMQ.');
         rmqServices.initPubSubMQ()
         exports.initSubscriptions();
       }, 100);
 
-    //request list of assets to be monitored
-    process.send({ type: 'assets.request' });
+      //request list of assets to be monitored
+      process.send({ type: 'assets.request' });
   
-    logger.info('Publisher polling master for new wallets every 5 seconds');
-    setInterval(() => {
-        exports.poll();
-      }, 5000);
+      logger.info('Publisher polling master for new wallets every 5 seconds');
+      setInterval(() => {
+          exports.poll();
+        }, 
+        5000
+      );
 
       hd = new memwatch.HeapDiff();
       setInterval(() => {this.logHeap();},3000000);
-
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
       // throw err;
