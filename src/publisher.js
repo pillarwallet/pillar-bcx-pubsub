@@ -1,12 +1,48 @@
 #!/usr/bin/env node
 /** @module publisher.js */
+'use strict';
 require('dotenv').config();
 const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
-const client = require('./utils/redisClient.js');
 
 let latestId = '';
+const heapdump = require('heapdump');
+const memwatch = require('memwatch-next');
+const sizeof = require('sizeof');
+let hd;
+
+/**
+ * Dump the heap for analyses
+ */
+process.on('exit', (code) => {
+  logger.info('Publisher exited with code: ' + code);
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Publisher Heap dump written to', fname);
+  });
+});
+
+/**
+ * subscribe to memory leak events
+ */
+memwatch.on('leak',function(info) {
+  logger.info('Publisher: MEMORY LEAK: ' + JSON.stringify(info));
+  logger.info('Hashmap counts: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Heap dump written to', fname);
+  });
+});
+
+memwatch.on('stats',function(stats) {
+  logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
+});
 
 /**
  * Function handling IPC notification that are received from the master
@@ -20,24 +56,43 @@ process.on('message', (data) => {
     if (data.type === 'accounts') {
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
-        client.set(obj.walletId.toLowerCase(), obj.pillarId);
-        logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
-        latestId = obj.id;
+        if(obj !== undefined) {
+          hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
+          logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
+          latestId = obj.id;
+        }
       }
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
       // add the new asset to the assets hashmap
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
-        client.set(obj.contractAddress.toLowerCase(), obj);
-        logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}, assetsSize: ${hashMaps.assets.keys().length}`);
-        ethService.subscribeTransferEvents(obj.contractAddress);
+        if(obj !== undefined) {
+          hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
+          logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}, assetsSize: ${hashMaps.assets.keys().length}`);
+          ethService.subscribeTransferEvents(obj.contractAddress);
+        }
       }
     }
   }catch(e) {
     logger.error('Publisher: Error occured in publisher: ' + e);
   }
 });
+
+/**
+ * Function to dump heap statistics to the log file every 1 hour
+ */
+exports.logHeap = function() {
+  var diff = hd.end();
+  logger.info('Publisher Heap Diff : ' + JSON.stringify(diff));
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
+  hd = null;
+  hd = new memwatch.HeapDiff();
+};
+
 
 /**
  * Function that initializes inter process communication queue
@@ -47,14 +102,15 @@ exports.initIPC = function () {
     try {
       logger.info('Started executing publisher.initIPC()');
       logger.info('Publisher requesting master a list of assets to monitor');
+
       process.send({ type: 'assets.request' });
 
-    logger.info('Publisher initializing the RMQ');
-    setTimeout(() => {
-      logger.info('Publisher Initializing RMQ.');
-      rmqServices.initPubSubMQ()
-      exports.initSubscriptions();
-    }, 100);
+      logger.info('Publisher initializing the RMQ');
+      setTimeout(() => {
+        logger.info('Publisher Initializing RMQ.');
+        rmqServices.initPubSubMQ()
+        exports.initSubscriptions();
+      }, 100);
 
     //request list of assets to be monitored
     process.send({ type: 'assets.request' });
@@ -63,6 +119,10 @@ exports.initIPC = function () {
     setInterval(() => {
         exports.poll();
       }, 5000);
+
+      hd = new memwatch.HeapDiff();
+      setInterval(() => {this.logHeap();},3000000);
+
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
       // throw err;
@@ -78,7 +138,18 @@ exports.initIPC = function () {
  * Function that continuosly polls master for new wallets/assets.
  */
 exports.poll = function () {
+  if (hashMaps.assets.count() === 0) {
+    process.send({ type: 'assets.request' });
+  }
   // request new wallets
+  logger.info('Publisher.poll() - Reporting the size of hashmaps  -    ***************************');
+  console.log('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true)); 
+  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
+  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
+  logger.info('************************************************************************************************************');
   process.send({ type: 'wallet.request', message: latestId });
 };
 

@@ -3,6 +3,9 @@
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
 const fs = require('fs');
+const redis = require('redis');
+let client;
+
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
   { name: 'maxWallets', type: Number },
@@ -16,7 +19,6 @@ exports.housekeeper;
 exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
-
 /**
  * Function that initializes the master after validating command line arguments.
  * @param {any} options - List of command line arguments
@@ -24,6 +26,8 @@ exports.index = 0;
 exports.init = function (options) {
   try {
     logger.info('Started executing master.init()');
+
+    client = redis.createClient();
     // validating input parameters
     if (options.protocol !== undefined) {
       protocol = options.protocol;
@@ -39,6 +43,7 @@ exports.init = function (options) {
     dbServices.dbConnect().then(() => {
       this.launch();
     });
+
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
   } finally {
@@ -60,7 +65,8 @@ exports.launch = function () {
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`);
-    fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
+    
+    //fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
 
     // handle events associated with the housekeeper child process.
     exports.housekeeper.on('message', (data) => {
@@ -78,6 +84,10 @@ exports.launch = function () {
         logger.info(`Housekeeper closed: ${data}`);
         exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
       }
+      
+      heapdump.writeSnapshot((err, fname ) => {
+        logger.info('Heap dump written to', fname);
+      });
     });
 
     // handle events associated with the publisher child processes.
@@ -112,11 +122,27 @@ exports.launch = function () {
 
     exports.pubs[exports.index].on('close', (data) => {
       const pubId = (exports.index - 1);
-      logger.error(`Master: error occurred Publisher: ${pubId} closed with error: ${data}`);
+      logger.error(`Master: error occurred Publisher: ${pubId} closed with code: ${data}`);
+      
       if (data !== undefined) {
         exports.pubs[pubId] = fork(`${__dirname}/publisher.js`);
         // send the cached set of wallet addresses
         logger.info(`Restarted publisher ${pubId}`);
+
+        //read the wallets from redis and pass on to server
+        client.hkeys(`pub_${pubId}`, function (err, replies) {
+          if(err) {
+            logger.error(`Error reading from redis: ${err}`);
+          }
+          logger.info(`Found ${replies.length} wallets in redis cache`);
+          replies.forEach(function(message,i) {
+            logger.info(`sending message: ${JSON.stringify(message)} to publisher: ${pubId}`);
+            exports.pubs[pubId].send({ type: 'accounts', message });
+          });
+          client.quit();
+        });
+        
+        /*
         fs.readFile(`./cache/pub_${pubId}`, 'utf8', (err, data) => {
           if (err) {
             logger.error(`Error reading from file: ${err}`);
@@ -128,16 +154,18 @@ exports.launch = function () {
             exports.pubs[pubId].send({ type: 'accounts', message });
           }
         });
+        */
       }
+      
     });
 
     // handle events related to the subscriber child processes
     exports.subs[exports.index].on('close', (data) => {
       const subId = (exports.index - 1);
-
+      
       if (data !== undefined) {
         // restart the failed subscriber process
-        logger.info(`Subscriber: ${subId} closed: ${data}`);
+        logger.info(`Subscriber: ${subId} closed with code: ${data}`);
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
       }
     });
@@ -178,11 +206,16 @@ exports.notify = function (idFrom, socket) {
         if (message.length > 0) {
           logger.info(`master.notify(): Sending IPC notification to monitor ${message.length} wallets.`);
           socket.send({ type: 'accounts', message: message });
-          fs.appendFile(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
+
+          //cache the wallets to redis
+          client.hset(`pub_${exports.index}`,JSON.stringify(message),redis.print); 
+          /*
+          fs.appendFileSync(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
             if (err) {
               throw ({ message: 'Caching of wallets failed!' });
             }
           });
+          */
         }
       }
     });

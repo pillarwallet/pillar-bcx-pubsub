@@ -362,7 +362,7 @@ function checkNewAssets(pendingAssets) {
             logger.debug('ethService.checkNewAssets(): Checking status of transaction: ' + item);
             if(module.exports.connect()) {
                 web3.eth.getTransactionReceipt(item).then((receipt) => {
-                    logger.debug('ethService.checkNewAssets(): receipt is ' + receipt);
+                    logger.debug('ethService.checkNewAssets(): receipt is ' + JSON.stringify(receipt));
                     if(receipt !== null && receipt.contractAddress !== null) {
                         //check if contract is an ERC20
                         if(!module.exports.addERC20(receipt)) {
@@ -408,10 +408,11 @@ async function addERC20(receipt) {
             rmqServices.sendPubSubMessage(txMsg);
             logger.info(`ethService.addERC20(): Identified a new ERC20 asset (${receipt.contractAddress}) in block: ${receipt.blockNumber}`);
         }
-        hashMaps.pendingAssets.delete(txn.hash);
+        hashMaps.pendingAssets.delete(receipt.transactionHash);
         return true;
     }catch(e) {
         logger.error('ethService.addERC20(): deployed contract ' + receipt.contractAddress + ' is not ERC20.');
+        hashMaps.pendingAssets.delete(receipt.transactionHash);
         return false;
     }
 }
@@ -421,7 +422,7 @@ module.exports.addERC20 = addERC20;
  * Validated if a given transaction corresponds to the deployment of a collectible contract
  * @param {any} txn - the transaction receipt
  */
-async function addERC721(txn) {
+async function addERC721(receipt) {
     let contract;
     try {
         contract = new web3.eth.Contract(ERC721ABI,receipt.contractAddress);
@@ -442,10 +443,11 @@ async function addERC721(txn) {
             rmqServices.sendPubSubMessage(txMsg);
             logger.info(`ethService.addERC721(): Identified a new ERC20 asset (${receipt.contractAddress}) in block: ${receipt.blockNumber}`);
         }
-        hashMaps.pendingAssets.delete(txn.hash);
+        hashMaps.pendingAssets.delete(receipt.transactionHash);
         return true;
     }catch(e) {
         logger.error('ethService.addERC721(): deployed contract ' + receipt.contractAddress + ' is not ERC721.');
+        hashMaps.pendingAssets.delete(receipt.transactionHash);
         return false;
     }
 }

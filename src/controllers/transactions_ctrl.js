@@ -187,7 +187,7 @@ function findMaxBlock(protocol,asset = null) {
     try {
       if(asset === null) {
         transactions.Transactions.find({protocol: protocol, blockNumber: {$ne: null}}).sort({blockNumber: -1}).limit(1).then((maxBlock) => {
-          if(maxBlock !== 'undefined' && maxBlock !== '' && maxBlock.blockNumber !== undefined) {
+          if(maxBlock !== undefined && maxBlock !== '' && maxBlock.blockNumber !== undefined) {
             logger.debug('Transactions.findMaxBlock(): ' + maxBlock);
             resolve(maxBlock.blockNumber);
           } else {
