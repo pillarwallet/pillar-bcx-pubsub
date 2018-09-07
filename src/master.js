@@ -208,6 +208,7 @@ exports.notify = function (idFrom, socket) {
           socket.send({ type: 'accounts', message: message });
 
           //cache the wallets to redis
+          logger.info(`Caching message to redis: ${message}`);
           client.hset(`pub_${exports.index}`,JSON.stringify(message),redis.print); 
           /*
           fs.appendFileSync(`./cache/pub_${exports.index - 1}`, JSON.stringify(message), (err) => {
