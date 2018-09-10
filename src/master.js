@@ -4,7 +4,7 @@ const logger = require('./utils/logger');
 const fork = require('child_process').fork;
 const fs = require('fs');
 const redis = require('redis');
-let client;
+let client = redis.createClient();
 
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
@@ -19,6 +19,14 @@ exports.housekeeper;
 exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
+
+/**
+ * Handle REDIS client connection errors
+ */
+client.on("error", function (err) {
+  logger.error("Master failed with REDIS client error: " + err);
+});
+
 /**
  * Function that initializes the master after validating command line arguments.
  * @param {any} options - List of command line arguments
@@ -27,7 +35,6 @@ exports.init = function (options) {
   try {
     logger.info('Started executing master.init()');
 
-    client = redis.createClient();
     // validating input parameters
     if (options.protocol !== undefined) {
       protocol = options.protocol;
@@ -59,11 +66,11 @@ exports.launch = function () {
     logger.info('Started executing master.launch()');
 
     // start the first program pair of publisher and subscribers
-    exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
-    exports.pubs[exports.index] = fork(`${__dirname}/publisher.js --runId=${exports.index}`);
-    exports.subs[exports.index] = fork(`${__dirname}/subscriber.js --runId=${exports.index}`);
+    client.del(`pub_${exports.index}`); // clears out the previous cache file during a fresh start
     
-    //fs.createWriteStream(`./cache/pub_${exports.index}`, { flags: 'w' });
+    exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
+    exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`,[`${exports.index}`]);
+    exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`,[`${exports.index}`]);
 
     // handle events associated with the housekeeper child process.
     exports.housekeeper.on('message', (data) => {
@@ -127,19 +134,11 @@ exports.launch = function () {
         logger.info(`Restarted publisher ${pubId}`);
 
         //read the wallets from redis and pass on to server
-        client.hkeys(`pub_${pubId}`, function (err, replies) {
-          if(err) {
-            logger.error(`Error reading from redis: ${err}`);
-          }
-          logger.info(`Found ${replies.length} wallets in redis cache`);
-          replies.forEach(function(message,i) {
-            logger.info(`sending message: ${JSON.stringify(message)} to publisher: ${pubId}`);
-            exports.pubs[pubId].send({ type: 'accounts', message });
-          });
-          client.quit();
+        client.get(`pub_${pubId}`).then((res) => {
+          console.log(res);
+          exports.pubs[pubId].send({ type: 'accounts', message:res });
         });
       }
-      
     });
 
     // handle events related to the subscriber child processes

@@ -3,11 +3,6 @@
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');
-const optionDefinitions = [
-  { name: 'runId', type: Number }
-];
-const commandLineArgs = require('command-line-args');
-const options = commandLineArgs(optionDefinitions, {partial: false});
 let runId = 0;
 
 /**
@@ -15,12 +10,11 @@ let runId = 0;
  */
 exports.initServices = function () {
 
-  if(options.runId === undefined) {
+  if(process.argv[2] === undefined) {
     throw ({ message: 'Invalid runId parameter.' });
   } else {
-    runId = options.runId;
+    runId = process.argv[2];
   }
-
   dbServices.dbConnect()
     .then(() => {
       logger.info('Subscriber.initServices(): Connected to database');

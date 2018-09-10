@@ -6,11 +6,8 @@ const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
-const optionDefinitions = [
-  { name: 'runId', type: Number }
-];
-const commandLineArgs = require('command-line-args');
-const options = commandLineArgs(optionDefinitions, {partial: false});
+const redis = require('redis');
+let client = redis.createClient();
 
 let runId = 0;
 let latestId = '';
@@ -19,16 +16,13 @@ const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 let hd;
 
-/**
- * Dump the heap for analyses
- */
-process.on('exit', (code) => {
-  logger.info('Publisher exited with code: ' + code);
-  heapdump.writeSnapshot((err, fname ) => {
-    logger.info('Publisher Heap dump written to', fname);
-  });
-});
 
+/**
+ * Handle REDIS client connection errors
+ */
+client.on("error", function (err) {
+  logger.error("Publisher failed with REDIS client error: " + err);
+});
 /**
  * subscribe to memory leak events
  */
@@ -51,27 +45,38 @@ memwatch.on('stats',function(stats) {
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
 });
 
+
+/**
+ * Dump the heap for analyses
+ */
+process.on('exit', (code) => {
+  logger.info('Publisher exited with code: ' + code);
+  heapdump.writeSnapshot((err, fname ) => {
+    logger.info('Publisher Heap dump written to', fname);
+  });
+});
+
 /**
  * Function handling IPC notification that are received from the master
  * @param {any} message - The IPC message that sent from the master
  */
 process.on('message', (data) => {
   try {
-    logger.info(`Publisher has received message from master: ${data.type}`);
     const { message } = data;
-
+    logger.info(`Publisher has received message from master: ${data.type}`);
+    
     if (data.type === 'accounts') {
+      console.log(`Publisher received accounts: ${message.length} to monitor.`);
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
         if(obj !== undefined) {
           hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
-          logger.info(`Publisher received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
+          logger.info(`Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
           latestId = obj.id;
         }
       }
-      //cache the list of wallets to the redis server
-      logger.info(`Caching latest list of wallets ${hashMaps.accounts.keys().length} to redis server`);
-      client.set(runId,JSON.stringify(hashMaps.accounts));
+      logger.info(`Caching ${message.length} wallets to REDIS server for publisher: pub_${runId}`);
+      client.append(`pub_${runId}`,JSON.stringify(message),redis.print);
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
       // add the new asset to the assets hashmap
@@ -113,10 +118,10 @@ exports.initIPC = function () {
       logger.info('Started executing publisher.initIPC()');
       logger.info('Publisher requesting master a list of assets to monitor');
 
-      if(options.runId === undefined) {
+      if(process.argv[2] === undefined) {
         throw ({ message: 'Invalid runId parameter.' });
       } else {
-        runId = options.runId;
+        runId = process.argv[2];
       }
 
       process.send({ type: 'assets.request' });

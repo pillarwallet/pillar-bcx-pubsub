@@ -54,11 +54,8 @@ function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
           } else {
             dbCollections.accounts.listAll()
               .then((ethAddressesArray) => {
-                    logger.debug('Total accounts found to monitor: ' + ethAddressesArray.length);
-                if(ethAddressesArray.length > 0) {
-                  logger.debug(('Fetching ' + ethAddressesArray.length + ' addresses.'));
-                }
-                  resolve(ethAddressesArray);
+                logger.debug('Total accounts found to monitor: ' + ethAddressesArray.length);
+                resolve(ethAddressesArray);
               })
               .catch((e) => { reject(e); });
           }

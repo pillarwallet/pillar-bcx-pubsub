@@ -99,7 +99,6 @@ function findOneByTxHash(txHash) {
         logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
         reject(err);
       }
-      logger.info(`transactions.findByTxHash DB controller: ${result}`);
       resolve(result);
     });
   });
