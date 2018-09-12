@@ -140,9 +140,6 @@ exports.initIPC = function () {
         }, 
         5000
       );
-
-      hd = new memwatch.HeapDiff();
-      setInterval(() => {this.logHeap();},3000000);
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
       // throw err;
