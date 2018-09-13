@@ -67,7 +67,7 @@ exports.launch = function () {
 
     // start the first program pair of publisher and subscribers
     client.del(`pub_${exports.index}`); // clears out the previous cache file during a fresh start
-    
+
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`,[`${exports.index}`]);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`,[`${exports.index}`]);
@@ -88,10 +88,6 @@ exports.launch = function () {
         logger.info(`Housekeeper closed: ${data}`);
         exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
       }
-      
-      heapdump.writeSnapshot((err, fname ) => {
-        logger.info('Heap dump written to', fname);
-      });
     });
 
     // handle events associated with the publisher child processes.

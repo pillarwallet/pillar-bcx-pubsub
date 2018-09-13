@@ -95,21 +95,6 @@ process.on('message', (data) => {
 });
 
 /**
- * Function to dump heap statistics to the log file every 1 hour
- */
-exports.logHeap = function() {
-  var diff = hd.end();
-  logger.info('Publisher Heap Diff : ' + JSON.stringify(diff));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
-              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
-  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
-              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
-  hd = null;
-  hd = new memwatch.HeapDiff();
-};
-
-
-/**
  * Function that initializes inter process communication queue
  */
 exports.initIPC = function () {
