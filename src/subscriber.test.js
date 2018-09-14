@@ -1,4 +1,3 @@
-const subscriber = require('./subscriber.js');
 var runId = process.argv[2];
 
 describe('Test function calls', () => {
@@ -12,10 +11,10 @@ describe('Test function calls', () => {
 	});
 
   test('Expect initServices() to be called', () => {
+    const subscriber = require('./subscriber.js');
     const spy = jest.spyOn(subscriber, 'initServices');
     spy.mockImplementation();
     spy.call();
-
     expect(spy).toHaveBeenCalled();
   });
 });
