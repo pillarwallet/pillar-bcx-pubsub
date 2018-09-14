@@ -1,8 +1,18 @@
 const sinon = require('sinon');
 const logger = require('./utils/logger');
 logger.transports.forEach((t) => (t.silent = true));
+var runId = process.argv[2];
 
 describe('Test init functions ', () => {
+
+	beforeAll(() =>{
+		process.argv[2] = 0;
+	});
+
+	afterAll(() =>{
+		process.argv[2] = runId;
+	});
+
 	test('Expect initIPC to call process.send', () => {
 		const spy = sinon.spy(process, 'send');
 		const publisher = require('./publisher.js');
