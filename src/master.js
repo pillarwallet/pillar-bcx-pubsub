@@ -91,10 +91,14 @@ exports.launch = function () {
     });
 
     exports.housekeeper.on('close', (data) => {
+      logger.error(`Master: error occurred Housekeeper (PID: ${exports.housekeeper.pid})) closed with code: ${data}`);
+      //COMMENTING OUT THE AUTO RESTART
+      /*
       if (data !== undefined) {
-        logger.info(`Housekeeper closed: ${data}`);
+        logger.info(`Master: error occurred Housekeeper closed with exit code: ${data}`);
         exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
       }
+      */
     });
 
     // handle events associated with the publisher child processes.
@@ -131,6 +135,8 @@ exports.launch = function () {
       const pubId = (exports.index - 1);
       logger.error(`Master: error occurred Publisher: ${pubId} (PID: ${exports.pubs[pubId].pid}) closed with code: ${data}`);
       
+      //COMMENTING OUT THE AUTO RESTART
+      /*
       if (data !== undefined) {
         exports.pubs[pubId] = fork(`${__dirname}/publisher.js`,[`${exports.index}`]);
         // send the cached set of wallet addresses
@@ -142,18 +148,22 @@ exports.launch = function () {
           exports.pubs[pubId].send({ type: 'accounts', message:res });
         });
       }
+      */
     });
 
     // handle events related to the subscriber child processes
     exports.subs[exports.index].on('close', (data) => {
       const subId = (exports.index - 1);
-      
+      logger.error(`Master: error occurred Publisher: ${subId} (PID: ${exports.subs[subId].pid}) closed with code: ${data}`);
+      //COMMENTING OUT THE AUTO RESTART
+      /*
       if (data !== undefined) {
         // restart the failed subscriber process
         logger.info(`Master: error occurred Subscriber: ${subId} (PID: ${exports.subs[subId].pid})  closed with code: ${data}`);
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`,[`${exports.index}`]);
         logger.info(`Restarted subscriber ${subId} (PID: ${exports.subs[subId].pid})`);
       }
+      */
     });
 
     exports.index++;
