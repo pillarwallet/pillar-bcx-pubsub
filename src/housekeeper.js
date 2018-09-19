@@ -6,8 +6,20 @@ const dbServices = require('./services/dbServices.js');
 const processTx = require('./services/processTx.js');
 const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService.js');
-const hashMap = require('./utils/hashMaps.js');
 const protocol = 'Ethereum';
+
+
+/**
+ * Function for reporting unhandled promise rejections.
+ * @param {any} reason - reason for failure/stack trace
+ */
+
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('***********************************************');
+    logger.error('ERROR: Unhandled Rejection at SUBSCRIBER:', reason.stack || reason);
+    logger.error('***********************************************');
+});
+  
 
 /**
  * Method to handle IPC message received from master

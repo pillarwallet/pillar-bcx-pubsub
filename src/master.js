@@ -20,6 +20,12 @@ exports.pubs = [];
 exports.subs = [];
 exports.index = 0;
 
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('***********************************************');
+  logger.error('ERROR: Unhandled Rejection at MASTER:', reason.stack || reason);
+  logger.error('***********************************************');
+});
+
 /**
  * Handle REDIS client connection errors
  */

@@ -6,6 +6,18 @@ const dbServices = require('./services/dbServices.js');
 let runId = 0;
 
 /**
+ * Function for reporting unhandled promise rejections.
+ * @param {any} reason - reason for failure/stack trace
+ */
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('***********************************************');
+  logger.error('ERROR: Unhandled Rejection at SUBSCRIBER:', reason.stack || reason);
+  logger.error('***********************************************');
+});
+
+
+/**
  * Function that initializes the subscriber service
  */
 exports.initServices = function () {
