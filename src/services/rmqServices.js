@@ -22,7 +22,7 @@ function initPubSubMQ() {
     try {
       let connection;
       logger.info('Executing rmqServices.initPubSubMQ()');
-      amqp.connect(MQ_URL, (err, conn) => {
+      amqp.connect(MQ_URL, (error, conn) => {
 
         if (error) {
           logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
