@@ -45,17 +45,6 @@ memwatch.on('stats',function(stats) {
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
 });
 
-
-/**
- * Dump the heap for analyses
- */
-process.on('exit', (code) => {
-  logger.info('Publisher exited with code: ' + code);
-  heapdump.writeSnapshot((err, fname ) => {
-    logger.info('Publisher Heap dump written to', fname);
-  });
-});
-
 /**
  * Function handling IPC notification that are received from the master
  * @param {any} message - The IPC message that sent from the master
