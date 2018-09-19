@@ -18,36 +18,58 @@ moment.locale('en_GB');
 /**
  * Initialize the pub-sub rabbit mq.
  */
-exports.initPubSubMQ = function () {
+function initPubSubMQ() {
     try {
-      logger.info('Executing rmqServices.initMQ()');
+      let connection;
+      logger.info('Executing rmqServices.initPubSubMQ()');
       amqp.connect(MQ_URL, (err, conn) => {
-        conn.createChannel((err, ch) => {
+
+        if (error) {
+          logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
+          return setTimeout(initPubSubMQ(), 2000);
+        }
+        if (conn) {
+          connection = conn;
+        }
+        connection.on('error', (err) => {
+          logger.error(`Publisher RMQ connection errored out: ${err}`);
+          return setTimeout(initPubSubMQ(), 2000);
+        });
+        connection.on('close', () => {
+          logger.error('Publisher RMQ Connection closed');
+          return setTimeout(initPubSubMQ(), 2000);
+        });
+
+        logger.info('Publisher RMQ Connected');
+
+        connection.createChannel((err, ch) => {
           pubSubChannel = ch;
-          const msg = '{}';
           ch.assertQueue(pubSubQueue, { durable: true });
           // Note: on Node 6 Buffer.from(msg) should be used
-          ch.sendToQueue(pubSubQueue, Buffer.from(msg));
-          logger.info(` [x] Sent ${msg}`);
         });
         // setTimeout(() => { conn.close(); process.exit(0); }, 500);
       });
     } catch (err) {
       logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
+      return setTimeout(initPubSubMQ(), 2000);
     } finally {
       logger.info('Exited rmqServices.initPubSubMQ()');
     }
 };
 
+module.exports.initPubSubMQ = initPubSubMQ;
+
 /**
  * Function that calculates the checksum for a given payload and then writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
-exports.sendPubSubMessage = function (payload) {
+function sendPubSubMessage(payload) {
   const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
   payload.checksum = checksum;
   pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));
 };
+
+module.exports.sendPubSubMessage = sendPubSubMessage;
 
 /**
  * Function to generate the notification payload thats send to notification queue
@@ -84,25 +106,25 @@ function resetTxMap() {
 /**
  * Function to initialize the subscriber publisher queue befpore consumption
  */
-exports.initSubPubMQ = () => {
+function initSubPubMQ() {
   try {
     let connection;
-    logger.info('Subscriber Started executing initRabbitMQ()');
+    logger.info('Subscriber Started executing initSubPubMQ()');
     amqp.connect(MQ_URL, (error, conn) => {
       if (error) {
         logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
-        return setTimeout(exports.initSubPubMQ, 2000);
+        return setTimeout(initSubPubMQ(), 2000);
       }
       if (conn) {
         connection = conn;
       }
       connection.on('error', (err) => {
         logger.error(`Subscriber RMQ connection errored out: ${err}`);
-        return setTimeout(exports.initSubPubMQ, 2000);
+        return setTimeout(initSubPubMQ(), 2000);
       });
       connection.on('close', () => {
         logger.error('Subscriber RMQ Connection closed');
-        return setTimeout(exports.initSubPubMQ, 2000);
+        return setTimeout(initSubPubMQ(), 2000);
       });
 
       logger.info('Subscriber RMQ Connected');
@@ -112,7 +134,7 @@ exports.initSubPubMQ = () => {
         ch.consume(pubSubQueue, (msg) => {
           logger.info(`Subscriber received rmq message: ${msg.content}`);
           if (typeof msg.content !== 'undefined' && msg.content !== '' &&
-            exports.validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
+            validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
             const entry = JSON.parse(msg.content);
             const { type, txHash } = entry;
             delete entry.type;
@@ -182,18 +204,20 @@ exports.initSubPubMQ = () => {
       });
     });
   } catch (err) {
-    logger.error(`Subscriber initiRabbitMQ failed: ${err}`);
-    return setTimeout(exports.initRabbitMQ, 2000);
+    logger.error(`Subscriber initSubPubMQ failed: ${err}`);
+    return setTimeout(initSubPubMQ(), 2000);
   } finally {
-    logger.info('Exited initRabbitMQ()');
+    logger.info('Exited initSubPubMQ()');
   }
 };
+
+module.exports.initSubPubMQ = initSubPubMQ;
 
 /**
  * Function that validates the checksum of the payload received.
  * @param {any} payload - The IPC message received from the master
  */
-exports.validatePubSubMessage = (payload, checksumKey) => {
+function validatePubSubMessage(payload, checksumKey) {
   const checksum = payload.checksum;
   delete payload.checksum;
   if (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum) {
@@ -201,3 +225,5 @@ exports.validatePubSubMessage = (payload, checksumKey) => {
   }
   return false;
 };
+
+module.exports.validatePubSubMessage = validatePubSubMessage;
