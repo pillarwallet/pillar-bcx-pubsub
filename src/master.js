@@ -71,7 +71,7 @@ exports.launch = function () {
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`,[`${exports.index}`]);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`,[`${exports.index}`]);
-    logger.info(`Master has launched Houskeeper (PID: ${exports.housekeeper}), Publisher (PID: ${exports.pubs[exports.index]}) and Subscriber (PID: ${exports.subs[exports.index]}) processes.`);
+    logger.info(`Master has launched Houskeeper (PID: ${exports.housekeeper.pid}), Publisher (PID: ${exports.pubs[exports.index].pid}) and Subscriber (PID: ${exports.subs[exports.index].pid}) processes.`);
 
     // handle events associated with the housekeeper child process.
     exports.housekeeper.on('message', (data) => {
