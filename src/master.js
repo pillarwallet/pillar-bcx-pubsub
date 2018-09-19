@@ -126,7 +126,7 @@ exports.launch = function () {
       logger.error(`Master: error occurred Publisher: ${pubId} (PID: ${exports.pubs[pubId].pid}) closed with code: ${data}`);
       
       if (data !== undefined) {
-        exports.pubs[pubId] = fork(`${__dirname}/publisher.js`);
+        exports.pubs[pubId] = fork(`${__dirname}/publisher.js`,[`${exports.index}`]);
         // send the cached set of wallet addresses
         logger.info(`Restarted publisher ${pubId} (PID: ${exports.pubs[pubId].pid})`);
 
@@ -145,7 +145,7 @@ exports.launch = function () {
       if (data !== undefined) {
         // restart the failed subscriber process
         logger.info(`Master: error occurred Subscriber: ${subId} (PID: ${exports.subs[subId].pid})  closed with code: ${data}`);
-        exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
+        exports.subs[subId] = fork(`${__dirname}/subscriber.js`,[`${exports.index}`]);
         logger.info(`Restarted subscriber ${subId} (PID: ${exports.subs[subId].pid})`);
       }
     });
