@@ -71,6 +71,7 @@ exports.launch = function () {
     exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     exports.pubs[exports.index] = fork(`${__dirname}/publisher.js`,[`${exports.index}`]);
     exports.subs[exports.index] = fork(`${__dirname}/subscriber.js`,[`${exports.index}`]);
+    logger.info(`Master has launched Houskeeper (PID: ${exports.housekeeper}), Publisher (PID: ${exports.pubs[exports.index]}) and Subscriber (PID: ${exports.subs[exports.index]}) processes.`);
 
     // handle events associated with the housekeeper child process.
     exports.housekeeper.on('message', (data) => {
@@ -122,16 +123,16 @@ exports.launch = function () {
 
     exports.pubs[exports.index].on('close', (data) => {
       const pubId = (exports.index - 1);
-      logger.error(`Master: error occurred Publisher: ${pubId} closed with code: ${data}`);
+      logger.error(`Master: error occurred Publisher: ${pubId} (PID: ${exports.pubs[pubId].pid}) closed with code: ${data}`);
       
       if (data !== undefined) {
         exports.pubs[pubId] = fork(`${__dirname}/publisher.js`);
         // send the cached set of wallet addresses
-        logger.info(`Restarted publisher ${pubId}`);
+        logger.info(`Restarted publisher ${pubId} (PID: ${exports.pubs[pubId].pid})`);
 
         //read the wallets from redis and pass on to server
         client.get(`pub_${pubId}`).then((res) => {
-          console.log(res);
+          logger.info(`Master: restarted the publisher with the following accounts ${res}`);
           exports.pubs[pubId].send({ type: 'accounts', message:res });
         });
       }
@@ -143,8 +144,9 @@ exports.launch = function () {
       
       if (data !== undefined) {
         // restart the failed subscriber process
-        logger.info(`Subscriber: ${subId} closed with code: ${data}`);
+        logger.info(`Master: error occurred Subscriber: ${subId} (PID: ${exports.subs[subId].pid})  closed with code: ${data}`);
         exports.subs[subId] = fork(`${__dirname}/subscriber.js`);
+        logger.info(`Restarted subscriber ${subId} (PID: ${exports.subs[subId].pid})`);
       }
     });
 
