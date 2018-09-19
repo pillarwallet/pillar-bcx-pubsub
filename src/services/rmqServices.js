@@ -27,7 +27,6 @@ function initPubSubMQ() {
       amqp.connect(MQ_URL, (error, conn) => {
 
         while (attempts < maxAttempts) {
-          logger.error(`Attempt ${attempts}`)
           if (error) {
             logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
             attempts++;

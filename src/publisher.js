@@ -16,7 +16,6 @@ const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 let hd;
 
-
 /**
  * Handle REDIS client connection errors
  */
@@ -43,6 +42,17 @@ memwatch.on('stats',function(stats) {
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
+});
+
+/**
+ * Function for reporting unhandled promise rejections.
+ * @param {any} reason - reason for failure/stack trace
+ */
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('***********************************************');
+  logger.error('ERROR: Unhandled Rejection at PUBLISHER:', reason.stack || reason);
+  logger.error('***********************************************');
 });
 
 /**
