@@ -174,6 +174,10 @@ module.exports.launch = function () {
         logger.info(`Restarted publisher ${pubId} (PID: ${module.exports.pubs[pubId].pid})`);
 
         //read the wallets from redis and pass on to server
+        if( !(client.get(`pub_${pubId}`)) ) {
+          logger.error(`Error: cannot find pub_${pubId}`)
+          return
+        }
         client.get(`pub_${pubId}`).then((res) => {
           logger.info(`Master: restarted the publisher with the following accounts ${res}`);
           module.exports.pubs[pubId].send({ type: 'accounts', message:res });
