@@ -13,8 +13,6 @@ const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
 const TX_MAP = {};
-const maxAttempts = 5
-var attempts = 0;
 moment.locale('en_GB');
 
 /**
@@ -26,26 +24,21 @@ function initPubSubMQ() {
       logger.info('Executing rmqServices.initPubSubMQ()');
       amqp.connect(MQ_URL, (error, conn) => {
 
-        while (attempts < maxAttempts) {
-          if (error) {
-            logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
-            attempts++;
-            return setTimeout(initPubSubMQ, 2000);
-          }
-          if (conn) {
-            connection = conn;
-          }
-          connection.on('error', (err) => {
-            logger.error(`Publisher RMQ connection errored out: ${err}`);
-            attempts++;
-            return setTimeout(initPubSubMQ, 2000);
-          });
-          connection.on('close', () => {
-            logger.error('Publisher RMQ Connection closed');
-            attempts++;
-            return setTimeout(initPubSubMQ, 2000);
-          });
-      }
+        if (error) {
+          logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
+          return setTimeout(initPubSubMQ, 5000);
+        }
+        if (conn) {
+          connection = conn;
+        }
+        connection.on('error', (err) => {
+          logger.error(`Publisher RMQ connection errored out: ${err}`);
+          return setTimeout(initPubSubMQ, 5000);
+        });
+        connection.on('close', () => {
+          logger.error('Publisher RMQ Connection closed');
+          return setTimeout(initPubSubMQ, 5000);
+        });
 
         logger.info('Publisher RMQ Connected');
 
@@ -118,27 +111,22 @@ function initSubPubMQ() {
     logger.info('Subscriber Started executing initSubPubMQ()');
     amqp.connect(MQ_URL, (error, conn) => {
 
-      while (attempts < maxAttempts) {
-        if (error) {
-          logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
-          attempts++;
-          return setTimeout(initSubPubMQ, 2000);
-        }
-        if (conn) {
-          connection = conn;
-        }
-        connection.on('error', (err) => {
-          logger.error(`Subscriber RMQ connection errored out: ${err}`);
-          attempts++
-          return setTimeout(initSubPubMQ, 2000);
-        });
-        connection.on('close', () => {
-          logger.error('Subscriber RMQ Connection closed');
-          attempts++
-          return setTimeout(initSubPubMQ, 2000);
-        });
-    }
-
+      if (error) {
+        logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
+        return setTimeout(initSubPubMQ, 5000);
+      }
+      if (conn) {
+        connection = conn;
+      }
+      connection.on('error', (err) => {
+        logger.error(`Subscriber RMQ connection errored out: ${err}`);
+        return setTimeout(initSubPubMQ, 5000);
+      });
+      connection.on('close', () => {
+        logger.error('Subscriber RMQ Connection closed');
+        return setTimeout(initSubPubMQ, 5000);
+      });
+    
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
