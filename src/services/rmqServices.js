@@ -19,42 +19,45 @@ moment.locale('en_GB');
  * Initialize the pub-sub rabbit mq.
  */
 function initPubSubMQ() {
-    try {
-      let connection;
-      logger.info('Executing rmqServices.initPubSubMQ()');
-      amqp.connect(MQ_URL, (error, conn) => {
+  return new Promise((resolve, reject) => {
+      try {
+        let connection;
+        logger.info('Executing rmqServices.initPubSubMQ()');
+        amqp.connect(MQ_URL, (error, conn) => {
 
-        if (error) {
-          logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
-          return setTimeout(initPubSubMQ, 5000);
-        }
-        if (conn) {
-          connection = conn;
-        }
-        connection.on('error', (err) => {
-          logger.error(`Publisher RMQ connection errored out: ${err}`);
-          return setTimeout(initPubSubMQ, 5000);
-        });
-        connection.on('close', () => {
-          logger.error('Publisher RMQ Connection closed');
-          return setTimeout(initPubSubMQ, 5000);
-        });
+          if (error) {
+            logger.error(`Publisher failed initializing RabbitMQ, error: ${error}`);
+            return setTimeout(initPubSubMQ, 5000);
+          }
+          if (conn) {
+            connection = conn;
+          }
+          connection.on('error', (err) => {
+            logger.error(`Publisher RMQ connection errored out: ${err}`);
+            return setTimeout(initPubSubMQ, 5000);
+          });
+          connection.on('close', () => {
+            logger.error('Publisher RMQ Connection closed');
+            return setTimeout(initPubSubMQ, 5000);
+          });
 
-        logger.info('Publisher RMQ Connected');
+          logger.info('Publisher RMQ Connected');
 
-        connection.createChannel((err, ch) => {
-          pubSubChannel = ch;
-          ch.assertQueue(pubSubQueue, { durable: true });
-          // Note: on Node 6 Buffer.from(msg) should be used
+          connection.createChannel((err, ch) => {
+            pubSubChannel = ch;
+            ch.assertQueue(pubSubQueue, { durable: true });
+            // Note: on Node 6 Buffer.from(msg) should be used
+          });
         });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
-      });
-    } catch (err) {
-      logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
-    } finally {
-      logger.info('Exited rmqServices.initPubSubMQ()');
-    }
-};
+        resolve();
+      } catch (err) {
+        logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
+        reject(err);
+      } finally {
+        logger.info('Exited rmqServices.initPubSubMQ()');
+      }
+    });
+  };
 
 module.exports.initPubSubMQ = initPubSubMQ;
 
