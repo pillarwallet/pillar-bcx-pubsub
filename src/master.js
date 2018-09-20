@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /** @module master.js */
+const Sentry = require('@sentry/node');
+Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
+
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
 const fs = require('fs');
@@ -83,7 +86,7 @@ module.exports.launch = function () {
     //notify the publisher the maximum wallets to monitor
     module.exports.pubs[module.exports.index].send({type: 'config', message: maxWalletsPerPub});
 
-    
+
     module.exports.subs[module.exports.index] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
     logger.info(`Master has launched Houskeeper (PID: ${module.exports.housekeeper.pid}), Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
 
