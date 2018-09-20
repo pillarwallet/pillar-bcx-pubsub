@@ -19,6 +19,7 @@ moment.locale('en_GB');
  * Initialize the pub-sub rabbit mq.
  */
 exports.initPubSubMQ = function () {
+  return new Promise((resolve, reject) => {
     try {
       logger.info('Executing rmqServices.initMQ()');
       amqp.connect(MQ_URL, (err, conn) => {
@@ -26,17 +27,17 @@ exports.initPubSubMQ = function () {
           pubSubChannel = ch;
           const msg = '{}';
           ch.assertQueue(pubSubQueue, { durable: true });
-          // Note: on Node 6 Buffer.from(msg) should be used
           ch.sendToQueue(pubSubQueue, Buffer.from(msg));
-          logger.info(` [x] Sent ${msg}`);
         });
-        // setTimeout(() => { conn.close(); process.exit(0); }, 500);
       });
+      resolve();
     } catch (err) {
       logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
+      reject(err);
     } finally {
       logger.info('Exited rmqServices.initPubSubMQ()');
     }
+  });
 };
 
 /**

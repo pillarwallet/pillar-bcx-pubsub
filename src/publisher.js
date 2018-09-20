@@ -8,20 +8,20 @@ const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 const redis = require('redis');
 let client = redis.createClient();
-
+let MAX_WALLETS = 50000;
 let runId = 0;
 let latestId = '';
 const heapdump = require('heapdump');
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
-let hd;
 
 /**
- * Handle REDIS client connection errors
+ * Function that subscribes to redis related connection errors.
  */
 client.on("error", function (err) {
   logger.error("Publisher failed with REDIS client error: " + err);
 });
+
 /**
  * subscribe to memory leak events
  */
@@ -36,6 +36,9 @@ memwatch.on('leak',function(info) {
   });
 });
 
+/**
+ * Subscribing to memory leak stats
+ */
 memwatch.on('stats',function(stats) {
   logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
@@ -48,16 +51,19 @@ memwatch.on('stats',function(stats) {
  * Function for reporting unhandled promise rejections.
  * @param {any} reason - reason for failure/stack trace
  */
-
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('***********************************************');
-  logger.error('ERROR: Unhandled Rejection at PUBLISHER:', reason.stack || reason);
+  logger.error('ERROR: Unhandled Rejection at PUBLISHER:', JSON.stringify(reason));
   logger.error('***********************************************');
 });
 
 /**
  * Function handling IPC notification that are received from the master
  * @param {any} message - The IPC message that sent from the master
+ * There are 4 types of IPC messages that the publisher can receive from the master, these are
+ * accounts - This is a notification of a newly registered wallets/accounts that the master sends in to publisher to monitor
+ * assets - This is a set of new assets/smart contracts which the publisher should add to its internal monitoring list
+ * config - This a configuration setting that determine the maximum number of wallets/accounts that a publisher to monitor.
  */
 process.on('message', (data) => {
   try {
@@ -76,6 +82,10 @@ process.on('message', (data) => {
       }
       logger.info(`Caching ${message.length} wallets to REDIS server for publisher: pub_${runId}`);
       client.append(`pub_${runId}`,JSON.stringify(message),redis.print);
+      //check if the number of wallets being monitored is greater than the recommended size
+      if(hashMaps.accounts.keys.length >= MAX_WALLETS) {
+        process.send({ type: 'queue.full' });
+      }
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
       // add the new asset to the assets hashmap
@@ -87,6 +97,8 @@ process.on('message', (data) => {
           ethService.subscribeTransferEvents(obj.contractAddress);
         }
       }
+    } else if(data.type == 'config') {
+      MAX_WALLETS = message;
     }
   }catch(e) {
     logger.error('Publisher: Error occured in publisher: ' + e);
@@ -96,11 +108,10 @@ process.on('message', (data) => {
 /**
  * Function that initializes inter process communication queue
  */
-exports.initIPC = function () {
+module.exports.initIPC = function () {
   return new Promise((resolve, reject) => {
     try {
       logger.info('Started executing publisher.initIPC()');
-      logger.info('Publisher requesting master a list of assets to monitor');
 
       if(process.argv[2] === undefined) {
         throw ({ message: 'Invalid runId parameter.' });
@@ -108,25 +119,27 @@ exports.initIPC = function () {
         runId = process.argv[2];
       }
 
+      //request master for a list of assets to be monitored
       process.send({ type: 'assets.request' });
       setTimeout(() => {
         logger.info('Publisher Initializing RMQ.');
-        rmqServices.initPubSubMQ()
-        exports.initSubscriptions();
+        rmqServices.initPubSubMQ().then((err)=> {
+          if(!err) {
+            module.exports.initSubscriptions();
+          } else {
+            logger.error('ERROR: Publisher failed to initialize the RMQ pubsub queue!');
+          }
+        });
       }, 100);
-
-      //request list of assets to be monitored
-      process.send({ type: 'assets.request' });
   
       logger.info('Publisher polling master for new wallets every 5 seconds');
       setInterval(() => {
-          exports.poll();
+          module.exports.poll();
         }, 
         5000
       );
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
-      // throw err;
       reject(err);
     } finally {
       logger.info('Exited publisher.initIPC()');
@@ -138,26 +151,24 @@ exports.initIPC = function () {
 /**
  * Function that continuosly polls master for new wallets/assets.
  */
-exports.poll = function () {
+module.exports.poll = function () {
   if (hashMaps.assets.count() === 0) {
     process.send({ type: 'assets.request' });
   }
   // request new wallets
-  logger.info('Publisher.poll() - Reporting the size of hashmaps  -    ***************************');
-  console.log('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
-              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true)); 
+  logger.info('Publisher.poll() - Reporting the size of hashmaps *************************************************************************');
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
-  logger.info('************************************************************************************************************');
+  logger.info('***************************************************************************************************************************');
   process.send({ type: 'wallet.request', message: latestId });
 };
 
 /**
  * Function that initializes the geth subscriptions
  */
-exports.initSubscriptions = function () {
+module.exports.initSubscriptions = function () {
   logger.info('Publisher subscribing to geth websocket events...');
   //subscribe to pending transactions
   ethService.subscribePendingTxn();

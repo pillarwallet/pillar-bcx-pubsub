@@ -10,18 +10,6 @@ const protocol = 'Ethereum';
 
 
 /**
- * Function for reporting unhandled promise rejections.
- * @param {any} reason - reason for failure/stack trace
- */
-
-process.on('unhandledRejection', (reason, promise) => {
-    logger.error('***********************************************');
-    logger.error('ERROR: Unhandled Rejection at SUBSCRIBER:', reason.stack || reason);
-    logger.error('***********************************************');
-});
-  
-
-/**
  * Method to handle IPC message received from master
  * @param {any} message - The IPC message received from the master
  */
@@ -44,8 +32,9 @@ function init() {
     logger.info('Houskeeper.init(): Started executing the function');
     try {
         dbServices.dbConnect().then(() => {
-            this.checkTxPool();
-            this.updateTxHistory();
+            this.checkTxPool().then(() => {
+                this.updateTxHistory();
+            });
             setInterval(() => { 
                 module.exports.recoverAssetEvents(); 
                 },50000
@@ -96,42 +85,47 @@ module.exports.recoverWallet = recoverWallet;
  * Check the transactions pool and update pending transactions.
  */
 function checkTxPool() {
-    try {
-        logger.info('Housekeeper.checkTxPool(): Checking txpool');
-        dbServices.listPending(protocol).then((pendingTxArray) => {
-            logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
-            pendingTxArray.forEach((item) => {
-                logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
-                //recheck the status of the transaction
-                ethService.getTxReceipt(item.txHash).then((receipt) => {
-                    if(receipt !== null) {
-                        logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
-                        //update the status of the transaction
-                        let status;
-                        if(receipt.status === '0x1') { 
-                            status = 'confirmed';
-                        } else {
-                            status = 'failed';
+    return new Promise((resolve, reject) => {
+        try {
+            logger.info('Housekeeper.checkTxPool(): Checking txpool');
+            dbServices.listPending(protocol).then((pendingTxArray) => {
+                logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
+                pendingTxArray.forEach((item) => {
+                    logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
+                    //recheck the status of the transaction
+                    ethService.getTxReceipt(item.txHash).then((receipt) => {
+                        if(receipt !== null) {
+                            logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
+                            //update the status of the transaction
+                            let status;
+                            if(receipt.status === '0x1') { 
+                                status = 'confirmed';
+                            } else {
+                                status = 'failed';
+                            }
+                            const gasUsed = receipt.gasUsed;
+                            const entry = {
+                                txHash: item.txHash,
+                                status,
+                                gasUsed,
+                                blockNumber: receipt.blockNumber
+                            };
+                            dbServices.dbCollections.transactions.updateTx(entry).then(() => {
+                                logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${txHash}`);
+                            });
                         }
-                        const gasUsed = receipt.gasUsed;
-                        const entry = {
-                            txHash: item.txHash,
-                            status,
-                            gasUsed,
-                            blockNumber: receipt.blockNumber
-                        };
-                        dbServices.dbCollections.transactions.updateTx(entry).then(() => {
-                            logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${txHash}`);
-                        });
-                    }
+                    });
                 });
             });
-        });
-    } catch(e) {
-        logger.error('Housekeeper.checkTxPool(): Failed with error: ' + e);
-    } finally {
-        logger.info('Housekeeper.checkTxPool(): Finished txpool check.')
-    }
+            resolve();
+        } catch(e) {
+            logger.error('Housekeeper.checkTxPool(): Failed with error: ' + e);
+            reject(e);
+        } finally {
+            logger.info('Housekeeper.checkTxPool(): Finished txpool check.');
+            resolve();
+        }
+    });
 }
 module.exports.checkTxPool = checkTxPool;
 

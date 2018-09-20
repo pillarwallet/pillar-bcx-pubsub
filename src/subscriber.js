@@ -12,7 +12,7 @@ let runId = 0;
 
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('***********************************************');
-  logger.error('ERROR: Unhandled Rejection at SUBSCRIBER:', reason.stack || reason);
+  logger.error('ERROR: Unhandled Rejection at SUBSCRIBER:', JSON.stringify(reason));
   logger.error('***********************************************');
 });
 
@@ -20,7 +20,7 @@ process.on('unhandledRejection', (reason, promise) => {
 /**
  * Function that initializes the subscriber service
  */
-exports.initServices = function () {
+module.exports.initServices = function () {
 
   if(process.argv[2] === undefined) {
     throw ({ message: 'Invalid runId parameter.' });
