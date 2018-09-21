@@ -2,6 +2,7 @@
 const logger = require('../utils/logger.js');
 require('dotenv').config();
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 module.exports.mongoose = mongoose;
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
