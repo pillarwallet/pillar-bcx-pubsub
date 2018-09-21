@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 /** @module housekeeper.js */
+const Sentry = require('@sentry/node');
+Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
 require('dotenv').config();
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');

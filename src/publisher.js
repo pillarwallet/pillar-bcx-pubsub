@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /** @module publisher.js */
 'use strict';
+const Sentry = require('@sentry/node');
+Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
 require('dotenv').config();
 const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
