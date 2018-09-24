@@ -24,9 +24,9 @@ process.on('message', (data) => {
         logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
         module.exports.recoverWallet(obj.walletId.toLowerCase(), LOOK_BACK_BLOCKS);
       }
-    } else if(data.type === 'assets') {
-        module.exports.recoverAssetEvents();
-    }
+      //recover all the asset events for this wallet as well
+      module.exports.recoverAssetEvents();
+    } 
 });
 
 /**

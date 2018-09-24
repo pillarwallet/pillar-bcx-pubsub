@@ -31,6 +31,7 @@ module.exports.storeTransactionStats = storeTransactionStats;
 function storeTokenEvent(event,asset,protocol,txn) {
     try {
         logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);
+        logger.debug(`processTx.storeTokenEvent(): accounts size (${hashMaps.accounts.keys.size()}) and assets size (${hashMaps.assets.keys.size()})`);
         dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((tran) => {
             var pillarId, status;
             var tmstmp = time.now();
