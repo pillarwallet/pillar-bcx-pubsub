@@ -460,19 +460,23 @@ module.exports.addERC721 = addERC721;
  * @param {Number} blockNumber - the block number from which to listen to contract events
  */
 async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
-    const contract = new web3.eth.Contract(ERC20ABI,address);
-    const asset = await contract.methods.symbol().call();
-    contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
-        if(!error) {
-            logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
-            events.forEach((event) => { 
-                this.getTxReceipt(event.transactionHash).then((txn) => {
-                    processTx.storeTokenEvent(event,asset,protocol,txn);
+    try {
+        const contract = new web3.eth.Contract(ERC20ABI,address);
+        const asset = await contract.methods.symbol().call();
+        contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
+            if(!error) {
+                logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
+                events.forEach((event) => { 
+                    this.getTxReceipt(event.transactionHash).then((txn) => {
+                        processTx.storeTokenEvent(event,asset,protocol,txn);
+                    });
                 });
-            });
-        } else {
-            logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
-        }
-    });
+            } else {
+                logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
+            }
+        });
+    } catch(err) {
+        logger.error('ethService.getPastEvents(): for contract: ' + address + ' failed with error: ' + err);
+    }
 }
 module.exports.getPastEvents = getPastEvents;
