@@ -24,6 +24,8 @@ process.on('message', (data) => {
         logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
         module.exports.recoverWallet(obj.walletId.toLowerCase(), LOOK_BACK_BLOCKS);
       }
+    } else if(data.type === 'assets') {
+        module.exports.recoverAssetEvents();
     }
 });
 
@@ -37,9 +39,9 @@ function init() {
             this.checkTxPool().then(() => {
                 this.updateTxHistory();
             });
-            setInterval(() => { 
+            setTimeout(() => { 
                 module.exports.recoverAssetEvents(); 
-                },50000
+                },5000
             );
         });
     } catch(e) {
