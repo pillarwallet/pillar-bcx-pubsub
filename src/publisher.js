@@ -136,7 +136,7 @@ module.exports.initIPC = function () {
       }, 100);
   
       logger.info('Publisher starting a cron to poll master for new wallets every 5 seconds');
-      const job = new CronJob('5 * * * * *',() => {
+      const job = new CronJob('*/5 * * * * *',() => {
         module.exports.poll();
       });
       job.start();
