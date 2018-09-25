@@ -9,6 +9,7 @@ const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 const redis = require('redis');
+const CronJob = require('cron').CronJob;
 let client = redis.createClient();
 let MAX_WALLETS = 50000;
 let runId = 0;
@@ -134,12 +135,11 @@ module.exports.initIPC = function () {
         });
       }, 100);
   
-      logger.info('Publisher polling master for new wallets every 5 seconds');
-      setInterval(() => {
-          module.exports.poll();
-        }, 
-        5000
-      );
+      logger.info('Publisher starting a cron to poll master for new wallets every 5 seconds');
+      const job = new CronJob('5 * * * * *',() => {
+        module.exports.poll();
+      });
+      job.start();
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
       reject(err);
