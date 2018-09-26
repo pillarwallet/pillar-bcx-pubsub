@@ -1,6 +1,4 @@
 const sinon = require('sinon');
-const logger = require('./utils/logger');
-logger.transports.forEach((t) => (t.silent = true));
 var runId = process.argv[2];
 
 describe('Test init functions ', () => {

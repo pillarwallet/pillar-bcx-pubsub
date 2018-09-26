@@ -1,6 +1,4 @@
 const housekeeper =  require('./housekeeper.js')
-const logger = require('./utils/logger');
-logger.transports.forEach((t) => (t.silent = true));
 
 describe.only('Housekeeper unit tests', () => {
 	

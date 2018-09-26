@@ -54,6 +54,8 @@
     "json-rpc-client": "^0.2.2",
     "json-rpc2": "^1.0.2",
     "localstorage": "^0.1.0",
+    "log4js": "^3.0.5",
+    "log4js-syslog-appender": "^0.3.1",
     "memwatch-next": "^0.3.0",
     "moment": "^2.22.2",
     "mongoose": "4.13.14",
@@ -72,9 +74,7 @@
     "socket.io": "^2.1.0",
     "triple-beam": "^1.3.0",
     "unix-timestamp": "^0.2.0",
-    "web3": "^1.0.0-beta.36",
-    "winston": "3.0.0-rc4",
-    "winston-syslog": "2.0.0"
+    "web3": "^1.0.0-beta.36"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
