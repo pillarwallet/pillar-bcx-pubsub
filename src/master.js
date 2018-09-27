@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** @module master.js */
 const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
+Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
 
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
