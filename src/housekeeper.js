@@ -115,7 +115,7 @@ function checkTxPool() {
                                 blockNumber: receipt.blockNumber
                             };
                             dbServices.dbCollections.transactions.updateTx(entry).then(() => {
-                                logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${txHash}`);
+                                logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${entry.txHash}`);
                             });
                         }
                     });
