@@ -38,6 +38,52 @@ function dbConnect($arg = { useMongoClient: true }) {
 }
 module.exports.dbConnect = dbConnect;
 
+function accountDetails(address, $arg = { useMongoClient: true }) {
+    return new Promise(((resolve, reject) => {
+        try {
+          if (dbCollections) {
+            dbCollections.accounts.findByEthAddress(address)
+            .then((accounts) => {
+                if(accounts !== undefined) {
+                    logger.debug('Account details ' + accounts.length);
+                }
+                resolve(accounts);
+            })
+            .catch((e) => { reject(e); });
+          } else {
+            module.exports.dbConnect()
+            .then(() => {
+                resolve(module.exports.accountDetails(address));
+            })
+            .catch((e) => { reject(e); });
+          }
+        } catch (e) { reject(e); }
+    }));    
+}
+module.exports.accountDetails = accountDetails;
+
+function assetDetails(asset, $arg = { useMongoClient: true }) {
+    return new Promise(((resolve, reject) => {
+        try {
+          if (dbCollections) {
+            dbCollections.assets.findByAddress(asset)
+            .then((assets) => {
+                logger.debug('Asset details ' + assets);
+                resolve(accounts);
+            })
+            .catch((e) => { reject(e); });
+          } else {
+            module.exports.dbConnect()
+            .then(() => {
+                resolve(module.exports.assetDetails(asset));
+            })
+            .catch((e) => { reject(e); });
+          }
+        } catch (e) { reject(e); }
+    }));   
+}
+module.exports.assetDetails = assetDetails;
+
 function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
     return new Promise(((resolve, reject) => {
       try {

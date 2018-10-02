@@ -187,21 +187,22 @@ module.exports.subscribeTransferEvents = subscribeTransferEvents;
  */
 function getBlockTx(blockNumber) {
     return new Promise(((resolve, reject) => {
+        logger.debug('ethService.getBlockTx(): Fetch transactions from block: ' + blockNumber);
         try {
             if(module.exports.connect()) {
                 web3.eth.getBlock(blockNumber, true)
                 .then((result) => {
-                    // logger.info(result.transactions)
-                    if (result) {
-                        resolve(result.transactions);
-                    } else {
-                        reject('ethService.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED');
-                    }
-                })                
+                    logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
+                    resolve(result.transactions);
+                });
+                logger.debug('Fetched transactions from block');                
             } else {
                 reject('ethService.getBlockTx Error: Connection to geth failed!');
             }
-        } catch (e) { reject(e); }
+        } catch (e) { 
+            logger.error("ethService.getBlockTx(): " + e); 
+            reject(e);
+        }
     }));
 }
 module.exports.getBlockTx = getBlockTx;
@@ -458,8 +459,10 @@ module.exports.addERC721 = addERC721;
  * @param {String} address - the smart contract address to get events
  * @param {String} eventName - the eventName
  * @param {Number} blockNumber - the block number from which to listen to contract events
+ * @param {String} walletAddress - the wallet address relevant to the transaction
+ * @param {String} pillarId - The pillarId corresponding to the transactions
  */
-async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
+async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0, wallet = undefined, pillarId = undefined) {
     try {
         const contract = new web3.eth.Contract(ERC20ABI,address);
         const asset = await contract.methods.symbol().call();
@@ -468,7 +471,35 @@ async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0) {
                 logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
                 events.forEach((event) => { 
                     this.getTxReceipt(event.transactionHash).then((txn) => {
-                        processTx.storeTokenEvent(event,asset,protocol,txn);
+                        if(event.returnValues._to === wallet || event.returnValues._from === wallet) {
+                            dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((tran) => {
+                                var status;
+                                var protocol = 'Ethereum';
+                                var tmstmp = time.now();
+                                status = 'confirmed';
+                                if(tran === null) {
+                                    let entry = {
+                                        pillarId,
+                                        protocol,
+                                        toAddress: event.returnValues._to,
+                                        fromAddress: event.returnValues._from,
+                                        txHash: event.transactionHash,
+                                        asset,
+                                        contractAddress: null,
+                                        timestamp: tmstmp,
+                                        value: event.returnValues._value,
+                                        blockNumber: event.blockNumber,
+                                        status,
+                                        gasPrice: txn.gasPrice,
+                                        gasUsed: txn.gasUsed
+                                    };
+                                    logger.debug('ethService.getPastEvents(): Saving transaction into the database: ' + entry);
+                                    dbServices.dbCollections.transactions.addTx(entry);  
+                                } else {
+                                    logger.debug('processTx.storeTokenEvent(): Transaction ' + event.transactionHash + ' already exists in the database, ignoring!');
+                                }
+                            });
+                        }
                     });
                 });
             } else {
