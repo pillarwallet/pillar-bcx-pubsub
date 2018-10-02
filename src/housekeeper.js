@@ -6,7 +6,7 @@ Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' 
 require('dotenv').config();
 const time = require('unix-timestamp');
 const abiDecoder = require('abi-decoder');
-const ERC20ABI = require('./services//ERC20ABI');
+const ERC20ABI = require('./services/ERC20ABI');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
 const processTx = require('./services/processTx.js');
