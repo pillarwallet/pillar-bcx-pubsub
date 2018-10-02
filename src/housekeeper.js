@@ -96,7 +96,7 @@ function recoverWallet (recoverAddress, pillarId, nbBlocks) {
                                     }
                                 } else {
                                     asset = 'ETH';
-                                    value = receipt .value;    
+                                    value = receipt.value;    
                                 }
                                 dbServices.dbCollections.transactions.findOneByTxHash(hash).then((tran) => {
                                     if (tran === null) {
