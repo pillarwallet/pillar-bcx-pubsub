@@ -39,10 +39,10 @@ function listRecent(idFrom) {
 }
 module.exports.listRecent = listRecent;
 
-function findByAddress(address) {
+function findByEthAddress(address) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ addresses: { $elemMatch: { protocol: 'Ethereum', address } } }, (err, result) => {
+      accounts.Accounts.find({ "addresses.address" : address, protocol: "Ethereum" }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -52,7 +52,7 @@ function findByAddress(address) {
     } catch (e) { reject(e); }
   }));
 }
-module.exports.findByAddress = findByAddress;
+module.exports.findByEthAddress = findByEthAddress;
 
 function findByWalletId(pillarId) {
   return new Promise(((resolve, reject) => {
@@ -103,38 +103,6 @@ function removeAddress(pillarId) {
 }
 module.exports.removeAddress = removeAddress;
 
-/*
-function updateFCMIID(pwalletID, newFCMIID) {
-  return new Promise(((resolve, reject) => {
-    try {
-      accounts.Accounts.find({ walletID }, (err, result) => {
-        if (err) {
-          logger.info(`accounts.updateFCMIID DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        if (result.length === 0) {
-          reject(new Error('Invalid wallet Id'));
-        } else {
-          accounts.accounts.update(
-            { walletID },
-            { FCMIID: newFCMIID },
-            (error) => {
-              if (error) {
-                logger.info(`accounts.updateFCMIID DB controller ERROR: ${error}`);
-                reject(error);
-              }
-              logger.info(`UPDATED FCM INSTANCE ID FOR ACCOUNT ${walletID}\n`);
-              resolve();
-            },
-          );
-        }
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.updateFCMIID = updateFCMIID;
-*/
-
 function emptyCollection() {
   return new Promise(((resolve, reject) => {
     try {
@@ -150,20 +118,3 @@ function emptyCollection() {
   }));
 }
 module.exports.emptyCollection = emptyCollection;
-
-/*
-function getFCMIID(publicAddress) {
-  return new Promise(((resolve, reject) => {
-    try {
-      accounts.Accounts.find({ address: publicAddress.toUpperCase() }, (err, result) => {
-        if (err) {
-          logger.info(`accounts.getFCMIID DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        if (result.length > 0) { resolve(result[0].FCMIID); } else { resolve('FCMIID_not_found'); }
-      });
-    } catch (e) { reject(e); }
-  }));
-}
-module.exports.getFCMIID = getFCMIID;
-*/

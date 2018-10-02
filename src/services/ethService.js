@@ -187,21 +187,22 @@ module.exports.subscribeTransferEvents = subscribeTransferEvents;
  */
 function getBlockTx(blockNumber) {
     return new Promise(((resolve, reject) => {
+        logger.debug('ethService.getBlockTx(): Fetch transactions from block: ' + blockNumber);
         try {
             if(module.exports.connect()) {
                 web3.eth.getBlock(blockNumber, true)
                 .then((result) => {
-                    // logger.info(result.transactions)
-                    if (result) {
-                        resolve(result.transactions);
-                    } else {
-                        reject('ethService.getBlockTx Error: WRONG BLOCK NUMBER PROVIDED');
-                    }
-                })                
+                    logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
+                    resolve(result.transactions);
+                });
+                logger.debug('Fetched transactions from block');                
             } else {
                 reject('ethService.getBlockTx Error: Connection to geth failed!');
             }
-        } catch (e) { reject(e); }
+        } catch (e) { 
+            logger.error("ethService.getBlockTx(): " + e); 
+            reject(e);
+        }
     }));
 }
 module.exports.getBlockTx = getBlockTx;
