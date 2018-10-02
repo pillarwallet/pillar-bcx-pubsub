@@ -27,9 +27,9 @@ process.on('message', (data) => {
         const obj = message[i];
         logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
         module.exports.recoverWallet(obj.walletId.toLowerCase(), obj.pillarId, LOOK_BACK_BLOCKS);
+        module.exports.recoverAssetEvents(obj.walletId.toLowerCase(), obj.pillarId);
       }
       //recover all the asset events for this wallet as well
-      module.exports.recoverAssetEvents();
     } 
 });
 
@@ -43,10 +43,6 @@ function init() {
             this.checkTxPool().then(() => {
                 this.updateTxHistory();
             });
-            setTimeout(() => { 
-                module.exports.recoverAssetEvents(); 
-                },5000
-            );
         });
     } catch(e) {
         logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
@@ -228,22 +224,22 @@ module.exports.updateTxHistory = updateTxHistory;
 /**
  * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
  */
-function recoverAssetEvents() {
+function recoverAssetEvents(wallet,pillarId) {
     try {
-        logger.info('Housekeeper.recoverAssetEvents() started recovering asset events since last run.');
+        logger.info('Housekeeper.recoverAssetEvents() started recovering asset events since last run for address: ' + wallet);
         dbServices.listAssets(protocol).then((assets) => {
             assets.forEach((asset) => {
                 logger.debug('Housekeeper.recoverAssetEvents() : recoving past events of asset ' + asset.symbol);
                 dbServices.findMaxBlock(protocol,asset.symbol).then((blockNumber) => {
                     logger.debug('Housekeeper.recoverAssetEvents(): recovering since ' + blockNumber);
-                    ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber);
+                    ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber,wallet,pillarId);
                 });
             });
         });
     }catch(e) {
-        logger.error('Housekeeper.recoverAssetEvents() failed with error: ' + e);
+        logger.error('Housekeeper.recoverAssetEvents() failed for address: ' + wallet + ' with error: ' + e);
     } finally {
-        logger.info('Housekeeper.recoverAssetEvents() finished recovering all token transfers');
+        logger.info('Housekeeper.recoverAssetEvents() finished recovering all token transfers for address: ' + wallet);
     }
 }
 module.exports.recoverAssetEvents = recoverAssetEvents;
