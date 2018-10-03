@@ -9,7 +9,6 @@ const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./services/ERC20ABI');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices.js');
-const processTx = require('./services/processTx.js');
 const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService.js');
 const protocol = 'Ethereum';
@@ -40,9 +39,7 @@ function init() {
     logger.info('Houskeeper.init(): Started executing the function');
     try {
         dbServices.dbConnect().then(() => {
-            this.checkTxPool().then(() => {
-                this.updateTxHistory();
-            });
+            this.checkTxPool();
         });
     } catch(e) {
         logger.error('Houskeeper.init(): Error initializing houskeeper: ' + e);
@@ -179,48 +176,6 @@ function checkTxPool() {
     });
 }
 module.exports.checkTxPool = checkTxPool;
-
-/**
- * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
- */
-function updateTxHistory() {
-    try {
-        logger.info('Housekeeper.updateTxHistory(): updating tx history');
-        ethService.getLastBlockNumber().then((maxBlock) => {
-            if(maxBlock !== undefined) {
-                logger.info(`Housekeeper.updateTxHistory(): LAST BLOCK NUMBER = ${maxBlock}`);
-                dbServices.findMaxBlock(protocol).then((startBlock) => {
-                    logger.debug('Max block: ' + startBlock);
-                    if (startBlock === undefined || startBlock > maxBlock) {
-                        logger.debug('Housekeeper.updateTxHistory(): Nothing to catchup, already on the latest block');
-                    } else {
-                        logger.info((`Housekeeper.updateTxHistory(): UPDATING TRANSACTIONS HISTORY FROM ETHEREUM NODE... BACK TO BLOCK # ${startBlock}`));
-                        //loop from startBlock to maxBlock and process any new transactions into the database
-                        for(var i = startBlock; i < maxBlock; i++) {
-                            ethService.getBlockTx(i).then((txArray) => {
-                                txArray.forEach((item) => {
-                                    logger.debug(('Housekeeper.updateTxHistory(): validating transaction : ' + item));
-                                    //format and add a new transaction to the database
-                                    ethService.getTxReceipt(item.hash).then((receipt) => {
-                                        if(receipt !== null) {
-                                            processTx.storeIfRelevant(receipt,protocol);
-                                        }
-                                    });
-                                });
-                            });
-                        }
-                    }
-                });
-            }
-        });
-    }catch(e) {
-        logger.error('Housekeeper.updateTxHistory() failed with error: ' + e);
-    } finally {
-        logger.info('Housekeeper.updateTxHistory(): finished update.')
-    }
-}
-module.exports.updateTxHistory = updateTxHistory;
-
 /**
  * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
  */
