@@ -29,10 +29,11 @@ process.on('message', (data) => {
             wallets.set(obj.walletId.toLowerCase(), obj.pillarId);
             logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
             module.exports.recoverAssetEvents(obj.walletId.toLowerCase(), obj.pillarId);
+            if(i == (message.length - 1)) {
+                //recover all the asset events for this wallet as well
+                module.exports.recoverWallet(wallets, LOOK_BACK_BLOCKS);
+            }
         }
-        //recover all the asset events for this wallet as well
-        module.exports.recoverWallet(wallets, LOOK_BACK_BLOCKS);
-        wallets = null;
     } 
 });
 
@@ -90,7 +91,7 @@ function recoverWallet(wallets,nbBlocks) {
                             hash = receipt.transactionHash;
                             
                             dbServices.assetDetails(receipt.to).then((theAsset) => {
-                                if(theAsset !== null) {
+                                if(theAsset !== null && theAsset !== undefined) {
                                     contractAddress = theAsset.contractAddress;
                                     asset = theAsset.symbol;
                                     abiDecoder.addABI(ERC20ABI);
@@ -137,9 +138,9 @@ function recoverWallet(wallets,nbBlocks) {
                     });
                 });
                 const mem = process.memoryUsage();
-                logger.info(`HOUSEKEEPER RECOVERWALLET :: MEMORY PRINT: RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
+                logger.info(`HOUSEKEEPER RECOVERWALLET - RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
             }
-            logger.debug('Housekeeper.recoverWallet(): finished recovering wallet: ' + recoverAddress);
+            logger.debug('Housekeeper.recoverWallet(): finished recovering for wallets: ' + wallets.keys.length);
         });
 
     }catch(e) {
@@ -212,7 +213,7 @@ function recoverAssetEvents(wallet,pillarId) {
                     ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber,wallet,pillarId);
                 });
                 const mem = process.memoryUsage();
-                logger.info(`HOUSEKEEPER PAST EVENTS :: MEMORY PRINT: RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
+                logger.info(`HOUSEKEEPER PASTEVENTS - MEMORY PRINT: RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
             });
         });
     }catch(e) {
