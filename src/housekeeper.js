@@ -31,7 +31,7 @@ process.on('message', (data) => {
             module.exports.recoverAssetEvents(obj.walletId.toLowerCase(), obj.pillarId);
         }
         //recover all the asset events for this wallet as well
-        module.exports.recoverWallets(wallets, LOOK_BACK_BLOCKS);
+        module.exports.recoverWallet(wallets, LOOK_BACK_BLOCKS);
         wallets = null;
     } 
 });
@@ -57,7 +57,7 @@ module.exports.init = init;
  * @param {hashmap} wallets - List of wallets to recover transactions.
  * @param {string} nBlocks - The number of blocks to go back to recover transactions.
  */
-function recoverWallets(wallets,nbBlocks) {
+function recoverWallet(wallets,nbBlocks) {
     try {
         //loop 50 blocks back for the given wallet and update all transactions.
         var tmstmp = time.timestamp();
@@ -67,18 +67,18 @@ function recoverWallets(wallets,nbBlocks) {
         var status;
         var hash;
         var pillarId = '';
-        logger.info('Housekeeper.recoverWallets() - Attempting to recover transactions for ' + wallets.size() + ' over the past ' + nbBlocks);
+        logger.info('Housekeeper.recoverWallet() - Attempting to recover transactions for ' + wallets.size() + ' over the past ' + nbBlocks);
         ethService.getLastBlockNumber().then((startBlock) => {
             var endBlock = startBlock - nbBlocks;
             logger.debug('Recovering transactions from startBlock: ' + startBlock + ' to endBlock: ' + endBlock);
             for(var i = startBlock; i > endBlock; i--) { 
-                logger.debug('Housekeeper.recoverWallets(): Fetching transactions from block: ' + i);
+                logger.debug('Housekeeper.recoverWallet(): Fetching transactions from block: ' + i);
                 ethService.getBlockTx(i).then((transactions) => {
-                    logger.debug('Housekeeper.recoverWallets: Total transactions in block ' + i + ' is ' + transactions.length);
+                    logger.debug('Housekeeper.recoverWallet: Total transactions in block ' + i + ' is ' + transactions.length);
                     transactions.forEach((txn) => {
-                        logger.debug('Housekeeper.recoverWallets() fetch transaction receipt for tran: ' + txn.hash);
+                        logger.debug('Housekeeper.recoverWallet() fetch transaction receipt for tran: ' + txn.hash);
                         ethService.getTxReceipt(txn.hash).then((receipt) => {
-                            logger.debug('Housekeeper.recoverWallets(): Validating txn hash: ' + receipt.transactionHash); 
+                            logger.debug('Housekeeper.recoverWallet(): Validating txn hash: ' + receipt.transactionHash); 
                             if(wallets.has(receipt.from)) {
                                 pillarId = wallets.get(receipt.from);
                             } else if(wallets.has(receipt.to)) {
@@ -143,10 +143,10 @@ function recoverWallets(wallets,nbBlocks) {
         });
 
     }catch(e) {
-        logger.error('Housekeeper.recoverWallets(): Failed with error ' + e); 
+        logger.error('Housekeeper.recoverWallet(): Failed with error ' + e); 
     }
 }
-module.exports.recoverWallets = recoverWallets;
+module.exports.recoverWallet = recoverWallet;
 
 /**
  * Check the transactions pool and update pending transactions.
