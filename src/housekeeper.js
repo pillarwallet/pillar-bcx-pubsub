@@ -67,7 +67,7 @@ function recoverWallet(wallets,nbBlocks) {
         var status;
         var hash;
         var pillarId = '';
-        logger.info('Housekeeper.recoverWallet() - Attempting to recover transactions for ' + wallets.size() + ' over the past ' + nbBlocks);
+        logger.info('Housekeeper.recoverWallet() - Attempting to recover transactions for ' + wallets.keys.length + ' over the past ' + nbBlocks);
         ethService.getLastBlockNumber().then((startBlock) => {
             var endBlock = startBlock - nbBlocks;
             logger.debug('Recovering transactions from startBlock: ' + startBlock + ' to endBlock: ' + endBlock);
