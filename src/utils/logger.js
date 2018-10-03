@@ -10,7 +10,7 @@ log4js.configure({
     default: { type: 'dateFile', filename: `${appDir}/logs/${packageJson.name}-debug`, "pattern":".log",alwaysIncludePattern:true}
   },
   categories: {
-    default: { appenders: ['out','default'], level: 'debug' },
+    default: { appenders: ['out','default'], level: 'info' },
     error: { appenders: ['error'], level: 'error' }
   }
 });
