@@ -60,7 +60,7 @@ module.exports.init = init;
 function recoverWallet(wallets,nbBlocks) {
     try {
         //loop 50 blocks back for the given wallet and update all transactions.
-        var tmstmp = time.timestamp();
+        var tmstmp = time.now();;
         var data, value;
         var from;
         var to;
