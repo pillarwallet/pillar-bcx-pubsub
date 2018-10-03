@@ -46,14 +46,4 @@ describe.only('Housekeeper unit tests', () => {
 		});
 	});
 
-	describe('The updateTxHistory function tests', () => {
-		
-		it('should have been called once', () => {
-			const spy = jest.spyOn(housekeeper, 'updateTxHistory');
-			spy.mockImplementation();
-			spy.call();
-			expect(spy).toHaveBeenCalledTimes(1);
-		});
-	});
-
 });
