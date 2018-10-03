@@ -205,6 +205,9 @@ function recoverAssetEvents(wallet,pillarId) {
             assets.forEach((asset) => {
                 logger.debug('Housekeeper.recoverAssetEvents() : recoving past events of asset ' + asset.symbol);
                 dbServices.findMaxBlock(protocol,asset.symbol).then((blockNumber) => {
+                    if(blockNumber === undefined) {
+                        blockNumber = 0;
+                    }
                     logger.debug('Housekeeper.recoverAssetEvents(): recovering since ' + blockNumber);
                     ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber,wallet,pillarId);
                 });
