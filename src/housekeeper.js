@@ -34,6 +34,7 @@ process.on('message', (data) => {
                 module.exports.recoverWallet(wallets, LOOK_BACK_BLOCKS);
             }
         }
+        wallets = null;
     } 
 });
 
