@@ -205,26 +205,28 @@ module.exports.recoverAssetEvents = recoverAssetEvents;
  */
 function processData(lastId) {
     try {
-        dbServices.dbConnect().then(() => {
+        dbServices.dbConnect().then(async () => {
             //Update pending transactions in the db
-            this.checkTxPool().then(() => {
-                //fetch new registrations since last run
-                logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
-                dbServices.recentAccounts(lastId).then(async (accounts) => {
-                    logger.info(`Housekeeper found accounts: ${accounts.length} NEW to process.`);
-                    var cnt = 0;
-                    await accounts.forEach((account) => {
-                        account.addresses.forEach(async (acc) => {
-                            if(acc.protocol == protocol) {
-                                await this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS);
-                                await this.recoverAssetEvents(acc.address,account.pillarId);
-                                logger.info(`Finished recovering transactions for wallet: ${acc.address} index: ${cnt}`);
-                                entry.lastId = account._id;
-                                this.logMemoryUsage();
-                            }
-                        });
+            await this.checkTxPool();
+            //fetch new registrations since last run
+            logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
+            dbServices.recentAccounts(lastId).then(async (accounts) => {
+                logger.info(`Housekeeper found accounts: ${accounts.length} NEW to process.`);
+                var cnt = 0;
+                await accounts.forEach((account) => {
+                    account.addresses.forEach(async (acc) => {
+                        if(acc.protocol == protocol) {
+                            await this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS);
+                            await this.recoverAssetEvents(acc.address,account.pillarId);
+                            logger.info(`Finished recovering transactions for wallet: ${acc.address} index: ${cnt}`);
+                            entry.lastId = account._id;
+                            this.logMemoryUsage();
+                        }
                     });
                 });
+                entry.status = 'completed';
+                entry.endTime = time.now();
+                client.set('housekeeper',JSON.stringify(entry), redis.print);
             });
         });
     } catch(e) {
@@ -236,12 +238,12 @@ module.exports.processData = processData;
 /**
  * Function that reads from the REDIS server to determine the configuration parameters.
  */
-function init() {
+async function init() {
     logger.info(`Housekeeper(PID: ${process.pid}) started processing.`);
     this.logMemoryUsage();
     try {
         //read REDIS server to feth config parameters for the current run.
-        client.get('housekeeper',async (err,config) => {
+        await client.get('housekeeper',async (err,config) => {
             logger.info(`Housekeeper: Configuration fetched from REDIS = ${config}`);
             if(config === null || config === false) {
                 //the very first run of housekeeper so add the entry to redis server
@@ -250,10 +252,7 @@ function init() {
                 entry.startTime = time.now();
                 entry.endTime =  0;
                 client.set('housekeeper',JSON.stringify(entry),redis.print);
-                await this.processData('');
-                entry.status = 'completed';
-                entry.endTime = time.now();
-                client.set('housekeeper',JSON.stringify(entry), redis.print);
+                this.processData('');
             } else {
                 config = JSON.parse(config);
                 //check the config parameters to check the status of last run
@@ -271,9 +270,6 @@ function init() {
                     entry.status = 'pending';
                     client.set('housekeeper',JSON.stringify(entry), redis.print);
                     this.processData(config.lastId);
-                    entry.status = 'completed';
-                    entry.endTime = time.now();
-                    client.set('housekeeper',JSON.stringify(entry), redis.print);
                 }
             }
         });

@@ -81,7 +81,6 @@ module.exports.launch = function () {
     // start the first program pair of publisher and subscribers
     client.del(`pub_${module.exports.index}`); // clears out the previous cache file during a fresh start
 
-    module.exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     module.exports.pubs[module.exports.index] = fork(`${__dirname}/publisher.js`,[`${module.exports.index}`]);
     //notify the publisher the maximum wallets to monitor
     module.exports.pubs[module.exports.index].send({type: 'config', message: maxWalletsPerPub});
@@ -89,28 +88,6 @@ module.exports.launch = function () {
 
     module.exports.subs[module.exports.index] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
     logger.info(`Master has launched Houskeeper (PID: ${module.exports.housekeeper.pid}), Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
-
-    // handle events associated with the housekeeper child process.
-    module.exports.housekeeper.on('message', (data) => {
-      logger.info(`Housekeeper has sent a message: ${data}`);
-      // broadcast the message to all publishers
-      if (data.type === 'assets') {
-        for (let i = 0; i < module.exports.pubs.length; i++) {
-          module.exports.pubs[i++].send({ type: 'assets', message: data.message });
-        }
-      }
-    });
-
-    module.exports.housekeeper.on('close', (data) => {
-      logger.error(`Master: error occurred Housekeeper (PID: ${module.exports.housekeeper.pid})) closed with code: ${data}`);
-      //COMMENTING OUT THE AUTO RESTART
-      /*
-      if (data !== undefined) {
-        logger.info(`Master: error occurred Housekeeper closed with exit code: ${data}`);
-        module.exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
-      }
-      */
-    });
 
     // handle events associated with the publisher child processes.
     module.exports.pubs[module.exports.index].on('message', (data) => {
