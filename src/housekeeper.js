@@ -5,7 +5,6 @@ const Sentry = require('@sentry/node');
 Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
 require('dotenv').config();
 const time = require('unix-timestamp');
-const HashMap = require('hashmap');
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./services/ERC20ABI');
 const logger = require('./utils/logger');
@@ -30,9 +29,7 @@ process.on('message', (data) => {
             //recover all the asset events for this wallet as well
             module.exports.recoverWallet(obj.walletId.toLowerCase(), obj.pillarId, LOOK_BACK_BLOCKS);
         }
-    } 
-    const mem = process.memoryUsage();
-    logger.info(`HOUSEKEEPER - RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
+    }
 });
 
 /**
@@ -61,6 +58,8 @@ module.exports.init = init;
  */
 function recoverWallet(walletId, pillarId, nbBlocks) {
     try {
+        const mem = process.memoryUsage();
+        logger.info(`HOUSEKEEPER RECOVER - RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
         //loop 50 blocks back for the given wallet and update all transactions.
         var tmstmp = time.now();;
         var data, value;
@@ -136,7 +135,7 @@ function recoverWallet(walletId, pillarId, nbBlocks) {
                     });
                 });
             }
-            logger.debug('Housekeeper.recoverWallet(): finished recovering for wallets: ' + wallets.keys.length);
+            logger.debug('Housekeeper.recoverWallet(): finished recovering for wallets: ' + walletId);
         });
 
     }catch(e) {
@@ -198,6 +197,8 @@ module.exports.checkTxPool = checkTxPool;
 function recoverAssetEvents(wallet,pillarId) {
     try {
         logger.info('Housekeeper.recoverAssetEvents() started recovering asset events since last run for address: ' + wallet);
+        const mem = process.memoryUsage();
+        logger.info(`HOUSEKEEPER MEMORY PRINT: RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
         dbServices.listAssets(protocol).then((assets) => {
             assets.forEach((asset) => {
                 logger.debug('Housekeeper.recoverAssetEvents() : recoving past events of asset ' + asset.symbol);
@@ -208,8 +209,6 @@ function recoverAssetEvents(wallet,pillarId) {
                     logger.debug('Housekeeper.recoverAssetEvents(): recovering since ' + blockNumber);
                     ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber,wallet,pillarId);
                 });
-                const mem = process.memoryUsage();
-                logger.info(`HOUSEKEEPER PASTEVENTS - MEMORY PRINT: RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
             });
         });
     }catch(e) {
