@@ -125,8 +125,9 @@ function recoverWallet(walletId, pillarId, nbBlocks) {
                                                 };
                                                 logger.debug('Housekeeper.recoverWallet(): Saving transaction into the database: ' + entry);
                                                 dbServices.dbCollections.transactions.addTx(entry);
+                                            } else {
+                                                throw new Error('newTx: Transaction already exists');
                                             }
-                                            throw new Error('newTx: Transaction already exists');
                                         });           
                                     } 
                                 });
