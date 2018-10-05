@@ -25,7 +25,6 @@ process.on('message', (data) => {
     if (data.type === 'accounts') {
         for (let i = 0; i < message.length; i++) {
             const obj = message[i];
-            wallets.set(obj.walletId.toLowerCase(), obj.pillarId);
             logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
             module.exports.recoverAssetEvents(obj.walletId.toLowerCase(), obj.pillarId);
             //recover all the asset events for this wallet as well
