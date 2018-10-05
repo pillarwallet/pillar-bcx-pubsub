@@ -192,7 +192,7 @@ function getBlockTx(blockNumber) {
             if(module.exports.connect()) {
                 web3.eth.getBlock(blockNumber, true)
                 .then((result) => {
-                    logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
+                    //logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
                     resolve(result.transactions);
                 });
                 logger.debug('Fetched transactions from block');                
