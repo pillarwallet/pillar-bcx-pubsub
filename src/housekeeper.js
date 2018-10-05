@@ -23,19 +23,17 @@ process.on('message', (data) => {
     logger.debug('Housekeeper has received message :' + JSON.stringify(data) + ' from master');
     const message = data.message;
     if (data.type === 'accounts') {
-        var wallets = new HashMap();
         for (let i = 0; i < message.length; i++) {
             const obj = message[i];
             wallets.set(obj.walletId.toLowerCase(), obj.pillarId);
             logger.debug(`Housekeeper received notification to monitor :${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId}`);
             module.exports.recoverAssetEvents(obj.walletId.toLowerCase(), obj.pillarId);
-            if(i == (message.length - 1)) {
-                //recover all the asset events for this wallet as well
-                module.exports.recoverWallet(wallets, LOOK_BACK_BLOCKS);
-            }
+            //recover all the asset events for this wallet as well
+            module.exports.recoverWallet(obj.walletId.toLowerCase(), obj.pillarId, LOOK_BACK_BLOCKS);
         }
-        wallets = null;
     } 
+    const mem = process.memoryUsage();
+    logger.info(`HOUSEKEEPER - RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
 });
 
 /**
@@ -44,6 +42,8 @@ process.on('message', (data) => {
 function init() {
     logger.info('Houskeeper.init(): Started executing the function');
     try {
+        const mem = process.memoryUsage();
+        logger.info(`HOUSEKEEPER INIT - RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
         dbServices.dbConnect().then(() => {
             this.checkTxPool();
         });
@@ -56,10 +56,11 @@ module.exports.init = init;
 
 /**
  * Recover transactions corresponding to a wallet by going back blocks.
- * @param {hashmap} wallets - List of wallets to recover transactions.
+ * @param {string} walletId - Wallet ID for which transactions has to be recovered.
+ * @param {string} pillarId - Pillar ID for which transactions has to be recovered.
  * @param {string} nBlocks - The number of blocks to go back to recover transactions.
  */
-function recoverWallet(wallets,nbBlocks) {
+function recoverWallet(walletId, pillarId, nbBlocks) {
     try {
         //loop 50 blocks back for the given wallet and update all transactions.
         var tmstmp = time.now();;
@@ -69,7 +70,7 @@ function recoverWallet(wallets,nbBlocks) {
         var status;
         var hash;
         var pillarId = '';
-        logger.info('Housekeeper.recoverWallet() - Attempting to recover transactions for ' + wallets.keys.length + ' over the past ' + nbBlocks);
+        logger.info('Housekeeper.recoverWallet() - Attempting to recover transactions for ' + walletId + ' over the past ' + nbBlocks);
         ethService.getLastBlockNumber().then((startBlock) => {
             var endBlock = startBlock - nbBlocks;
             logger.debug('Recovering transactions from startBlock: ' + startBlock + ' to endBlock: ' + endBlock);
@@ -81,65 +82,60 @@ function recoverWallet(wallets,nbBlocks) {
                         logger.debug('Housekeeper.recoverWallet() fetch transaction receipt for tran: ' + txn.hash);
                         ethService.getTxReceipt(txn.hash).then((receipt) => {
                             logger.debug('Housekeeper.recoverWallet(): Validating txn hash: ' + receipt.transactionHash); 
-                            if(wallets.has(receipt.from)) {
-                                pillarId = wallets.get(receipt.from);
-                            } else if(wallets.has(receipt.to)) {
-                                pillarId = wallets.get(receipt.to);
-                            }
-                            from = receipt.from;
-                            to = receipt.to;
-                            status = (receipt.status === '0x1' ? 'confirmed' : 'failed');
-                            hash = receipt.transactionHash;
-                            
-                            dbServices.assetDetails(receipt.to).then((theAsset) => {
-                                if(theAsset !== null && theAsset !== undefined) {
-                                    contractAddress = theAsset.contractAddress;
-                                    asset = theAsset.symbol;
-                                    abiDecoder.addABI(ERC20ABI);
-                                    data = abiDecoder.decodeMethod(receipt.input);
-                                    if ((data !== undefined) && (data.name === 'transfer')) { 
-                                        //smart contract call hence the asset must be the token name
-                                        to = data.params[0].value;
-                                        value = data.params[1].value;
-                                        if(wallets.has(to)) {
-                                            //relevant transaction so process it.
-                                            pillarId = wallets.get(to);
+                            if(receipt.from === walletId || receipt.to === walletId) {
+                                from = receipt.from;
+                                to = receipt.to;
+                                status = (receipt.status === '0x1' ? 'confirmed' : 'failed');
+                                hash = receipt.transactionHash;
+                                
+                                dbServices.assetDetails(receipt.to).then((theAsset) => {
+                                    if(theAsset !== null && theAsset !== undefined) {
+                                        contractAddress = theAsset.contractAddress;
+                                        asset = theAsset.symbol;
+                                        abiDecoder.addABI(ERC20ABI);
+                                        data = abiDecoder.decodeMethod(receipt.input);
+                                        if ((data !== undefined) && (data.name === 'transfer')) { 
+                                            //smart contract call hence the asset must be the token name
+                                            to = data.params[0].value;
+                                            value = data.params[1].value;
+                                            if(to !== walletId) {
+                                                //not relevant transaction
+                                                return;
+                                            }
                                         }
+                                    } else {
+                                        asset = 'ETH';
+                                        value = receipt.value; 
                                     }
-                                } else {
-                                    asset = 'ETH';
-                                    value = receipt.value; 
-                                }
 
-                                if(pillarId !== '') {
-                                    dbServices.dbCollections.transactions.findOneByTxHash(hash).then((tran) => {
-                                        if (tran === null) {
-                                            let entry = {
-                                                pillarId,
-                                                protocol,
-                                                toAddress: to,
-                                                fromAddress: from,
-                                                txHash: hash,
-                                                asset,
-                                                contractAddress: null,
-                                                timestamp: tmstmp,
-                                                value,
-                                                gasPrice: receipt.gasPrice,
-                                                blockNumber: receipt.blockNumber,
-                                                status
-                                            };
-                                            logger.debug('Housekeeper.recoverWallet(): Saving transaction into the database: ' + entry);
-                                            dbServices.dbCollections.transactions.addTx(entry);
-                                        }
-                                        throw new Error('newTx: Transaction already exists');
-                                    });           
-                                } 
-                            });
+                                    if(pillarId !== '') {
+                                        dbServices.dbCollections.transactions.findOneByTxHash(hash).then((tran) => {
+                                            if (tran === null) {
+                                                let entry = {
+                                                    pillarId,
+                                                    protocol,
+                                                    toAddress: to,
+                                                    fromAddress: from,
+                                                    txHash: hash,
+                                                    asset,
+                                                    contractAddress: null,
+                                                    timestamp: tmstmp,
+                                                    value,
+                                                    gasPrice: receipt.gasPrice,
+                                                    blockNumber: receipt.blockNumber,
+                                                    status
+                                                };
+                                                logger.debug('Housekeeper.recoverWallet(): Saving transaction into the database: ' + entry);
+                                                dbServices.dbCollections.transactions.addTx(entry);
+                                            }
+                                            throw new Error('newTx: Transaction already exists');
+                                        });           
+                                    } 
+                                });
+                            }
                         });
                     });
                 });
-                const mem = process.memoryUsage();
-                logger.info(`HOUSEKEEPER RECOVERWALLET - RSS=${mem.rss}, HEAPTOTAL=${mem.heapTotal}, HEAPUSED=${mem.heapUsed}, EXTERNAL=${mem.external}`);
             }
             logger.debug('Housekeeper.recoverWallet(): finished recovering for wallets: ' + wallets.keys.length);
         });
