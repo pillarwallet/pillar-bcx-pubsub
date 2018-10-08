@@ -18,10 +18,12 @@
   },
   "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
+    "@pillarwallet/common-logger": "1.0.19",
     "@sentry/node": "^4.0.0",
     "abi-decoder": "^1.2.0",
     "amqp": "^0.2.7",
     "amqplib": "^0.5.2",
+    "app-root-path": "^2.1.0",
     "arraybuffer-to-string": "^1.0.2",
     "bignumber.js": "^5.0.0",
     "bitcoin-live-transactions": "0.0.13",
