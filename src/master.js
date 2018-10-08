@@ -145,40 +145,12 @@ module.exports.launch = function () {
     module.exports.pubs[module.exports.index].on('close', (data) => {
       const pubId = (module.exports.index - 1);
       logger.error(`Master: error occurred Publisher: ${pubId} (PID: ${module.exports.pubs[pubId].pid}) closed with code: ${data}`);
-      
-      //COMMENTING OUT THE AUTO RESTART
-      /*
-      if (data !== undefined) {
-        module.exports.pubs[pubId] = fork(`${__dirname}/publisher.js`,[`${module.exports.index}`]);
-        // send the cached set of wallet addresses
-        logger.info(`Restarted publisher ${pubId} (PID: ${module.exports.pubs[pubId].pid})`);
-
-        //read the wallets from redis and pass on to server
-        if( !(client.get(`pub_${pubId}`)) ) {
-          logger.error(`Error: cannot find pub_${pubId}`)
-          return
-        }
-        client.get(`pub_${pubId}`).then((res) => {
-          logger.info(`Master: restarted the publisher with the following accounts ${res}`);
-          module.exports.pubs[pubId].send({ type: 'accounts', message:res });
-        });
-      }
-      */
     });
 
     // handle events related to the subscriber child processes
     module.exports.subs[module.exports.index].on('close', (data) => {
       const subId = (module.exports.index - 1);
       logger.error(`Master: error occurred Publisher: ${subId} (PID: ${module.exports.subs[subId].pid}) closed with code: ${data}`);
-      //COMMENTING OUT THE AUTO RESTART
-      /*
-      if (data !== undefined) {
-        // restart the failed subscriber process
-        logger.info(`Master: error occurred Subscriber: ${subId} (PID: ${module.exports.subs[subId].pid})  closed with code: ${data}`);
-        module.exports.subs[subId] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
-        logger.info(`Restarted subscriber ${subId} (PID: ${module.exports.subs[subId].pid})`);
-      }
-      */
     });
 
     module.exports.index++;
