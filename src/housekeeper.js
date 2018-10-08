@@ -16,6 +16,7 @@ const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
 
 let entry = {};
+let startBlock;
 
 /**
  * Function that subscribes to redis related connection errors.
@@ -42,41 +43,45 @@ module.exports.logMemoryUsage = logMemoryUsage;
 /**
  * Check the transactions pool and update pending transactions.
  */
-function checkTxPool() {
-    try {
-        logger.info('Housekeeper.checkTxPool(): Checking txpool');
-        dbServices.listPending(protocol).then((pendingTxArray) => {
-            logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
-            pendingTxArray.forEach((item) => {
-                logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
-                //recheck the status of the transaction
-                ethService.getTxReceipt(item.txHash).then((receipt) => {
-                    if(receipt !== null) {
-                        logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
-                        //update the status of the transaction
-                        let status;
-                        if(receipt.status === '0x1') { 
-                            status = 'confirmed';
-                        } else {
-                            status = 'failed';
+async function checkTxPool() {
+    return new Promise(async (resolve,reject) => {
+        try {
+            logger.info('Housekeeper.checkTxPool(): Checking txpool');
+            await dbServices.listPending(protocol).then((pendingTxArray) => {
+                logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
+                pendingTxArray.forEach((item) => {
+                    logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
+                    //recheck the status of the transaction
+                    ethService.getTxReceipt(item.txHash).then((receipt) => {
+                        if(receipt !== null) {
+                            logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
+                            //update the status of the transaction
+                            let status;
+                            if(receipt.status === '0x1') { 
+                                status = 'confirmed';
+                            } else {
+                                status = 'failed';
+                            }
+                            const gasUsed = receipt.gasUsed;
+                            const entry = {
+                                txHash: item.txHash,
+                                status,
+                                gasUsed,
+                                blockNumber: receipt.blockNumber
+                            };
+                            dbServices.dbCollections.transactions.updateTx(entry).then(() => {
+                                logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${entry.txHash}`);
+                            });
                         }
-                        const gasUsed = receipt.gasUsed;
-                        const entry = {
-                            txHash: item.txHash,
-                            status,
-                            gasUsed,
-                            blockNumber: receipt.blockNumber
-                        };
-                        dbServices.dbCollections.transactions.updateTx(entry).then(() => {
-                            logger.info(`Housekeeper.checkTxPool(): Transaction updated: ${entry.txHash}`);
-                        });
-                    }
+                    });
                 });
             });
-        });
-    } catch(e) {
-        logger.error('Housekeeper.checkTxPool(): Failed with error: ' + e);
-    }
+            resolve();
+        } catch(e) {
+            logger.error(`Housekeeper.checkTxPool(): Failed with error: ${e}`);
+            reject(e);
+        }
+    });
 }
 module.exports.checkTxPool = checkTxPool;
 
@@ -87,17 +92,17 @@ module.exports.checkTxPool = checkTxPool;
  * @param {string} nBlocks - The number of blocks to go back to recover transactions.
  */
 async function recoverWallet(walletId, pillarId, nbBlocks) {
-    try {
-        //loop 50 blocks back for the given wallet and update all transactions.
-        var tmstmp = time.now();;
-        var data, value;
-        var from;
-        var to;
-        var status;
-        var hash;
-        var pillarId = '';
-        logger.info(`Housekeeper.recoverWallet() - Attempting to recover transactions for ${walletId} over the past ${nbBlocks} blocks`);
-        ethService.getLastBlockNumber().then((startBlock) => {
+    return new Promise(async (resolve,reject) => {
+        try {
+            //loop 50 blocks back for the given wallet and update all transactions.
+            var tmstmp = time.now();;
+            var data, value;
+            var from;
+            var to;
+            var status;
+            var hash;
+            var pillarId = '';
+            logger.info(`Housekeeper.recoverWallet() - Attempting to recover transactions for ${walletId} over the past ${nbBlocks} blocks`);
             var endBlock = startBlock - nbBlocks;
             logger.debug(`Recovering transactions from startBlock: ${startBlock} to endBlock: ${endBlock}`);
             for(var i = startBlock; i > endBlock; i--) { 
@@ -164,12 +169,13 @@ async function recoverWallet(walletId, pillarId, nbBlocks) {
                     });
                 });
             }
-            logger.debug(`Housekeeper.recoverWallet(): finished recovering for wallets: ${walletId}`);
-        });
-
-    }catch(e) {
-        logger.error(`Housekeeper.recoverWallet(): Failed with error ${e}`); 
-    }
+            logger.debug(`Housekeeper.recoverWallet(): finished recovering for wallets: ${walletId}`);    
+            resolve();
+        }catch(e) {
+            logger.error(`Housekeeper.recoverWallet(): Failed with error ${e}`); 
+            reject(e);
+        }
+    });
 }
 module.exports.recoverWallet = recoverWallet;
 
@@ -179,23 +185,20 @@ module.exports.recoverWallet = recoverWallet;
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAssetEvents(wallet,pillarId) {
-    try {
-        logger.info(`Housekeeper.recoverAssetEvents() started recovering asset events since last run for address: ${wallet}`);
-        dbServices.listAssets(protocol).then((assets) => {
-            assets.forEach((asset) => {
-                logger.debug(`Housekeeper.recoverAssetEvents() : recoving past events of asset ${asset.symbol}`);
-                dbServices.findMaxBlock(protocol,asset.symbol).then((blockNumber) => {
-                    if(blockNumber === undefined) {
-                        blockNumber = 0;
-                    }
-                    logger.debug(`Housekeeper.recoverAssetEvents(): recovering since ${blockNumber}`);
-                    ethService.getPastEvents(asset.contractAddress,'Transfer',blockNumber,wallet,pillarId);
+    return new Promise(async (resolve,reject) => {
+        try {
+            await dbServices.listAssets(protocol).then((assets) => {
+                assets.forEach(async (asset) => {
+                    logger.info(`Housekeeper.recoverAssetEvents() for wallet - ${wallet}: past events of asset ${asset.symbol} since block: ${entry.blockNumber}`);
+                    ethService.getPastEvents(asset.contractAddress,'Transfer',entry.blockNumber,wallet,pillarId);
                 });
             });
-        });
-    }catch(e) {
-        logger.error(`Housekeeper.recoverAssetEvents() failed for address: ${wallet} with error:clear ${e}`);
-    }
+            resolve();
+        }catch(e) {
+            logger.error(`Housekeeper.recoverAssetEvents() failed for address: ${wallet} with error:clear ${e}`);
+            reject(e);
+        }
+    });
 }
 module.exports.recoverAssetEvents = recoverAssetEvents;
 
@@ -221,27 +224,25 @@ function processData(lastId) {
                     process.exit();
 
                 } else {
-                    var cnt =0;
-                    await accounts.forEach((account) => {
-                        cnt++;
-                        account.addresses.forEach(async (acc) => {
-                            if(acc.protocol == protocol) {
-                                await this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS);
-                                await this.recoverAssetEvents(acc.address,account.pillarId);
+                    var promises = [];
+                    await accounts.forEach(async (account) => {
+                        await account.addresses.forEach(async (acc) => {
+                            if(acc.protocol === protocol) {
+                                promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
+                                promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
                                 logger.info(`Finished recovering transactions for wallet: ${acc.address}`);
-                                entry.lastId = account._id;
+                                entry.lastId = accounts._id;
                             }
                         });
-                        //update redis after processing
-                        if(cnt === accounts.length) {
-                            entry.status = 'completed';
-                            entry.lastId = account._id;
-                            entry.endTime = time.now();
-                            client.set('housekeeper',JSON.stringify(entry), redis.print);
-                            logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`)
-                            this.logMemoryUsage();
-                            process.exit();
-                        }
+                    });
+                    Promise.all(promises).then(() => {
+                        entry.status = 'completed';
+                        entry.lastId = accounts._id;
+                        entry.endTime = time.now();
+                        client.set('housekeeper',JSON.stringify(entry), redis.print);
+                        logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`)
+                        this.logMemoryUsage();
+                        process.exit();
                     });
                 }
             });
@@ -259,7 +260,10 @@ async function init() {
     logger.info(`Housekeeper(PID: ${process.pid}) started processing.`);
     this.logMemoryUsage();
     try {
-        //read REDIS server to feth config parameters for the current run.
+        startBlock = await ethService.getLastBlockNumber();
+        entry.blockNumber = startBlock - LOOK_BACK_BLOCKS;
+        logger.info(`Latest blocknumber: ${startBlock}`);
+        //read REDIS server to fetch config parameters for the current run.
         await client.get('housekeeper',async (err,config) => {
             logger.info(`Housekeeper: Configuration fetched from REDIS = ${config}`);
             if(config === null || config === false) {
@@ -296,8 +300,6 @@ async function init() {
         entry.endTime = time.now();
         client.set('housekeeper',JSON.stringify(entry), redis.print);
         throw e;
-    } finally {
-        logger.info('Houskeeper.init(): Finished executing the function');
     }
 }
 module.exports.init = init;
