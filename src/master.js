@@ -18,7 +18,6 @@ const options = commandLineArgs(optionDefinitions, {partial: true});
 const dbServices = require('./services/dbServices');
 let protocol = 'Ethereum';
 let maxWalletsPerPub = 500000;
-module.exports.housekeeper;
 module.exports.pubs = [];
 module.exports.subs = [];
 module.exports.index = 0;
@@ -85,9 +84,8 @@ module.exports.launch = function () {
     //notify the publisher the maximum wallets to monitor
     module.exports.pubs[module.exports.index].send({type: 'config', message: maxWalletsPerPub});
 
-
     module.exports.subs[module.exports.index] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
-    logger.info(`Master has launched Houskeeper (PID: ${module.exports.housekeeper.pid}), Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
+    logger.info(`Master has launched Houskeeper (Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
 
     // handle events associated with the publisher child processes.
     module.exports.pubs[module.exports.index].on('message', (data) => {
