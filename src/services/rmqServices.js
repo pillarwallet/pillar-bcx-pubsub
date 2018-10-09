@@ -149,8 +149,6 @@ function initSubPubMQ() {
         ch.assertQueue(pubSubQueue, { durable: true });
         ch.consume(pubSubQueue, (msg) => {
           
-          this.logMemoryUsage()
-          
           logger.info(`Subscriber received rmq message: ${msg.content}`);
           if (typeof msg.content !== 'undefined' && msg.content !== '' &&
             validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
