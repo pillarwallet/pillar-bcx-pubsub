@@ -213,7 +213,7 @@ function processData(lastId) {
             await this.checkTxPool();
             //fetch new registrations since last run
             logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
-            dbServices.recentAccounts(lastId).then(async (accounts) => {
+            await dbServices.recentAccounts(lastId).then(async (accounts) => {
                 logger.info(`Housekeeper found accounts: ${accounts.length} wallets to process.`);
                 if(accounts === null || accounts.length === 0) {
                     entry.status = 'completed';
@@ -225,8 +225,8 @@ function processData(lastId) {
 
                 } else {
                     var promises = [];
-                    await accounts.forEach(async (account) => {
-                        await account.addresses.forEach(async (acc) => {
+                    accounts.forEach((account) => {
+                        account.addresses.forEach((acc) => {
                             if(acc.protocol === protocol) {
                                 promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
                                 promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
@@ -235,7 +235,7 @@ function processData(lastId) {
                             }
                         });
                     });
-                    Promise.all(promises).then(() => {
+                    await Promise.all(promises).then(() => {
                         entry.status = 'completed';
                         entry.lastId = accounts._id;
                         entry.endTime = time.now();
@@ -264,7 +264,7 @@ async function init() {
         entry.blockNumber = startBlock - LOOK_BACK_BLOCKS;
         logger.info(`Latest blocknumber: ${startBlock}`);
         //read REDIS server to fetch config parameters for the current run.
-        await client.get('housekeeper',async (err,config) => {
+        client.get('housekeeper',async (err,config) => {
             logger.info(`Housekeeper: Configuration fetched from REDIS = ${config}`);
             if(config === null || config === false) {
                 //the very first run of housekeeper so add the entry to redis server
