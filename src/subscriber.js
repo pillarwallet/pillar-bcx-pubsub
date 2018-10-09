@@ -2,6 +2,7 @@
 /** @module subscriber.js */
 const Sentry = require('@sentry/node');
 Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
+const CronJob = require('cron').CronJob;
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');
@@ -34,6 +35,10 @@ module.exports.initServices = function () {
     .then(() => {
       logger.info('Subscriber.initServices(): Connected to database');
       rmqServices.initSubPubMQ();
+      const job = new CronJob('*/5 * * * * *',() => {
+        module.exports.logMemoryUsage();
+      });
+      job.start();
     })
     .catch((err) => {
       logger.error(err.message);
