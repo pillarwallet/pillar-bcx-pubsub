@@ -253,23 +253,23 @@ function findMaxBlock(protocol,asset = null) {
       try {
         if(dbCollections) {
             if(asset == null) {
-            dbCollections.transactions.findMaxBlock(protocol).then((maxBlock) => {
-                if(maxBlock !== 'undefined') {
-                    logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
-                } else {
-                    maxBlock = 0;
-                }
-                resolve(maxBlock);
-            });
+                dbCollections.transactions.findMaxBlock(protocol).then((maxBlock) => {
+                    if(maxBlock !== undefined && maxBlock !== null) {
+                        logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+                    } else {
+                        maxBlock = 0;
+                    }
+                    resolve(maxBlock);
+                });
             } else {
-            dbCollections.transactions.findMaxBlock(protocol,asset).then((maxBlock) => {
-                if(maxBlock !== 'undefined') {
-                    logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
-                } else {
-                    maxBlock = 0;
-                }
-                resolve(maxBlock);
-            });
+                dbCollections.transactions.findMaxBlock(protocol,asset).then((maxBlock) => {
+                    if(maxBlock !== undefined && maxBlock !== null) {
+                        logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+                    } else {
+                        maxBlock = 0;
+                    }
+                    resolve(maxBlock);
+                });
             }
         } else {
              module.exports.dbConnect().then(() => {

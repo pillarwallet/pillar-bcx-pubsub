@@ -14,7 +14,6 @@ let web3;
  * Establish connection to the geth node
  */
 function connect() {
-    logger.info('ethService.connect(): Connecting to web3.');
     return new Promise(((resolve, reject) => {
         try {
             if(web3 === undefined || (!web3.eth.isSyncing())) {
@@ -27,7 +26,6 @@ function connect() {
                 module.exports.web3 = web3;
                 resolve(true);
             } else {
-                logger.info('ethService.connect(): Re-using existing connection to geth: ' + gethURL);
                 resolve(true);
             }
         } catch(e) { 
@@ -192,7 +190,7 @@ function getBlockTx(blockNumber) {
             if(module.exports.connect()) {
                 web3.eth.getBlock(blockNumber, true)
                 .then((result) => {
-                    logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
+                    //logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
                     resolve(result.transactions);
                 });
                 logger.debug('Fetched transactions from block');                

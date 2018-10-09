@@ -18,7 +18,6 @@ const options = commandLineArgs(optionDefinitions, {partial: true});
 const dbServices = require('./services/dbServices');
 let protocol = 'Ethereum';
 let maxWalletsPerPub = 500000;
-module.exports.housekeeper;
 module.exports.pubs = [];
 module.exports.subs = [];
 module.exports.index = 0;
@@ -39,6 +38,20 @@ process.on('unhandledRejection', (reason, promise) => {
 client.on("error", function (err) {
   logger.error("Master failed with REDIS client error: " + err);
 });
+
+/**
+ * commonon logger function that prints out memory footprint of the process
+ */
+module.exports.logMemoryUsage = function (){
+  const mem = process.memoryUsage();
+  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
+  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
+  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
+  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
+  logger.info('*****************************************************************************************************************************');
+  logger.info(`Master - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
+  logger.info('*****************************************************************************************************************************');
+};
 
 /**
  * Function that initializes the master after validating command line arguments.
@@ -81,36 +94,12 @@ module.exports.launch = function () {
     // start the first program pair of publisher and subscribers
     client.del(`pub_${module.exports.index}`); // clears out the previous cache file during a fresh start
 
-    module.exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
     module.exports.pubs[module.exports.index] = fork(`${__dirname}/publisher.js`,[`${module.exports.index}`]);
     //notify the publisher the maximum wallets to monitor
     module.exports.pubs[module.exports.index].send({type: 'config', message: maxWalletsPerPub});
 
-
     module.exports.subs[module.exports.index] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
-    logger.info(`Master has launched Houskeeper (PID: ${module.exports.housekeeper.pid}), Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
-
-    // handle events associated with the housekeeper child process.
-    module.exports.housekeeper.on('message', (data) => {
-      logger.info(`Housekeeper has sent a message: ${data}`);
-      // broadcast the message to all publishers
-      if (data.type === 'assets') {
-        for (let i = 0; i < module.exports.pubs.length; i++) {
-          module.exports.pubs[i++].send({ type: 'assets', message: data.message });
-        }
-      }
-    });
-
-    module.exports.housekeeper.on('close', (data) => {
-      logger.error(`Master: error occurred Housekeeper (PID: ${module.exports.housekeeper.pid})) closed with code: ${data}`);
-      //COMMENTING OUT THE AUTO RESTART
-      /*
-      if (data !== undefined) {
-        logger.info(`Master: error occurred Housekeeper closed with exit code: ${data}`);
-        module.exports.housekeeper = fork(`${__dirname}/housekeeper.js`);
-      }
-      */
-    });
+    logger.info(`Master has launched Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
 
     // handle events associated with the publisher child processes.
     module.exports.pubs[module.exports.index].on('message', (data) => {
@@ -153,6 +142,7 @@ module.exports.launch = function () {
             //notify the same message to the housekeeper to perform catchup services for the new wallet
             logger.info('Master notifying Housekeeper to monitor new wallet registrations');
             module.exports.notify(message,module.exports.housekeeper);
+            module.exports.logMemoryUsage();
           });
         }
         if (data.type === 'queue.full') {
@@ -168,40 +158,12 @@ module.exports.launch = function () {
     module.exports.pubs[module.exports.index].on('close', (data) => {
       const pubId = (module.exports.index - 1);
       logger.error(`Master: error occurred Publisher: ${pubId} (PID: ${module.exports.pubs[pubId].pid}) closed with code: ${data}`);
-      
-      //COMMENTING OUT THE AUTO RESTART
-      /*
-      if (data !== undefined) {
-        module.exports.pubs[pubId] = fork(`${__dirname}/publisher.js`,[`${module.exports.index}`]);
-        // send the cached set of wallet addresses
-        logger.info(`Restarted publisher ${pubId} (PID: ${module.exports.pubs[pubId].pid})`);
-
-        //read the wallets from redis and pass on to server
-        if( !(client.get(`pub_${pubId}`)) ) {
-          logger.error(`Error: cannot find pub_${pubId}`)
-          return
-        }
-        client.get(`pub_${pubId}`).then((res) => {
-          logger.info(`Master: restarted the publisher with the following accounts ${res}`);
-          module.exports.pubs[pubId].send({ type: 'accounts', message:res });
-        });
-      }
-      */
     });
 
     // handle events related to the subscriber child processes
     module.exports.subs[module.exports.index].on('close', (data) => {
       const subId = (module.exports.index - 1);
       logger.error(`Master: error occurred Publisher: ${subId} (PID: ${module.exports.subs[subId].pid}) closed with code: ${data}`);
-      //COMMENTING OUT THE AUTO RESTART
-      /*
-      if (data !== undefined) {
-        // restart the failed subscriber process
-        logger.info(`Master: error occurred Subscriber: ${subId} (PID: ${module.exports.subs[subId].pid})  closed with code: ${data}`);
-        module.exports.subs[subId] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
-        logger.info(`Restarted subscriber ${subId} (PID: ${module.exports.subs[subId].pid})`);
-      }
-      */
     });
 
     module.exports.index++;
