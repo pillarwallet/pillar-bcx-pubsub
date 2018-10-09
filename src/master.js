@@ -40,11 +40,25 @@ client.on("error", function (err) {
   logger.error("Master failed with REDIS client error: " + err);
 });
 
+
+function logMemoryUsage() {
+  const mem = process.memoryUsage();
+  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
+  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
+  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
+  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
+  logger.info('*****************************************************************************************************************************');
+  logger.info(`Master - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
+  logger.info('*****************************************************************************************************************************');
+}
+module.exports.logMemoryUsage = logMemoryUsage;
+
 /**
  * Function that initializes the master after validating command line arguments.
  * @param {any} options - List of command line arguments
  */
 module.exports.init = function (options) {
+  
   try {
     logger.info('Started executing master.init()');
 
@@ -75,6 +89,9 @@ module.exports.init = function (options) {
  * Function that spawns housekeeper, publisher and subscriber.
  */
 module.exports.launch = function () {
+
+  this.logMemoryUsage();
+
   try {
     logger.info('Started executing master.launch()');
 
@@ -218,6 +235,9 @@ module.exports.launch = function () {
  * @param {any} socket - Reference to the process id corresponding to the publisher
  */
 module.exports.notify = function(message,socket) {
+
+  this.logMemoryUsage();
+  
   try {
     logger.info('Started executing master.notify()');
 

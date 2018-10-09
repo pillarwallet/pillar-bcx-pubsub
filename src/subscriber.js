@@ -18,11 +18,12 @@ process.on('unhandledRejection', (reason, promise) => {
   logger.error('***********************************************');
 });
 
-
 /**
  * Function that initializes the subscriber service
  */
 module.exports.initServices = function () {
+  
+  this.logMemoryUsage();
 
   if(process.argv[2] === undefined) {
     throw ({ message: 'Invalid runId parameter.' });
