@@ -157,13 +157,19 @@ module.exports.poll = function () {
   if (hashMaps.assets.count() === 0) {
     process.send({ type: 'assets.request' });
   }
+  const mem = process.memoryUsage();
+  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
+  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
+  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
+  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
   // request new wallets
-  logger.info('Publisher.poll() - Reporting the size of hashmaps *************************************************************************');
+  logger.info('***************************************************************************************************************************');
   logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
-  logger.info('***************************************************************************************************************************');
+  logger.info(`Publisher - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
+  logger.info('*****************************************************************************************************************************');
   process.send({ type: 'wallet.request', message: latestId });
 };
 

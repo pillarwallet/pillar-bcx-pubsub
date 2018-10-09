@@ -2,6 +2,7 @@
 /** @module subscriber.js */
 const Sentry = require('@sentry/node');
 Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
+const CronJob = require('cron').CronJob;
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');
@@ -18,6 +19,20 @@ process.on('unhandledRejection', (reason, promise) => {
   logger.error('***********************************************');
 });
 
+/**
+ * commonon logger function that prints out memory footprint of the process
+ */
+function logMemoryUsage() {
+  const mem = process.memoryUsage();
+  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
+  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
+  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
+  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
+  logger.info('*****************************************************************************************************************************');
+  logger.info(`Subscriber - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
+  logger.info('*****************************************************************************************************************************');
+}
+module.exports.logMemoryUsage = logMemoryUsage;
 
 /**
  * Function that initializes the subscriber service
@@ -33,6 +48,10 @@ module.exports.initServices = function () {
     .then(() => {
       logger.info('Subscriber.initServices(): Connected to database');
       rmqServices.initSubPubMQ();
+      const job = new CronJob('*/5 * * * * *',() => {
+        module.exports.logMemoryUsage();
+      });
+      job.start();
     })
     .catch((err) => {
       logger.error(err.message);

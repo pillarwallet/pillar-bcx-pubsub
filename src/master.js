@@ -40,6 +40,20 @@ client.on("error", function (err) {
 });
 
 /**
+ * commonon logger function that prints out memory footprint of the process
+ */
+module.exports.logMemoryUsage = function (){
+  const mem = process.memoryUsage();
+  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
+  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
+  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
+  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
+  logger.info('*****************************************************************************************************************************');
+  logger.info(`Master - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
+  logger.info('*****************************************************************************************************************************');
+};
+
+/**
  * Function that initializes the master after validating command line arguments.
  * @param {any} options - List of command line arguments
  */
@@ -85,7 +99,7 @@ module.exports.launch = function () {
     module.exports.pubs[module.exports.index].send({type: 'config', message: maxWalletsPerPub});
 
     module.exports.subs[module.exports.index] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
-    logger.info(`Master has launched Houskeeper (Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
+    logger.info(`Master has launched Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
 
     // handle events associated with the publisher child processes.
     module.exports.pubs[module.exports.index].on('message', (data) => {
@@ -128,6 +142,7 @@ module.exports.launch = function () {
             //notify the same message to the housekeeper to perform catchup services for the new wallet
             logger.info('Master notifying Housekeeper to monitor new wallet registrations');
             module.exports.notify(message,module.exports.housekeeper);
+            module.exports.logMemoryUsage();
           });
         }
         if (data.type === 'queue.full') {
