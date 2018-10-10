@@ -26,20 +26,6 @@ client.on("error", function (err) {
 });
 
 /**
- * subscribe to memory leak events
- */
-memwatch.on('leak',function(info) {
-  logger.info('Publisher: MEMORY LEAK: ' + JSON.stringify(info));
-  logger.info('Hashmap counts: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
-              ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
-  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
-              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
-  heapdump.writeSnapshot((err, fname ) => {
-    logger.info('Heap dump written to', fname);
-  });
-});
-
-/**
  * Subscribing to memory leak stats
  */
 memwatch.on('stats',function(stats) {
