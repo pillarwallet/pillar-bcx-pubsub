@@ -107,7 +107,7 @@ async function recoverWallet(walletId, pillarId, nbBlocks) {
             logger.debug(`Recovering transactions from startBlock: ${startBlock} to endBlock: ${endBlock}`);
             for(var i = startBlock; i > endBlock; i--) { 
                 logger.debug(`Housekeeper.recoverWallet(): Fetching transactions from block: ${i}`);
-                ethService.getBlockTx(i).then((transactions) => {
+                await ethService.getBlockTx(i).then((transactions) => {
                     logger.debug(`Housekeeper.recoverWallet: Total transactions in block ${i} is ${transactions.length}`);
                     transactions.forEach((txn) => {
                         logger.debug(`Housekeeper.recoverWallet() fetch transaction receipt for tran: ${txn.hash}`);
@@ -264,9 +264,9 @@ async function init() {
         entry.blockNumber = startBlock - LOOK_BACK_BLOCKS;
         logger.info(`Latest blocknumber: ${startBlock}`);
         //read REDIS server to fetch config parameters for the current run.
-        client.get('housekeeper',async (err,config) => {
-            logger.info(`Housekeeper: Configuration fetched from REDIS = ${config}`);
-            if(config === null || config === false) {
+        client.get('housekeeper',async (err,configStr) => {
+            logger.info(`Housekeeper: Configuration fetched from REDIS = ${configStr}`);
+            if(err || configStr === null || configStr === false) {
                 //the very first run of housekeeper so add the entry to redis server
                 entry.pid = process.pid;
                 entry.lastId = '';
@@ -275,7 +275,9 @@ async function init() {
                 client.set('housekeeper',JSON.stringify(entry),redis.print);
                 this.processData('');
             } else {
-                config = JSON.parse(config);
+                logger.info('inside else ' + JSON.parse(configStr));
+                var config = JSON.parse(configStr);
+                logger.info('Config status: ' + config.status);
                 //check the config parameters to check the status of last run
                 logger.info(`Housekeeper previous runs status: ${config.status}`);
                 if(config.status !== 'completed') {
