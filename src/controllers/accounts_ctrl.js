@@ -25,8 +25,8 @@ function listRecent(idFrom) {
       oId = mongoose.Types.ObjectId(idFrom);
       var query = "{_id : {$gt: " + oId + ")}}";
       //accounts.Accounts.find(query, (err, result) => {
-      //limit the number of results to 20k
-      var q = accounts.Accounts.find({_id : {$gt: oId}}).limit(20000);
+      //limit the number of results to 1000 records
+      var q = accounts.Accounts.find({_id : {$gt: oId}}).limit(1000);
       q.exec((err, result) => {
         if(err) {
           logger.error(`accounts.listRecent DB controller ERROR: ${err}`);
