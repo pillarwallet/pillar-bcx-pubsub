@@ -27,7 +27,7 @@ function listRecent(idFrom) {
       //accounts.Accounts.find(query, (err, result) => {
       //limit the number of results to 20k
       var q = accounts.Accounts.find({_id : {$gt: oId}}).limit(20000);
-      q.execFind((err, result) => {
+      q.exec((err, result) => {
         if(err) {
           logger.error(`accounts.listRecent DB controller ERROR: ${err}`);
           reject(err);
