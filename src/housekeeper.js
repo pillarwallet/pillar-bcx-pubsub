@@ -253,7 +253,6 @@ function processData(lastId) {
                     });
                     Promise.all(promises).then(() => {
                         entry.status = 'completed';
-                        entry.lastId = accounts._id;
                         entry.endTime = time.now();
                         client.set('housekeeper',JSON.stringify(entry), redis.print);
                         logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`);
