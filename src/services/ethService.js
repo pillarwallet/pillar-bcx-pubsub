@@ -115,6 +115,7 @@ function subscribeBlockHeaders() {
         .on('data', (blockHeader) => {
             logger.info(`ethService.subscribeBlockHeaders(): new block : ${blockHeader.number}`);
             if (blockHeader && blockHeader.number && blockHeader.hash) {
+                hashMaps.LATEST_BLOCK_NUMBER = blockHeader.number;
                 logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
                 // Check for pending tx in database and update their status
                 module.exports.checkPendingTx(hashMaps.pendingTx.keys()).then(() => {
