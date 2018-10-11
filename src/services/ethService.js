@@ -1,11 +1,13 @@
 /** @module ethService.js */
-const logger = require('../utils/logger.js');
+const logger = require('../utils/logger');
 const Web3 = require('web3');
 require('dotenv').config();
+const time = require('unix-timestamp');
 const ERC20ABI = require('./ERC20ABI.json');
-const processTx = require('./processTx.js');
-const rmqServices = require('./rmqServices.js');
-const hashMaps = require('../utils/hashMaps.js');
+const processTx = require('./processTx');
+const rmqServices = require('./rmqServices');
+const dbServices = require('./dbServices');
+const hashMaps = require('../utils/hashMaps');
 const protocol = 'Ethereum';
 const gethURL = process.env.GETH_NODE_URL + ':' + process.env.GETH_NODE_PORT;
 let web3;
@@ -19,6 +21,14 @@ function connect() {
             if(web3 === undefined || (!web3.eth.isSyncing())) {
                 web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 web3._provider.on('end', (eventObj) => {
+                    logger.error('Websocket disconnected!! Restarting connection....');
+                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                });
+                web3._provider.on('close',(eventObj) => {
+                    logger.error('Websocket disconnected!! Restarting connection....');
+                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                });
+                web3._provider.on('error',(eventObj) => {
                     logger.error('Websocket disconnected!! Restarting connection....');
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 });
@@ -188,12 +198,7 @@ function getBlockTx(blockNumber) {
         logger.debug('ethService.getBlockTx(): Fetch transactions from block: ' + blockNumber);
         try {
             if(module.exports.connect()) {
-                web3.eth.getBlock(blockNumber, true)
-                .then((result) => {
-                    //logger.info("Transactions within block " + blockNumber + " is " + JSON.stringify(result.transactions));
-                    resolve(result.transactions);
-                });
-                logger.debug('Fetched transactions from block');                
+                resolve(web3.eth.getBlock(blockNumber,true));
             } else {
                 reject('ethService.getBlockTx Error: Connection to geth failed!');
             }
@@ -461,51 +466,61 @@ module.exports.addERC721 = addERC721;
  * @param {String} pillarId - The pillarId corresponding to the transactions
  */
 async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0, wallet = undefined, pillarId = undefined) {
-    try {
-        const contract = new web3.eth.Contract(ERC20ABI,address);
-        const asset = await contract.methods.symbol().call();
-        contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'},(error,events) => {
-            if(!error) {
-                logger.debug('ethService.getPastEvents(): Fetching past events of contract ' + address + ' from block: ' + blockNumber);
-                events.forEach((event) => { 
-                    this.getTxReceipt(event.transactionHash).then((txn) => {
-                        if(event.returnValues._to === wallet || event.returnValues._from === wallet) {
-                            dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((tran) => {
-                                var status;
-                                var protocol = 'Ethereum';
-                                var tmstmp = time.now();
-                                status = 'confirmed';
-                                if(tran === null) {
-                                    let entry = {
-                                        pillarId,
-                                        protocol,
-                                        toAddress: event.returnValues._to,
-                                        fromAddress: event.returnValues._from,
-                                        txHash: event.transactionHash,
-                                        asset,
-                                        contractAddress: null,
-                                        timestamp: tmstmp,
-                                        value: event.returnValues._value,
-                                        blockNumber: event.blockNumber,
-                                        status,
-                                        gasPrice: txn.gasPrice,
-                                        gasUsed: txn.gasUsed
-                                    };
-                                    logger.debug('ethService.getPastEvents(): Saving transaction into the database: ' + entry);
-                                    dbServices.dbCollections.transactions.addTx(entry);  
-                                } else {
-                                    logger.debug('processTx.storeTokenEvent(): Transaction ' + event.transactionHash + ' already exists in the database, ignoring!');
-                                }
-                            });
+    return new Promise(async (resolve, reject) => {
+        try {
+            var cnt = 0;
+            var status = 'confirmed';
+            var protocol = 'Ethereum';
+            var tmstmp = time.now();
+            if(module.exports.connect()) {
+                const contract = new web3.eth.Contract(ERC20ABI,address);
+                const asset = await contract.methods.symbol().call();
+                var events = await contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'});
+                if((events !== null || events !== undefined) && events.length > 0) {
+                    var index = 0;
+                    var totalEvents = events.length;
+                    logger.info(`ethService.getPastEvents(): Fetching ${totalEvents} past events of contract ${address} from block: ${blockNumber}`);
+                    events.forEach(async (event) => { 
+                        index++;
+                        if(event.returnValues._to.toLowerCase() === wallet || event.returnValues._from.toLowerCase() === wallet) {
+                            var tran = await dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash);    
+                            if(tran === null) {
+                                cnt++;
+                                let entry = {
+                                    pillarId,
+                                    protocol,
+                                    toAddress: event.returnValues._to,
+                                    fromAddress: event.returnValues._from,
+                                    txHash: event.transactionHash,
+                                    asset,
+                                    contractAddress: null,
+                                    timestamp: tmstmp,
+                                    value: event.returnValues._value,
+                                    blockNumber: event.blockNumber,
+                                    status,
+                                    gasPrice: txn.gasPrice,
+                                    gasUsed: txn.gasUsed
+                                };
+                                logger.debug('ethService.getPastEvents(): Saving transaction into the database: ' + entry);
+                                dbServices.dbCollections.transactions.addTx(entry);  
+                            }
+                        }
+                        if(index === totalEvents) {
+                            logger.info(`ethService.getPastEvents(): Recovered ${cnt} transactions for ${wallet} involving asset: ${asset}`);
+                            resolve('');
                         }
                     });
-                });
+                } else {
+                    resolve('');
+                }
             } else {
-                logger.error('ethService.getPastEvents() error fetching past events for contract ' + address + ' error: ' + error);
+                logger.error('ethService.getPastEvents(): Connection to geth failed!'); 
+                reject('ethService.getPastEvents(): Connection to geth failed!');
             }
-        });
-    } catch(err) {
-        logger.error('ethService.getPastEvents(): for contract: ' + address + ' failed with error: ' + err);
-    }
+        } catch(err) {
+            logger.error('ethService.getPastEvents(): for contract: ' + address + ' failed with error: ' + err);
+            reject(err);
+        }
+    });
 }
 module.exports.getPastEvents = getPastEvents;
