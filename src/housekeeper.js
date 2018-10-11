@@ -247,9 +247,9 @@ function processData(lastId) {
                             if(acc.protocol === protocol) {
                                 promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
                                 promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
-                                entry.lastId = accounts._id;
                             }
                         });
+                        entry.lastId = account._id;
                     });
                     Promise.all(promises).then(() => {
                         entry.status = 'completed';
