@@ -14,7 +14,8 @@ let client = redis.createClient();
 let MAX_WALLETS = 50000;
 let runId = 0;
 let latestId = '';
-const heapdump = require('heapdump');
+let processCnt = 0;
+let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 
@@ -60,7 +61,7 @@ process.on('message', (data) => {
     logger.info(`Publisher has received message from master: ${data.type}`);
     
     if (data.type === 'accounts') {
-      console.log(`Publisher received accounts: ${message.length} to monitor.`);
+      logger.info(`Publisher received accounts: ${message.length} to monitor.`);
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
         if(obj !== undefined) {
@@ -140,6 +141,13 @@ module.exports.initIPC = function () {
  * Function that continuosly polls master for new wallets/assets.
  */
 module.exports.poll = function () {
+  processCnt++;
+  if(processCnt === 12) {
+    processCnt = 0;
+    if(hashMaps.LATEST_BLOCK_NUMBER <= LAST_BLOCK_NUMBER) {
+      logger.error('####GETH DOWN?? NO SYNC FOR PAST 1 MINUTE####');
+    }
+  }
   if (hashMaps.assets.count() === 0) {
     process.send({ type: 'assets.request' });
   }
@@ -155,8 +163,10 @@ module.exports.poll = function () {
   logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
   logger.info(`Publisher - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
+  logger.info(`LAST PROCESSED BLOCK= ${LAST_BLOCK_NUMBER}, LATEST BLOCK NUMBER= ${hashMaps.LATEST_BLOCK_NUMBER}`);
   logger.info('*****************************************************************************************************************************');
   process.send({ type: 'wallet.request', message: latestId });
+  LAST_BLOCK_NUMBER = hashMaps.LATEST_BLOCK_NUMBER;
 };
 
 /**
