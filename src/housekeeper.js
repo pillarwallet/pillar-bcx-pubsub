@@ -86,19 +86,17 @@ async function checkTxPool() {
 module.exports.checkTxPool = checkTxPool;
 
 async function recoverTransactions(startBlock, endBlock, walletId) {
-    return new Promise(async (resolve,reject) => {
-        var transactions = [];
-        for(var i = startBlock; i >= endBlock; i--) { 
-            var txns = await ethService.getBlockTx(i);
-            txns.transactions.forEach(async (txn) => {
-                if(txn.from.toLowerCase() === walletId || (txn.to !== null && txn.to.toLowerCase() === walletId)) {
-                    receipt = await ethService.getTxReceipt(txn.hash);
-                    transactions.push(receipt);
-                }
-            });
-        }
-        resolve(transactions);
-    });
+    var transactions = [];
+    for(var i = startBlock; i >= endBlock; i--) { 
+        var txns = await ethService.getBlockTx(i);
+        txns.transactions.forEach(async (txn) => {
+            if(txn.from.toLowerCase() === walletId || (txn.to !== null && txn.to.toLowerCase() === walletId)) {
+                receipt = await ethService.getTxReceipt(txn.hash);
+                transactions.push(receipt);
+            }
+        });
+    }
+    return transactions;
 }
 module.exports.recoverTransactions = recoverTransactions;
 /**
@@ -108,84 +106,78 @@ module.exports.recoverTransactions = recoverTransactions;
  * @param {string} nBlocks - The number of blocks to go back to recover transactions.
  */
 async function recoverWallet(walletId, pillarId, nbBlocks) {
-    return new Promise(async (resolve,reject) => {
-        try {
-            var cnt = 0;
-            var tmstmp = time.now();;
-            var data, value;
-            var from;
-            var to;
-            var status;
-            var hash;
-            logger.info(`Housekeeper.recoverWallet() - recovering transactions for ${walletId} over the past ${nbBlocks} blocks`);
-            var endBlock = startBlock - nbBlocks;
-            logger.debug(`Recovering transactions from startBlock: ${startBlock} to endBlock: ${endBlock}`);
-            var transactions = await module.exports.recoverTransactions(startBlock, endBlock, walletId);
-            var totalTransactions = transactions.length;
-            logger.info(`Housekeeper.recoverWallet(): Total transactions is ${totalTransactions}`);
-            if(totalTransactions > 0) {
-                var index = 0;
-                transactions.forEach(async (receipt) => {
-                    index++;
-                    logger.info(`Housekeeper.recoverWallet(): Found a matching transaction : ${receipt.transactionHash}`);
-                    from = receipt.from;
-                    to = receipt.to;
-                    status = (receipt.status === '0x1' ? 'confirmed' : 'failed');
-                    hash = receipt.transactionHash;
-                    var theAsset = await dbServices.assetDetails(receipt.to);
-                    if(receipt.input !== undefined && theAsset !== null && theAsset !== undefined) {
-                        contractAddress = theAsset.contractAddress;
-                        asset = theAsset.symbol;
-                        abiDecoder.addABI(ERC20ABI);
-                        data = abiDecoder.decodeMethod(receipt.input);
-                        if ((data !== undefined) && (data.name === 'transfer')) { 
-                            //smart contract call hence the asset must be the token name
-                            to = data.params[0].value;
-                            value = data.params[1].value;
-                            if(to !== walletId) {
-                                //not relevant transaction
-                                return;
-                            }
+    try {
+        var cnt = 0;
+        var tmstmp = time.now();;
+        var data, value, from, to, status, hash;
+        logger.info(`Housekeeper.recoverWallet() - recovering transactions for ${walletId} over the past ${nbBlocks} blocks`);
+        var endBlock = startBlock - nbBlocks;
+        logger.debug(`Recovering transactions from startBlock: ${startBlock} to endBlock: ${endBlock}`);
+        var transactions = await module.exports.recoverTransactions(startBlock, endBlock, walletId);
+        var totalTransactions = transactions.length;
+        logger.info(`Housekeeper.recoverWallet(): Total transactions is ${totalTransactions}`);
+        if(totalTransactions > 0) {
+            var index = 0;
+            transactions.forEach(async (receipt) => {
+                index++;
+                logger.info(`Housekeeper.recoverWallet(): Found a matching transaction : ${receipt.transactionHash}`);
+                from = receipt.from;
+                to = receipt.to;
+                status = (receipt.status === '0x1' ? 'confirmed' : 'failed');
+                hash = receipt.transactionHash;
+                var theAsset = await dbServices.assetDetails(receipt.to);
+                if(receipt.input !== undefined && theAsset !== null && theAsset !== undefined) {
+                    contractAddress = theAsset.contractAddress;
+                    asset = theAsset.symbol;
+                    abiDecoder.addABI(ERC20ABI);
+                    data = abiDecoder.decodeMethod(receipt.input);
+                    if ((data !== undefined) && (data.name === 'transfer')) { 
+                        //smart contract call hence the asset must be the token name
+                        to = data.params[0].value;
+                        value = data.params[1].value;
+                        if(to !== walletId) {
+                            //not relevant transaction
+                            return;
                         }
-                    } else {
-                        asset = 'ETH';
-                        value = receipt.value; 
                     }
-                    var tran = await dbServices.dbCollections.transactions.findOneByTxHash(hash);
-                    if (tran === null) {
-                        cnt++;
-                        let entry = {
-                            pillarId,
-                            protocol,
-                            toAddress: to,
-                            fromAddress: from,
-                            txHash: hash,
-                            asset,
-                            contractAddress: null,
-                            timestamp: tmstmp,
-                            value,
-                            gasPrice: receipt.gasPrice,
-                            blockNumber: receipt.blockNumber,
-                            status
-                        };
-                        logger.debug(`Housekeeper.recoverWallet(): Saving transaction into the database: ${entry}`);
-                        dbServices.dbCollections.transactions.addTx(entry);
-                    }
-                    //log after all processing
-                    if(index === totalTransactions) {
-                        logger.info(`Housekeeper.recoverWallet(): finished recovering ${cnt} transactions for wallets: ${walletId}`);    
-                        resolve();
-                    }
-                });
-            } else {
-                logger.info(`Housekeeper.recoverWallet(): nothing to recover for wallet ${walletId}`);
-                resolve();
-            }
-        }catch(e) {
-            logger.error(`Housekeeper.recoverWallet(): Failed with error ${e}`); 
-            reject(e);
+                } else {
+                    asset = 'ETH';
+                    value = receipt.value; 
+                }
+                var tran = await dbServices.dbCollections.transactions.findOneByTxHash(hash);
+                if (tran === null) {
+                    cnt++;
+                    let entry = {
+                        pillarId,
+                        protocol,
+                        toAddress: to,
+                        fromAddress: from,
+                        txHash: hash,
+                        asset,
+                        contractAddress: null,
+                        timestamp: tmstmp,
+                        value,
+                        gasPrice: receipt.gasPrice,
+                        blockNumber: receipt.blockNumber,
+                        status
+                    };
+                    logger.debug(`Housekeeper.recoverWallet(): Saving transaction into the database: ${entry}`);
+                    dbServices.dbCollections.transactions.addTx(entry);
+                }
+                //log after all processing
+                if(index === totalTransactions) {
+                    logger.info(`Housekeeper.recoverWallet(): finished recovering ${cnt} transactions for wallets: ${walletId}`);    
+                    return;
+                }
+            });
+        } else {
+            logger.info(`Housekeeper.recoverWallet(): nothing to recover for wallet ${walletId}`);
+            return;
         }
-    });
+    }catch(e) {
+        logger.error(`Housekeeper.recoverWallet(): Failed with error ${e}`); 
+        return new Promise.reject(new Error(e));
+    }
 }
 module.exports.recoverWallet = recoverWallet;
 
@@ -195,27 +187,25 @@ module.exports.recoverWallet = recoverWallet;
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAssetEvents(wallet,pillarId) {
-    return new Promise(async (resolve,reject) => {
-        try {
-            var assets = await dbServices.listAssets(protocol);
-            logger.info(`Housekeeper.recoverAssetEvents(): recovering asset events for the wallet ${wallet}`);
-            var index = 0;
-            var totalAssets = assets.length;
-            assets.forEach(async (asset) => {
-                index++;
-                logger.debug(`Housekeeper.recoverAssetEvents() for wallet - ${wallet}: past events of asset ${asset.symbol} since block: ${entry.blockNumber}`);
-                await ethService.getPastEvents(asset.contractAddress,'Transfer',entry.blockNumber,wallet,pillarId);
-                if(index === totalAssets) {
-                    logger.info(`Housekeeper.recoverAssetEvents(): completed processing for wallet ${wallet} and ${asset.symbol}`);
-                    resolve('');
-                }
-            });
-            resolve('');
-        }catch(e) {
-            logger.error(`Housekeeper.recoverAssetEvents() failed for address: ${wallet} with error:clear ${e}`);
-            reject(e);
-        }
-    });
+    try {
+        var assets = await dbServices.listAssets(protocol);
+        logger.info(`Housekeeper.recoverAssetEvents(): recovering asset events for the wallet ${wallet}`);
+        var index = 0;
+        var totalAssets = assets.length;
+        assets.forEach(async (asset) => {
+            index++;
+            logger.debug(`Housekeeper.recoverAssetEvents() for wallet - ${wallet}: past events of asset ${asset.symbol} since block: ${entry.blockNumber}`);
+            await ethService.getPastEvents(asset.contractAddress,'Transfer',entry.blockNumber,wallet,pillarId);
+            if(index === totalAssets) {
+                logger.info(`Housekeeper.recoverAssetEvents(): completed processing for wallet ${wallet} and ${asset.symbol}`);
+                return;
+            }
+        });
+        return;
+    }catch(e) {
+        logger.error(`Housekeeper.recoverAssetEvents() failed for address: ${wallet} with error:clear ${e}`);
+        return new Promise.reject(new Error(e));
+    }
 }
 module.exports.recoverAssetEvents = recoverAssetEvents;
 
