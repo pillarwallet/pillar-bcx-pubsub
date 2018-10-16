@@ -5,3 +5,4 @@ exports.assets = new HashMap();
 exports.pendingTx = new HashMap();
 exports.pendingAssets = new HashMap();
 
+exports.LATEST_BLOCK_NUMBER = 0;
