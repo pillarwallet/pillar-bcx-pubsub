@@ -113,15 +113,8 @@ module.exports.launch = function () {
             module.exports.notify(message,module.exports.housekeeper);
           });
         }
-        /* no longer relevant after redis change - NO new process pair will be launched
-        if (data.type === 'queue.full') {
-          logger.info(`Master Received ${data.message} from publisher: ${module.exports.index}`);
-          // fork new publisher-subscriber process pairs
-          this.launch();
-        }
-        */
       } catch(e) {
-        logger.error(`Master.launch() failed: ${e}`);
+        logger.error(`Master.launch() failed: ${e.message}`);
       }
     });
 

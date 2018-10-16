@@ -75,12 +75,6 @@ process.on('message', async (data) => {
           }
         }
       }
-      //check if the number of wallets being monitored is greater than the recommended size
-      /* no longer relevant as we arent using hashmap
-      if(hashMaps.accounts.keys.length >= MAX_WALLETS) {
-        process.send({ type: 'queue.full' });
-      }
-      */
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
       // add the new asset to the assets hashmap
@@ -104,7 +98,7 @@ process.on('message', async (data) => {
  * Function that initializes inter process communication queue
  */
 module.exports.initIPC = function () {
-  return new Promise( async (resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       logger.info('Started executing publisher.initIPC()');
 
