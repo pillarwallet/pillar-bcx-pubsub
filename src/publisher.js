@@ -11,7 +11,7 @@ const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 const redis = require('redis');
 const CronJob = require('cron').CronJob;
-let client = redis.createClient();
+let client = redis.createClient();;
 bluebird.promisifyAll(redis);
 let latestId = '';
 let runId = 0;
