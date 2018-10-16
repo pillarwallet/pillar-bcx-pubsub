@@ -21,17 +21,6 @@ describe('Test init functions ', () => {
 		});
 	});
 
-	test('Expect poll to call process.send', () => {
-		const redis = require('redis');
-		const stub1 = sinon.stub(redis,'createClient');
-		const spy = sinon.spy(process, 'send');
-		const publisher = require('./publisher.js');
-		publisher.poll();
-		sinon.assert.called(spy);
-		spy.restore();
-		stub1.restore()
-	});
-
 	test('Expect initSubscriptions to call ethServices.subscribePendingTxn and ethServices.subscribeBlockHeaders', () => {
 		const publisher = require('./publisher.js');
 		const ethServices = require('./services/ethService.js');
