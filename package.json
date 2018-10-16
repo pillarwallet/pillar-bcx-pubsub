@@ -5,7 +5,7 @@
   "main": "./src/master.js",
   "scripts": {
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage --forceExit"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
-    "@pillarwallet/common-logger": "^1.1.25",
+    "@pillarwallet/common-logger": "1.1.25",
     "@sentry/node": "^4.0.0",
     "abi-decoder": "^1.2.0",
     "amqp": "^0.2.7",
@@ -65,6 +65,7 @@
     "next": "^6.1.1",
     "node-ipc": "^9.1.1",
     "react": "^16.4.2",
+    "react-dom": "^16.5.2",
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "scrypt": "^6.0.3",
