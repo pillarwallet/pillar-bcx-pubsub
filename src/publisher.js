@@ -115,8 +115,8 @@ module.exports.initIPC = function () {
       }
 
       //check if latestId key exists in redis, if not set an empty value
-      logger.info('Publisher last process id exists? : ' + (await client.existsAsync('latestId')));
       if((await client.existsAsync('latestId'))) {
+        logger.info('Publisher fetching last processed id from redis server');
         latestId = await client.getAsync('latestId');
       } else {
         logger.info('First run of the process, initializing last process id on redis');
