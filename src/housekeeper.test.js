@@ -5,6 +5,13 @@ describe.only('Housekeeper unit tests', () => {
 	afterAll(() => {
 		jest.restoreAllMocks();
 	});
+
+	beforeAll(() => {
+		jest.genMockFromModule('web3');
+		const ethServices = require('./services/ethService');
+		const spy = jest.spyOn(ethServices,'connect');
+		spy.mockImplementation();
+	});
 	
 	it('process.on should have been called', () => {
 		const spy = jest.spyOn(process, 'on');
