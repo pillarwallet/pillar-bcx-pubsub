@@ -1,5 +1,5 @@
 const processTx = require('./processTx');
-
+const redis = jest.genMockFromModule('redis');
 describe.only('The processTx module', () => {
   describe('The storeTransactionStats function tests', () => {
     it('should return true', () => {
