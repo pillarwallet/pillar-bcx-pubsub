@@ -10,7 +10,7 @@ describe('Test init functions ', () => {
 	afterAll(() =>{
 		process.argv[2] = runId;
 	});
-
+/*
 	test('Expect initIPC to call process.send', () => {
 		const spy = sinon.spy(process, 'send');
 		const publisher = require('./publisher.js');
@@ -32,4 +32,5 @@ describe('Test init functions ', () => {
 		stub1.restore();
 		stub2.restore();
 	});
+	*/
 });
