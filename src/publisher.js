@@ -4,6 +4,7 @@
 const Sentry = require('@sentry/node');
 Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
 require('dotenv').config();
+const bluebird = require('bluebird');
 const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
@@ -11,9 +12,10 @@ const hashMaps = require('./utils/hashMaps.js');
 const redis = require('redis');
 const CronJob = require('cron').CronJob;
 let client = redis.createClient();
-let MAX_WALLETS = 50000;
-let runId = 0;
+bluebird.promisifyAll(redis);
 let latestId = '';
+let runId = 0;
+let MAX_WALLETS = 500000;
 let processCnt = 0;
 let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
@@ -31,9 +33,9 @@ client.on("error", function (err) {
  */
 memwatch.on('stats',function(stats) {
   logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+  logger.info('Size of hashmaps:  Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
-  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+  logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
 });
 
@@ -55,7 +57,7 @@ process.on('unhandledRejection', (reason, promise) => {
  * assets - This is a set of new assets/smart contracts which the publisher should add to its internal monitoring list
  * config - This a configuration setting that determine the maximum number of wallets/accounts that a publisher to monitor.
  */
-process.on('message', (data) => {
+process.on('message', async (data) => {
   try {
     const { message } = data;
     logger.info(`Publisher has received message from master: ${data.type}`);
@@ -65,16 +67,13 @@ process.on('message', (data) => {
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
         if(obj !== undefined) {
-          hashMaps.accounts.set(obj.walletId.toLowerCase(), obj.pillarId);
-          logger.info(`Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
-          latestId = obj.id;
+          if(!(await client.existsAsync(obj.walletId.toLowerCase()))) {
+            client.set(obj.walletId.toLowerCase(),obj.pillarId,redis.print);
+            logger.info(`Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
+            latestId = obj.id;
+            client.set('latestId',obj.id,redis.print);
+          }
         }
-      }
-      logger.info(`Caching ${message.length} wallets to REDIS server for publisher: pub_${runId}`);
-      client.append(`pub_${runId}`,JSON.stringify(message),redis.print);
-      //check if the number of wallets being monitored is greater than the recommended size
-      if(hashMaps.accounts.keys.length >= MAX_WALLETS) {
-        process.send({ type: 'queue.full' });
       }
     } else if (data.type === 'assets') {
       logger.info('Publisher initializing assets.');
@@ -99,7 +98,7 @@ process.on('message', (data) => {
  * Function that initializes inter process communication queue
  */
 module.exports.initIPC = function () {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       logger.info('Started executing publisher.initIPC()');
 
@@ -108,6 +107,16 @@ module.exports.initIPC = function () {
       } else {
         runId = process.argv[2];
       }
+
+      //check if latestId key exists in redis, if not set an empty value
+      if((await client.existsAsync('latestId'))) {
+        logger.info('Publisher fetching last processed id from redis server');
+        latestId = await client.getAsync('latestId');
+      } else {
+        logger.info('First run of the process, initializing last process id on redis');
+        client.set('latestId','',redis.print);
+      }
+      logger.info(`Publisher identified last process id from redis to be : ${latestId}`);
 
       //request master for a list of assets to be monitored
       process.send({ type: 'assets.request' });
@@ -158,9 +167,9 @@ module.exports.poll = function () {
   var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
   // request new wallets
   logger.info('***************************************************************************************************************************');
-  logger.info('Size of hashmaps: Accounts= ' + hashMaps.accounts.keys().length + ', Assets= ' + hashMaps.assets.keys().length + 
+  logger.info('Size of hashmaps: Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
-  logger.info('Hashmap size: Accounts= ' + sizeof.sizeof(hashMaps.accounts,true) + ', Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+  logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
   logger.info(`Publisher - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
   logger.info(`LAST PROCESSED BLOCK= ${LAST_BLOCK_NUMBER}, LATEST BLOCK NUMBER= ${hashMaps.LATEST_BLOCK_NUMBER}`);

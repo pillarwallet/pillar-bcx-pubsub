@@ -5,9 +5,6 @@ Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' 
 
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
-const fs = require('fs');
-const redis = require('redis');
-let client = redis.createClient();
 
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
@@ -31,27 +28,6 @@ process.on('unhandledRejection', (reason, promise) => {
   logger.error('ERROR: Unhandled Rejection at MASTER:', JSON.stringify(reason));
   logger.error('***************************************************************');
 });
-
-/**
- * Handle REDIS client connection errors
- */
-client.on("error", function (err) {
-  logger.error("Master failed with REDIS client error: " + err);
-});
-
-/**
- * commonon logger function that prints out memory footprint of the process
- */
-module.exports.logMemoryUsage = function (){
-  const mem = process.memoryUsage();
-  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
-  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
-  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
-  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
-  logger.info('*****************************************************************************************************************************');
-  logger.info(`Master - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
-  logger.info('*****************************************************************************************************************************');
-};
 
 /**
  * Function that initializes the master after validating command line arguments.
@@ -79,8 +55,6 @@ module.exports.init = function (options) {
 
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
-  } finally {
-    logger.info('Exited master.init()');
   }
 };
 
@@ -90,9 +64,6 @@ module.exports.init = function (options) {
 module.exports.launch = function () {
   try {
     logger.info('Started executing master.launch()');
-
-    // start the first program pair of publisher and subscribers
-    client.del(`pub_${module.exports.index}`); // clears out the previous cache file during a fresh start
 
     module.exports.pubs[module.exports.index] = fork(`${__dirname}/publisher.js`,[`${module.exports.index}`]);
     //notify the publisher the maximum wallets to monitor
@@ -111,19 +82,17 @@ module.exports.launch = function () {
           logger.info('Master Sending list of assets to monitor to each publisher');
 
           dbServices.contractsToMonitor('').then((assets) => {
-            logger.info(assets.length + ' assets identified to be monitored');
+            logger.info(`${assets.length} assets identified to be monitored`);
             module.exports.pubs[module.exports.index - 1].send({ type: 'assets', message: assets});
           });
         }
         if (data.type === 'wallet.request') {
           logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${module.exports.index}`);
-          // read the wallet address model and bring up multiple publishers
           dbServices.recentAccounts(data.message).then((theWallets) => {
             if (theWallets !== undefined) {
               const message = [];
               for (let i = 0; i < theWallets.length; i++) {
                 var theWallet = theWallets[i];
-                //logger.debug('Wallet: ' + theWallets[i]);
                 for (let j = 0; j < theWallet.addresses.length; j++) {
                   var theAddress = theWallet.addresses[j];
                   if (theAddress.protocol.trim() === protocol) {
@@ -142,16 +111,10 @@ module.exports.launch = function () {
             //notify the same message to the housekeeper to perform catchup services for the new wallet
             logger.info('Master notifying Housekeeper to monitor new wallet registrations');
             module.exports.notify(message,module.exports.housekeeper);
-            module.exports.logMemoryUsage();
           });
         }
-        if (data.type === 'queue.full') {
-          logger.info(`Master Received ${data.message} from publisher: ${module.exports.index}`);
-          // fork new publisher-subscriber process pairs
-          this.launch();
-        }
       } catch(e) {
-        logger.error('Master.launch() failed: ' + e);
+        logger.error(`Master.launch() failed: ${e.message}`);
       }
     });
 
