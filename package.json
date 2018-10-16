@@ -53,7 +53,6 @@
       "./src"
     ],
     "collectCoverage": true,
-    "testResultsProcessor": "./node_modules/jest-html-reporter",
     "collectCoverageFrom": [
       "**/*.{js,jsx}",
       "!**/node_modules/**",
@@ -64,10 +63,5 @@
       "lcov"
     ],
     "coverageDirectory": "./reports"
-  },
-  "jest-html-reporter": {
-    "pageTitle": "Jest results",
-    "outputPath": "./reports/jest/test-report.html",
-    "includeFailureMsg": true
   }
 }
