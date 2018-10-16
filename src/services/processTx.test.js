@@ -1,6 +1,16 @@
 const processTx = require('./processTx');
 const redis = jest.genMockFromModule('redis');
 describe.only('The processTx module', () => {
+
+	beforeAll(() =>{
+		const spy = jest.spyOn(redis,'createClient');
+		spy.mockImplementation();
+	});
+
+	afterAll(() =>{
+		jest.restoreAllMocks();
+	});
+
   describe('The storeTransactionStats function tests', () => {
     it('should return true', () => {
 		const spy = jest.spyOn(processTx, 'storeTransactionStats');
