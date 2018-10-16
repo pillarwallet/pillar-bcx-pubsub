@@ -89,10 +89,10 @@ async function storeIfRelevant(tx, protocol) {
     var to = tx.to;
     var status = (tx.status === '0x1' ? 'confirmed' : 'failed');
     var hash = tx.transactionHash;
-    if ((tx.to !== null) && client.exists(tx.to.toLowerCase())) {
+    if ((tx.to !== null) && await client.existsAsync(tx.to.toLowerCase())) {
         //fetch the pillarId corresponding to the to address and
         pillarId = await client.getAsync(tx.to.toLowerCase());
-    } else if ((tx.from !== null) && client.exists(tx.from.toLowerCase())) {
+    } else if ((tx.from !== null) && await client.existsAsync(tx.from.toLowerCase())) {
         pillarId = await client.getAsync(tx.from.toLowerCase());
     }
     if(!hashMaps.assets.has(tx.to.toLowerCase())) { 
