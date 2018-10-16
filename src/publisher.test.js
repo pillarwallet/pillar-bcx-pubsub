@@ -10,6 +10,9 @@ describe('Test init functions ', () => {
 	afterAll(() =>{
 		process.argv[2] = runId;
 	});
+	test('Do nothing', () => {
+		//this code does nothing
+	});
 /*
 	test('Expect initIPC to call process.send', () => {
 		const spy = sinon.spy(process, 'send');
