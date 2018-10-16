@@ -6,6 +6,10 @@ const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./ERC20ABI');
 const hashMaps = require('../utils/hashMaps.js');
+const bluebird = require('bluebird');
+const redis = require('redis');
+let client = redis.createClient();
+bluebird.promisifyAll(redis);
 
 /**
  * Store the gas information corresponding to the block
@@ -31,17 +35,16 @@ module.exports.storeTransactionStats = storeTransactionStats;
 function storeTokenEvent(event,asset,protocol,txn) {
     try {
         logger.debug('processTx.storeTokenEvent(): for transaction ' + event.transactionHash + ' of asset ' + asset);
-        logger.debug(`processTx.storeTokenEvent(): accounts size (${hashMaps.accounts.keys().length}) and assets size (${hashMaps.assets.keys().length})`);
-        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then((tran) => {
+        dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash).then(async (tran) => {
             var pillarId, status;
             var tmstmp = time.now();
             status = 'confirmed';
             if(tran === null) {
-                if ((event.returnValues._to !== null) && hashMaps.accounts.has(event.returnValues._to.toLowerCase())) {
+                if ((event.returnValues._to !== null) && await client.existsAsync(event.returnValues._to.toLowerCase())) {
                     //fetch the pillarId corresponding to the to address and
-                    pillarId = hashMaps.accounts.get(event.returnValues._to.toLowerCase());
-                } else if ((event.returnValues._from !== null) && hashMaps.accounts.has(event.returnValues._from.toLowerCase())) {
-                    pillarId = hashMaps.accounts.get(event.returnValues._from.toLowerCase());
+                    pillarId = await client.getAsync(event.returnValues._to.toLowerCase());
+                } else if ((event.returnValues._from !== null) && await client.existsAsync(event.returnValues._from.toLowerCase())) {
+                    pillarId = await client.getAsync(event.returnValues._from.toLowerCase());
                 }
                 if(pillarId !== undefined) {
                     let entry = {
@@ -78,7 +81,7 @@ module.exports.storeTokenEvent = storeTokenEvent;
  * @param {any} tx - the transaction object
  * @param {any} protocol - the transaction object
  */
-function storeIfRelevant(tx, protocol) {
+async function storeIfRelevant(tx, protocol) {
     const tmstmp = time.now();
     var pillarId = '';
     var data, value;
@@ -86,11 +89,11 @@ function storeIfRelevant(tx, protocol) {
     var to = tx.to;
     var status = (tx.status === '0x1' ? 'confirmed' : 'failed');
     var hash = tx.transactionHash;
-    if ((tx.to !== null) && hashMaps.accounts.has(tx.to.toLowerCase())) {
+    if ((tx.to !== null) && client.exists(tx.to.toLowerCase())) {
         //fetch the pillarId corresponding to the to address and
-        pillarId = hashMaps.accounts.get(tx.to.toLowerCase());
-    } else if ((tx.from !== null) && hashMaps.accounts.has(tx.from.toLowerCase())) {
-        pillarId = hashMaps.accounts.get(tx.from.toLowerCase());
+        pillarId = await client.getAsync(tx.to.toLowerCase());
+    } else if ((tx.from !== null) && client.exists(tx.from.toLowerCase())) {
+        pillarId = await client.getAsync(tx.from.toLowerCase());
     }
     if(!hashMaps.assets.has(tx.to.toLowerCase())) { 
         asset = 'ETH';
@@ -143,7 +146,7 @@ module.exports.storeIfRelevant = storeIfRelevant;
  * @param {any} tx - the transaction object
  * @param {any} protocol - the transaction object
  */
-function newPendingTran(tx, protocol) {
+async function newPendingTran(tx, protocol) {
   try {
     logger.debug('processTx.newPendingTran(): validating transaction: ' + JSON.stringify(tx));
     const tmstmp = time.now();
@@ -159,11 +162,11 @@ function newPendingTran(tx, protocol) {
     }
     if(from !== null && to !== null) {
       logger.debug('processTx.newPendingTran(): txn ' + hash+ ' from= ' + from + ' to= ' + to);
-      if ((to !== null) && hashMaps.accounts.has(to.toLowerCase())) {
+      if ((to !== null) && await client.existsAsync(to.toLowerCase())) {
           //fetch the pillarId corresponding to the to address and
-          pillarId = hashMaps.accounts.get(to.toLowerCase());
-      } else if ((from !== null) && hashMaps.accounts.has(from.toLowerCase())) {
-          pillarId = hashMaps.accounts.get(from.toLowerCase());
+          pillarId = await client.getAsync(to.toLowerCase());
+      } else if ((from !== null) && await client.existsAsync(from.toLowerCase())) {
+          pillarId = await client.getAsync(from.toLowerCase());
       }
       if(!hashMaps.assets.has(to.toLowerCase())) { 
           asset = 'ETH';
@@ -182,7 +185,7 @@ function newPendingTran(tx, protocol) {
                 //smart contract call hence the asset must be the token name
                 to = data.params[0].value;
                 if(pillarId === '') {
-                    pillarId = hashMaps.accounts.get(to);
+                    pillarId = await client.getAsync(to);
                 }
                 value = data.params[1].value;
             } else {
@@ -232,12 +235,12 @@ module.exports.newPendingTran = newPendingTran;
  */
 function checkTokenTransfer(evnt, theContract, protocol) {
     logger.debug('processTx.checkTokenTransfer(): received event: ' + JSON.stringify(evnt));
-    return new Promise(((resolve, reject) => {
+    return new Promise((async (resolve, reject) => {
         var pillarId;
-        if (hashMaps.accounts.has(evnt.returnValues._to.toLowerCase())) {
-            pillarId = hashMaps.accounts.get(evnt.returnValues._to.toLowerCase());
-        } else if(hashMaps.accounts.has(evnt.returnValues._from.toLowerCase())) {
-            pillarId = hashMaps.accounts.get(evnt.returnValues._from.toLowerCase());
+        if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
+            pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
+        } else if(await client.existsAsync(evnt.returnValues._from.toLowerCase())) {
+            pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
         }
         dbServices.dbConnect().then(() => { 
             dbServices.dbCollections.transactions.findByTxHash(evnt.transactionHash).then((tx) => {
