@@ -80,9 +80,6 @@ module.exports.sendPubSubMessage = sendPubSubMessage;
 function getNotificationPayload(payload) {
   const p = {
     type: 'transactionEvent',
-    meta: {
-      recipientWalletId: payload.pillarId
-    },
     payload
   };
   logger.info(JSON.stringify(p));
