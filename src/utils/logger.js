@@ -6,7 +6,7 @@ const appDir = require('app-root-path');
 let logger = log4js.getLogger('syslog');
 log4js.configure({
   appenders: {
-    everything: { type: 'fileSync', filename: `${appDir}/src/logs/${packageJson.name}-debug.log`, maxLogSize: 100458760, backups: 3 }
+    everything: { type: 'fileSync', filename: `${appDir}/src/logs/${packageJson.name}-debug.log`, maxLogSize: 100458760, backups: 3, flags: "rs+" }
   },
   categories: {
     default: { appenders: [ 'everything' ], level: 'info'}

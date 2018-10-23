@@ -137,3 +137,4 @@ dist/*.exe
 
 doc/
 /*-cov
+src/logs/*
