@@ -18,6 +18,7 @@ moment.locale('en_GB');
 /**
  * Initialize the pub-sub rabbit mq.
  */
+
 function initPubSubMQ() {
   return new Promise((resolve, reject) => {
       try {
@@ -132,6 +133,7 @@ function initSubPubMQ() {
       connection.createChannel((err, ch) => {
         ch.assertQueue(pubSubQueue, { durable: true });
         ch.consume(pubSubQueue, (msg) => {
+          
           logger.info(`Subscriber received rmq message: ${msg.content}`);
           if (typeof msg.content !== 'undefined' && msg.content !== '' &&
             validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
