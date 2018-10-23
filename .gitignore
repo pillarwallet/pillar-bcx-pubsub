@@ -37,8 +37,7 @@ testem.log
 /data
 /.env
 /bin/logs
-/src/logs
-/bcx_log.txt
+/bcx_log.tx
 /reports/*
 
 # e2e
@@ -66,7 +65,6 @@ lib-cov
 *.sig
 tags
 pids
-logs
 results
 build
 
@@ -137,3 +135,4 @@ dist/*.exe
 
 doc/
 /*-cov
+src/logs/pillar-bcx-pubsub-debug.log
