@@ -37,7 +37,6 @@ testem.log
 /data
 /.env
 /bin/logs
-/src/logs
 /bcx_log.txt
 /reports/*
 
@@ -137,4 +136,4 @@ dist/*.exe
 
 doc/
 /*-cov
-src/logs/*
+src/logs/pillar-bcx-pubsub-debug.log
