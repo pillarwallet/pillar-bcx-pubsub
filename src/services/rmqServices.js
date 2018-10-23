@@ -19,18 +19,6 @@ moment.locale('en_GB');
  * Initialize the pub-sub rabbit mq.
  */
 
-function logMemoryUsage() {
-  const mem = process.memoryUsage();
-  var rss = Math.round((mem.rss*10.0) / (1024*1024*10.0),2);
-  var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
-  var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
-  var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
-  logger.info('*****************************************************************************************************************************');
-  logger.info(`RMQ - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
-  logger.info('*****************************************************************************************************************************');
-}
-module.exports.logMemoryUsage = logMemoryUsage;
-
 function initPubSubMQ() {
   return new Promise((resolve, reject) => {
       try {
