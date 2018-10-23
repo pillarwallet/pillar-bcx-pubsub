@@ -6,13 +6,10 @@ const appDir = require('app-root-path');
 let logger = log4js.getLogger('syslog');
 log4js.configure({
   appenders: {
-    out: { type: 'console' }, 
-    error: { type: 'fileSync', filename: `${appDir}/src/logs/${packageJson.name}-debug.log`, "pattern":"",alwaysIncludePattern:true}, 
-    default: { type: 'fileSync', filename: `${appDir}/src/logs/${packageJson.name}-debug.log`, "pattern":"",alwaysIncludePattern:true}
+    everything: { type: 'fileSync', filename: `${appDir}/src/logs/${packageJson.name}-debug.log`, maxLogSize: 100458760, backups: 3 }
   },
   categories: {
-    default: { appenders: ['out','default'], level: 'info' },
-    error: { appenders: ['error'], level: 'error' }
+    default: { appenders: [ 'everything' ], level: 'info'}
   }
 });
 module.exports = logger;
