@@ -6,8 +6,8 @@ let logger = log4js.getLogger('syslog');
 log4js.configure({
   appenders: {
     out: { type: 'console' }, 
-    error: { type: 'fileSync', filename: `${appDir}/logs/${packageJson.name}-debug`, "pattern":".log",alwaysIncludePattern:true}, 
-    default: { type: 'fileSync', filename: `${appDir}/logs/${packageJson.name}-debug`, "pattern":".log",alwaysIncludePattern:true}
+    error: { type: 'dateFileSync', filename: `${appDir}/logs/${packageJson.name}-debug`, "pattern":".log",alwaysIncludePattern:true}, 
+    default: { type: 'dateFileSync', filename: `${appDir}/logs/${packageJson.name}-debug`, "pattern":".log",alwaysIncludePattern:true}
   },
   categories: {
     default: { appenders: ['out','default'], level: 'info' },
