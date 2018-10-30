@@ -12,6 +12,7 @@ const hashMaps = require('../utils/hashMaps');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
+let wsCnt = 0;
 
 /**
  * Establish connection to the geth node
@@ -116,6 +117,15 @@ function subscribeBlockHeaders() {
         .on('data', (blockHeader) => {
             logger.info(`ethService.subscribeBlockHeaders(): new block : ${blockHeader.number}`);
             if (blockHeader && blockHeader.number && blockHeader.hash) {
+                if(blockHeader.number == hashMaps.LATEST_BLOCK_NUMBER) {
+                    wsCnt++;
+                    //if the same block number is reported for 5 times, then report websocket is stale
+                    if(wsCnt == 5) {
+                        logger.error('## WEB SOCKET STALE?? NO NEW BLOCK REPORTED FOR PAST 5 TRIES!####');
+                    }
+                } else {
+                    wsCnt = 0;
+                }
                 hashMaps.LATEST_BLOCK_NUMBER = blockHeader.number;
                 logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
                 // Check for pending tx in database and update their status
