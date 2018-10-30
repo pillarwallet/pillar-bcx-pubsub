@@ -1,6 +1,7 @@
 /** @module ethService.js */
 const logger = require('../utils/logger');
 const Web3 = require('web3');
+const BigNumber = require('bignumber.js');
 require('dotenv').config();
 const time = require('unix-timestamp');
 const ERC20ABI = require('./ERC20ABI.json');
@@ -145,15 +146,22 @@ function storeGasInfo(blockHeader) {
     try {
         web3.eth.getBlockTransactionCount(blockHeader.number).then((txnCnt) => {
             if(txnCnt !== null) {
-                entry = {
-                    type: 'tranStat',
-                    protocol,
-                    gasLimit: blockHeader.gasLimit,
-                    gasUsed: blockHeader.gasUsed,
-                    blockNumber: blockHeader.number,
-                    transactionCount: txnCnt
-                };
-                rmqServices.sendPubSubMessage(entry);
+                web3.eth.getBlock(blockHeader.number,true).then((trans) => {
+                    const gasPrices = trans.transactions.map(tran =>  BigNumber(tran.gasPrice));
+                    let totalGasPrice = gasPrices.reduce((previous,current) => current.plus(previous));
+                    let avgGasPrice = totalGasPrice.div(txnCnt);
+                    entry = {
+                        type: 'tranStat',
+                        protocol,
+                        gasLimit: blockHeader.gasLimit,
+                        gasUsed: blockHeader.gasUsed,
+                        blockNumber: blockHeader.number,
+                        avgGasPrice,
+                        transactionCount: txnCnt
+                    };
+                    console.log(entry);
+                    rmqServices.sendPubSubMessage(entry);
+                });
             }
         });
     }catch(e) {
