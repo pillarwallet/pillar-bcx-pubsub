@@ -148,19 +148,20 @@ function storeGasInfo(blockHeader) {
             if(txnCnt !== null) {
                 web3.eth.getBlock(blockHeader.number,true).then((trans) => {
                     const gasPrices = trans.transactions.map(tran =>  BigNumber(tran.gasPrice));
-                    let totalGasPrice = gasPrices.reduce((previous,current) => current.plus(previous));
-                    let avgGasPrice = totalGasPrice.div(txnCnt);
-                    entry = {
-                        type: 'tranStat',
-                        protocol,
-                        gasLimit: blockHeader.gasLimit,
-                        gasUsed: blockHeader.gasUsed,
-                        blockNumber: blockHeader.number,
-                        avgGasPrice,
-                        transactionCount: txnCnt
-                    };
-                    console.log(entry);
-                    rmqServices.sendPubSubMessage(entry);
+                    if(gasPrices.length > 0) {
+                        let totalGasPrice = gasPrices.reduce((previous,current) => current.plus(previous));
+                        let avgGasPrice = totalGasPrice.div(txnCnt);
+                        entry = {
+                            type: 'tranStat',
+                            protocol,
+                            gasLimit: blockHeader.gasLimit,
+                            gasUsed: blockHeader.gasUsed,
+                            blockNumber: blockHeader.number,
+                            avgGasPrice: avgGasPrice.toString(),
+                            transactionCount: txnCnt
+                        };
+                        rmqServices.sendPubSubMessage(entry);
+                    }
                 });
             }
         });
