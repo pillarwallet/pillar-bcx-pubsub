@@ -1,6 +1,7 @@
 /** @module ethService.js */
 const logger = require('../utils/logger');
 const Web3 = require('web3');
+const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
 require('dotenv').config();
 const time = require('unix-timestamp');
@@ -14,6 +15,7 @@ const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
 let wsCnt = 0;
 
+
 /**
  * Establish connection to the geth node
  */
@@ -22,6 +24,43 @@ function connect() {
         try {
             if(web3 === undefined || (!web3.eth.isSyncing())) {
                 web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                /**
+                * extend Web3 functionality by including parity trace functions
+                */
+                web3.extend({
+                    property: 'trace',
+                    methods: [{
+                        name: 'call',
+                        call: 'trace_call',
+                        params: 3,
+                        inputFormatter: [helpers.formatters.inputCallFormatter, null, helpers.formatters.inputDefaultBlockNumberFormatter]
+                    },{
+                        name: 'rawTransaction',
+                        call: 'trace_rawTransaction',
+                        params: 2
+                    },{
+                        name: 'replayTransaction',
+                        call: 'trace_replayTransaction',
+                        params: 2
+                    },{
+                        name: 'block',
+                        call: 'trace_block',
+                        params: 1,
+                        inputFormatter: [helpers.formatters.inputDefaultBlockNumberFormatter]
+                    },{
+                        name: 'filter',
+                        call: 'trace_filter',
+                        params: 1
+                    },{
+                        name: 'get',
+                        call: 'trace_get',
+                        params: 2
+                    },{
+                        name: 'transaction',
+                        call: 'trace_transaction',
+                        params: 1
+                    }]
+                });
                 web3._provider.on('end', (eventObj) => {
                     logger.error('Websocket disconnected!! Restarting connection....');
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));

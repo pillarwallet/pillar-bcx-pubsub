@@ -44,7 +44,8 @@
     "sinon": "^6.2.0",
     "sizeof": "^1.0.0",
     "unix-timestamp": "^0.2.0",
-    "web3": "^1.0.0-beta.36"
+    "web3": "^1.0.0-beta.36",
+    "web3-core-helpers": "^1.0.0-beta.36"
   },
   "devDependencies": {
     "eslint-plugin-jest": "^21.18.0",
