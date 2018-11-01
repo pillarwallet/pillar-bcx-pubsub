@@ -166,14 +166,12 @@ module.exports.poll = function () {
   var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
   var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
   // request new wallets
-  logger.info('***************************************************************************************************************************');
   logger.info('Size of hashmaps: Assets= ' + hashMaps.assets.keys().length + 
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
   logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
   logger.info(`Publisher - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
   logger.info(`LAST PROCESSED BLOCK= ${LAST_BLOCK_NUMBER}, LATEST BLOCK NUMBER= ${hashMaps.LATEST_BLOCK_NUMBER}`);
-  logger.info('*****************************************************************************************************************************');
   process.send({ type: 'wallet.request', message: latestId });
   LAST_BLOCK_NUMBER = hashMaps.LATEST_BLOCK_NUMBER;
 };

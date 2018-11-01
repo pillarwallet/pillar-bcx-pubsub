@@ -92,13 +92,13 @@ function getNotificationPayload(payload) {
  */
 function resetTxMap() {
   for (const x in TX_MAP) {
-    logger.info(`resetTxMap Loop: ${x}`);
+    logger.debug(`resetTxMap Loop: ${x}`);
     const timestamp = moment().diff(TX_MAP[x].timestamp, 'minutes');
-    logger.info(`resetTxMap Loop Timestamp: ${timestamp}`);
+    logger.debug(`resetTxMap Loop Timestamp: ${timestamp}`);
 
     if (timestamp >= 3) {
       delete TX_MAP[x];
-      logger.info(`resetTxMap delete: ${x}`);
+      logger.debug(`resetTxMap delete: ${x}`);
     }
   }
 }

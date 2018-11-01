@@ -28,9 +28,7 @@ function logMemoryUsage() {
   var heap = Math.round((mem.heapUsed*10.0) / (1024*1024*10.0),2);
   var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
   var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
-  logger.info('*****************************************************************************************************************************');
   logger.info(`Subscriber - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
-  logger.info('*****************************************************************************************************************************');
 }
 module.exports.logMemoryUsage = logMemoryUsage;
 
