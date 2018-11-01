@@ -1,6 +1,7 @@
 /** @module ethService.js */
 const logger = require('../utils/logger');
 const Web3 = require('web3');
+const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
 require('dotenv').config();
 const time = require('unix-timestamp');
@@ -12,6 +13,8 @@ const hashMaps = require('../utils/hashMaps');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
+let wsCnt = 0;
+
 
 /**
  * Establish connection to the geth node
@@ -21,6 +24,43 @@ function connect() {
         try {
             if(web3 === undefined || (!web3.eth.isSyncing())) {
                 web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                /**
+                * extend Web3 functionality by including parity trace functions
+                */
+                web3.extend({
+                    property: 'trace',
+                    methods: [{
+                        name: 'call',
+                        call: 'trace_call',
+                        params: 3,
+                        inputFormatter: [helpers.formatters.inputCallFormatter, null, helpers.formatters.inputDefaultBlockNumberFormatter]
+                    },{
+                        name: 'rawTransaction',
+                        call: 'trace_rawTransaction',
+                        params: 2
+                    },{
+                        name: 'replayTransaction',
+                        call: 'trace_replayTransaction',
+                        params: 2
+                    },{
+                        name: 'block',
+                        call: 'trace_block',
+                        params: 1,
+                        inputFormatter: [helpers.formatters.inputDefaultBlockNumberFormatter]
+                    },{
+                        name: 'filter',
+                        call: 'trace_filter',
+                        params: 1
+                    },{
+                        name: 'get',
+                        call: 'trace_get',
+                        params: 2
+                    },{
+                        name: 'transaction',
+                        call: 'trace_transaction',
+                        params: 1
+                    }]
+                });
                 web3._provider.on('end', (eventObj) => {
                     logger.error('Websocket disconnected!! Restarting connection....');
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
@@ -116,6 +156,15 @@ function subscribeBlockHeaders() {
         .on('data', (blockHeader) => {
             logger.info(`ethService.subscribeBlockHeaders(): new block : ${blockHeader.number}`);
             if (blockHeader && blockHeader.number && blockHeader.hash) {
+                if(blockHeader.number == hashMaps.LATEST_BLOCK_NUMBER) {
+                    wsCnt++;
+                    //if the same block number is reported for 5 times, then report websocket is stale
+                    if(wsCnt == 5) {
+                        logger.error('## WEB SOCKET STALE?? NO NEW BLOCK REPORTED FOR PAST 5 TRIES!####');
+                    }
+                } else {
+                    wsCnt = 0;
+                }
                 hashMaps.LATEST_BLOCK_NUMBER = blockHeader.number;
                 logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
                 // Check for pending tx in database and update their status
