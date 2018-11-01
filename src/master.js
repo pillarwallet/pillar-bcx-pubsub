@@ -92,18 +92,21 @@ module.exports.launch = function () {
             if (theWallets !== undefined) {
               logger.info(`Master found ${theWallets.length} new accounts`);
               const message = [];
-              for (let i = 0; i < theWallets.length; i++) {
-                var theWallet = theWallets[i];
-                for (let j = 0; j < theWallet.addresses.length; j++) {
-                  var theAddress = theWallet.addresses[j];
-                  if (theAddress.protocol.trim() === protocol) {
-                    message.push({ id: theWallet._id, walletId: theWallet.addresses[j].address, pillarId: theWallet.pillarId });
-                  } else {
-                    logger.debug('Protocol doesnt match, ignoring,....');
-                  }
+              var i = 0;
+             
+              theWallets.forEach((theWallet) => {
+                i++;
+                var addresses = theWallet.addresses.filter((address) => {
+                  return address.protocol == 'Ethereum';
+                });
+                addresses.forEach((address) => {
+                  message.push({ id: address._id, walletId: address.address, pillarId: address.pillarId });
+                });
+                if(i === theWallets.length) {
+                  logger.info(`Master found ${message.length} relevant new wallets`);
+                  return message;
                 }
-              }
-              return message;
+              });
             } else {
               return;              
             }
