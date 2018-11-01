@@ -90,6 +90,7 @@ module.exports.launch = function () {
           logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${module.exports.index}`);
           dbServices.recentAccounts(data.message).then((theWallets) => {
             if (theWallets !== undefined) {
+              logger.info(`Master found ${theWallets.length} new accounts`);
               const message = [];
               for (let i = 0; i < theWallets.length; i++) {
                 var theWallet = theWallets[i];
@@ -108,9 +109,6 @@ module.exports.launch = function () {
             }
           }).then((message) => {
             module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
-            //notify the same message to the housekeeper to perform catchup services for the new wallet
-            logger.info('Master notifying Housekeeper to monitor new wallet registrations');
-            module.exports.notify(message,module.exports.housekeeper);
           });
         }
       } catch(e) {
