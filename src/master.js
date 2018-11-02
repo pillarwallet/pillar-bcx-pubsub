@@ -97,21 +97,20 @@ module.exports.launch = function () {
               theWallets.forEach((theWallet) => {
                 i++;
                 var addresses = theWallet.addresses.filter((address) => {
-                  return address.protocol === 'Ethereum';
+                  if(address.protocol === 'Ethereum') {
+                    return address;
+                  }
                 });
+                logger.info(`Filtered message: ${JSON.stringify(addresses)}`);
                 addresses.forEach((address) => {
-                  message.push({ id: address._id, walletId: address.address, pillarId: address.pillarId });
+                  message.push({ id: theWallet._id, walletId: address.address, pillarId: theWallet.pillarId });
                 });
                 if(i === cnt) {
                   logger.info(`Master found ${message.length} relevant new wallets`);
-                  return message;
+                  module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
                 }
               });
-            } else {
-              return;
-            }
-          }).then((message) => {
-            module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
+            } 
           });
         }
       } catch(e) {
@@ -146,7 +145,7 @@ module.exports.launch = function () {
 module.exports.notify = function(message,socket) {
   try {
     logger.info('Started executing master.notify()');
-
+    logger.info(`Message: ${JSON.stringify(message)}`);
     if (message.length > 0) {
       logger.info('master.notify(): Sending IPC notification to monitor wallets.');
       socket.send({ type: 'accounts', message: message });
