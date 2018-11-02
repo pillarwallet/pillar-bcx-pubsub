@@ -67,11 +67,14 @@ process.on('message', async (data) => {
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
         if(obj !== undefined) {
-          if(!(await client.existsAsync(obj.walletId.toLowerCase()))) {
+          const exists = await client.existsAsync(obj.walletId.toLowerCase());
+          logger.info(`Wallet : ${obj.walletId} exists in redis? : ${exists}`);
+          if(!(exists)) {
             await client.setAsync(obj.walletId.toLowerCase(),obj.pillarId);
             logger.info(`Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
             latestId = obj.id;
             await client.setAsync('latestId',obj.id);
+            logger.info(`Updated redis with latestId: ${latestId}`);
           }
         }
       }
