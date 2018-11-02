@@ -97,7 +97,7 @@ module.exports.launch = function () {
               theWallets.forEach((theWallet) => {
                 i++;
                 var addresses = theWallet.addresses.filter((address) => {
-                  return address.protocol == 'Ethereum';
+                  return address.protocol === 'Ethereum';
                 });
                 addresses.forEach((address) => {
                   message.push({ id: address._id, walletId: address.address, pillarId: address.pillarId });
@@ -107,9 +107,8 @@ module.exports.launch = function () {
                   return message;
                 }
               });
-            } else {
-              return;              
             }
+            return;
           }).then((message) => {
             module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
           });
