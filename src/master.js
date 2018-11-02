@@ -93,7 +93,7 @@ module.exports.launch = function () {
               logger.info(`Master found ${theWallets.length} new accounts`);
               const message = [];
               var i = 0;
-             
+              var cnt = theWallets.length;
               theWallets.forEach((theWallet) => {
                 i++;
                 var addresses = theWallet.addresses.filter((address) => {
@@ -102,13 +102,14 @@ module.exports.launch = function () {
                 addresses.forEach((address) => {
                   message.push({ id: address._id, walletId: address.address, pillarId: address.pillarId });
                 });
-                if(i === theWallets.length) {
+                if(i === cnt) {
                   logger.info(`Master found ${message.length} relevant new wallets`);
                   return message;
                 }
               });
+            } else {
+              return;
             }
-            return;
           }).then((message) => {
             module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
           });
@@ -147,7 +148,7 @@ module.exports.notify = function(message,socket) {
     logger.info('Started executing master.notify()');
 
     if (message.length > 0) {
-      logger.info(`master.notify(): Sending IPC notification to monitor ${message.length} wallets.`);
+      logger.info('master.notify(): Sending IPC notification to monitor wallets.');
       socket.send({ type: 'accounts', message: message });
     } else {
       logger.debug('Master nothing to notify to publisher or housekeeper');
@@ -155,8 +156,6 @@ module.exports.notify = function(message,socket) {
 
   } catch (err) {
     logger.error(`master.notify() failed: ${err}`);
-  } finally {
-    logger.info('Exited master.notify()');
   }
 };
 
