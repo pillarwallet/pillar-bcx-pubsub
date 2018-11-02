@@ -67,11 +67,14 @@ process.on('message', async (data) => {
       for (let i = 0; i < message.length; i++) {
         const obj = message[i];
         if(obj !== undefined) {
-          if(!(await client.existsAsync(obj.walletId.toLowerCase()))) {
-            client.set(obj.walletId.toLowerCase(),obj.pillarId,redis.print);
+          const exists = await client.existsAsync(obj.walletId.toLowerCase());
+          logger.info(`Wallet : ${obj.walletId} exists in redis? : ${exists}`);
+          if(!(exists)) {
+            await client.setAsync(obj.walletId.toLowerCase(),obj.pillarId);
             logger.info(`Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
             latestId = obj.id;
-            client.set('latestId',obj.id,redis.print);
+            await client.setAsync('latestId',obj.id);
+            logger.info(`Updated redis with latestId: ${latestId}`);
           }
         }
       }
@@ -114,7 +117,7 @@ module.exports.initIPC = function () {
         latestId = await client.getAsync('latestId');
       } else {
         logger.info('First run of the process, initializing last process id on redis');
-        client.set('latestId','',redis.print);
+        await client.setAsync('latestId','');
       }
       logger.info(`Publisher identified last process id from redis to be : ${latestId}`);
 
