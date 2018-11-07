@@ -103,6 +103,22 @@ function getWeb3() {
 module.exports.getWeb3 = getWeb3;
 
 /**
+ * Clear all subscriptions
+ */
+function clearSubscriptions() {
+    logger.info('ethService.clearSubscriptions(): clear all websocket subscriptions');
+    return new Promise(((resolve, reject) => {
+        if(web3) {
+            web3.eth.clearSubscriptions();
+            resolve();
+        } else {
+            reject();
+        }
+    }));
+}
+module.exports.clearSubscriptions = clearSubscriptions;
+
+/**
  * Subscribe to geth WS event corresponding to new pending transactions.
  */
 function subscribePendingTxn () {

@@ -142,7 +142,10 @@ module.exports.initIPC = function () {
 
       //reset subscription every 24hrs
       const subsJob = new CronJob('5 0 * * *', () => {
-        module.exports.initSubscriptions();
+        logger.info('Publisher: Clearing and resubscribing to all geth websocket connections');
+        ethService.clearSubscriptions().then(() => {
+          module.exports.initSubscriptions();
+        });
       });
       subsJob.start();
     } catch (err) {
