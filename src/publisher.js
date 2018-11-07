@@ -139,6 +139,12 @@ module.exports.initIPC = function () {
         module.exports.poll();
       });
       job.start();
+
+      //reset subscription every 24hrs
+      const subsJob = new CronJob('5 0 * * *', () => {
+        module.exports.initSubscriptions();
+      });
+      subsJob.start();
     } catch (err) {
       logger.error('Publisher.init() failed: ', err.message);
       reject(err);

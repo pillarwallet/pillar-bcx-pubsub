@@ -81,7 +81,8 @@ module.exports.sendPubSubMessage = sendPubSubMessage;
 function getNotificationPayload(payload) {
   const p = {
     type: 'transactionEvent',
-    payload
+    payload,
+    meta: {}
   };
   logger.info(JSON.stringify(p));
   return p;
