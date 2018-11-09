@@ -141,7 +141,7 @@ module.exports.initIPC = function () {
       job.start();
 
       //reset subscription every 24hrs
-      const subsJob = new CronJob('5 0 * * *', () => {
+      const subsJob = new CronJob('55 23 * * *', () => {
         logger.info('Publisher: Clearing and resubscribing to all geth websocket connections');
         ethService.clearSubscriptions().then(() => {
           module.exports.initSubscriptions();
