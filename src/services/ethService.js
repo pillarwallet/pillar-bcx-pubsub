@@ -29,37 +29,44 @@ function connect() {
                 */
                 web3.extend({
                     property: 'trace',
-                    methods: [{
+                    methods: [
+                    new web3.extend.Method({
                         name: 'call',
                         call: 'trace_call',
                         params: 3,
                         inputFormatter: [helpers.formatters.inputCallFormatter, null, helpers.formatters.inputDefaultBlockNumberFormatter]
-                    },{
+                    }),
+                    new web3.extend.Method({
                         name: 'rawTransaction',
                         call: 'trace_rawTransaction',
                         params: 2
-                    },{
+                    }),
+                    new web3.extend.Method({
                         name: 'replayTransaction',
                         call: 'trace_replayTransaction',
                         params: 2
-                    },{
+                    }),
+                    new web3.extend.Method({
                         name: 'block',
                         call: 'trace_block',
                         params: 1,
                         inputFormatter: [helpers.formatters.inputDefaultBlockNumberFormatter]
-                    },{
+                    }),
+                    new web3.extend.Method({
                         name: 'filter',
                         call: 'trace_filter',
                         params: 1
-                    },{
+                    }),
+                    new web3.extend.Method({
                         name: 'get',
                         call: 'trace_get',
                         params: 2
-                    },{
+                    }),
+                    new web3.extend.Method({
                         name: 'transaction',
                         call: 'trace_transaction',
                         params: 1
-                    }]
+                    })]
                 });
                 web3._provider.on('end', (eventObj) => {
                     logger.error('Websocket disconnected!! Restarting connection....');
