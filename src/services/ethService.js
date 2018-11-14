@@ -407,8 +407,8 @@ function checkPendingTx(pendingTxArray) {
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item,
-                                fromAddress: receipt.fromAddress,
-                                toAddress: receipt.toAddress,
+                                fromAddress: receipt.from,
+                                toAddress: receipt.to,
                                 status,
                                 gasUsed,
                                 blockNumber: receipt.blockNumber
