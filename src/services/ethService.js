@@ -114,14 +114,7 @@ module.exports.getWeb3 = getWeb3;
  */
 function clearSubscriptions() {
     logger.info('ethService.clearSubscriptions(): clear all websocket subscriptions');
-    return new Promise(((resolve, reject) => {
-        if(web3) {
-            web3.eth.clearSubscriptions();
-            resolve();
-        } else {
-            reject();
-        }
-    }));
+    web3.eth.clearSubscriptions();
 }
 module.exports.clearSubscriptions = clearSubscriptions;
 
@@ -414,6 +407,8 @@ function checkPendingTx(pendingTxArray) {
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item,
+                                fromAddress: receipt.fromAddress,
+                                toAddress: receipt.toAddress,
                                 status,
                                 gasUsed,
                                 blockNumber: receipt.blockNumber
