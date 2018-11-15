@@ -412,8 +412,9 @@ function checkPendingTx(pendingTxArray) {
                             asset = contractDetail.symbol;
                             abiDecoder.addABI(ERC20ABI);
                             web3.eth.getTransaction((tx) => {
-                                var data = abiDecoder.decodeMethod(tx.input);
-                                if ((typeof data !== undefined) && (tx.input !== '0x')) {
+                                logger.info(`Fetched transaction info: ${tx}`)
+                                if (tx.input !== '0x') {
+                                    var data = abiDecoder.decodeMethod(tx.input);
                                     if(data.name  === 'transfer'){ 
                                         to = data.params[0].value;
                                     }
