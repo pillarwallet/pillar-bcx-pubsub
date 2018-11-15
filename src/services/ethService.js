@@ -404,11 +404,27 @@ function checkPendingTx(pendingTxArray) {
                         } else {
                             status = 'failed';
                         }
+                        var to;
+                        if(hashMaps.assets.has(receipt.to.toLowerCase())) { 
+                            const contractDetail = hashMaps.assets.get(receipt.to.toLowerCase());
+                            contractAddress = contractDetail.contractAddress;
+                            asset = contractDetail.symbol;
+                            abiDecoder.addABI(ERC20ABI);
+                            data = abiDecoder.decodeMethod(tx.input);
+                            if ((typeof data !== undefined) && (receipt.input !== '0x')) {
+                                if(data.name  === 'transfer'){ 
+                                    //smart contract call hence the asset must be the token name
+                                    to = data.params[0].value;
+                                }
+                            }
+                        } else {
+                            to = receipt.to;
+                        }
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item,
                                 fromAddress: receipt.from,
-                                toAddress: receipt.to,
+                                toAddress: to,
                                 status,
                                 gasUsed,
                                 blockNumber: receipt.blockNumber
