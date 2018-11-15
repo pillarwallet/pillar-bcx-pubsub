@@ -5,6 +5,8 @@ const moment = require('moment');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
+const TRANSACTION_PENDING = 'transactionPendingEvent';
+const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
@@ -78,9 +80,9 @@ module.exports.sendPubSubMessage = sendPubSubMessage;
  * Function to generate the notification payload thats send to notification queue
  * @param {any} payload -  The payload for the notification queue
  */
-function getNotificationPayload(payload) {
+function getNotificationPayload(type,payload) {
   const p = {
-    type: 'transactionEvent',
+    type,
     payload,
     meta: {}
   };
@@ -171,7 +173,7 @@ function initSubPubMQ() {
                     ch.assertQueue(notificationsQueue, { durable: true });
                     ch.sendToQueue(
                       notificationsQueue,
-                      new Buffer.from(JSON.stringify(getNotificationPayload(entry)))
+                      new Buffer.from(JSON.stringify(getNotificationPayload(TRANSACTION_PENDING,entry)))
                     );
                     logger.info(`newTx: Transaction produced to: ${notificationsQueue}`);
                   })
@@ -184,7 +186,7 @@ function initSubPubMQ() {
                     ch.assertQueue(notificationsQueue, { durable: true });
                     ch.sendToQueue(
                       notificationsQueue,
-                      new Buffer.from(JSON.stringify(getNotificationPayload(entry)))
+                      new Buffer.from(JSON.stringify(getNotificationPayload(TRANSACTION_CONFIRMATION,entry)))
                     );
                     logger.info(`updateTx: Transaction produced to: ${notificationsQueue}`);
                   });
