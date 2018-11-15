@@ -411,10 +411,9 @@ function checkPendingTx(pendingTxArray) {
                             contractAddress = contractDetail.contractAddress;
                             asset = contractDetail.symbol;
                             abiDecoder.addABI(ERC20ABI);
-                            data = abiDecoder.decodeMethod(tx.input);
+                            var data = abiDecoder.decodeMethod(receipt.input);
                             if ((typeof data !== undefined) && (receipt.input !== '0x')) {
                                 if(data.name  === 'transfer'){ 
-                                    //smart contract call hence the asset must be the token name
                                     to = data.params[0].value;
                                 }
                             }
