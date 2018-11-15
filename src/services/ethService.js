@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
+const abiDecoder = require('abi-decoder');
 require('dotenv').config();
 const time = require('unix-timestamp');
 const ERC20ABI = require('./ERC20ABI.json');
