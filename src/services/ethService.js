@@ -411,12 +411,14 @@ function checkPendingTx(pendingTxArray) {
                             contractAddress = contractDetail.contractAddress;
                             asset = contractDetail.symbol;
                             abiDecoder.addABI(ERC20ABI);
-                            var data = abiDecoder.decodeMethod(receipt.input);
-                            if ((typeof data !== undefined) && (receipt.input !== '0x')) {
-                                if(data.name  === 'transfer'){ 
-                                    to = data.params[0].value;
-                                }
-                            }
+                            web3.eth.getTransaction((tx) => {
+                                var data = abiDecoder.decodeMethod(tx.input);
+                                if ((typeof data !== undefined) && (tx.input !== '0x')) {
+                                    if(data.name  === 'transfer'){ 
+                                        to = data.params[0].value;
+                                    }
+                                }   
+                            });
                         } else {
                             to = receipt.to;
                         }
