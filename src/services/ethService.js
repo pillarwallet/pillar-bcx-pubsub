@@ -395,7 +395,7 @@ function checkPendingTx(pendingTxArray) {
         pendingTxArray.forEach((item) => {
             logger.debug('ethService.checkPendingTx(): Checking status of transaction: ' + item.txHash);
             if(module.exports.connect()) {
-                web3.eth.getTransactionReceipt(item).then((receipt) => {
+                web3.eth.getTransactionReceipt(item.txHash).then((receipt) => {
                     logger.debug('ethService.checkPendingTx(): receipt is ' + receipt);
                     if(receipt !== null) {
                         let status;
@@ -417,7 +417,7 @@ function checkPendingTx(pendingTxArray) {
                             };         
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
-                        hashMaps.pendingTx.delete(item);
+                        hashMaps.pendingTx.delete(item.txHash);
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
                     }

@@ -40,16 +40,6 @@ memwatch.on('stats',function(stats) {
 });
 
 /**
- * Function for reporting unhandled promise rejections.
- * @param {any} reason - reason for failure/stack trace
- */
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('***********************************************');
-  logger.error('ERROR: Unhandled Rejection at PUBLISHER:', JSON.stringify(reason));
-  logger.error('***********************************************');
-});
-
-/**
  * Function handling IPC notification that are received from the master
  * @param {any} message - The IPC message that sent from the master
  * There are 4 types of IPC messages that the publisher can receive from the master, these are
