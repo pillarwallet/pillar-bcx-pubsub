@@ -183,22 +183,13 @@ function initSubPubMQ() {
                 dbServices.dbCollections.transactions.updateTx(entry)
                   .then(() => {
                     logger.info(`Transaction updated: ${txHash}`);
-                    dbServices.dbCollections.transactions.findByTxHash(txHash).then((tx) => {
-                      const msg = {
-                        txHash: entry.txHash,
-                        fromAddress: tx.from,
-                        toAddress: tx.to,
-                        status: entry.status,
-                        gasUsed: entry.gasUsed,
-                        blockNumber: entry.blockNumber
-                      };
-                      ch.assertQueue(notificationsQueue, { durable: true });
-                      ch.sendToQueue(
-                        notificationsQueue,
-                        new Buffer.from(JSON.stringify(getNotificationPayload(TRANSACTION_CONFIRMATION,msg)))
-                      );
-                      logger.info(`updateTx: Transaction produced to: ${notificationsQueue}`);
-                    });
+                
+                    ch.assertQueue(notificationsQueue, { durable: true });
+                    ch.sendToQueue(
+                      notificationsQueue,
+                      new Buffer.from(JSON.stringify(getNotificationPayload(TRANSACTION_CONFIRMATION,entry)))
+                    );
+                    logger.info(`updateTx: Transaction produced to: ${notificationsQueue}`);
                   });
                 break;
               case 'newAsset':

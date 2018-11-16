@@ -185,7 +185,7 @@ function subscribeBlockHeaders() {
                 hashMaps.LATEST_BLOCK_NUMBER = blockHeader.number;
                 logger.info(`ethService.subscribeBlockHeaders(): NEW BLOCK MINED : # ${blockHeader.number} Hash = ${blockHeader.hash}`);
                 // Check for pending tx in database and update their status
-                module.exports.checkPendingTx(hashMaps.pendingTx.keys()).then(() => {
+                module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
                     logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
                 });
                 module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
@@ -393,7 +393,7 @@ function checkPendingTx(pendingTxArray) {
         resolve();
       } else {
         pendingTxArray.forEach((item) => {
-            logger.debug('ethService.checkPendingTx(): Checking status of transaction: ' + item);
+            logger.debug('ethService.checkPendingTx(): Checking status of transaction: ' + item.txHash);
             if(module.exports.connect()) {
                 web3.eth.getTransactionReceipt(item).then((receipt) => {
                     logger.debug('ethService.checkPendingTx(): receipt is ' + receipt);
@@ -408,7 +408,9 @@ function checkPendingTx(pendingTxArray) {
         
                         const txMsg = {
                                 type: 'updateTx',
-                                txHash: item,
+                                txHash: item.txHash,
+                                fromAddress: item.fromAddress,
+                                toAddress: item.toAddress,
                                 status,
                                 gasUsed,
                                 blockNumber: receipt.blockNumber
