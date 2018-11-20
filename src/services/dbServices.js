@@ -22,9 +22,9 @@ function dbConnect() {
         keepAliveInitialDelay: 30000,
         connectTimeoutMS: 500,
         socketTimeoutMS: 100000,
-        reconnectTries: 10,
+        reconnectTries: 2,
         reconnectInterval: 500,
-        poolSize: 5
+        poolSize: 1
     };
     return new Promise(((resolve, reject) => {
       try {
@@ -160,10 +160,6 @@ function getTxHistory(address1, fromtmstmp, address2, asset) {
                 dbCollections.transactions.getTxHistory(address1.toUpperCase(), fromtmstmp, address2.toUpperCase(), asset)
                 .then((txHistory) => {
                     resolve(txHistory);
-                });
-                } else {
-                 module.exports.dbConnect().then(() => {
-                    resolve(module.exports.getTxHistory(address1, fromtmstmp, address2, asset));
                 });
             }
         } catch (e) { reject(e); }
