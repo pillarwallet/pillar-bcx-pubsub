@@ -17,7 +17,6 @@ let dbCollections;
 
 function dbConnect() {
     const $arg = { 
-        useMongoClient: true,
         keepAlive: true, 
         keepAliveInitialDelay: 30000,
         connectTimeoutMS: 500,
