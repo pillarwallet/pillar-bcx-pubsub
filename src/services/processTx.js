@@ -180,7 +180,7 @@ async function newPendingTran(tx, protocol) {
           data = abiDecoder.decodeMethod(tx.input);
           logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
           logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
-          if ((typeof data !== undefined) && (tx.input !== '0x')) {
+          if ((!data && !data.name) && (tx.input !== '0x')) {
             if(data.name  === 'transfer'){ 
                 //smart contract call hence the asset must be the token name
                 to = data.params[0].value;
@@ -197,7 +197,7 @@ async function newPendingTran(tx, protocol) {
       }
       
       //logger.debug('processTx.newPendingTran(): ' + pillarId + ' tx: ' + JSON.stringify(tx));
-      if(pillarId !== '') {
+      if(pillarId !== '' && pillarId !== null) {
           //send a message to the notifications queue reporting a new transactions
           const txMsgTo = {
               type: 'newTx',

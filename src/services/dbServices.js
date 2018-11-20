@@ -15,15 +15,25 @@ const transactions = require('../controllers/transactions_ctrl.js');
 const gasinfo = require('../controllers/gasinfo_ctrl.js');
 let dbCollections;
 
-function dbConnect($arg = { useMongoClient: true }) {
+function dbConnect() {
+    const $arg = { 
+        useMongoClient: true,
+        keepAlive: true, 
+        keepAliveInitialDelay: 30000,
+        connectTimeoutMS: 500,
+        socketTimeoutMS: 100000,
+        reconnectTries: 10,
+        reconnectInterval: 500,
+        poolSize: 5
+    };
     return new Promise(((resolve, reject) => {
       try {
         // Connect to database
         module.exports.mongoose.connect(mongoUrl, $arg);
 
         // Setting up listeners
-        module.exports.mongoose.connection.on('error', () => {
-          logger.error(("ERROR: Couldn't establish connection to database :("));
+        module.exports.mongoose.connection.on('error', (err) => {
+          logger.error(`ERROR: Couldn't establish connection to database : ${err}`);
           reject(new Error("ERROR: Couldn't establish connection to database"));
         });
   
@@ -33,6 +43,19 @@ function dbConnect($arg = { useMongoClient: true }) {
           module.exports.dbCollections = dbCollections;
           resolve();
         });
+
+        module.exports.mongoose.connection.on('connected', () => {
+            logger.info('Mongoose default connection open');
+        });
+
+        module.exports.mongoose.connection.on('disconnected', () => {
+            logger.info('Mongoose default connection disconnected');
+        });
+
+        module.exports.mongoose.connection.on('reconnected', () => {
+            logger.info('Mongoose default connection reconnected');
+        });
+
       } catch (e) { reject(e); }
     }));
 }
