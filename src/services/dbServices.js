@@ -73,13 +73,7 @@ function accountDetails(address, $arg = { useMongoClient: true }) {
                 resolve(accounts);
             })
             .catch((e) => { reject(e); });
-          } else {
-            module.exports.dbConnect()
-            .then(() => {
-                resolve(module.exports.accountDetails(address));
-            })
-            .catch((e) => { reject(e); });
-          }
+          } 
         } catch (e) { reject(e); }
     }));    
 }
@@ -93,12 +87,6 @@ function assetDetails(asset, $arg = { useMongoClient: true }) {
             .then((assets) => {
                 logger.debug('Asset details ' + assets);
                 resolve(accounts);
-            })
-            .catch((e) => { reject(e); });
-          } else {
-            module.exports.dbConnect()
-            .then(() => {
-                resolve(module.exports.assetDetails(asset));
             })
             .catch((e) => { reject(e); });
           }
@@ -129,12 +117,6 @@ function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
               })
               .catch((e) => { reject(e); });
           }
-        } else {
-           module.exports.dbConnect()
-            .then(() => {
-              resolve(module.exports.recentAccounts());
-            })
-            .catch((e) => { reject(e); });
         }
       } catch (e) { reject(e); }
     }));
@@ -166,12 +148,6 @@ function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
             })
             .catch((e) => { reject(e); });
         }
-      } else {
-         module.exports.dbConnect()
-          .then(() => {
-            resolve(module.exports.contractsToMonitor());
-          })
-          .catch((e) => { reject(e); });
       }
     }));
 }
@@ -204,10 +180,6 @@ function listAssets(protocol) {
                     logger.debug('dbServices.listAssets(): Found ' + result.length + ' assets.');
                     resolve(result);
                 });
-            } else {
-                 module.exports.dbConnect().then(() => {
-                    resolve(module.exports.listAssets(protocol));
-                });
             }
         } catch (e) { 
             logger.error('dbServices.listAssets(): failed with error: ' + e);
@@ -238,10 +210,6 @@ function listPendingTx(address, asset) {
                 });
                 resolve(addressAssetPendingTxArray);
             });
-        } else {
-             module.exports.dbConnect().then(() => {
-                resolve(module.exports.listPendingTx(address, asset));
-            });
         }
       } catch (e) { reject(e); }
     }));
@@ -256,10 +224,6 @@ function listPending(protocol) {
             dbCollections.transactions.listPending(protocol).then((pendingTxArray) => {
                 logger.debug('dbServices.listPending(): Found ' + pendingTxArray.length + ' transactions.');
                 resolve(pendingTxArray);
-            });
-        } else {
-             module.exports.dbConnect().then(() => {
-                resolve(module.exports.listPending(protocol));
             });
         }
       } catch (e) { 
@@ -294,10 +258,6 @@ function findMaxBlock(protocol,asset = null) {
                     resolve(maxBlock);
                 });
             }
-        } else {
-             module.exports.dbConnect().then(() => {
-                resolve(module.exports.findMaxBlock(protocol,asset));
-            });
         }
       } catch (e) { reject(e); }
     }));  
@@ -309,10 +269,6 @@ function addTransactionStats(record) {
       logger.debug('dbServices.addTransactionStats() adding transaction statistics');
       if(dbCollections) {
         dbCollections.gasinfo.add(record);
-      } else {
-           module.exports.dbConnect().then(() => {
-            module.exports.addTransactionStats(record);
-          });
       }
       logger.debug('dbServices.addTransactionStats() successfully added');
     }catch(e) {
