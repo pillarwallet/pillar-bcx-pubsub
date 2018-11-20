@@ -597,7 +597,7 @@ async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0, wa
         }
     } catch(err) {
         logger.error(`ethService.getPastEvents(): for contract: ${address} failed with error: ${err}`);
-        return new Promise.reject(new Error(err));
+        reject(err);
     }
 }
 module.exports.getPastEvents = getPastEvents;
