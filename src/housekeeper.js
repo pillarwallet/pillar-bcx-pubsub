@@ -277,6 +277,7 @@ async function init() {
                 entry.lastId = '';
                 entry.startTime = time.now();
                 entry.endTime =  0;
+                entry.status = 'pending';
                 client.set('housekeeper',JSON.stringify(entry),redis.print);
                 this.processData('');
             } else {
