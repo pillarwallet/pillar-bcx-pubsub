@@ -115,7 +115,7 @@ module.exports.getWeb3 = getWeb3;
  */
 function clearSubscriptions() {
     logger.info('ethService.clearSubscriptions(): clear all websocket subscriptions');
-    web3.eth.clearSubscriptions();
+    return web3.eth.clearSubscriptions();
 }
 module.exports.clearSubscriptions = clearSubscriptions;
 
