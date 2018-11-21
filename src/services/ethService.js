@@ -14,6 +14,7 @@ const hashMaps = require('../utils/hashMaps');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
+let blockHeaderSubscription, pendingTransactionSubscription;
 let wsCnt = 0;
 
 
@@ -115,7 +116,15 @@ module.exports.getWeb3 = getWeb3;
  */
 function clearSubscriptions() {
     logger.info('ethService.clearSubscriptions(): clear all websocket subscriptions');
-    web3.eth.clearSubscriptions();
+    if(blockHeaderSubscription) {
+        blockHeaderSubscription.unsubscribe();
+    }
+    if(pendingTransactionSubscription) {
+        pendingTransactionSubscription.unsubscribe();
+    }
+    if(web3) {
+        web3.eth.clearSubscriptions();
+    }
 }
 module.exports.clearSubscriptions = clearSubscriptions;
 
@@ -125,7 +134,7 @@ module.exports.clearSubscriptions = clearSubscriptions;
 function subscribePendingTxn () {
     logger.info('ethService.subscribePendingTxn(): Subscribing to list of pending transactions.'); 
     if(module.exports.connect()) {
-        web3.eth.subscribe('pendingTransactions', (err, res) => {
+        pendingTransactionSubscription = web3.eth.subscribe('pendingTransactions', (err, res) => {
             if(!err) { 
                 logger.debug('ethService.subscribePendingTxn(): pendingTransactions subscription status : ' + res);
             } else {
@@ -163,7 +172,7 @@ module.exports.subscribePendingTxn = subscribePendingTxn;
 function subscribeBlockHeaders() {
     logger.info('ethService.subscribeBlockHeaders(): Subscribing to block headers.'); 
     if(module.exports.connect()) {
-        web3.eth.subscribe('newBlockHeaders', (err, res) => {
+        blockHeaderSubscription = web3.eth.subscribe('newBlockHeaders', (err, res) => {
             if(!err) { 
                 logger.debug('ethService.subscribeBlockHeaders(): newBlockHeader subscription status : ' + res);
             } else {
