@@ -42,19 +42,6 @@ function dbConnect() {
           module.exports.dbCollections = dbCollections;
           resolve();
         });
-
-        module.exports.mongoose.connection.on('connected', () => {
-            logger.info('Mongoose default connection open');
-        });
-
-        module.exports.mongoose.connection.on('disconnected', () => {
-            logger.info('Mongoose default connection disconnected');
-        });
-
-        module.exports.mongoose.connection.on('reconnected', () => {
-            logger.info('Mongoose default connection reconnected');
-        });
-
       } catch (e) { reject(e); }
     }));
 }
@@ -131,18 +118,18 @@ function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
           dbCollections.assets.listRecent(idFrom)
             .then((assetsArray) => {
               if(assetsArray.length > 0) {
-                logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
+                logger.debug('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
               } else {
-                logger.info('dbServices.contractsToMonitor(): No assets available for monitoring');
+                logger.debug('dbServices.contractsToMonitor(): No assets available for monitoring');
               }
               resolve(assetsArray);
             })
             .catch((e) => { reject(e); });
         } else {
-          logger.info('dbServices.contractsToMonitor(): Fetching all assets from the database.')
+          logger.debug('dbServices.contractsToMonitor(): Fetching all assets from the database.')
           dbCollections.assets.listAll()
             .then((assetsArray) => {
-              logger.info('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
+              logger.debug('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
               resolve(assetsArray);
             })
             .catch((e) => { reject(e); });
