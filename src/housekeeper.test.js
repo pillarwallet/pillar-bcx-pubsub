@@ -8,6 +8,7 @@ describe.only('Housekeeper unit tests', () => {
 
 	beforeAll(() => {
 		jest.genMockFromModule('web3');
+		jest.genMockFromModule('redis');
 		const ethServices = require('./services/ethService');
 		const spy = jest.spyOn(ethServices,'connect');
 		spy.mockImplementation();

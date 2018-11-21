@@ -277,6 +277,7 @@ async function init() {
                 entry.lastId = '';
                 entry.startTime = time.now();
                 entry.endTime =  0;
+                entry.status = 'pending';
                 client.set('housekeeper',JSON.stringify(entry),redis.print);
                 this.processData('');
             } else {
@@ -304,7 +305,7 @@ async function init() {
         entry.status = 'failed';
         entry.endTime = time.now();
         client.set('housekeeper',JSON.stringify(entry), redis.print);
-        throw e;
+        //process.exit(0);
     }
 }
 module.exports.init = init;

@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
-    "@pillarwallet/common-logger": "1.1.25",
+    "@pillarwallet/common-logger": "1.2.38",
     "@sentry/node": "^4.0.0",
     "abi-decoder": "^1.2.0",
     "amqplib": "^0.5.2",
@@ -45,8 +45,8 @@
     "sizeof": "^1.0.0",
     "sleep": "^5.2.3",
     "unix-timestamp": "^0.2.0",
-    "web3": "^1.0.0-beta.36",
-    "web3-core-helpers": "^1.0.0-beta.36"
+    "web3": "1.0.0-beta.35",
+    "web3-core-helpers": "1.0.0-beta.35"
   },
   "devDependencies": {
     "eslint-plugin-jest": "^21.18.0",
