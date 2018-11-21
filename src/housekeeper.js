@@ -305,7 +305,7 @@ async function init() {
         entry.status = 'failed';
         entry.endTime = time.now();
         client.set('housekeeper',JSON.stringify(entry), redis.print);
-        process.exit(0);
+        //process.exit(0);
     }
 }
 module.exports.init = init;
