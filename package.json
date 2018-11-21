@@ -18,7 +18,18 @@
   },
   "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
-    "@pillarwallet/common-logger": "1.2.38",
+    "@pillarwallet/common-logger": {
+      "version": "1.2.38",
+      "resolved": "https://pillarproject.jfrog.io/pillarproject/api/npm/npm/@pillarwallet/common-logger/-/@pillarwallet/common-logger-1.2.38.tgz",
+      "integrity": "sha1-ig2344BaLanRy1ApFQURzuACfKo=",
+      "requires": {
+        "bunyan": "1.8.12",
+        "bunyan-rotating-file-stream": "1.6.3",
+        "fs": "0.0.1-security",
+        "path": "0.12.7",
+        "response-time": "2.3.2"
+      }
+    },
     "@sentry/node": "^4.0.0",
     "abi-decoder": "^1.2.0",
     "amqplib": "^0.5.2",
