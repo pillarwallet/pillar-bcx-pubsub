@@ -126,7 +126,7 @@ function subscribePendingTxn () {
         .on('data', (txHash) => {
         logger.debug('ethService.subscribePendingTxn(): received notification for txHash: ' + txHash);
         if ((txHash !== null) && (txHash !== '')) {
-            logger.info('ethService.subscribePendingTxn(): fetch txInfo for hash: ' + txHash);
+            logger.debug('ethService.subscribePendingTxn(): fetch txInfo for hash: ' + txHash);
             web3.eth.getTransaction(txHash)
             .then((txInfo) => {
                 if (txInfo !== null) {
