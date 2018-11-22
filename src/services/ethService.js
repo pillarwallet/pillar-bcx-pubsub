@@ -14,7 +14,6 @@ const hashMaps = require('../utils/hashMaps');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
-let blockHeaderSubscription, pendingTransactionSubscription;
 let wsCnt = 0;
 
 
@@ -112,53 +111,36 @@ function getWeb3() {
 module.exports.getWeb3 = getWeb3;
 
 /**
- * Clear all subscriptions
- */
-function clearSubscriptions() {
-    logger.info('ethService.clearSubscriptions(): clear all websocket subscriptions');
-    if(blockHeaderSubscription) {
-        blockHeaderSubscription.unsubscribe();
-    }
-    if(pendingTransactionSubscription) {
-        pendingTransactionSubscription.unsubscribe();
-    }
-    if(web3) {
-        web3.eth.clearSubscriptions();
-    }
-}
-module.exports.clearSubscriptions = clearSubscriptions;
-
-/**
  * Subscribe to geth WS event corresponding to new pending transactions.
  */
 function subscribePendingTxn () {
     logger.info('ethService.subscribePendingTxn(): Subscribing to list of pending transactions.'); 
     if(module.exports.connect()) {
-        pendingTransactionSubscription = web3.eth.subscribe('pendingTransactions', (err, res) => {
+        web3.eth.subscribe('pendingTransactions', (err, res) => {
             if(!err) { 
                 logger.debug('ethService.subscribePendingTxn(): pendingTransactions subscription status : ' + res);
             } else {
                 logger.error('ethService.subscribePendingTxn(): pendingTransactions subscription errored : ' + err);
             }
-          })
-          .on('data', (txHash) => {
-            logger.debug('ethService.subscribePendingTxn(): received notification for txHash: ' + txHash);
-            if ((txHash !== null) && (txHash !== '')) {
-              logger.debug('ethService.subscribePendingTxn(): fetch txInfo for hash: ' + txHash);
-              web3.eth.getTransaction(txHash)
-                .then((txInfo) => {
-                  if (txInfo !== null) {
+        })
+        .on('data', (txHash) => {
+        logger.debug('ethService.subscribePendingTxn(): received notification for txHash: ' + txHash);
+        if ((txHash !== null) && (txHash !== '')) {
+            logger.info('ethService.subscribePendingTxn(): fetch txInfo for hash: ' + txHash);
+            web3.eth.getTransaction(txHash)
+            .then((txInfo) => {
+                if (txInfo !== null) {
                     processTx.newPendingTran(txInfo,protocol);
-                  }
-                })
-                .catch((e) => { 
-                    logger.error('ethService.subscribePendingTxn() failed with error: ' + e);
-                });
-            }
-          })
-          .on("error", (err) => {
-              logger.error('ethService.subscribePendingTxn() failed with error: ' + err);
-          });
+                }
+            })
+            .catch((e) => { 
+                logger.error('ethService.subscribePendingTxn() failed with error: ' + e);
+            });
+        }
+        })
+        .on("error", (err) => {
+            logger.error('ethService.subscribePendingTxn() failed with error: ' + err);
+        });
         logger.info('ethService.subscribePendingTxn() has successfully subscribed to pendingTransaction events');
     } else {
         logger.error('ethService.subscribePendingTxn(): Connection to geth failed!');
@@ -172,7 +154,7 @@ module.exports.subscribePendingTxn = subscribePendingTxn;
 function subscribeBlockHeaders() {
     logger.info('ethService.subscribeBlockHeaders(): Subscribing to block headers.'); 
     if(module.exports.connect()) {
-        blockHeaderSubscription = web3.eth.subscribe('newBlockHeaders', (err, res) => {
+        web3.eth.subscribe('newBlockHeaders', (err, res) => {
             if(!err) { 
                 logger.debug('ethService.subscribeBlockHeaders(): newBlockHeader subscription status : ' + res);
             } else {
