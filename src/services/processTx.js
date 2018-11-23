@@ -211,8 +211,8 @@ async function newPendingTran(tx, protocol) {
           }
       }
       
-      //logger.debug('processTx.newPendingTran(): ' + pillarId + ' tx: ' + JSON.stringify(tx));
       if(pillarId !== '' && pillarId !== null) {
+        logger.info('processTx.newPendingTran(): PillarID: ' + pillarId + ' tx: ' + JSON.stringify(tx));
           //send a message to the notifications queue reporting a new transactions
           const txMsgTo = {
               type: 'newTx',
@@ -229,7 +229,7 @@ async function newPendingTran(tx, protocol) {
               blockNumber: tx.blockNumber,
               status: 'pending'
           };
-          logger.debug('processTx.newPendingTran() notifying subscriber of a new relevant transaction: ' + JSON.stringify(txMsgTo));
+          logger.info('processTx.newPendingTran() notifying subscriber of a new relevant transaction: ' + JSON.stringify(txMsgTo));
 
           rmqServices.sendPubSubMessage(txMsgTo);
           // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
