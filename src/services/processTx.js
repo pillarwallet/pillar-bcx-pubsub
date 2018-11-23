@@ -211,8 +211,8 @@ async function newPendingTran(tx, protocol) {
           }
       }
       
-      //logger.debug('processTx.newPendingTran(): ' + pillarId + ' tx: ' + JSON.stringify(tx));
       if(pillarId !== '' && pillarId !== null) {
+        logger.info('processTx.newPendingTran(): PillarID: ' + pillarId + ' tx: ' + JSON.stringify(tx));
           //send a message to the notifications queue reporting a new transactions
           const txMsgTo = {
               type: 'newTx',
