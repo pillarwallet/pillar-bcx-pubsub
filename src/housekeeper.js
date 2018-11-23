@@ -195,7 +195,7 @@ async function recoverAssetEvents(wallet,pillarId) {
         assets.forEach(async (asset) => {
             index++;
             logger.debug(`Housekeeper.recoverAssetEvents() for wallet - ${wallet}: past events of asset ${asset.symbol} since block: ${entry.blockNumber}`);
-            await ethService.getPastEvents(asset.contractAddress,'Transfer',entry.blockNumber,wallet,pillarId);
+            await ethService.getPastEvents(asset.contractAddress, asset.symbol, 'Transfer', entry.blockNumber, wallet, pillarId);
             if(index === totalAssets) {
                 logger.info(`Housekeeper.recoverAssetEvents(): completed processing for wallet ${wallet} and ${asset.symbol}`);
                 return;
