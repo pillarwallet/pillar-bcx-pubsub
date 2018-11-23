@@ -3,9 +3,10 @@ const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
-const abiDecoder = require('abi-decoder');
 require('dotenv').config();
 const time = require('unix-timestamp');
+const fs = require('fs');
+const abiPath = require('app-root-path') + '/src/abi/';
 const ERC20ABI = require('./ERC20ABI.json');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
@@ -530,20 +531,27 @@ module.exports.addERC721 = addERC721;
 /**
  * Get past transfer events associated with token
  * @param {String} address - the smart contract address to get events
+ * @param {String} symbol - the symbol/ticker of the contract
  * @param {String} eventName - the eventName
  * @param {Number} blockNumber - the block number from which to listen to contract events
  * @param {String} walletAddress - the wallet address relevant to the transaction
  * @param {String} pillarId - The pillarId corresponding to the transactions
  */
-async function getPastEvents(address,eventName = 'Transfer' ,blockNumber = 0, wallet = undefined, pillarId = undefined) {
+async function getPastEvents(address, symbol, eventName = 'Transfer' ,blockNumber = 0, wallet = undefined, pillarId = undefined) {
     try {
         var cnt = 0;
         var status = 'confirmed';
         var protocol = 'Ethereum';
         var tmstmp = time.now();
         if(module.exports.connect()) {
-            const contract = new web3.eth.Contract(ERC20ABI,address);
-            const asset = await contract.methods.symbol().call();
+            const asset = symbol;
+            var theAbi = ERC20ABI;
+            if(fs.existsSync(abiPath + asset + '.json')) {
+                theAbi = require(abiPath + asset + '.json');
+                logger.info('ethService.getPastEvents() - Fetched ABI for token: ' + asset);
+            }
+            const contract = new web3.eth.Contract(theAbi,address);
+            
             var events = await contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'});
             if((events !== null || events !== undefined) && events.length > 0) {
                 var index = 0;
