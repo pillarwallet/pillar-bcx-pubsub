@@ -7,6 +7,7 @@ require('dotenv').config();
 const time = require('unix-timestamp');
 const fs = require('fs');
 const abiPath = require('app-root-path') + '/src/abi/';
+const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./ERC20ABI.json');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
