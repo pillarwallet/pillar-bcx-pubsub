@@ -388,6 +388,7 @@ function checkPendingTx(pendingTxArray) {
             logger.debug('ethService.checkPendingTx(): Checking status of transaction: ' + item.txHash);
             if(module.exports.connect()) {
                 web3.eth.getTransactionReceipt(item.txHash).then((receipt) => {
+                    var to, value, asset;
                     logger.debug('ethService.checkPendingTx(): receipt is ' + receipt);
                     if(receipt !== null) {
                         let status;
@@ -397,12 +398,37 @@ function checkPendingTx(pendingTxArray) {
                         } else {
                             status = 'failed';
                         }
+
+                        if(!hashMaps.assets.has(item.toAddres.toLowerCase())) { 
+                            to = item.toAddres;
+                        } else {
+                            const contractDetail = hashMaps.assets.get(item.toAddres.toLowerCase());
+                            contractAddress = contractDetail.contractAddress;
+                            asset = contractDetail.symbol;
+                            if(fs.existsSync(abiPath + asset + '.json')) {
+                                const theAbi = require(abiPath + asset + '.json');
+                                logger.info('processTx - Fetched ABI for token: ' + asset);
+                                abiDecoder.addABI(theAbi);
+                            } else {
+                                abiDecoder.addABI(ERC20ABI);
+                            }
+                            data = abiDecoder.decodeMethod(item.input);
+                            if ((data !== undefined) && (data.name === 'transfer')) { 
+                                //smart contract call hence the asset must be the token name
+                                to = data.params[0].value;
+                                value = data.params[1].value;
+                            } else {
+                                to = item.toAddres;
+                            }
+                        }
         
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item.txHash,
                                 fromAddress: item.fromAddress,
-                                toAddress: item.toAddress,
+                                toAddress: to,
+                                value,
+                                asset,
                                 status,
                                 gasUsed,
                                 blockNumber: receipt.blockNumber
