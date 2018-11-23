@@ -227,7 +227,8 @@ async function newPendingTran(tx, protocol) {
               value: value,
               gasPrice: tx.gasPrice,
               blockNumber: tx.blockNumber,
-              status: 'pending'
+              status: 'pending',
+              input: tx.input
           };
           logger.info('processTx.newPendingTran() notifying subscriber of a new relevant transaction: ' + JSON.stringify(txMsgTo));
 
