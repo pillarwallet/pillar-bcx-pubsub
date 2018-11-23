@@ -400,7 +400,7 @@ function checkPendingTx(pendingTxArray) {
                         }
 
                         if(!hashMaps.assets.has(item.toAddress.toLowerCase())) { 
-                            to = item.toAddres;
+                            to = item.toAddress;
                         } else {
                             const contractDetail = hashMaps.assets.get(item.toAddress.toLowerCase());
                             contractAddress = contractDetail.contractAddress;
