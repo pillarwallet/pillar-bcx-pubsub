@@ -5,7 +5,9 @@ const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./ERC20ABI');
+const abiPath = require('app-root-path') + '/src/abi/';
 const hashMaps = require('../utils/hashMaps.js');
+const fs = require('fs');
 const bluebird = require('bluebird');
 const redis = require('redis');
 let client = redis.createClient();
@@ -103,7 +105,13 @@ async function storeIfRelevant(tx, protocol) {
         const contractDetail = hashMaps.assets.get(tx.to.toLowerCase());
         contractAddress = contractDetail.contractAddress;
         asset = contractDetail.symbol;
-        abiDecoder.addABI(ERC20ABI);
+        if(fs.existsSync(abiPath + asset + '.json')) {
+            const theAbi = require(abiPath + asset + '.json');
+            logger.info('processTx - Fetched ABI for token: ' + asset);
+            abiDecoder.addABI(theAbi);
+        } else {
+            abiDecoder.addABI(ERC20ABI);
+        }
         data = abiDecoder.decodeMethod(tx.input);
         if ((data !== undefined) && (data.name === 'transfer')) { 
             //smart contract call hence the asset must be the token name
@@ -176,7 +184,14 @@ async function newPendingTran(tx, protocol) {
           const contractDetail = hashMaps.assets.get(to.toLowerCase());
           contractAddress = contractDetail.contractAddress;
           asset = contractDetail.symbol;
-          abiDecoder.addABI(ERC20ABI);
+
+          if(fs.existsSync(abiPath + asset + '.json')) {
+            const theAbi = require(abiPath + asset + '.json');
+            logger.info('processTx - Fetched ABI for token: ' + asset);
+            abiDecoder.addABI(theAbi);
+          } else {
+            abiDecoder.addABI(ERC20ABI);
+          }
           data = abiDecoder.decodeMethod(tx.input);
           logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
           logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
