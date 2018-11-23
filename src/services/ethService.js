@@ -399,10 +399,10 @@ function checkPendingTx(pendingTxArray) {
                             status = 'failed';
                         }
 
-                        if(!hashMaps.assets.has(item.toAddres.toLowerCase())) { 
+                        if(!hashMaps.assets.has(item.toAddress.toLowerCase())) { 
                             to = item.toAddres;
                         } else {
-                            const contractDetail = hashMaps.assets.get(item.toAddres.toLowerCase());
+                            const contractDetail = hashMaps.assets.get(item.toAddress.toLowerCase());
                             contractAddress = contractDetail.contractAddress;
                             asset = contractDetail.symbol;
                             if(fs.existsSync(abiPath + asset + '.json')) {
