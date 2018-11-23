@@ -418,7 +418,7 @@ function checkPendingTx(pendingTxArray) {
                                 to = data.params[0].value;
                                 value = data.params[1].value;
                             } else {
-                                to = item.toAddres;
+                                to = item.toAddress;
                             }
                         }
         
