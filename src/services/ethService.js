@@ -559,7 +559,7 @@ async function getPastEvents(address, symbol, eventName = 'Transfer' ,blockNumbe
                 logger.info(`ethService.getPastEvents(): Fetching ${totalEvents} past events of contract ${address} from block: ${blockNumber}`);
                 events.forEach(async (event) => { 
                     index++;
-                    if(event.returnValues._to.toLowerCase() === wallet || event.returnValues._from.toLowerCase() === wallet) {
+                    if((typeof event.returnValues._to.toLowerCase() === wallet) || (typeof event.returnValues._from.toLowerCase() === wallet)) {
                         var tran = await dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash);    
                         if(tran === null) {
                             cnt++;
@@ -592,11 +592,9 @@ async function getPastEvents(address, symbol, eventName = 'Transfer' ,blockNumbe
             }
         } else {
             logger.error('ethService.getPastEvents(): Connection to geth failed!'); 
-            reject('ethService.getPastEvents(): Connection to geth failed!');
         }
     } catch(err) {
         logger.error(`ethService.getPastEvents(): for contract: ${address} failed with error: ${err}`);
-        reject(err);
     }
 }
 module.exports.getPastEvents = getPastEvents;
