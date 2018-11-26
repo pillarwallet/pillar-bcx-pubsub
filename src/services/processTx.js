@@ -197,11 +197,10 @@ async function newPendingTran(tx, protocol) {
           logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
           if ((typeof data !== 'undefined') && (tx.input !== '0x')) {
             if(typeof data.name  === 'transfer'){ 
+                logger.info(`ethService.newPendingTran(): Identified a non PLR wallet to PLR wallet token transfer: ${JSON.stringify(tx)}`);
                 //smart contract call hence the asset must be the token name
                 to = data.params[0].value;
-                if(pillarId === '') {
-                    pillarId = await client.getAsync(to);
-                }
+                pillarId = await client.getAsync(to);
                 value = data.params[1].value;
             } else {
                 value = tx.value;  
