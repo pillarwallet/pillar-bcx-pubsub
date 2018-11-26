@@ -9,6 +9,8 @@ const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
+const fs = require('fs');
+const GETH_STATUS_FILE = '/tmp/geth_status';
 const redis = require('redis');
 const CronJob = require('cron').CronJob;
 let client = redis.createClient();;
@@ -17,6 +19,7 @@ let latestId = '';
 let runId = 0;
 let MAX_WALLETS = 500000;
 let processCnt = 0;
+let gethCheck = 0;
 let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
@@ -153,8 +156,20 @@ module.exports.poll = function () {
   processCnt++;
   if(processCnt === 12) {
     processCnt = 0;
+    gethCheck++;
     if(hashMaps.LATEST_BLOCK_NUMBER <= LAST_BLOCK_NUMBER) {
       logger.error('####GETH DOWN?? NO SYNC FOR PAST 1 MINUTE####');
+    }
+  }
+  //Check the geth status every 1 hour and resubscribe incase the WS is stale
+  if(gethCheck === 60) {
+    gethCheck = 0;
+    if(fs.existsAsync(GETH_STATUS_FILE)) {
+      logger.error('Publisher: Websocket connection stale, resubscribing to websocket events!');
+      fs.unlink(GETH_STATUS_FILE,() => {
+        logger.info(`Publisher: Delete geth status file at: ${GETH_STATUS_FILE}`);
+        module.exports.initSubscriptions();
+      });
     }
   }
   if (hashMaps.assets.count() === 0) {

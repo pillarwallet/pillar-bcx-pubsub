@@ -277,6 +277,7 @@ async function init() {
                 entry.lastId = '';
                 entry.startTime = time.now();
                 entry.endTime =  0;
+                entry.blockNumber = 0;
                 entry.status = 'pending';
                 client.set('housekeeper',JSON.stringify(entry),redis.print);
                 this.processData('');
@@ -294,6 +295,7 @@ async function init() {
                     entry.lastId = config.lastId;
                     entry.pid = process.pid;
                     entry.startTime =  time.now();
+                    entry.blockNumber = 0;
                     entry.status = 'pending';
                     client.set('housekeeper',JSON.stringify(entry), redis.print);
                     this.processData(config.lastId);
