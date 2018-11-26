@@ -164,7 +164,7 @@ module.exports.poll = function () {
   //Check the geth status every 1 hour and resubscribe incase the WS is stale
   if(gethCheck === 60) {
     gethCheck = 0;
-    if(fs.existsAsync(GETH_STATUS_FILE)) {
+    if(fs.existsSync(GETH_STATUS_FILE)) {
       logger.error('Publisher: Websocket connection stale, resubscribing to websocket events!');
       fs.unlink(GETH_STATUS_FILE,() => {
         logger.info(`Publisher: Delete geth status file at: ${GETH_STATUS_FILE}`);
