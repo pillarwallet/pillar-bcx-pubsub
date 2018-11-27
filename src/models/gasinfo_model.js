@@ -6,7 +6,7 @@ const gasInfoSchema = Mongoose.Schema({
     protocol: String,
     gasLimit: Number,
     gasUsed: Number,
-    avgGasPrice: String,
+    avgGasPrice: Number,
     transactionCount: Number,
     blockNumber: Number
 });

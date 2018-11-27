@@ -216,7 +216,7 @@ function storeGasInfo(blockHeader) {
                             gasLimit: blockHeader.gasLimit,
                             gasUsed: blockHeader.gasUsed,
                             blockNumber: blockHeader.number,
-                            avgGasPrice: avgGasPrice.toString(),
+                            avgGasPrice: parseFloat(avgGasPrice),
                             transactionCount: txnCnt
                         };
                         rmqServices.sendPubSubMessage(entry);
