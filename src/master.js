@@ -126,7 +126,7 @@ module.exports.launch = function () {
     // handle events related to the subscriber child processes
     module.exports.subs[module.exports.index].on('close', (data) => {
       const subId = (module.exports.index - 1);
-      logger.error(`Master: error occurred Publisher: ${subId} (PID: ${module.exports.subs[subId].pid}) closed with code: ${data}`);
+      logger.error(`Master: error occurred Subscriber: ${subId} (PID: ${module.exports.subs[subId].pid}) closed with code: ${data}`);
     });
 
     module.exports.index++;
