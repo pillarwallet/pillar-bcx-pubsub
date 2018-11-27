@@ -180,6 +180,7 @@ async function newPendingTran(tx, protocol) {
           asset = 'ETH';
           value = tx.value;
       } else {
+          value = tx.value;  
           //fetch the asset from the assets hashmap
           const contractDetail = hashMaps.assets.get(to.toLowerCase());
           contractAddress = contractDetail.contractAddress;
@@ -196,17 +197,12 @@ async function newPendingTran(tx, protocol) {
           logger.debug('ethService.newPendingTran(): Identified a new pending transaction involving monitored asset: ' + asset);
           logger.debug('ethService.newPendingTran(): tx.input= ' + tx.input + ' data is ' + JSON.stringify(data));
           if ((typeof data !== 'undefined') && (tx.input !== '0x')) {
-            if(typeof data.name  === 'transfer'){ 
-                logger.info(`ethService.newPendingTran(): Identified a non PLR wallet to PLR wallet token transfer: ${JSON.stringify(tx)}`);
+            if(data.name  === 'transfer'){ 
                 //smart contract call hence the asset must be the token name
                 to = data.params[0].value;
                 pillarId = await client.getAsync(to);
                 value = data.params[1].value;
-            } else {
-                value = tx.value;  
             }
-          } else {
-              value = tx.value;
           }
       }
       
