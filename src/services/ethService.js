@@ -625,3 +625,21 @@ async function getPastEvents(address, symbol, eventName = 'Transfer' ,blockNumbe
     }
 }
 module.exports.getPastEvents = getPastEvents;
+
+async function getAllTransactionsForWallet(wallet) {
+    try {
+
+        logger.info(`ethService.getAllTransactionsForWallet(${wallet}) started processing`);
+        if(module.exports.connect()) {
+            var transTo = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "toAddress": [wallet]});
+            var transFrom = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "fromAddress": [wallet]});
+            return transTo.concat(transFrom);
+        } else {
+            logger.error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
+            return;
+        }
+    } catch(err) {
+        logger.error(`ethService.getAllTransactionsForWallet(${wallet}|) - failed with error - ${err}`);
+    }
+}
+module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
