@@ -210,6 +210,32 @@ async function recoverAssetEvents(wallet,pillarId) {
 module.exports.recoverAssetEvents = recoverAssetEvents;
 
 /**
+ * 
+ * @param {*} wallet 
+ */
+async function recoverAll(wallet) {
+    try {
+        logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
+        var transactions = await ethService.getAllTransactionsForWallet(wallet);
+        transactions.forEach((transaction) => {
+            var entry;
+            if(transaction.action.input !== '0x') {
+                //TODO
+            } else {
+                entry = {
+                    //TODO
+                };
+
+            }
+        });
+        
+    }catch(e) {
+        logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
+    }
+}
+module.exports.recoverAll = recoverAll;
+
+/**
  * Function to process the newly registered wallets
  * @param {string} lastId - Last processed wallet Id
  */
@@ -312,4 +338,10 @@ async function init() {
 }
 module.exports.init = init;
 
-this.init();
+//this.init();
+async function testCode() {
+    var results = await ethService.getAllTransactionsForWallet('0xdcF28bD6501979CE9fB05ec9F5CEacbEA498d168');
+    console.log(JSON.stringify(results));
+}
+module.exports.testCode = testCode;
+this.testCode();
