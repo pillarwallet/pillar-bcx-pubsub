@@ -639,7 +639,7 @@ async function getAllTransactionsForWallet(wallet) {
             return;
         }
     } catch(err) {
-        logger.error(`ethService.getAllTransactionsForWallet(${wallet}|) - failed with error - ${err}`);
+        logger.error(`ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`);
     }
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;

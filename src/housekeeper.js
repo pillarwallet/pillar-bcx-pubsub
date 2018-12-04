@@ -221,8 +221,9 @@ async function recoverAll(wallet, pillarId) {
         var transactions = await ethService.getAllTransactionsForWallet(wallet);
         logger.info(`Housekeeper.recoverAll - Found ${transactions.length} transactions for wallet - ${wallet}`);
         var index = 0;
-        var totalTransactions = transactions.length;
+        var totalTransactions;
         transactions.forEach(async (transaction) => {
+            totalTransactions = transactions.length;
             var entry;
             var tmstmp = time.now();
             var asset, status, value, to, contractAddress;
@@ -281,6 +282,7 @@ async function recoverAll(wallet, pillarId) {
             };
             logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
             dbServices.dbCollections.transactions.addTx(entry);
+
             if(index === totalTransactions) {
                 logger.info(`Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`);
                 return;
@@ -289,7 +291,7 @@ async function recoverAll(wallet, pillarId) {
         
     }catch(e) {
         logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
-        return new Promise.reject(new Error(e));
+        return;
     }
 }
 module.exports.recoverAll = recoverAll;
