@@ -258,3 +258,20 @@ function addTransactionStats(record) {
     }
 }
 module.exports.addTransactionStats = addTransactionStats;
+
+function getAsset(asset) {
+    logger.debug(`dbServices.getAsset - Fetching details of asset - ${asset}`);
+    return new Promise(((resolve, reject) => {
+        try {
+            if(dbCollections) {
+                dbCollections.assets.findByAddress(asset).then((result) => {
+                    resolve(result);
+                });
+            }
+        }catch(e) {
+            logger.error(`dbServices.getAsset failed with error - ${e}`);
+            reject(e);
+        }
+    }));
+}
+module.exports.getAsset = getAsset;
