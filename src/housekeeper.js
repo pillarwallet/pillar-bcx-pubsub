@@ -11,6 +11,8 @@ const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./services/ERC20ABI');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices');
+const fs = require('fs');
+const abiPath = require('app-root-path') + '/src/abi/';
 const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
@@ -50,7 +52,6 @@ async function checkTxPool() {
             await dbServices.listPending(protocol).then((pendingTxArray) => {
                 logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
                 pendingTxArray.forEach((item) => {
-                    logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
                     //recheck the status of the transaction
                     ethService.getTxReceipt(item.txHash).then((receipt) => {
                         if(receipt !== null) {
@@ -183,7 +184,7 @@ module.exports.recoverWallet = recoverWallet;
 
 /**
  * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
- * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
+ * @param {string} wallet - the wallet address of the account whose transactions have to be recovered
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAssetEvents(wallet,pillarId) {
@@ -208,6 +209,90 @@ async function recoverAssetEvents(wallet,pillarId) {
     }
 }
 module.exports.recoverAssetEvents = recoverAssetEvents;
+
+/**
+ * 
+ * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
+ * @param {string} pillarId - the pillar id of the wallet being recovered.
+ */
+async function recoverAll(wallet, pillarId) {
+    try {
+        logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
+        var transactions = await ethService.getAllTransactionsForWallet(wallet);
+        logger.info(`Housekeeper.recoverAll - Found ${transactions.length} transactions for wallet - ${wallet}`);
+        var index = 0;
+        var totalTransactions = transactions.length;
+        transactions.forEach(async (transaction) => {
+            var entry;
+            var tmstmp = time.now();
+            var asset, status, value, to, contractAddress;
+            if(transaction.action.input !== '0x') {
+                var theAsset = await dbServices.getAsset(transaction.action.to);
+                contractAddress = theAsset.contractAddress;
+                if(theAsset !== undefined) {
+                    asset = theAsset.symbol;
+                    if(fs.existsSync(abiPath + asset + '.json')) {
+                        const theAbi = require(abiPath + asset + '.json');
+                        abiDecoder.addABI(theAbi);
+                    } else {
+                        abiDecoder.addABI(ERC20ABI);
+                    }
+                } else {
+                    abiDecoder.addABI(ERC20ABI);
+                }
+                var data = abiDecoder.decodeMethod(transaction.action.input);   
+                if ((typeof data !== 'undefined') && (transaction.action.input !== '0x')) {
+                    if(data.name  === 'transfer'){ 
+                        //smart contract call hence the asset must be the token name
+                        to = data.params[0].value;
+                        value = data.params[1].value;
+                    } else {
+                        to = transaction.action.to;
+                        value = transaction.action.value;  
+                    }
+                } else {
+                    to = transaction.action.to;
+                    value = transaction.action.value;
+                }
+            } else {
+                asset = 'ETH';
+                value = parseInt(transaction.action.value,16);
+                to = transaction.action.to;
+                contractAddress = null;
+            }
+            if(typeof transaction.error === 'Reverted') {
+                status = 'failed';
+            } else {
+                status = 'confirmed';
+            }
+            entry = {
+                protocol,
+                pillarId,
+                toAddress: to,
+                fromAddress: transaction.action.from,
+                txHash: transaction.transactionHash,
+                asset,
+                contractAddress: contractAddress,
+                timestamp: tmstmp,
+                value:  value,
+                blockNumber: transaction.blockNumber,
+                status,
+                gasUsed: transaction.result.gasUsed,
+            };
+            logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
+            dbServices.dbCollections.transactions.addTx(entry);
+            if(index === totalTransactions) {
+                logger.info(`Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`);
+                return;
+            }
+        });
+        
+    }catch(e) {
+        logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
+        return new Promise.reject(new Error(e));
+    }
+}
+module.exports.recoverAll = recoverAll;
 
 /**
  * Function to process the newly registered wallets
@@ -235,8 +320,9 @@ function processData(lastId) {
                     accounts.forEach((account) => {
                         account.addresses.forEach((acc) => {
                             if(acc.protocol === protocol) {
-                                promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
-                                promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
+                                //promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
+                                //promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
+                                promises.push(this.recoverAll(acc.address,account.pillarId));
                             }
                         });
                         entry.lastId = account._id;
