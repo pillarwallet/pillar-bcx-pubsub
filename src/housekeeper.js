@@ -52,7 +52,6 @@ async function checkTxPool() {
             await dbServices.listPending(protocol).then((pendingTxArray) => {
                 logger.debug('Housekeeper.checkTxPool(): Number of pending transactions in DB: ' + pendingTxArray.length);
                 pendingTxArray.forEach((item) => {
-                    logger.debug('Housekeeper.checkTxPool for pending txn: ' + item.txHash);
                     //recheck the status of the transaction
                     ethService.getTxReceipt(item.txHash).then((receipt) => {
                         if(receipt !== null) {
@@ -185,7 +184,7 @@ module.exports.recoverWallet = recoverWallet;
 
 /**
  * Go back through the ethereum blockchain and load relevant transactions from missed blocks.
- * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
+ * @param {string} wallet - the wallet address of the account whose transactions have to be recovered
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAssetEvents(wallet,pillarId) {
