@@ -631,8 +631,8 @@ async function getAllTransactionsForWallet(wallet) {
 
         logger.info(`ethService.getAllTransactionsForWallet(${wallet}) started processing`);
         if(module.exports.connect()) {
-            var transTo = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "toAddress": [wallet]});
-            var transFrom = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "fromAddress": [wallet]});
+            var transTo = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "toAddress": [wallet.toLowerCase()]});
+            var transFrom = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "fromAddress": [wallet.toLowerCase()]});
             return transTo.concat(transFrom);
         } else {
             logger.error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
@@ -640,6 +640,7 @@ async function getAllTransactionsForWallet(wallet) {
         }
     } catch(err) {
         logger.error(`ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`);
+        return;
     }
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
