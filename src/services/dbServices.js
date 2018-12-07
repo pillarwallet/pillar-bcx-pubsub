@@ -17,12 +17,12 @@ let dbCollections;
 
 function dbConnect() {
     const $arg = { 
-        keepAlive: true, 
+        keepAlive: true,
         keepAliveInitialDelay: 30000,
         connectTimeoutMS: 500,
-        socketTimeoutMS: 100000,
+        socketTimeoutMS: 1000,
         reconnectTries: 2,
-        reconnectInterval: 500,
+        reconnectInterval: 500000,
         poolSize: 1
     };
     return new Promise(((resolve, reject) => {
