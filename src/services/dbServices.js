@@ -74,211 +74,211 @@ module.exports.dbConnect = dbConnect;
 function accountDetails(address, $arg = { useMongoClient: true }) {
     return new Promise(((resolve, reject) => {
         try {
-            if (dbCollections) {
-                dbCollections.accounts.findByEthAddress(address)
-                    .then((accounts) => {
-                        if (accounts !== undefined) {
-                            logger.debug('Account details ' + accounts.length);
-                        }
-                        resolve(accounts);
-                    })
-                    .catch((e) => { reject(e); });
-            }
+          if (dbCollections) {
+            dbCollections.accounts.findByEthAddress(address)
+            .then((accounts) => {
+                if(accounts !== undefined) {
+                    logger.debug('Account details ' + accounts.length);
+                }
+                resolve(accounts);
+            })
+            .catch((e) => { reject(e); });
+          } 
         } catch (e) { reject(e); }
-    }));
+    }));    
 }
 module.exports.accountDetails = accountDetails;
 
 function assetDetails(asset, $arg = { useMongoClient: true }) {
     return new Promise(((resolve, reject) => {
         try {
-            if (dbCollections) {
-                dbCollections.assets.findByAddress(asset)
-                    .then((assets) => {
-                        logger.debug('Asset details ' + assets);
-                        resolve(accounts);
-                    })
-                    .catch((e) => { reject(e); });
-            }
+          if (dbCollections) {
+            dbCollections.assets.findByAddress(asset)
+            .then((assets) => {
+                logger.debug('Asset details ' + assets);
+                resolve(accounts);
+            })
+            .catch((e) => { reject(e); });
+          }
         } catch (e) { reject(e); }
-    }));
+    }));   
 }
 module.exports.assetDetails = assetDetails;
 
 function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
     return new Promise(((resolve, reject) => {
-        try {
-            if (dbCollections) {
-                if ((typeof idFrom !== undefined) && idFrom !== '') {
-                    // fetch accounts registered after a given Id
-                    dbCollections.accounts.listRecent(idFrom)
-                        .then((ethAddressesArray) => {
-                            if (ethAddressesArray.length > 0) {
-                                logger.debug(`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:`);
-                            }
-                            resolve(ethAddressesArray);
-                        })
-                        .catch((e) => { reject(e); });
-                } else {
-                    dbCollections.accounts.listAll()
-                        .then((ethAddressesArray) => {
-                            logger.debug('Total accounts found to monitor: ' + ethAddressesArray.length);
-                            resolve(ethAddressesArray);
-                        })
-                        .catch((e) => { reject(e); });
+      try {
+        if (dbCollections) {
+          if ((typeof idFrom !== undefined) && idFrom !== '') {
+            // fetch accounts registered after a given Id
+            dbCollections.accounts.listRecent(idFrom)
+              .then((ethAddressesArray) => {
+                if(ethAddressesArray.length > 0) {
+                  logger.debug(`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:`);
                 }
-            }
-        } catch (e) { reject(e); }
+                resolve(ethAddressesArray);
+              })
+              .catch((e) => { reject(e); });
+          } else {
+            dbCollections.accounts.listAll()
+              .then((ethAddressesArray) => {
+                logger.debug('Total accounts found to monitor: ' + ethAddressesArray.length);
+                resolve(ethAddressesArray);
+              })
+              .catch((e) => { reject(e); });
+          }
+        }
+      } catch (e) { reject(e); }
     }));
 }
 module.exports.recentAccounts = recentAccounts;
 
 function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
     return new Promise(((resolve, reject) => {
-        // code to fetch list of contracts/assets to monitor
-        if (dbCollections) {
-            if ((typeof idFrom !== undefined) && idFrom !== '') {
-                // fetch accounts registered after a given Id
-                dbCollections.assets.listRecent(idFrom)
-                    .then((assetsArray) => {
-                        if (assetsArray.length > 0) {
-                            logger.debug('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
-                        } else {
-                            logger.debug('dbServices.contractsToMonitor(): No assets available for monitoring');
-                        }
-                        resolve(assetsArray);
-                    })
-                    .catch((e) => { reject(e); });
-            } else {
-                logger.debug('dbServices.contractsToMonitor(): Fetching all assets from the database.')
-                dbCollections.assets.listAll()
-                    .then((assetsArray) => {
-                        logger.debug('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
-                        resolve(assetsArray);
-                    })
-                    .catch((e) => { reject(e); });
-            }
+      // code to fetch list of contracts/assets to monitor
+      if (dbCollections) {
+        if ((typeof idFrom !== undefined) && idFrom !== '') {
+          // fetch accounts registered after a given Id
+          dbCollections.assets.listRecent(idFrom)
+            .then((assetsArray) => {
+              if(assetsArray.length > 0) {
+                logger.debug('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' new assets to monitor.');
+              } else {
+                logger.debug('dbServices.contractsToMonitor(): No assets available for monitoring');
+              }
+              resolve(assetsArray);
+            })
+            .catch((e) => { reject(e); });
+        } else {
+          logger.debug('dbServices.contractsToMonitor(): Fetching all assets from the database.')
+          dbCollections.assets.listAll()
+            .then((assetsArray) => {
+              logger.debug('dbServices.contractsToMonitor(): Found ' + assetsArray.length + ' in the database');
+              resolve(assetsArray);
+            })
+            .catch((e) => { reject(e); });
         }
+      }
     }));
 }
 module.exports.contractsToMonitor = contractsToMonitor;
 
 function getTxHistory(address1, fromtmstmp, address2, asset) {
     return new Promise(((resolve, reject) => {
-        try {
-            if (dbCollections) {
+      try {
+          if(dbCollections) {
                 dbCollections.transactions.getTxHistory(address1.toUpperCase(), fromtmstmp, address2.toUpperCase(), asset)
-                    .then((txHistory) => {
-                        resolve(txHistory);
-                    });
+                .then((txHistory) => {
+                    resolve(txHistory);
+                });
             }
         } catch (e) { reject(e); }
     }));
 }
 module.exports.getTxHistory = getTxHistory;
-
+  
 function listAssets(protocol) {
     logger.debug('dbServices.listAssets(): for protocol: ' + protocol);
     return new Promise(((resolve, reject) => {
-        try {
-            if (dbCollections) {
+      try {
+            if(dbCollections) {
                 dbCollections.assets.listAssets(protocol).then((result) => {
                     logger.debug('dbServices.listAssets(): Found ' + result.length + ' assets.');
                     resolve(result);
                 });
             }
-        } catch (e) {
+        } catch (e) { 
             logger.error('dbServices.listAssets(): failed with error: ' + e);
-            reject(e);
+            reject(e); 
         }
-    }));
+    }));  
 }
 module.exports.listAssets = listAssets;
-
+  
 function listPendingTx(address, asset) {
     return new Promise(((resolve, reject) => {
-        try {
-            if (dbCollections) {
-                dbCollections.transactions.listPending()
-                    .then((pendingTxArray) => {
-                        const addressAssetPendingTxArray = [];
-                        pendingTxArray.forEach((item) => {
-                            if (
-                                item.asset === asset
-                                && (
-                                    item.to.toUpperCase() === address.toUpperCase()
-                                    ||
-                                    item.from.toUpperCase() === address.toUpperCase()
-                                )
-                            ) {
-                                addressAssetPendingTxArray.push(item);
-                            }
-                        });
-                        resolve(addressAssetPendingTxArray);
-                    });
-            }
-        } catch (e) { reject(e); }
+      try {
+        if(dbCollections) {
+            dbCollections.transactions.listPending()
+            .then((pendingTxArray) => {
+                const addressAssetPendingTxArray = [];
+                pendingTxArray.forEach((item) => {
+                if (
+                    item.asset === asset
+                    && (
+                    item.to.toUpperCase() === address.toUpperCase()
+                    ||
+                    item.from.toUpperCase() === address.toUpperCase()
+                    )
+                ) {
+                    addressAssetPendingTxArray.push(item);
+                }
+                });
+                resolve(addressAssetPendingTxArray);
+            });
+        }
+      } catch (e) { reject(e); }
     }));
 }
 module.exports.listPendingTx = listPendingTx;
-
+  
 function listPending(protocol) {
     logger.debug('dbServices.listPending(): for protocol: ' + protocol);
     return new Promise(((resolve, reject) => {
-        try {
-            if (dbCollections) {
-                dbCollections.transactions.listPending(protocol).then((pendingTxArray) => {
-                    logger.debug('dbServices.listPending(): Found ' + pendingTxArray.length + ' transactions.');
-                    resolve(pendingTxArray);
-                });
-            }
-        } catch (e) {
-            logger.error('dbServices.listPending(): failed with error: ' + e);
-            reject(e);
+      try {
+        if(dbCollections) {
+            dbCollections.transactions.listPending(protocol).then((pendingTxArray) => {
+                logger.debug('dbServices.listPending(): Found ' + pendingTxArray.length + ' transactions.');
+                resolve(pendingTxArray);
+            });
         }
-    }));
+      } catch (e) { 
+        logger.error('dbServices.listPending(): failed with error: ' + e);
+        reject(e); 
+      }
+    }));  
 }
 module.exports.listPending = listPending;
-
-function findMaxBlock(protocol, asset = null) {
+  
+function findMaxBlock(protocol,asset = null) {
     logger.debug('dbServices.findMaxBlock(): for protocol: ' + protocol);
     return new Promise(((resolve, reject) => {
-        try {
-            if (dbCollections) {
-                if (asset == null) {
-                    dbCollections.transactions.findMaxBlock(protocol).then((maxBlock) => {
-                        if (maxBlock !== undefined && maxBlock !== null) {
-                            logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
-                        } else {
-                            maxBlock = 0;
-                        }
-                        resolve(maxBlock);
-                    });
-                } else {
-                    dbCollections.transactions.findMaxBlock(protocol, asset).then((maxBlock) => {
-                        if (maxBlock !== undefined && maxBlock !== null) {
-                            logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
-                        } else {
-                            maxBlock = 0;
-                        }
-                        resolve(maxBlock);
-                    });
-                }
+      try {
+        if(dbCollections) {
+            if(asset == null) {
+                dbCollections.transactions.findMaxBlock(protocol).then((maxBlock) => {
+                    if(maxBlock !== undefined && maxBlock !== null) {
+                        logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+                    } else {
+                        maxBlock = 0;
+                    }
+                    resolve(maxBlock);
+                });
+            } else {
+                dbCollections.transactions.findMaxBlock(protocol,asset).then((maxBlock) => {
+                    if(maxBlock !== undefined && maxBlock !== null) {
+                        logger.debug('dbServices.findMaxBlock(): maxBlock = ' + maxBlock);
+                    } else {
+                        maxBlock = 0;
+                    }
+                    resolve(maxBlock);
+                });
             }
-        } catch (e) { reject(e); }
-    }));
+        }
+      } catch (e) { reject(e); }
+    }));  
 }
 module.exports.findMaxBlock = findMaxBlock;
-
+  
 function addTransactionStats(record) {
     try {
-        logger.debug('dbServices.addTransactionStats() adding transaction statistics');
-        if (dbCollections) {
-            dbCollections.gasinfo.add(record);
-        }
-        logger.debug('dbServices.addTransactionStats() successfully added');
-    } catch (e) {
-        logger.error('dbServices.addTransactionStats failed with error ' + e);
+      logger.debug('dbServices.addTransactionStats() adding transaction statistics');
+      if(dbCollections) {
+        dbCollections.gasinfo.add(record);
+      }
+      logger.debug('dbServices.addTransactionStats() successfully added');
+    }catch(e) {
+      logger.error('dbServices.addTransactionStats failed with error ' + e);
     }
 }
 module.exports.addTransactionStats = addTransactionStats;
@@ -287,12 +287,12 @@ function getAsset(asset) {
     logger.debug(`dbServices.getAsset - Fetching details of asset - ${asset}`);
     return new Promise(((resolve, reject) => {
         try {
-            if (dbCollections) {
+            if(dbCollections) {
                 dbCollections.assets.findByAddress(asset).then((result) => {
                     resolve(result);
                 });
             }
-        } catch (e) {
+        }catch(e) {
             logger.error(`dbServices.getAsset failed with error - ${e}`);
             reject(e);
         }
