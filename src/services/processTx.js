@@ -244,45 +244,35 @@ module.exports.newPendingTran = newPendingTran;
  * @param {String} theContract - the smart contract address associated with the token
  * @param {String} protocol - the protocol corresponding to the token blockchain
  */
-function checkTokenTransfer(evnt, theContract, protocol) {
+async function checkTokenTransfer(evnt, theContract, protocol) {
     logger.debug('processTx.checkTokenTransfer(): received event: ' + JSON.stringify(evnt));
-    return new Promise((async (resolve, reject) => {
+    try {
         var pillarId;
+        var tmstmp = time.now();
         if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
             pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
         } else if(await client.existsAsync(evnt.returnValues._from.toLowerCase())) {
             pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
         }
-        dbServices.dbConnect().then(() => { 
-            dbServices.dbCollections.transactions.findByTxHash(evnt.transactionHash).then((tx) => {
-                if (tx.asset === 'ETH') { 
-                    // check is it is regular token transfer,
-                    // if so (asset === TOKEN): resolve (because token transfer already processed),
-                    // otherwise (asset === ETH) transfer needs to be processed here:
-                    // SEND NEW TX DATA TO SUBSCRIBER MSG QUEUE
-                    const txMsg = {
-                        type: 'newTx',
-                        pillarId, 
-                        protocol: protocol, 
-                        fromAddress: theContract.address,
-                        toAddress: evnt.returnValues._to,
-                        txHash: evnt.transactionHash,
-                        asset: theContract.ticker,
-                        contractAddress: theContract.address,
-                        timestamp: tmstmp,
-                        value: evnt.returnValues._value,
-                        gasPrice: evnt.gasPrice,
-                        blockNumber: evnt.blockNumber,
-                        status: 'confirmed',
-                    };
-                    logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
-                    rmqServices.sendPubSubMessage(txMsg);
-                    resolve();
-                } else {
-                    resolve();
-                }
-            });
-        });
-    }));
+        const txMsg = {
+            type: 'newTx',
+            pillarId, 
+            protocol: protocol, 
+            fromAddress: evnt.returnValues._from,
+            toAddress: evnt.returnValues._to,
+            txHash: evnt.transactionHash,
+            asset: theContract.ticker,
+            contractAddress: theContract.address,
+            timestamp: tmstmp,
+            value: evnt.returnValues._value,
+            gasPrice: evnt.gasPrice,
+            blockNumber: evnt.blockNumber,
+            status: 'confirmed',
+        };
+        logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+        rmqServices.sendPubSubMessage(txMsg);
+    }catch(err) {
+        logger.error(`processTx.checkTokenTransfer failed with error - ${err}`);
+    }
 }
 module.exports.checkTokenTransfer = checkTokenTransfer;
