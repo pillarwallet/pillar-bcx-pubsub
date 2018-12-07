@@ -254,23 +254,25 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
         } else if(await client.existsAsync(evnt.returnValues._from.toLowerCase())) {
             pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
         }
-        const txMsg = {
-            type: 'newTx',
-            pillarId, 
-            protocol: protocol, 
-            fromAddress: evnt.returnValues._from,
-            toAddress: evnt.returnValues._to,
-            txHash: evnt.transactionHash,
-            asset: theContract.ticker,
-            contractAddress: theContract.address,
-            timestamp: tmstmp,
-            value: evnt.returnValues._value,
-            gasPrice: evnt.gasPrice,
-            blockNumber: evnt.blockNumber,
-            status: 'confirmed',
-        };
-        logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
-        rmqServices.sendPubSubMessage(txMsg);
+        if(pillarId !== null && pillarId !== '') {
+            const txMsg = {
+                type: 'newTx',
+                pillarId, 
+                protocol: protocol, 
+                fromAddress: evnt.returnValues._from,
+                toAddress: evnt.returnValues._to,
+                txHash: evnt.transactionHash,
+                asset: theContract.ticker,
+                contractAddress: theContract.address,
+                timestamp: tmstmp,
+                value: evnt.returnValues._value,
+                gasPrice: evnt.gasPrice,
+                blockNumber: evnt.blockNumber,
+                status: 'confirmed',
+            };
+            logger.debug('processTx.checkTokenTransfer(): notifying subscriber of new tran: ' + JSON.stringify(txMsg));
+            rmqServices.sendPubSubMessage(txMsg);
+        }
     }catch(err) {
         logger.error(`processTx.checkTokenTransfer failed with error - ${err}`);
     }
