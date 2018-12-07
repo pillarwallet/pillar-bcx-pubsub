@@ -107,7 +107,7 @@ async function storeIfRelevant(tx, protocol) {
         asset = contractDetail.symbol;
         if(fs.existsSync(abiPath + asset + '.json')) {
             const theAbi = require(abiPath + asset + '.json');
-            logger.info('processTx - Fetched ABI for token: ' + asset);
+            logger.debug('processTx - Fetched ABI for token: ' + asset);
             abiDecoder.addABI(theAbi);
         } else {
             abiDecoder.addABI(ERC20ABI);
@@ -188,7 +188,7 @@ async function newPendingTran(tx, protocol) {
 
           if(fs.existsSync(abiPath + asset + '.json')) {
             const theAbi = require(abiPath + asset + '.json');
-            logger.info('processTx - Fetched ABI for token: ' + asset);
+            logger.debug('processTx - Fetched ABI for token: ' + asset);
             abiDecoder.addABI(theAbi);
           } else {
             abiDecoder.addABI(ERC20ABI);
