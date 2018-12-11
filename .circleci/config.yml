@@ -50,7 +50,97 @@ jobs:
             cd .whitesource/
             chmod +x wss_agent.sh && ./wss_agent.sh -apiKey $WHITESOURCE_API_KEY -c ./whitesource-fs-agent.config  -project pillar-bcx-pubsub -f files.list
 
-  publish:
+  publish-and-push-dev:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/node:8.9.4
+    steps:
+      - checkout
+      - run:
+          name: install python
+          command: sudo apt-get update && sudo apt-get install python
+      - run:
+          name: Install pip
+          command: sudo apt-get update && sudo apt-get install -y python-pip && sudo apt-get install -y libxml2-dev libxslt1-dev build-essential python-dev libssl-dev
+      - run:
+          name: Install AWS CLI
+          command: sudo pip install awscli
+      - run:
+          name: Append circleCI build number to version
+          command: |
+            git config user.email "devops@pillar.io"
+            git config user.name "Issabot"
+            npm version $(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-dev
+      - run:
+          name: Authenticate with registry
+          command: |
+            curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD https://pillarproject.jfrog.io/pillarproject/api/npm/auth >> ~/pillar-bcx-pubsub/.npmrc
+            echo "registry=https://pillarproject.jfrog.io/pillarproject/api/npm/npm/" >> ./.npmrc
+      - run:
+          name: Publish Package to Artifactory
+          command: |
+            npm publish --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
+            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")-dev"
+      - run:
+          name: Push txt file to S3 bucket
+          command: |
+            touch pillar-bcx-pubsub.txt
+            echo "$(node -e "console.log(require('./package.json').name)")@$(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-dev" > pillar-bcx-pubsub.txt
+            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
+            aws s3 cp pillar-bcx-pubsub.txt $DEVELOPMENT_RELEASE_BUCKET
+      - run:
+          name: Announce Deployment
+          command: |
+            chmod +x .circleci/announceDeployment.sh
+            .circleci/announceDeployment.sh "BCX-PUBSUB" "Development" "$(cat ./pillar-bcx-pubsub.txt)"
+
+  publish-and-push-staging:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/node:8.9.4
+    steps:
+      - checkout
+      - run:
+          name: install python
+          command: sudo apt-get update && sudo apt-get install python
+      - run:
+          name: Install pip
+          command: sudo apt-get update && sudo apt-get install -y python-pip && sudo apt-get install -y libxml2-dev libxslt1-dev build-essential python-dev libssl-dev
+      - run:
+          name: Install AWS CLI
+          command: sudo pip install awscli
+      - run:
+          name: Append circleCI build number to version
+          command: |
+            git config user.email "devops@pillar.io"
+            git config user.name "Issabot"
+            npm version $(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-staging
+      - run:
+          name: Authenticate with registry
+          command: |
+            curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD https://pillarproject.jfrog.io/pillarproject/api/npm/auth >> ~/pillar-bcx-pubsub/.npmrc
+            echo "registry=https://pillarproject.jfrog.io/pillarproject/api/npm/npm/" >> ./.npmrc
+      - run:
+          name: Publish Package to Artifactory
+          command: |
+            npm publish --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
+            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")-staging"
+      - run:
+          name: Push txt file to S3 bucket
+          command: |
+            touch pillar-bcx-pubsub.txt
+            echo "$(node -e "console.log(require('./package.json').name)")@$(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-staging" > pillar-bcx-pubsub.txt
+            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
+            aws s3 cp pillar-bcx-pubsub.txt $STAGING_RELEASE_BUCKET
+      - run:
+          name: Announce Deployment
+          command: |
+            chmod +x .circleci/announceDeployment.sh
+            .circleci/announceDeployment.sh "BCX-PUBSUB" "Staging" "$(cat ./pillar-bcx-pubsub.txt)"
+
+  publish-prod:
     working_directory: ~/pillar-bcx-pubsub
     docker:
       - image: circleci/node:8.9.4
@@ -81,7 +171,22 @@ workflows:
       - whitesource:
           requires:
              - build
-      - publish:
+      - publish-and-push-dev:
+          requires:
+             - build
+          filters:
+            branches:
+              ignore:
+                  - develop
+                  - master
+      - publish-and-push-staging:
+          requires:
+             - build
+          filters:
+            branches:
+              only:
+                  - develop
+      - publish-prod:
           requires:
              - build
           filters:
