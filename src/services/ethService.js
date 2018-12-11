@@ -496,6 +496,10 @@ function checkPendingTx(pendingTxArray) {
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item.txHash);
+                        // Check Offers transactions
+                        if (client.existsSync(item.txHash)) {
+                            rmqServices.sendNotificationMessage({}); //
+                        }
 
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');

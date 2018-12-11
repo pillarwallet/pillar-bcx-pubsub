@@ -33,6 +33,7 @@ const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
 let offersChannel;
+let notificationsChannel;
 const pubSubQueue = 'bcx-pubsub';
 const offersQueue = 'bcx-offers';
 const notificationsQueue =
@@ -177,6 +178,15 @@ function sendOffersMessage(payload) {
 
 module.exports.sendOffersMessage = sendOffersMessage;
 
+ /* 
+ * @param {Object} payload - the payload/message to be sent to queue
+ */
+function sendNotificationMessage(payload) {
+  notificationsChannel.assertQueue(notificationsQueue,  {dirable: true});
+  ch.sendToQueue(notificationsQueue, payload);
+};
+module.exports.sendNotificationMessage = sendNotificationMessage;
+
 /**
  * Function to generate the notification payload thats send to notification queue
  * @param {any} payload -  The payload for the notification queue
@@ -221,6 +231,7 @@ function initSubPubMQ() {
   try {
     let connection;
     logger.info('Subscriber Started executing initSubPubMQ()');
+<<<<<<< HEAD
     amqp.connect(
       MQ_URL,
       (error, conn) => {
@@ -241,6 +252,52 @@ function initSubPubMQ() {
           logger.error('Subscriber RMQ Connection closed');
           return setTimeout(initSubPubMQ, 5000);
         });
+=======
+    amqp.connect(MQ_URL, (error, conn) => {
+
+      if (error) {
+        logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
+        return setTimeout(initSubPubMQ, 5000);
+      }
+      if (conn) {
+        connection = conn;
+      }
+      connection.on('error', (err) => {
+        logger.error(`Subscriber RMQ connection errored out: ${err}`);
+        return setTimeout(initSubPubMQ, 5000);
+      });
+      connection.on('close', () => {
+        logger.error('Subscriber RMQ Connection closed');
+        return setTimeout(initSubPubMQ, 5000);
+      });
+    
+      logger.info('Subscriber RMQ Connected');
+
+      connection.createChannel((err, ch) => {
+        // Same channel to be useb by sendNotificationsMessage method
+        notificationsChannel = ch;
+        ch.assertQueue(pubSubQueue, { durable: true });
+        ch.consume(pubSubQueue, (msg) => {
+          
+          logger.info(`Subscriber received rmq message: ${msg.content}`);
+          if (typeof msg.content !== 'undefined' && msg.content !== '' &&
+            validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
+            const entry = JSON.parse(msg.content);
+            const { type, txHash } = entry;
+            delete entry.type;
+            delete entry.checksum;
+            switch (type) {
+              case 'newTx':
+                // Removes all txn hash's after 3 minutes.
+                resetTxMap();
+
+                // Added to stop duplicate transactions.
+                if (txHash in TX_MAP) {
+                  break;
+                } else {
+                  TX_MAP[txHash] = { timestamp: moment() };
+                }
+>>>>>>> adding rmq sendNotificationsMessage method, calling sendNotificationsMessage on check Pending
 
         logger.info('Subscriber RMQ Connected');
 
