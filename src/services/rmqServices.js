@@ -10,6 +10,7 @@ const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
+let notificationsChannel;
 const pubSubQueue = 'bcx-pubsub';
 const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
@@ -77,6 +78,16 @@ function sendPubSubMessage(payload) {
 module.exports.sendPubSubMessage = sendPubSubMessage;
 
 /**
+ * 
+ * @param {Object} payload - the payload/message to be sent to queue
+ */
+function sendNotificationMessage(payload) {
+  notificationsChannel.assertQueue(notificationsQueue,  {dirable: true});
+  ch.sendToQueue(notificationsQueue, payload);
+};
+module.exports.sendNotificationMessage = sendNotificationMessage;
+
+/**
  * Function to generate the notification payload thats send to notification queue
  * @param {any} payload -  The payload for the notification queue
  */
@@ -134,6 +145,8 @@ function initSubPubMQ() {
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
+        // Same channel to be useb by sendNotificationsMessage method
+        notificationsChannel = ch;
         ch.assertQueue(pubSubQueue, { durable: true });
         ch.consume(pubSubQueue, (msg) => {
           

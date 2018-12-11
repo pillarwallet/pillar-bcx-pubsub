@@ -13,10 +13,12 @@ const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const dbServices = require('./dbServices');
 const hashMaps = require('../utils/hashMaps');
+const redis = require('redis');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
 let wsCnt = 0;
+let client = redis.createClient();
 
 
 /**
@@ -180,7 +182,7 @@ function subscribeBlockHeaders() {
                 // Check for pending tx in database and update their status
                 module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
                     logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
-                });
+                });     
                 module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
                 //capture gas price statistics
                 module.exports.storeGasInfo(blockHeader);
@@ -437,6 +439,11 @@ function checkPendingTx(pendingTxArray) {
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item.txHash);
+                        // Check Offers transactions
+                        if (client.existsSync(item.txHash)) {
+                            rmqServices.sendNotificationMessage({}); //
+                        }
+
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
                     }
