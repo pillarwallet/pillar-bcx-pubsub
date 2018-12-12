@@ -81,3 +81,13 @@ module.exports.getAsset = function () {
 
 
 
+module.exports.dbCollections = { accounts, assets, transactions };
+module.exports.dbConnectDisplayAccounts = () => {};
+module.exports.initDB = () => {};
+module.exports.initDBTxHistory = () => {};
+module.exports.initDBERC20SmartContracts = () => {};
+module.exports.findTxHistoryHeight = () => {};
+module.exports.listHistory = () => {};
+module.exports.findERC20SmartContractsHistoryHeight = () => {};
+module.exports.updateERC20SmartContractsHistoryHeight = () => {};
+module.exports.addTransactionStats = () => { };

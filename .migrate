@@ -1,0 +1,17 @@
+{
+  "lastRun": "1550598742689-edit-multiple-records.js",
+  "migrations": [
+    {
+      "title": "1550507038218-add-substratum.js",
+      "timestamp": 1550602574843
+    },
+    {
+      "title": "1550598706746-add-multiple-records.js",
+      "timestamp": 1550602574861
+    },
+    {
+      "title": "1550598742689-edit-multiple-records.js",
+      "timestamp": 1550602574861
+    }
+  ]
+}

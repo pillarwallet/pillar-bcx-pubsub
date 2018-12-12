@@ -49,7 +49,11 @@ module.exports.findByTxHash = findByTxHash;
 
 function findOneByTxHash() {
   return new Promise(((resolve) => {
+<<<<<<< HEAD
     resolve(null);
+=======
+    resolve();
+>>>>>>> Added unit tests for rmq
   }));
 }
 module.exports.findOneByTxHash = findOneByTxHash;
