@@ -26,6 +26,13 @@ function findByTxHash() {
 }
 module.exports.findByTxHash = findByTxHash;
 
+function findOneByTxHash() {
+  return new Promise(((resolve) => {
+    resolve();
+  }));
+}
+module.exports.findOneByTxHash = findOneByTxHash;
+
 function listPending() {
   const transactions = [
     {
