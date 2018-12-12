@@ -238,14 +238,14 @@ function subscribeTransferEvents(theContract) {
     try {
         logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + theContract);
         if(module.exports.connect()) {
-            if (web3.utils.isAddress(theContract)) {
-                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
+            if (web3.utils.isAddress(theContract.contractAddress)) {
+                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract.contractAddress);
                 ERC20SmartContractObject.events.Transfer({},(error, result) => {
-                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + ' result: ' + result + ' error: ' + error);
+                    logger.debug(`ethService: Token transfer event occurred for contract: ${JSON.stringify(theContract)} result: ${result} error: ${error}`);
                     if (!error) {
                         processTx.checkTokenTransfer(result, theContract, protocol);
                     } else {
-                        logger.error('ethService.subscribeTransferEvents() failed: ' + error);
+                        logger.error(`ethService.subscribeTransferEvents() failed: ${error}`);
                     }
                 });
             } 

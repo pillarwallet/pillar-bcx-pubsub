@@ -17,10 +17,11 @@ let dbCollections;
 
 function dbConnect() {
     const $arg = { 
+        useNewUrlParser: true,
         keepAlive: true, 
         keepAliveInitialDelay: 30000,
-        connectTimeoutMS: 500,
-        socketTimeoutMS: 100000,
+        connectTimeoutMS: 10000,
+        socketTimeoutMS: 30000,
         reconnectTries: 2,
         reconnectInterval: 500,
         poolSize: 1
