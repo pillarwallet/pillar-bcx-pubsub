@@ -24,6 +24,15 @@ let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 
+process
+  .on('unhandledRejection', (reason, p) => {
+    logger.error(`Publisher - Unhandled Rejection at Promise reason - ${reason}, p - ${p}`);
+  })
+  .on('uncaughtException', err => {
+    logger.error(`Publisher - Uncaught Exception thrown error - ${err}`);
+    process.exit(1);
+  });
+
 /**
  * Function that subscribes to redis related connection errors.
  */
