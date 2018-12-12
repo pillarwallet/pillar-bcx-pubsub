@@ -496,9 +496,11 @@ function checkPendingTx(pendingTxArray) {
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item.txHash);
-                        // Check Offers transactions
+
+                        // Sends to the Offers Queue
                         if (client.existsSync(item.txHash)) {
-                            rmqServices.sendNotificationMessage({}); //
+                            rmqServices.sendOffersMessage(txMsg);
+                            client.del(item.txHash);
                         }
 
                     } else {

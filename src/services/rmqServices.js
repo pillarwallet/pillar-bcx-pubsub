@@ -181,11 +181,11 @@ module.exports.sendOffersMessage = sendOffersMessage;
  /* 
  * @param {Object} payload - the payload/message to be sent to queue
  */
-function sendNotificationMessage(payload) {
-  notificationsChannel.assertQueue(notificationsQueue,  {dirable: true});
-  ch.sendToQueue(notificationsQueue, payload);
+function sendOffersMessage(payload) {
+  offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
 };
-module.exports.sendNotificationMessage = sendNotificationMessage;
+
+module.exports.sendOffersMessage = sendOffersMessage;
 
 /**
  * Function to generate the notification payload thats send to notification queue
@@ -231,28 +231,6 @@ function initSubPubMQ() {
   try {
     let connection;
     logger.info('Subscriber Started executing initSubPubMQ()');
-<<<<<<< HEAD
-    amqp.connect(
-      MQ_URL,
-      (error, conn) => {
-        if (error) {
-          logger.error(
-            `Subscriber failed initializing RabbitMQ, error: ${error}`,
-          );
-          return setTimeout(initSubPubMQ, 5000);
-        }
-        if (conn) {
-          connection = conn;
-        }
-        connection.on('error', err => {
-          logger.error(`Subscriber RMQ connection errored out: ${err}`);
-          return setTimeout(initSubPubMQ, 5000);
-        });
-        connection.on('close', () => {
-          logger.error('Subscriber RMQ Connection closed');
-          return setTimeout(initSubPubMQ, 5000);
-        });
-=======
     amqp.connect(MQ_URL, (error, conn) => {
 
       if (error) {
@@ -274,8 +252,6 @@ function initSubPubMQ() {
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
-        // Same channel to be useb by sendNotificationsMessage method
-        notificationsChannel = ch;
         ch.assertQueue(pubSubQueue, { durable: true });
         ch.consume(pubSubQueue, (msg) => {
           
@@ -297,7 +273,6 @@ function initSubPubMQ() {
                 } else {
                   TX_MAP[txHash] = { timestamp: moment() };
                 }
->>>>>>> adding rmq sendNotificationsMessage method, calling sendNotificationsMessage on check Pending
 
         logger.info('Subscriber RMQ Connected');
 
