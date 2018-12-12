@@ -176,16 +176,15 @@ workflows:
              - build
           filters:
             branches:
-              ignore:
+              only:
                   - develop
-                  - master
       - publish-and-push-staging:
           requires:
              - build
           filters:
             branches:
               only:
-                  - develop
+                  - staging
       - publish-prod:
           requires:
              - build
