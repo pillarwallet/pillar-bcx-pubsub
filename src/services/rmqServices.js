@@ -10,8 +10,9 @@ const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
-let notificationsChannel;
+let offersChannel;
 const pubSubQueue = 'bcx-pubsub';
+const offersQueue = 'bcx-offers';
 const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
@@ -52,6 +53,12 @@ function initPubSubMQ() {
             ch.assertQueue(pubSubQueue, { durable: true });
             // Note: on Node 6 Buffer.from(msg) should be used
           });
+
+          connection.createChannel((err, ch) => {
+            offersChannel = ch;
+            ch.assertQueue(offersQueue, { durable: true });
+            // Note: on Node 6 Buffer.from(msg) should be used
+          });
         });
         resolve();
       } catch (err) {
@@ -78,14 +85,14 @@ function sendPubSubMessage(payload) {
 module.exports.sendPubSubMessage = sendPubSubMessage;
 
 /**
- * 
- * @param {Object} payload - the payload/message to be sent to queue
+ * Function that writes to queue
+ * @param {any} payload - the payload/message to be send to queue
  */
-function sendNotificationMessage(payload) {
-  notificationsChannel.assertQueue(notificationsQueue,  {dirable: true});
-  ch.sendToQueue(notificationsQueue, payload);
+function sendOffersMessage(payload) {
+  offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
 };
-module.exports.sendNotificationMessage = sendNotificationMessage;
+
+module.exports.sendOffersMessage = sendOffersMessage;
 
 /**
  * Function to generate the notification payload thats send to notification queue
@@ -145,8 +152,6 @@ function initSubPubMQ() {
       logger.info('Subscriber RMQ Connected');
 
       connection.createChannel((err, ch) => {
-        // Same channel to be useb by sendNotificationsMessage method
-        notificationsChannel = ch;
         ch.assertQueue(pubSubQueue, { durable: true });
         ch.consume(pubSubQueue, (msg) => {
           
