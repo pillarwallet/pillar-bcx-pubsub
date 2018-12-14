@@ -1,16 +1,17 @@
-const sinon = require('sinon');
+afterAll(() => {
+	jest.restoreAllMocks();
+});
 
 describe('Test accounts.listAll function', () => {
 	test("listAll function should call accounts.find once and return [{'FCMIID': 'FCMIID', 'address': 'address'}]", (done) => {
 		jest.mock('../models/accounts_model.js');
 		const accountsCtrl = require('./accounts_ctrl.js');
 		const accountsModel = require('../models/accounts_model.js');
-		const spy = sinon.spy(accountsModel.Accounts, 'find');
+		const spy = jest.spyOn(accountsModel.Accounts, 'find');
 		return accountsCtrl.listAll()
 		.then((result) => {
 			expect(result).toEqual([{ FCMIID: 'FCMIID', address: 'address' }]);
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
 			done();
 		});
 		// })
@@ -20,11 +21,10 @@ describe('Test accounts.listAll function', () => {
 		const accountsCtrl = require('./accounts_ctrl.js');
 		jest.mock('../models/accounts_model.js');
 		const accountsModel = require('../models/accounts_model.js');
-		const spy = sinon.spy(accountsModel.Accounts, 'findOne');
+		const spy = jest.spyOn(accountsModel.Accounts, 'findOne');
 		return accountsCtrl.findByAddress('address')
 		.then(() => {
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
 			done();
 		});
 	});
@@ -33,11 +33,10 @@ describe('Test accounts.listAll function', () => {
 		const accountsCtrl = require('./accounts_ctrl.js');
 		jest.mock('../models/accounts_model.js');
 		const accountsModel = require('../models/accounts_model.js');
-		const spy = sinon.spy(accountsModel.Accounts, 'findOne');
+		const spy = jest.spyOn(accountsModel.Accounts, 'findOne');
 		return accountsCtrl.findByWalletId('walletId')
 		.then(() => {
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
 			done();
 		});
 	});
@@ -56,7 +55,7 @@ describe('Test ethAddresses.addAddress function', () => {
 						let ethAddresses = require('./accounts_ctrl.js');
 						jest.mock('../models/accounts_model.js')
 						let ethAddressesModel=require('../models/accounts_model.js')
-						let spy=sinon.spy(ethAddressesModel,"ethAddresses")// DID NOT MANAGE TO SPY ON CONSTRUCTOR INSTANCE
+						let spy=jest.spyOn(ethAddressesModel,"ethAddresses")// DID NOT MANAGE TO SPY ON CONSTRUCTOR INSTANCE
 						//stub1.returns('listOfETHAddresses')
 						let address='address'
 						ethAddresses.addAddress(address)
@@ -75,11 +74,10 @@ describe('Test ethAddresses.addAddress function', () => {
 		const accountsCtrl = require('./accounts_ctrl.js');
 		jest.mock('../models/accounts_model.js');
 		const accountsModel = require('../models/accounts_model.js');
-		const spy = sinon.spy(accountsModel.Accounts, 'remove');
+		const spy = jest.spyOn(accountsModel.Accounts, 'remove');
 		return accountsCtrl.emptyCollection()
 		.then(() => {
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
 			done();
 		});
 	});
@@ -88,11 +86,10 @@ describe('Test ethAddresses.addAddress function', () => {
 		const accountsCtrl = require('./accounts_ctrl.js');
 		jest.mock('../models/accounts_model.js');
 		const accountsModel = require('../models/accounts_model.js');
-		const spy = sinon.spy(accountsModel.Accounts, 'remove');
+		const spy = jest.spyOn(accountsModel.Accounts, 'remove');
 		return accountsCtrl.removeAddress('walletID')
 		.then(() => {
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
 			done();
 		});
 	});
