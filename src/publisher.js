@@ -79,7 +79,7 @@ process.on('message', async (data) => {
         if(obj !== undefined) {
           hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
           logger.info(`Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}, assetsSize: ${hashMaps.assets.keys().length}`);
-          ethService.subscribeTransferEvents(obj.contractAddress);
+          ethService.subscribeTransferEvents(obj);
         }
       }
     } else if(data.type == 'config') {

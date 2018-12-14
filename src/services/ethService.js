@@ -19,6 +19,7 @@ const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
 let wsCnt = 0;
 let client = redis.createClient();
+bluebird.promisifyAll(redis);
 
 
 /**
@@ -240,14 +241,14 @@ function subscribeTransferEvents(theContract) {
     try {
         logger.info('ethService.subscribeTransferEvents() subscribed to events for contract: ' + theContract);
         if(module.exports.connect()) {
-            if (web3.utils.isAddress(theContract)) {
-                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract);
+            if (web3.utils.isAddress(theContract.contractAddress)) {
+                const ERC20SmartContractObject = new web3.eth.Contract(ERC20ABI, theContract.contractAddress);
                 ERC20SmartContractObject.events.Transfer({},(error, result) => {
-                    logger.debug('ethService: Token transfer event occurred for contract: ' + theContract + ' result: ' + result + ' error: ' + error);
+                    logger.debug(`ethService: Token transfer event occurred for contract: ${JSON.stringify(theContract)} result: ${result} error: ${error}`);
                     if (!error) {
                         processTx.checkTokenTransfer(result, theContract, protocol);
                     } else {
-                        logger.error('ethService.subscribeTransferEvents() failed: ' + error);
+                        logger.error(`ethService.subscribeTransferEvents() failed: ${error}`);
                     }
                 });
             } 
@@ -441,10 +442,12 @@ function checkPendingTx(pendingTxArray) {
                         hashMaps.pendingTx.delete(item.txHash);
 
                         // Sends to the Offers Queue
-                        if (client.existsSync(item.txHash)) {
-                            rmqServices.sendOffersMessage(txMsg);
-                            client.del(item.txHash);
-                        }
+                        client.getAsync(item.txHash).then(function(res) {
+                            if(res) {
+                                rmqServices.sendOffersMessage(txMsg);
+                                client.del(item.txHash)
+                            }
+                        });
 
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');

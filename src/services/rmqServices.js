@@ -47,18 +47,9 @@ function initPubSubMQ() {
           });
 
           logger.info('Publisher RMQ Connected');
+          initializePubSubChannel(connection);
+          initializeOffersChannel(connection);
 
-          connection.createChannel((err, ch) => {
-            pubSubChannel = ch;
-            ch.assertQueue(pubSubQueue, { durable: true });
-            // Note: on Node 6 Buffer.from(msg) should be used
-          });
-
-          connection.createChannel((err, ch) => {
-            offersChannel = ch;
-            ch.assertQueue(offersQueue, { durable: true });
-            // Note: on Node 6 Buffer.from(msg) should be used
-          });
         });
         resolve();
       } catch (err) {
@@ -77,12 +68,61 @@ module.exports.initPubSubMQ = initPubSubMQ;
  * @param {any} payload - the payload/message to be send to queue
  */
 function sendPubSubMessage(payload) {
-  const checksum = SHA256.hex(checksumKey + JSON.stringify(payload));
+  
+  const checksum = calculateChecksum(payload, checksumKey)
   payload.checksum = checksum;
+  
+  if (!pubSubChannel){
+    throw new Error("pubSubChannel is not initialized")
+  }
   pubSubChannel.sendToQueue(pubSubQueue, Buffer.from(JSON.stringify(payload)));
 };
 
 module.exports.sendPubSubMessage = sendPubSubMessage;
+
+
+/**
+ * Function that initialize the connection
+ * @param {any} connection - the connection
+ */
+function initializePubSubChannel(connection) {
+  connection.createChannel((err, ch) => {
+    pubSubChannel = ch;
+    ch.assertQueue(pubSubQueue, { durable: true });
+    // Note: on Node 6 Buffer.from(msg) should be used
+  });
+};
+
+module.exports.initializePubSubChannel = initializePubSubChannel;
+
+/**
+ * Function that initialize the connection
+ * @param {any} connection - the connection
+ */
+function initializeOffersChannel(connection) {
+  connection.createChannel((err, ch) => {
+    offersChannel = ch;
+    ch.assertQueue(offersQueue, { durable: true });
+    // Note: on Node 6 Buffer.from(msg) should be used
+  });
+};
+
+module.exports.initializeOffersChannel = initializeOffersChannel;
+
+
+
+/**
+ * Calculate checksum of payload
+ * @param {any} payload - the payload/message to calculate checksum
+ */
+function calculateChecksum(payload, checksumKey) {
+  return SHA256.hex(checksumKey + JSON.stringify(payload));
+};
+
+module.exports.calculateChecksum = calculateChecksum;
+
+
+
 
 /**
  * Function that writes to queue
@@ -108,21 +148,27 @@ function getNotificationPayload(type,payload) {
   return p;
 }
 
+module.exports.getNotificationPayload = getNotificationPayload;
+
 /**
- * Function that resets the transaction map
+ * Function that resets a given  transaction map
+ * @param {any}  txMap -  TX_MAP like param
  */
-function resetTxMap() {
-  for (const x in TX_MAP) {
+function resetTxMap(txMap) {
+  for (const x in txMap) {
     logger.debug(`resetTxMap Loop: ${x}`);
-    const timestamp = moment().diff(TX_MAP[x].timestamp, 'minutes');
+    const timestamp = moment().diff(txMap[x].timestamp, 'minutes');
     logger.debug(`resetTxMap Loop Timestamp: ${timestamp}`);
 
     if (timestamp >= 3) {
-      delete TX_MAP[x];
+      delete txMap[x];
       logger.debug(`resetTxMap delete: ${x}`);
     }
   }
+  return txMap
 }
+
+module.exports.resetTxMap = resetTxMap;
 
 /**
  * Function to initialize the subscriber publisher queue befpore consumption
@@ -165,7 +211,7 @@ function initSubPubMQ() {
             switch (type) {
               case 'newTx':
                 // Removes all txn hash's after 3 minutes.
-                resetTxMap();
+                resetTxMap(TX_MAP);
 
                 // Added to stop duplicate transactions.
                 if (txHash in TX_MAP) {
@@ -228,7 +274,7 @@ function initSubPubMQ() {
       });
     });
   } catch (err) {
-    logger.error(`Subscriber initSubPubMQ failed: ${err}`);
+    logger.error(`Subscriber initSubPubMQ failed: ${err} ${err.stack}`);
   } finally {
     logger.info('Exited initSubPubMQ()');
   }
@@ -243,7 +289,7 @@ module.exports.initSubPubMQ = initSubPubMQ;
 function validatePubSubMessage(payload, checksumKey) {
   const checksum = payload.checksum;
   delete payload.checksum;
-  if (SHA256.hex(checksumKey + JSON.stringify(payload)) === checksum) {
+  if (calculateChecksum(payload, checksumKey) === checksum) {
     return true;
   }
   return false;
