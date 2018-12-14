@@ -1,4 +1,5 @@
 /** @module ethService.js */
+const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
