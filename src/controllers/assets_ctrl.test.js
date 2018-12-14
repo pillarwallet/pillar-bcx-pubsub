@@ -19,19 +19,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const sinon = require('sinon');
 
+afterAll(() => {
+	jest.restoreAllMocks();
+});
 describe('Test assets_ctrl', () => {
 	test('listAll function should call assetsModel.SmartContracts.find once and return mocked list of assets', (done) => {
 		jest.mock('../models/assets_model.js');
 		const assetsCtrl = require('./assets_ctrl.js');
 		const assetsModel = require('../models/assets_model.js');
-		const spy = sinon.spy(assetsModel.Assets, 'find');
+		const spy = jest.spyOn(assetsModel.Assets, 'find');
 		return assetsCtrl.listAll()
 		.then((result) => {
 			expect(result).toMatch('list of assets');
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
+
 			done();
 		});
 	});
@@ -40,22 +42,21 @@ describe('Test assets_ctrl', () => {
 		jest.mock('../models/assets_model.js');
 		const assetsCtrl = require('./assets_ctrl.js');
 		const assetsModel = require('../models/assets_model.js');
-		const spy = sinon.spy(assetsModel.Assets, 'remove');
+		const spy = jest.spyOn(assetsModel.Assets, 'remove');
 		assetsCtrl.emptyCollection();
-		sinon.assert.calledOnce(spy);
-		spy.restore();
+		expect(spy).toHaveBeenCalled();
 	});
 
 	test('findByTicker function should call assetsModel.Assets.findOne once and return mocked asset', (done) => {
 		const assetsCtrl = require('./assets_ctrl.js');
 		jest.mock('../models/assets_model.js');
 		const assetsModel = require('../models/assets_model.js');
-		const spy = sinon.spy(assetsModel.Assets, 'findOne');
+		const spy = jest.spyOn(assetsModel.Assets, 'findOne');
 		return assetsCtrl.findByTicker('BOKKY')
 		.then((result) => {
 			expect(result).toMatch('BOKKYasset');
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
+
 			done();
 		});
 	});
@@ -64,11 +65,11 @@ describe('Test assets_ctrl', () => {
 		const assetsCtrl = require('./assets_ctrl.js');
 		jest.mock('../models/assets_model.js');
 		const assetsModel = require('../models/assets_model.js');
-		const spy = sinon.spy(assetsModel.Assets, 'findOne');
+		const spy = jest.spyOn(assetsModel.Assets, 'findOne');
 		return assetsCtrl.findByAddress('address')
 		.then(() => {
-			sinon.assert.calledOnce(spy);
-			spy.restore();
+			expect(spy).toHaveBeenCalled();
+
 			done();
 		});
 	});

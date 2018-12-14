@@ -30,7 +30,8 @@ describe('Test transactions_ctrl functions', () => {
 		const transactionsCtrl = require('./transactions_ctrl.js');
 		const transactionsModel = require('../models/transactions_model.js');
 		const spy = jest.spyOn(transactionsModel.Transactions, 'find');
-		transactionsCtrl.listAll().then((result) => {
+		return transactionsCtrl.listAll()
+		.then((result) => {
 			expect(result).toEqual([{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
 			expect(spy).toHaveBeenCalled();
 			done();
