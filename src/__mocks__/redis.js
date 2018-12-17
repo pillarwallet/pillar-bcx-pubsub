@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 Copyright (C) 2019 Stiftung Pillar Project
 
@@ -20,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+=======
+>>>>>>> Added test to message process of publisher
 let redis = {
     createClient: function () {
         return {
