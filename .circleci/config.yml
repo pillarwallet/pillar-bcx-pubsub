@@ -174,7 +174,7 @@ workflows:
           filters:
             branches:
               only:
-                  - feature/add-whitesource
+                  - develop
       - publish-and-push-dev:
           requires:
              - build
