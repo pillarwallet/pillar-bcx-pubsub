@@ -50,7 +50,7 @@ memwatch.on('stats',function(stats) {
  * assets - This is a set of new assets/smart contracts which the publisher should add to its internal monitoring list
  * config - This a configuration setting that determine the maximum number of wallets/accounts that a publisher to monitor.
  */
-process.on('message', async (data) => {
+module.exports.publisherOnMessage = function () { process.on('message', async (data) => {
   try {
     const { message } = data;
     logger.info(`Publisher has received message from master: ${data.type}`);
@@ -84,11 +84,13 @@ process.on('message', async (data) => {
       }
     } else if(data.type == 'config') {
       MAX_WALLETS = message;
+      logger.info(`Updated MAX_WALLETS, new value: ${message}`);
     }
   }catch(e) {
     logger.error('Publisher: Error occured in publisher: ' + e);
   }
 });
+}
 
 /**
  * Function that initializes inter process communication queue
@@ -211,4 +213,6 @@ module.exports.initSubscriptions = function () {
 };
 
 this.initIPC();
+this.publisherOnMessage();
+
 
