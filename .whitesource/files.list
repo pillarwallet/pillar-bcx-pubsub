@@ -1,5 +1,5 @@
-~/pillar-bcx-pubsub
-~/pillar-bcx-pubsub/src
-~/pillar-bcx-pubsub/src/controllers
-~/pillar-bcx-pubsub/src/models
-~/pillar-bcx-pubsub/src/services
+/home/circleci/pillar-bcx-pubsub/.whitesource/pillar-bcx-pubsub
+/home/circleci/pillar-bcx-pubsub/.whitesource/pillar-bcx-pubsub/src
+/home/circleci/pillar-bcx-pubsub/.whitesource/pillar-bcx-pubsub/src/controllers
+/home/circleci/pillar-bcx-pubsub/.whitesource/pillar-bcx-pubsub/src/models
+/home/circleci/pillar-bcx-pubsub/.whitesource/pillar-bcx-pubsub/src/services
