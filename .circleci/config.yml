@@ -48,7 +48,7 @@ jobs:
           name: execute whitesource
           command: |
             cd .whitesource/
-            chmod +x wss_agent.sh && ./wss_agent.sh -apiKey $WHITESOURCE_API_KEY -c ./whitesource-fs-agent.config  -project pillar-bcx-pubsub -f files.list
+            chmod +x wss_agent.sh && ./wss_agent.sh -apiKey $WHITESOURCE_API_KEY -c ./whitesource-fs-agent.config  -project pillar-bcx-pubsub -d ~/pillar-bcx-pubsub
 
   publish-and-push-dev:
     working_directory: ~/pillar-bcx-pubsub
@@ -171,6 +171,10 @@ workflows:
       - whitesource:
           requires:
              - build
+          filters:
+            branches:
+              only:
+                  - feature/add-whitesource
       - publish-and-push-dev:
           requires:
              - build
