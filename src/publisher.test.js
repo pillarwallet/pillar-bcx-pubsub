@@ -16,10 +16,6 @@ describe('Test init functions ', () => {
 		jest.resetModules()
 	});
 
-	test('Dummy stub',() => {
-		//dummy test suite to complete build process - TODO rewrite sinon to jest
-	});
-
 	test('Expect initIPC to call process.send', () => {
 		const spy = jest.spyOn(process, 'send');
 		const publisher = require('./publisher.js');
@@ -29,14 +25,18 @@ describe('Test init functions ', () => {
 		});
 	});
 
+
 	test('Expect initSubscriptions to call ethServices.subscribePendingTxn and ethServices.subscribeBlockHeaders', () => {
+		const dummyMock = jest.fn()
 		const publisher = require('./publisher.js');
 		const ethServices = require('./services/ethService.js');
-		const stub1 = jest.spyOn(ethServices, 'subscribePendingTxn');
-		const stub2 = jest.spyOn(ethServices, 'subscribeBlockHeaders');
+		const stubSubscribePendingTxn = jest.spyOn(ethServices, 'subscribePendingTxn');
+		const stubSubscribeBlockHeaders = jest.spyOn(ethServices, 'subscribeBlockHeaders');
+		stubSubscribePendingTxn.mockImplementation(dummyMock);
+		stubSubscribeBlockHeaders.mockImplementation(dummyMock);
 		publisher.initSubscriptions();
-		expect(stub1).toHaveBeenCalled();
-		expect(stub2).toHaveBeenCalled();
+		expect(stubSubscribePendingTxn).toHaveBeenCalled();
+		expect(stubSubscribeBlockHeaders).toHaveBeenCalled();
 	});
 
 
@@ -129,5 +129,19 @@ describe('Process on message', () => {
 		stubSubscribeBlockHeaders.mockImplementation(dummyMock);
 		stubInitIPC.mockImplementation(dummyMock);
 		publisher.publisherOnMessage()
+	});
+})
+
+
+
+describe('Poll method', () => {
+	test('Expect poll to call process.send', () => {
+		const dummyMock = jest.fn()
+		const spy = jest.spyOn(process, 'send');
+		const publisher = require('./publisher.js');
+		const stubInitIPC = jest.spyOn(publisher, 'initIPC');
+		stubInitIPC.mockImplementation(dummyMock);
+		publisher.poll()
+		expect(spy).toHaveBeenCalled();
 	});
 })
