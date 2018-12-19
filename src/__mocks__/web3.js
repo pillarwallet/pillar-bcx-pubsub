@@ -15,7 +15,7 @@ const utils = (function () {
     },
   };
 }());
-module.exports.utils = utils;
+
 
 
 function emitTx(emitter, index) {
@@ -30,182 +30,183 @@ function emitTx(emitter, index) {
     }, 10);
   }
 }
-module.exports.emitTx = emitTx;
+
 
 function emitBlock(emitter, index) {
-  if (index === 3) {
-    setTimeout(() => {
-      emitter.emit('endSubscribeBlockHeaders');
-    }, 10);
-  } else {
-    setTimeout(() => {
       emitter.emit('data', { number: module.exports.transactions[index].blockNumber, hash: module.exports.transactions[index].blockHash });
-      console.log('EMIT BLOCK');
-      return emitBlock(emitter, index + 1);
-    }, 10);
-  }
 }
-module.exports.emitBlock = emitBlock;
 
-const eth = (function () {
-  return {
-    call(callParams, callback) {
-      const properCallParams = {
-        to: '0xSmartContractAddress',
-        data: '0x70a08231000000000000000000000000address',
-      };
-      if (JSON.stringify(callParams) === JSON.stringify(properCallParams)) {
-        callback('', 1000000000000000000);
-      } else {
-        callback('error');
+
+const eth = {
+  call(callParams, callback) {
+    const properCallParams = {
+      to: '0xSmartContractAddress',
+      data: '0x70a08231000000000000000000000000address',
+    };
+    if (JSON.stringify(callParams) === JSON.stringify(properCallParams)) {
+      callback('', 1000000000000000000);
+    } else {
+      callback('error');
+    }
+  },
+
+  subscribe(subscribtion) {
+      return{
+      on: function(algo,callback){
+        if (subscribtion != 'newBlockHeaders'){
+          callback(txHash)
+        }else{
+          callback({ number: module.exports.transactions[0].blockNumber, hash: module.exports.transactions[0].blockHash })
+        }
+        return {
+          on: function (algo, callback) {
+          }
+        }
       }
-    },
+    }
+  },
+  getBlockTransactionCount(){
+    return new Promise(((resolve) => {
+      resolve(5);
+    }))
+  },
+  isSyncing(){
+    return false;
+  },
 
-    subscribe(subscribtion) {
-      const emitter = new events.EventEmitter();
-      if (subscribtion === 'pendingTransactions') {
-        emitTx(emitter, 0);
-      } else if (subscribtion === 'newBlockHeaders') {
-        module.exports.emitBlock(emitter, 0);
+  getBlock(blockNumberOrHash, $returnTransactionObjects = false) {
+    return new Promise(((resolve, reject) => {
+      try {
+        let tx;
+        if ($returnTransactionObjects) {
+          tx = module.exports.transactions;
+        } else {
+          const txHashesArray = [];
+          module.exports.transactions.forEach((txn) => {
+            txHashesArray.push(txn.hash);
+          });
+          tx = txHashesArray;
+        }
+
+        const blockObject = {
+          number: 2461146,
+          hash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+          parentHash: '0xbc7af3e4eb34c19f7aeb6d040084076b2b610e4818692ac39fd140e4620019c4',
+          nonce: '0xaf4802b00993b63d',
+          sha3Uncles: '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
+          logsBloom: '0x00000000000000000000000000000000000000000000100100000000000000000000000000000000000000080000000000040000000008000000000000000000000000000020000000000008000000000000000000000000000000000000000000000000020000000001040000000800000000000000400100008010000000800000100000000000000000000800000000000128000000002000000000000000000080000000000000000000000000000000000000000000004000000000000000000002020000000008200000200000000000000000000010000000080020000010000000000000000000008000000020000000000000080000000202800000',
+          transactionsRoot: '0x80f766cb5d3ba068dc62647772b880beb5fe232daf7292e4bb83ecbf3098139f',
+          stateRoot: '0xfb8252cb4bacbef246d5b0436c028d06e9f52efbce82621d83bd5be2b7f0b4a4',
+          miner: '0xD049bfd667cB46Aa3Ef5Df0dA3e57DB3Be39E511',
+          difficulty: '2975666092',
+          totalDifficulty: '7495574361293090',
+          extraData: '0xd783010703846765746887676f312e392e32856c696e7578',
+          size: 7435,
+          gasLimit: 4712388,
+          gasUsed: 1944627,
+          timestamp: 1516028907,
+          transactions: tx,
+          uncles: [],
+        };
+        resolve(blockObject);
+      } catch (e) {
+        reject(e);
       }
-      return emitter;
-    },
+    }));
+  },
 
-    getBlock(blockNumberOrHash, $returnTransactionObjects = false) {
-      return new Promise(((resolve, reject) => {
-        try {
-          let tx;
-          if ($returnTransactionObjects) {
-            tx = module.exports.transactions;
-          } else {
-            const txHashesArray = [];
-            module.exports.transactions.forEach((txn) => {
-              txHashesArray.push(txn.hash);
-            });
-            tx = txHashesArray;
+  getTransaction(txHash) {
+    return new Promise(((resolve, reject) => {
+      try {
+        console.log("el hash es" + txHash)
+        if (txHash === '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b') {
+          resolve(module.exports.txObject);
+        } else {
+          reject(new Error('Not A Tx Hash'));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    }));
+  },
+
+  getBlockNumber() {
+    return new Promise(((resolve, reject) => {
+      try {
+        resolve(module.exports.blockNumber);
+      } catch (e) {
+        reject(e);
+      }
+    }));
+  },
+
+  getTransactionReceipt(txHash) {
+    return new Promise(((resolve, reject) => {
+      try {
+        if (txHash === '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b') {
+          resolve(module.exports.txReceipt);
+        } else {
+          reject(new Error('Not A Tx Hash'));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    }));
+  },
+
+  getBalance() {
+    return new Promise(((resolve, reject) => {
+      try {
+        resolve(100000000000000000);
+      } catch (e) {
+        reject(e);
+      }
+    }));
+  },
+
+  Contract: class Contract {
+      constructor() {
+      } 
+      get events(){
+        return { 
+          Transfer: function (algo, callback) {
+              callback(false, txObject)
           }
-
-          const blockObject = {
-            number: 2461146,
-            hash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-            parentHash: '0xbc7af3e4eb34c19f7aeb6d040084076b2b610e4818692ac39fd140e4620019c4',
-            nonce: '0xaf4802b00993b63d',
-            sha3Uncles: '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
-            logsBloom: '0x00000000000000000000000000000000000000000000100100000000000000000000000000000000000000080000000000040000000008000000000000000000000000000020000000000008000000000000000000000000000000000000000000000000020000000001040000000800000000000000400100008010000000800000100000000000000000000800000000000128000000002000000000000000000080000000000000000000000000000000000000000000004000000000000000000002020000000008200000200000000000000000000010000000080020000010000000000000000000008000000020000000000000080000000202800000',
-            transactionsRoot: '0x80f766cb5d3ba068dc62647772b880beb5fe232daf7292e4bb83ecbf3098139f',
-            stateRoot: '0xfb8252cb4bacbef246d5b0436c028d06e9f52efbce82621d83bd5be2b7f0b4a4',
-            miner: '0xD049bfd667cB46Aa3Ef5Df0dA3e57DB3Be39E511',
-            difficulty: '2975666092',
-            totalDifficulty: '7495574361293090',
-            extraData: '0xd783010703846765746887676f312e392e32856c696e7578',
-            size: 7435,
-            gasLimit: 4712388,
-            gasUsed: 1944627,
-            timestamp: 1516028907,
-            transactions: tx,
-            uncles: [],
-          };
-          resolve(blockObject);
-        } catch (e) {
-          reject(e);
         }
-      }));
-    },
+      }
 
-    getTransaction(txHash) {
-      return new Promise(((resolve, reject) => {
-        try {
-          if (txHash === '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b') {
-            resolve(module.exports.txObject);
-          } else {
-            reject(new Error('Not A Tx Hash'));
+    get getPastEvents(){
+      return ()=>{
+        return new Promise(((resolve, reject) => {
+          try {
+            resolve([{ returnValues: { _to: "0x81b7E08F65Bdf5648606c89998A9CC8164397647", _from: "0x81b7E08F65Bdf5648606c89998A9CC8164397647"}}]);
+          } catch (e) {
+            reject(e);
           }
-        } catch (e) {
-          reject(e);
-        }
-      }));
-    },
+        })); 
+      }
+    }
 
-    getBlockNumber() {
-      return new Promise(((resolve, reject) => {
-        try {
-          resolve(module.exports.blockNumber);
-        } catch (e) {
-          reject(e);
-        }
-      }));
-    },
+    get methods(){
+      return {
+        symbol:()=>{ return{call:()=>{}}},
+        name: () => { return{call:()=>{}}},
+        decimals: () => { return{call:()=>{}}},
+        totalSupply: () => { return { call: () => { } } },
+      }
 
-    getTransactionReceipt(txHash) {
-      return new Promise(((resolve, reject) => {
-        try {
-          if (txHash === '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b') {
-            resolve(module.exports.txReceipt);
-          } else {
-            reject(new Error('Not A Tx Hash'));
-          }
-        } catch (e) {
-          reject(e);
-        }
-      }));
-    },
+    }
+  },
+};
 
-    getBalance() {
-      return new Promise(((resolve, reject) => {
-        try {
-          resolve(100000000000000000);
-        } catch (e) {
-          reject(e);
-        }
-      }));
-    },
-
-    Contract() {
-      return (
-        {
-          methods: {
-            decimals: () => {
-              return({
-                  call: () => {
-                    return new Promise((resolve, reject) => {
-                      resolve('18');
-                    });
-                  },
-                });
-            },
-            name: () => {
-	            return({
-		            call: () => {
-		              return new Promise((resolve, reject) => {
-			              resolve('Mock Smart Contract');
-		              });
-		            },
-	            });
-            },
-            symbol: () => {
-	            return({
-		            call: () => { return new Promise((resolve, reject) => {
-			            resolve('MCK');
-		            });
-		            },
-	            });
-            },
-          },
-        }
-      );
-    },
-  };
-}());
-module.exports.eth = eth;
 
 const blockNumber = 2461146;
-module.exports.blockNumber = blockNumber;
+
 
 const blockHash = '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd';
-module.exports.blockHash = blockHash;
 
 const txHash = '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b';
-module.exports.txHash = txHash;
+
 
 const addresses = [
   { address: '0x81b7E08F65Bdf5648606c89998A9CC8164397647' },
@@ -215,7 +216,7 @@ const addresses = [
   { address: '0x1781BD8BB7C48DE5C77650bF0795328ba41DC46e' },
   { address: '0x555Ee11FBDDc0E49A9bAB358A8941AD95fFDB48f' },
 ];
-module.exports.addresses = addresses;
+
 
 const contracts = [
   {
@@ -321,7 +322,7 @@ const contracts = [
     decimals: 18,
   },
 ];
-module.exports.contracts = contracts;
+
 
 
 const txObject = {
@@ -340,7 +341,7 @@ const txObject = {
   r: '0xb301428c3c38200d0d4c0604980cc25dfa11dad4f05c08d0c5a0987984a9ebf2',
   s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
 };
-module.exports.txObject = txObject;
+
 
 const txHistory = [{
   blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
@@ -614,7 +615,7 @@ const txHistory = [{
   r: '0x8173a47c2d8110bd8cd8bc4bf3ab4ad8f4d7cdcb10c4e2d6b8038774f7cea3fb',
   s: '0x5f92922cd3f987e9b74507da850a7bec6d0933b712f0894f1dd6ae885b0a3d79',
 }];
-module.exports.txHistory = txHistory;
+
 
 const transactions = [{
   blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
@@ -857,7 +858,7 @@ const transactions = [{
   s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
 }];
 
-module.exports.transactions = transactions;
+
 
 const poolTransactions = [
   {
@@ -893,7 +894,7 @@ const poolTransactions = [
     s: '0x38196c2a11d536a4f8497b53ea58d7981129a1dc807c5b3e4ec59f4b3c6b6bbe',
   },
 ];
-module.exports.poolTransactions = poolTransactions;
+
 
 const nonZeroValueContractCall = {
   blockHash: '0x0',
@@ -912,7 +913,7 @@ const nonZeroValueContractCall = {
   s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
 };
 
-module.exports.nonZeroValueContractCall = nonZeroValueContractCall;
+
 
 const zeroValueContractCall = {
   blockHash: '0x0',
@@ -931,90 +932,90 @@ const zeroValueContractCall = {
   s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
 };
 
-module.exports.zeroValueContractCall = zeroValueContractCall;
+
 
 const tokenTransfer = {
-	blockHash: '0x0',
-	blockNumber: null,
-	from: '0xdc8F20170C0946ACCF9627b3EB1513CFD1c0499f',
-	gas: 399795,
-	gasPrice: '20000000000',
-	hash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-	input: '0xc8fea2fb000000000000000000000000e03c23519e18d64f144d2800e30e81b0065c48b5000000000000000000000000ebbdf302c940c6bfd49c6b165f457fdb324649bc0000000000000000000000000000000000000000000045428ce4001fbef71f80',
-	nonce: 82055,
-	to: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
-	transactionIndex: 14,
-	value: '0',
-	v: '0x1b',
-	r: '0xb301428c3c38200d0d4c0604980cc25dfa11dad4f05c08d0c5a0987984a9ebf2',
-	s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
+  blockHash: '0x0',
+  blockNumber: null,
+  from: '0xdc8F20170C0946ACCF9627b3EB1513CFD1c0499f',
+  gas: 399795,
+  gasPrice: '20000000000',
+  hash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+  input: '0xc8fea2fb000000000000000000000000e03c23519e18d64f144d2800e30e81b0065c48b5000000000000000000000000ebbdf302c940c6bfd49c6b165f457fdb324649bc0000000000000000000000000000000000000000000045428ce4001fbef71f80',
+  nonce: 82055,
+  to: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
+  transactionIndex: 14,
+  value: '0',
+  v: '0x1b',
+  r: '0xb301428c3c38200d0d4c0604980cc25dfa11dad4f05c08d0c5a0987984a9ebf2',
+  s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
 };
-module.exports.tokenTransfer = tokenTransfer;
+
 
 
 const txReceipt = {
   blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
   blockNumber: 2461146,
-  contractAddress: null,
+  contractAddress: 'contractAddress',
   cumulativeGasUsed: 1944627,
   from: '0xdc8f20170c0946accf9627b3eb1513cfd1c0499f',
   gasUsed: 261731,
   logs:
-                    [{
-                      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
-                      topics: [Array],
-                      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 5,
-                      removed: false,
-                      id: 'log_20087ee0',
-                    },
-                    {
-                      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
-                      topics: [Array],
-                      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1bf55a0002fc44c8aef27c26a7e88a5ecf6b51a6813b806ce0e289a1112fac3a600000000000000000000000000000000000000000000000000000000000038400000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000426a736f6e2868747470733a2f2f6170692e636f696e6d61726b65746361702e636f6d2f76312f7469636b65722f626974636f696e2f292e302e70726963655f757364000000000000000000000000000000000000000000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 6,
-                      removed: false,
-                      id: 'log_b5fb979b',
-                    },
-                    {
-                      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
-                      topics: [Array],
-                      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 7,
-                      removed: false,
-                      id: 'log_51e7d5cc',
-                    },
-                    {
-                      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
-                      topics: [Array],
-                      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1c6c57cf171dee64e55116191f0de9570b069a63d2b97690d6b4c656718e3387b0000000000000000000000000000000000000000000000000000000000000e100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 8,
-                      removed: false,
-                      id: 'log_d76578da',
-                    }],
+    [{
+      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
+      topics: [Array],
+      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 5,
+      removed: false,
+      id: 'log_20087ee0',
+    },
+    {
+      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
+      topics: [Array],
+      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1bf55a0002fc44c8aef27c26a7e88a5ecf6b51a6813b806ce0e289a1112fac3a600000000000000000000000000000000000000000000000000000000000038400000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000426a736f6e2868747470733a2f2f6170692e636f696e6d61726b65746361702e636f6d2f76312f7469636b65722f626974636f696e2f292e302e70726963655f757364000000000000000000000000000000000000000000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 6,
+      removed: false,
+      id: 'log_b5fb979b',
+    },
+    {
+      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
+      topics: [Array],
+      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 7,
+      removed: false,
+      id: 'log_51e7d5cc',
+    },
+    {
+      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
+      topics: [Array],
+      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1c6c57cf171dee64e55116191f0de9570b069a63d2b97690d6b4c656718e3387b0000000000000000000000000000000000000000000000000000000000000e100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 8,
+      removed: false,
+      id: 'log_d76578da',
+    }],
   logsBloom: '0x00000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000008000000000000000000000000000000000000000000000000000000000000000000008000000020000000000000080000000202800000',
   status: '0x1',
   to: '0x39ada2edf9bda495fce0278c7a66331cdffdbec1',
   transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
   transactionIndex: 14,
 };
-module.exports.txReceipt = txReceipt;
+
 
 const txReceiptSmartContractCreation = {
   blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
@@ -1024,58 +1025,149 @@ const txReceiptSmartContractCreation = {
   from: '0xdc8f20170c0946accf9627b3eb1513cfd1c0499f',
   gasUsed: 261731,
   logs:
-                    [{
-                      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
-                      topics: [Array],
-                      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 5,
-                      removed: false,
-                      id: 'log_20087ee0',
-                    },
-                    {
-                      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
-                      topics: [Array],
-                      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1bf55a0002fc44c8aef27c26a7e88a5ecf6b51a6813b806ce0e289a1112fac3a600000000000000000000000000000000000000000000000000000000000038400000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000426a736f6e2868747470733a2f2f6170692e636f696e6d61726b65746361702e636f6d2f76312f7469636b65722f626974636f696e2f292e302e70726963655f757364000000000000000000000000000000000000000000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 6,
-                      removed: false,
-                      id: 'log_b5fb979b',
-                    },
-                    {
-                      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
-                      topics: [Array],
-                      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 7,
-                      removed: false,
-                      id: 'log_51e7d5cc',
-                    },
-                    {
-                      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
-                      topics: [Array],
-                      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1c6c57cf171dee64e55116191f0de9570b069a63d2b97690d6b4c656718e3387b0000000000000000000000000000000000000000000000000000000000000e100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-                      blockNumber: 2461146,
-                      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
-                      transactionIndex: 14,
-                      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-                      logIndex: 8,
-                      removed: false,
-                      id: 'log_d76578da',
-                    }],
+    [{
+      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
+      topics: [Array],
+      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 5,
+      removed: false,
+      id: 'log_20087ee0',
+    },
+    {
+      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
+      topics: [Array],
+      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1bf55a0002fc44c8aef27c26a7e88a5ecf6b51a6813b806ce0e289a1112fac3a600000000000000000000000000000000000000000000000000000000000038400000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000426a736f6e2868747470733a2f2f6170692e636f696e6d61726b65746361702e636f6d2f76312f7469636b65722f626974636f696e2f292e302e70726963655f757364000000000000000000000000000000000000000000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 6,
+      removed: false,
+      id: 'log_b5fb979b',
+    },
+    {
+      address: '0x39aDa2EdF9Bda495Fce0278c7a66331cDfFDbEc1',
+      topics: [Array],
+      data: '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000354f7261636c697a65207175657279207761732073656e742c207374616e64696e6720627920666f722074686520616e737765722e2e0000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 7,
+      removed: false,
+      id: 'log_51e7d5cc',
+    },
+    {
+      address: '0xCBf1735Aad8C4B337903cD44b419eFE6538aaB40',
+      topics: [Array],
+      data: '0x00000000000000000000000039ada2edf9bda495fce0278c7a66331cdffdbec1c6c57cf171dee64e55116191f0de9570b069a63d2b97690d6b4c656718e3387b0000000000000000000000000000000000000000000000000000000000000e100000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000619b300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000355524c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockNumber: 2461146,
+      transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+      transactionIndex: 14,
+      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      logIndex: 8,
+      removed: false,
+      id: 'log_d76578da',
+    }],
   logsBloom: '0x00000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000008000000000000000000000000000000000000000000000000000000000000000000008000000020000000000000080000000202800000',
   status: '0x1',
   to: '0x39ada2edf9bda495fce0278c7a66331cdffdbec1',
   transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
   transactionIndex: 14,
 };
-module.exports.txReceiptSmartContractCreation = txReceiptSmartContractCreation;
+
+
+
+const providers = {
+  WebsocketProvider: class WebsocketProvider {
+    constructor() {
+    }
+  },
+  HttpProvider: class HttpProvider {
+    constructor() {
+    }
+  }
+}
+
+const method = class Method {
+  constructor() {
+  }
+}
+
+var ex = function (extension) {
+};
+
+ex.Method = method;
+
+const toChecksumAddress = () => {
+  return "0xc1912fEE45d61C87Cc5EA59DaE31190FFFFf232d"
+}
+
+const isAddress = () => {
+  return true
+}
+
+class Web3 {
+  constructor() {
+  }
+
+  static get providers() {
+    return providers
+  }
+
+  get _provider() {
+    return {
+      on: () => {
+
+      }
+    }
+  }
+
+  get extend() {
+    return ex
+  }
+
+  get trace(){
+    return  { 
+      filter: ()=>{ 
+        return new Promise(((resolve) => {
+              resolve({concat:()=>{}})
+        }))
+    }
+  }
+}
+
+  get utils() {
+    return {
+      toChecksumAddress: toChecksumAddress,
+      isAddress: isAddress
+    }
+  }
+  get eth() {
+    return eth;
+  }
+
+  setProvider() {
+    return true
+  }
+
+  sha3() {
+    return "0x9fc76417374aa880d4449a1f7f31ec597f00b1f6f3dd2d66f4c9c6c445836d8b"
+  }
+
+}
+
+module.exports = Web3
+
+module.exports.transactions = transactions
+module.exports.txObject = txObject
+module.exports.txReceipt = txReceipt
+module.exports.blockNumber = blockNumber
+module.exports.emitBlock = emitBlock
+module.exports.txHash = txHash
+module.exports.getBlockNumber = eth.getBlockNumber
+

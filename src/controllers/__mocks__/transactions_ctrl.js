@@ -28,7 +28,7 @@ module.exports.findByTxHash = findByTxHash;
 
 function findOneByTxHash() {
   return new Promise(((resolve) => {
-    resolve();
+    resolve(null);
   }));
 }
 module.exports.findOneByTxHash = findOneByTxHash;
