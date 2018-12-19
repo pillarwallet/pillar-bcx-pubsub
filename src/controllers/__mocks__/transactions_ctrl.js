@@ -50,10 +50,14 @@ module.exports.findByTxHash = findByTxHash;
 function findOneByTxHash() {
   return new Promise(((resolve) => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     resolve(null);
 =======
     resolve();
 >>>>>>> Added unit tests for rmq
+=======
+    resolve(null);
+>>>>>>> Added tests for ethService
   }));
 }
 module.exports.findOneByTxHash = findOneByTxHash;

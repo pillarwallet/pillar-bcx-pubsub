@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 Copyright (C) 2019 Stiftung Pillar Project
 
@@ -19,6 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+=======
+>>>>>>> Added tests for ethService
 
 let redis = {
     createClient: function () {
@@ -55,7 +58,12 @@ let redis = {
             },
             on: function () {
                 return new Promise((resolve, reject) => {
-                    resolve(false)
+                    resolve("testValue")
+                })
+            },
+            get: function () {
+                return new Promise((resolve, reject) => {
+                    resolve("testValue")
                 })
             },
             get: function (data, callback) {
