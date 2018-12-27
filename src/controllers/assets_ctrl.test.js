@@ -38,6 +38,61 @@ describe('Test assets_ctrl', () => {
 		});
 	});
 
+
+	test('listAssets function should call assetsModel.SmartContracts.find once and return mocked list of assets', (done) => {
+		jest.mock('../models/assets_model.js');
+		const assetsCtrl = require('./assets_ctrl.js');
+		const assetsModel = require('../models/assets_model.js');
+		const spy = jest.spyOn(assetsModel.Assets, 'find');
+		return assetsCtrl.listAssets()
+			.then((result) => {
+				expect(result).toMatch('list of assets');
+				expect(spy).toHaveBeenCalled();
+
+				done();
+			});
+	});
+
+	test('listRecent function should call assetsModel.SmartContracts.find once and return mocked list of assets', (done) => {
+		jest.mock('../models/assets_model.js');
+		const assetsCtrl = require('./assets_ctrl.js');
+		const assetsModel = require('../models/assets_model.js');
+		const spy = jest.spyOn(assetsModel.Assets, 'find');
+		return assetsCtrl.listRecent()
+			.then((result) => {
+				expect(result).toMatch('list of assets');
+				expect(spy).toHaveBeenCalled();
+
+				done();
+			});
+	});
+
+
+	test('listRecent function should call assetsModel.SmartContracts.find once and return mocked list of assets', (done) => {
+		jest.mock('../models/assets_model.js');
+		const assetsCtrl = require('./assets_ctrl.js');
+		const assetsModel = require('../models/assets_model.js');
+		const spy = jest.spyOn(assetsModel.Assets, 'find');
+		return assetsCtrl.listRecent()
+			.then((result) => {
+				expect(result).toMatch('list of assets');
+				expect(spy).toHaveBeenCalled();
+
+				done();
+			});
+	});
+
+	test('addContract function should call assetsModel.SmartContracts.find once and resolve the promise', (done) => {
+		jest.mock('../models/assets_model.js');
+		const assetsCtrl = require('./assets_ctrl.js');
+		const assetsModel = require('../models/assets_model.js');
+		const spy = jest.spyOn(assetsModel.Assets, 'find');
+		return assetsCtrl.addContract()
+			.then((result) => {
+				done();
+			});
+	});
+
 	test('emptyCollection function should call assetsModel.Assets.remove once', () => {
 		jest.mock('../models/assets_model.js');
 		const assetsCtrl = require('./assets_ctrl.js');
@@ -45,20 +100,6 @@ describe('Test assets_ctrl', () => {
 		const spy = jest.spyOn(assetsModel.Assets, 'remove');
 		assetsCtrl.emptyCollection();
 		expect(spy).toHaveBeenCalled();
-	});
-
-	test('findByTicker function should call assetsModel.Assets.findOne once and return mocked asset', (done) => {
-		const assetsCtrl = require('./assets_ctrl.js');
-		jest.mock('../models/assets_model.js');
-		const assetsModel = require('../models/assets_model.js');
-		const spy = jest.spyOn(assetsModel.Assets, 'findOne');
-		return assetsCtrl.findByTicker('BOKKY')
-		.then((result) => {
-			expect(result).toMatch('BOKKYasset');
-			expect(spy).toHaveBeenCalled();
-
-			done();
-		});
 	});
 
 	test('findByAddress function should call assetsModel.Assets.findOne once', (done) => {
@@ -73,4 +114,19 @@ describe('Test assets_ctrl', () => {
 			done();
 		});
 	});
+
+	test('findByTicker function should call assetsModel.Assets.findOne once and return mocked asset', (done) => {
+		const assetsCtrl = require('./assets_ctrl.js');
+		jest.mock('../models/assets_model.js');
+		const assetsModel = require('../models/assets_model.js');
+		const spy = jest.spyOn(assetsModel.Assets, 'findOne');
+		return assetsCtrl.findByTicker('BOKKY')
+			.then((result) => {
+				expect(result).toMatch('BOKKYasset');
+				expect(spy).toHaveBeenCalled();
+
+				done();
+			});
+	});
+
 });
