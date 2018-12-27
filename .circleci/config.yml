@@ -171,10 +171,6 @@ workflows:
       - whitesource:
           requires:
              - build
-          filters:
-            branches:
-              only:
-                  - develop
       - publish-and-push-dev:
           requires:
              - build
