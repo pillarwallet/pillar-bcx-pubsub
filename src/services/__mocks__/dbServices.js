@@ -12,3 +12,20 @@ module.exports.listHistory = () => {};
 module.exports.findERC20SmartContractsHistoryHeight = () => {};
 module.exports.updateERC20SmartContractsHistoryHeight = () => {};
 module.exports.addTransactionStats = () => { };
+module.exports.dbConnect = function () {
+    return new Promise((resolve, reject) => {
+        resolve(true)
+    })
+}
+
+module.exports.recentAccounts = function () {
+    return new Promise((resolve, reject) => {
+        resolve()
+    })
+}
+
+module.exports.contractsToMonitor = function () {
+    return new Promise((resolve, reject) => {
+        resolve(true)
+    })
+}
