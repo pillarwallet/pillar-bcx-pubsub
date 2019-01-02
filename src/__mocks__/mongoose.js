@@ -26,6 +26,12 @@ function connect(dbUrl, useMongoClient) {
 }
 module.exports.connect = connect;
 
+
+var types = {
+  ObjectId: () =>{}
+}
+module.exports.Types = types
+
 function Schema() {}
 module.exports.Schema = Schema;
 

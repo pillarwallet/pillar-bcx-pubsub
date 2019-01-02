@@ -1,11 +1,16 @@
 const Assets = (function () {
   return {
-    find(params, callback) {
-      if (callback == null) {
-        const newCallback = params;
-        newCallback('', 'list of assets');
+
+    find(query, callback) {
+      const returnValue = 'list of assets'
+      if (query && typeof query === "function" && callback == null) {
+        query('', returnValue);
+      } else if (callback != null && typeof callback === "function") {
+        callback('', returnValue);
       } else {
-        callback('', 'list of assets');
+        return new Promise((resolve, reject) => {
+          resolve(returnValue)
+        })
       }
     },
     findOne(params, callback) {
