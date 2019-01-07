@@ -3,20 +3,20 @@ afterAll(() => {
 });
 
 describe('Test accounts.listAll function', () => {
-	test("listAll function should call accounts.find once and return [{'FCMIID': 'FCMIID', 'address': 'address'}]", (done) => {
+	test("listAll function should call accounts.find once and return [{'address': 'address'}]", (done) => {
 		jest.mock('../models/accounts_model.js');
 		const accountsCtrl = require('./accounts_ctrl.js');
 		const accountsModel = require('../models/accounts_model.js');
 		const spy = jest.spyOn(accountsModel.Accounts, 'find');
 		return accountsCtrl.listAll()
 		.then((result) => {
-			expect(result).toEqual([{ FCMIID: 'FCMIID', address: 'address' }]);
+			expect(result).toEqual([{ address: 'address' }]);
 			expect(spy).toHaveBeenCalled();
 			done();
 		});
 	});
 
-	test("listRecent function should call accounts.find once and return [{'FCMIID': 'FCMIID', 'address': 'address'}]", (done) => {
+	test("listRecent function should call accounts.find once and return [{'address': 'address'}]", (done) => {
 		jest.mock("mongoose")
 		jest.mock('../models/accounts_model.js');
 		const accountsCtrl = require('./accounts_ctrl.js');
@@ -24,7 +24,7 @@ describe('Test accounts.listAll function', () => {
 		const spy = jest.spyOn(accountsModel.Accounts, 'find');
 		return accountsCtrl.listRecent()
 			.then((result) => {
-				expect(result).toEqual([{ FCMIID: 'FCMIID', address: 'address' }]);
+				expect(result).toEqual([{ address: 'address' }]);
 				expect(spy).toHaveBeenCalled();
 				done();
 			});

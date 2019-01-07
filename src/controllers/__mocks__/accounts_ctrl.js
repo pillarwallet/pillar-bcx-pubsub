@@ -13,13 +13,6 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function getFCMIID() {
-  const FCMIID = 'FCMIID';
-  return new Promise(((resolve) => {
-    resolve(FCMIID);
-  }));
-}
-module.exports.getFCMIID = getFCMIID;
 
 function findByAddress(address) {
   return new Promise(((resolve) => {

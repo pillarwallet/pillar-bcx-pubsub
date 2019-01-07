@@ -10,15 +10,14 @@ const Accounts = class Accounts {
       const newCallback = address;
       const newAddress = 'address';
       newCallback('', [{
-        address: newAddress,
-        FCMIID: 'FCMIID',
+        address: newAddress
       }]);
     } else if (callback == null && typeof address == "object"){
         return{
           limit: function (params) {
             return{
             exec: function(callback){
-              callback(false, [{ "FCMIID": "FCMIID", "address": "address" }])
+              callback(false, [{ "address": "address" }])
             }
           }
         }
@@ -26,8 +25,7 @@ const Accounts = class Accounts {
     }
       else {
       callback('', [{
-        address,
-        FCMIID: 'FCMIID',
+        address
       }]);
     }
   }
@@ -37,13 +35,11 @@ const Accounts = class Accounts {
       const newCallback = address;
       const newAddress = 'address';
       newCallback('', [{
-        address: newAddress,
-        FCMIID: 'FCMIID',
+        address: newAddress
       }]);
     } else {
       callback('', [{
-        address,
-        FCMIID: 'FCMIID',
+        address
       }]);
     }
   }
