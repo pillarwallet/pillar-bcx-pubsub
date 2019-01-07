@@ -179,7 +179,31 @@ function initializePubSubChannel(connection) {
 
 module.exports.initializePubSubChannel = initializePubSubChannel;
 
+<<<<<<< HEAD
+=======
+/**
+ * Function that initialize the connection
+ * @param {any} connection - the connection
+ */
+function initializeOffersChannel(connection) {
+  connection.createChannel((err, ch) => {
+    offersChannel = ch;
+    offersChannel.assertExchange(offersExchange, 'direct', {durable: true});
+  });
+};
 
+module.exports.initializeOffersChannel = initializeOffersChannel;
+
+/**
+ * Function to bind queue
+ * @param {String} mmID 
+ */
+function bindOffersQueue(mmID) {
+  offersChannel.bindQueue(mmID, offersExchange, mmID);
+};
+>>>>>>> offers exchange / binding / send message
+
+module.exports.bindOffersQueue = bindOffersQueue;
 
 /**
  * Calculate checksum of payload
@@ -191,13 +215,11 @@ function calculateChecksum(payload, checksumKey) {
 
 module.exports.calculateChecksum = calculateChecksum;
 
-
-
-
 /**
  * Function that writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
+<<<<<<< HEAD
 function sendOffersMessage(payload) {
   if (!offersChannel) {
     throw new Error('pubSubChannel is not initialized');
@@ -213,6 +235,14 @@ module.exports.sendOffersMessage = sendOffersMessage;
  */
 function sendOffersMessage(payload) {
   offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
+=======
+function sendOffersMessage(payload, queue) {
+
+  //offersChannel.assertQueue(queue, { durable: true });
+  //offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
+  offersChannel.publish(queue, severity, new Buffer(JSON.stringify(payload)));
+
+>>>>>>> offers exchange / binding / send message
 };
 
 module.exports.sendOffersMessage = sendOffersMessage;
