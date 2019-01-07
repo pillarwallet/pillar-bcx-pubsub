@@ -136,7 +136,7 @@ function sendOffersMessage(payload, queue) {
 
   //offersChannel.assertQueue(queue, { durable: true });
   //offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
-  offersChannel.publish(queue, severity, new Buffer(JSON.stringify(payload)));
+  offersChannel.publish(queue, queue, new Buffer(JSON.stringify(payload)));
 
 };
 
