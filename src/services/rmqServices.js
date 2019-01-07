@@ -12,7 +12,7 @@ const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
 let offersChannel;
 const pubSubQueue = 'bcx-pubsub';
-const offersQueue = 'bcx-offers';
+const offersExchange = 'offers-exchange';
 const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
@@ -102,14 +102,21 @@ module.exports.initializePubSubChannel = initializePubSubChannel;
 function initializeOffersChannel(connection) {
   connection.createChannel((err, ch) => {
     offersChannel = ch;
-    ch.assertQueue(offersQueue, { durable: true });
-    // Note: on Node 6 Buffer.from(msg) should be used
+    offersChannel.assertExchange(offersExchange, 'direct', {durable: true});
   });
 };
 
 module.exports.initializeOffersChannel = initializeOffersChannel;
 
+/**
+ * Function to bind queue
+ * @param {String} mmID 
+ */
+function bindOffersQueue(mmID) {
+  offersChannel.bindQueue(mmID, offersExchange, mmID);
+};
 
+module.exports.bindOffersQueue = bindOffersQueue;
 
 /**
  * Calculate checksum of payload
@@ -121,15 +128,16 @@ function calculateChecksum(payload, checksumKey) {
 
 module.exports.calculateChecksum = calculateChecksum;
 
-
-
-
 /**
  * Function that writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
-function sendOffersMessage(payload) {
-  offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
+function sendOffersMessage(payload, queue) {
+
+  //offersChannel.assertQueue(queue, { durable: true });
+  //offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
+  offersChannel.publish(queue, severity, new Buffer(JSON.stringify(payload)));
+
 };
 
 module.exports.sendOffersMessage = sendOffersMessage;
