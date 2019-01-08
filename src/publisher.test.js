@@ -53,7 +53,7 @@ function mockProcessOn(name, message){
 
 describe('Process on message', () => {
 	test('config type message', done => {
-		mockProcessOn("config", 1) // could be whatever number
+		process.argv[2] = 0;
 		const logger = require('./utils/logger');
 		const dummyMock = jest.fn()
 		
@@ -69,6 +69,7 @@ describe('Process on message', () => {
 		
 		stubLoggerInfo.mockImplementation(stubCheckDone);
 		const publisher = require('./publisher.js');
+		mockProcessOn("config", 1) // could be whatever number
 		const stubSubscribePendingTxn = jest.spyOn(ethServices, 'subscribePendingTxn');
 		const stubSubscribeBlockHeaders = jest.spyOn(ethServices, 'subscribeBlockHeaders');
 		const stubInitIPC = jest.spyOn(publisher, 'initIPC');
@@ -76,6 +77,7 @@ describe('Process on message', () => {
 		stubSubscribePendingTxn.mockImplementation(dummyMock);
 		stubSubscribeBlockHeaders.mockImplementation(dummyMock);
 		stubInitIPC.mockImplementation(dummyMock);
+		publisher.publisherOnMessage()
 	});
 
 	test('assets type message', done => {
@@ -86,7 +88,6 @@ describe('Process on message', () => {
 				done()
 			}
 		})
-		mockProcessOn("assets", [{contractAddress: "contractAddress"}])
 		const stubSubscribeTransferEvents = jest.spyOn(ethServices, 'subscribeTransferEvents');
 		stubSubscribeTransferEvents.mockImplementation(stubCheckDone);
 		
@@ -98,6 +99,7 @@ describe('Process on message', () => {
 		stubSubscribeBlockHeaders.mockImplementation(dummyMock);
 		
 		const publisher2 = require('./publisher.js');
+		mockProcessOn("assets", [{ contractAddress: "contractAddress" }])
 		publisher2.publisherOnMessage()
 		const stubInitIPC = jest.spyOn(publisher2, 'initIPC');
 		stubInitIPC.mockImplementation(dummyMock);
@@ -105,7 +107,7 @@ describe('Process on message', () => {
 	});
 
 	test('accounts type message', done => {
-		mockProcessOn("accounts", [{ walletId: "walletId2" ,id: 1}]) // could be whatever number
+		
 		const logger = require('./utils/logger');
 		const dummyMock = jest.fn()
 
@@ -121,6 +123,7 @@ describe('Process on message', () => {
 
 		stubLoggerInfo.mockImplementation(stubCheckDone);
 		const publisher = require('./publisher.js');
+		mockProcessOn("accounts", [{ walletId: "walletId2", id: 1 }]) // could be whatever number
 		const stubSubscribePendingTxn = jest.spyOn(ethServices, 'subscribePendingTxn');
 		const stubSubscribeBlockHeaders = jest.spyOn(ethServices, 'subscribeBlockHeaders');
 		const stubInitIPC = jest.spyOn(publisher, 'initIPC');
