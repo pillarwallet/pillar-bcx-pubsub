@@ -25,6 +25,7 @@
     "amqplib": "^0.5.2",
     "app-root-path": "^2.1.0",
     "arraybuffer-to-string": "^1.0.2",
+    "babel-core": "^6.26.3",
     "bignumber.js": "^5.0.0",
     "bitcoin-live-transactions": "0.0.13",
     "bitcoinjs-lib": "^4.0.1",
