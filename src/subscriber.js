@@ -11,13 +11,18 @@ let runId = 0;
 /**
  * Function for reporting unhandled promise rejections.
  * @param {any} reason - reason for failure/stack trace
+ * @param {any} promise
  */
 
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('***********************************************');
-  logger.error('ERROR: Unhandled Rejection at SUBSCRIBER:', JSON.stringify(reason));
-  logger.error('***********************************************');
-});
+process
+  .on('unhandledRejection', (reason, promise) => {
+    logger.error(`Subscriber - Unhandled Rejection at Promise reason - ${reason}, p - ${p}`);
+  })
+  .on('uncaughtException', err => {
+    logger.error(`Subscriber - Uncaught Exception thrown error - ${err}`);
+    process.exit(1);
+  });
+
 
 /**
  * commonon logger function that prints out memory footprint of the process
