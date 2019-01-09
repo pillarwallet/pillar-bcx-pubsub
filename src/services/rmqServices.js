@@ -179,8 +179,6 @@ function initializePubSubChannel(connection) {
 
 module.exports.initializePubSubChannel = initializePubSubChannel;
 
-<<<<<<< HEAD
-=======
 /**
  * Function that initialize the connection
  * @param {any} connection - the connection
@@ -188,7 +186,7 @@ module.exports.initializePubSubChannel = initializePubSubChannel;
 function initializeOffersChannel(connection) {
   connection.createChannel((err, ch) => {
     offersChannel = ch;
-    offersChannel.assertExchange(offersExchange, 'direct', {durable: true});
+    ch.assertQueue(offersQueue, { durable: true });
   });
 };
 
@@ -201,7 +199,6 @@ module.exports.initializeOffersChannel = initializeOffersChannel;
 function bindOffersQueue(mmID) {
   offersChannel.bindQueue(mmID, offersExchange, mmID);
 };
->>>>>>> offers exchange / binding / send message
 
 module.exports.bindOffersQueue = bindOffersQueue;
 
@@ -219,30 +216,13 @@ module.exports.calculateChecksum = calculateChecksum;
  * Function that writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
-<<<<<<< HEAD
+
 function sendOffersMessage(payload) {
-  if (!offersChannel) {
-    throw new Error('pubSubChannel is not initialized');
+
+  if (!offersChannel){
+    throw new Error("pubSubChannel is not initialized")
   }
   offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
-  logger.info(`Message sent to ${offersQueue}, Content: ${payload}`);
-}
-
-module.exports.sendOffersMessage = sendOffersMessage;
-
- /* 
- * @param {Object} payload - the payload/message to be sent to queue
- */
-function sendOffersMessage(payload) {
-  offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
-=======
-function sendOffersMessage(payload, queue) {
-
-  //offersChannel.assertQueue(queue, { durable: true });
-  //offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
-  offersChannel.publish(queue, queue, new Buffer(JSON.stringify(payload)));
-
->>>>>>> offers exchange / binding / send message
 };
 
 module.exports.sendOffersMessage = sendOffersMessage;
