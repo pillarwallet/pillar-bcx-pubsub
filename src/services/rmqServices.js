@@ -128,6 +128,7 @@ function sendOffersMessage(payload) {
     throw new Error("pubSubChannel is not initialized")
   }
   offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
+  logger.info(`Message sent to ${offersQueue}, Content: ${payload}`)
 };
 
 module.exports.sendOffersMessage = sendOffersMessage;

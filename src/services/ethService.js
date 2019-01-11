@@ -188,6 +188,16 @@ function subscribeBlockHeaders() {
                 module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
                 //capture gas price statistics
                 module.exports.storeGasInfo(blockHeader);
+
+                // Check MarketMaker Transactions
+                web3.eth.getBlock(blockHeader.number).then(response => {
+                    response.transactions.forEach(async transaction => {
+                        if(await client.existsAsync(transaction)) {
+                            rmqServices.sendOffersMessage(transaction);
+                            client.del(transaction);
+                        }
+                    });
+                });
             }
         })
         .on("error", (err) => {
@@ -441,14 +451,6 @@ function checkPendingTx(pendingTxArray) {
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item.txHash);
-
-                        // Sends to the Offers Queue
-                        client.getAsync(item.txHash).then(function(res) {
-                            if(res) {
-                                rmqServices.sendOffersMessage(txMsg);
-                                client.del(item.txHash)
-                            }
-                        });
 
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
