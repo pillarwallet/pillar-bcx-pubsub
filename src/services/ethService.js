@@ -193,8 +193,45 @@ function subscribeBlockHeaders() {
                 web3.eth.getBlock(blockHeader.number).then(response => {
                     response.transactions.forEach(async transaction => {
                         if(await client.existsAsync(transaction)) {
-                            rmqServices.sendOffersMessage(transaction);
-                            client.del(transaction);
+                            Promise.all([web3.eth.getTransaction(transaction), web3.eth.getTransactionReceipt(transaction)]).then(responses => {
+                                const txInfo = responses[0];
+                                const txReceipt = responses[1];
+                                var to, value, asset, contractAddress;
+                                if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
+                                    to = txInfo.to;
+                                } else {
+                                    const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+                                    contractAddress = contractDetail.contractAddress;
+                                    asset = contractDetail.symbol;
+                                    if(fs.existsSync(abiPath + asset + '.json')) {
+                                        const theAbi = require(abiPath + asset + '.json');
+                                        abiDecoder.addABI(theAbi);
+                                    } else {
+                                        abiDecoder.addABI(ERC20ABI);
+                                    }
+                                    data = abiDecoder.decodeMethod(txInfo.input);
+                                    if ((data !== undefined) && (data.name === 'transfer')) { 
+                                        //smart contract call hence the asset must be the token name
+                                        to = data.params[0].value;
+                                        value = data.params[1].value;
+                                    } else {
+                                        to = txInfo.to;
+                                    }
+                                }
+                                rmqServices.sendOffersMessage({
+                                        txHash: txInfo.hash,
+                                        fromAddress: txInfo.from,
+                                        toAddress: to,
+                                        value,
+                                        asset,
+                                        contractAddress,
+                                        status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+                                        gasPrice: txInfo.gasPrice,
+                                        gasUsed: txReceipt.gasUsed,
+                                        blockNumber: txReceipt.blockNumber
+                                    });
+                                client.del(transaction);
+                            }).catch(e => logger.error(e));
                         }
                     });
                 });
