@@ -118,7 +118,6 @@ describe('Housekeeper unit tests', () => {
 			const loggerLog = jest.spyOn(logger, 'info');
 			var loggerLogMockImpl = function(log){
 				if (log.indexOf("Completed processing") >=0 ){
-					console.log("llego aca")
 					done()
 				}
 			}

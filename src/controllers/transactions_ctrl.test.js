@@ -143,7 +143,6 @@ describe('Test transactions_ctrl functions', () => {
 		const transactionsCtrl = require('./transactions_ctrl.js');
 		jest.mock('../models/transactions_model.js');
 		const transactionsModel = require('../models/transactions_model.js');
-		console.log(transactionsModel)
 		const TransactionsFindMock = jest.spyOn(transactionsModel.Transactions, "find");
 		const TransactionsFindDistinctResult = jest.fn(() => {
 			return {
@@ -170,7 +169,6 @@ describe('Test transactions_ctrl functions', () => {
 		const transactionsCtrl = require('./transactions_ctrl.js');
 		jest.mock('../models/transactions_model.js');
 		const transactionsModel = require('../models/transactions_model.js');
-		console.log(transactionsModel)
 		const TransactionsAggregateMock = jest.spyOn(transactionsModel.Transactions, "aggregate");
 		transactionsCtrl.getBalance("address", "asset").then((result) => {
 			expect(result).toEqual(0)
