@@ -226,45 +226,8 @@ function subscribeBlockHeaders() {
                 web3.eth.getBlock(blockHeader.number).then(response => {
                     response.transactions.forEach(async transaction => {
                         if(await client.existsAsync(transaction)) {
-                            Promise.all([web3.eth.getTransaction(transaction), web3.eth.getTransactionReceipt(transaction)]).then(responses => {
-                                const txInfo = responses[0];
-                                const txReceipt = responses[1];
-                                var to, value, asset, contractAddress;
-                                if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
-                                    to = txInfo.to;
-                                } else {
-                                    const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-                                    contractAddress = contractDetail.contractAddress;
-                                    asset = contractDetail.symbol;
-                                    if(fs.existsSync(abiPath + asset + '.json')) {
-                                        const theAbi = require(abiPath + asset + '.json');
-                                        abiDecoder.addABI(theAbi);
-                                    } else {
-                                        abiDecoder.addABI(ERC20ABI);
-                                    }
-                                    data = abiDecoder.decodeMethod(txInfo.input);
-                                    if ((data !== undefined) && (data.name === 'transfer')) { 
-                                        //smart contract call hence the asset must be the token name
-                                        to = data.params[0].value;
-                                        value = data.params[1].value;
-                                    } else {
-                                        to = txInfo.to;
-                                    }
-                                }
-                                rmqServices.sendOffersMessage({
-                                        txHash: txInfo.hash,
-                                        fromAddress: txInfo.from,
-                                        toAddress: to,
-                                        value,
-                                        asset,
-                                        contractAddress,
-                                        status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
-                                        gasPrice: txInfo.gasPrice,
-                                        gasUsed: txReceipt.gasUsed,
-                                        blockNumber: txReceipt.blockNumber
-                                    });
-                                client.del(transaction);
-                            }).catch(e => logger.error(e));
+                            rmqServices.sendOffersMessage(await getTxInfo(transaction));
+                            client.del(transaction);
                         }
                     });
                 });
@@ -750,8 +713,50 @@ async function getTransactionCountForWallet(wallet) {
         return;
     }
 }
-<<<<<<< HEAD
 module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
-=======
-module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
->>>>>>> getting transaction info from web3, sending to offersQueue
+
+/**
+ * Gets the transaction info/receipt and returns the transaction object 
+ * @param {string} txHash Transaction hash 
+ */
+async function getTxInfo(txHash) {
+
+    const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
+
+    var to, value, asset, contractAddress;
+    if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
+        to = txInfo.to;
+    } else {
+        const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+        contractAddress = contractDetail.contractAddress;
+        asset = contractDetail.symbol;
+        if(fs.existsSync(abiPath + asset + '.json')) {
+            const theAbi = require(abiPath + asset + '.json');
+            abiDecoder.addABI(theAbi);
+        } else {
+            abiDecoder.addABI(ERC20ABI);
+        }
+        data = abiDecoder.decodeMethod(txInfo.input);
+        if ((data !== undefined) && (data.name === 'transfer')) { 
+            //smart contract call hence the asset must be the token name
+            to = data.params[0].value;
+            value = data.params[1].value;
+        } else {
+            to = txInfo.to;
+        }
+    }
+         return {
+            txHash: txInfo.hash,
+            fromAddress: txInfo.from,
+            toAddress: to,
+            value,
+            asset,
+            contractAddress,
+            status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+            gasPrice: txInfo.gasPrice,
+            gasUsed: txReceipt.gasUsed,
+            blockNumber: txReceipt.blockNumber
+        };
+};
+
+module.exports.getTxInfo = getTxInfo;
