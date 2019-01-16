@@ -118,7 +118,6 @@ const eth = {
   getTransaction(txHash) {
     return new Promise(((resolve, reject) => {
       try {
-        console.log("el hash es" + txHash)
         if (txHash === '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b') {
           resolve(module.exports.txObject);
         } else {

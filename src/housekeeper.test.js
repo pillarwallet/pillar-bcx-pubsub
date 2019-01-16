@@ -1,6 +1,3 @@
-
-
-describe('Housekeeper unit tests', () => {
 	
 	afterAll(() => {
 		jest.restoreAllMocks();
@@ -8,8 +5,6 @@ describe('Housekeeper unit tests', () => {
 
 	beforeAll(() => {
 		jest.restoreAllMocks();
-		jest.genMockFromModule('web3');
-		jest.genMockFromModule('redis');
 		const ethServices = require('./services/ethService');
 		const spy = jest.spyOn(ethServices,'connect');
 		spy.mockImplementation();
@@ -40,58 +35,11 @@ describe('Housekeeper unit tests', () => {
 		});
 	});
 
-	/*describe('The recoverWallet function tests', () => {
-
-		it('should have been called', done => {
-			jest.mock('./services/ethService');
-			jest.mock('./services/dbServices.js')
-			var dbServices = require('./services/dbServices.js')
-			const ethServices = require('./services/ethService');
-			const housekeeper = require('./housekeeper.js')
-			const spy = jest.spyOn(housekeeper, 'recoverTransactions');
-			var recoverAllMockImpl = () => {
-				return new Promise((resolve, reject) => {
-					resolve([{ transactionHash: "hash" }])
-				})
-			}
-			spy.mockImplementation(recoverAllMockImpl);
-			const dbServicesAddTxMock = jest.spyOn(dbServices.dbCollections.transactions, 'addTx');
-			var dbServicesAddTxMockImpl = function () {
-				done()
-			}
-			dbServicesAddTxMock.mockImplementation(dbServicesAddTxMockImpl);
-			housekeeper.recoverWallet("wallet", "pillarId")
-		});
-	});*/
-
-	describe('The recoverAssetEvents function tests', () => {
-
-		it('should have been called', done => {
-			jest.mock('./services/ethService');
-			jest.mock('./services/dbServices.js')
-			const ethServices = require('./services/ethService');
-			const housekeeper = require('./housekeeper.js')
-			const spy = jest.spyOn(housekeeper, 'recoverAll');
-			var recoverAllMockImpl = () => {
-				return new Promise((resolve, reject) => {
-					resolve([{ txHash: "hash" }])
-				})
-			}
-			spy.mockImplementation(recoverAllMockImpl);
-			const ethServiceGetPastEventMock = jest.spyOn(ethServices, 'getPastEvents');
-			var ethServiceGetPastEventMockImpl = function () {
-					done()
-			}
-			ethServiceGetPastEventMock.mockImplementation(ethServiceGetPastEventMockImpl);
-			housekeeper.recoverAssetEvents("wallet", "pillarId")
-		});
-	});
-
-
 	describe('The init function tests', () => {
 
 		it('should have been called once', done => {
-			jest.restoreAllMocks();
+			jest.mock('web3');
+			jest.mock('redis');
 			const housekeeper = require('./housekeeper.js')
 			housekeeper.init()
 			var processDataMock = jest.spyOn(housekeeper, 'processData')
@@ -138,18 +86,3 @@ describe('Housekeeper unit tests', () => {
 
 		});
 	});
-
-	/*describe('The recoverTransactions function tests', () => {
-
-		it('should have been called', done => {
-			jest.mock('./services/ethService');
-			const housekeeper = require('./housekeeper.js')
-			housekeeper.recoverTransactions(5, 4, "from").then(result => {
-				expect(result).toEqual([{ "status": "0x1" }, { "status": "0x1" }])
-				done()
-			})
-			
-		});
-	});*/
-
-});
