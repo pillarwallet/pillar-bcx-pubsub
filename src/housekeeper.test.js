@@ -11,7 +11,7 @@
 		jest.spyOn(process, 'exit').mockImplementation(() => { });
 	});
 
-	describe('The recoverAll function tests', () => {
+	describe('The recoverAll function tests less than MAX_TOTAL_TRANSACTIONS', () => {
 
 		it('should have been called', done => {
 			jest.mock('./services/ethService');

@@ -19,7 +19,11 @@ module.exports.getLastBlockNumber = () => {
     return 500
 }
 
-module.exports.getAllTransactionsForWallet = () => {
+module.exports.getTransactionCountForWallet = () => {
+    return 50
+}
+
+module.exports.getAllTransactionsForWallet =  () => {
     return [{result:{gasUsed:5}, action: { input: "input", to: "to", from: "from", hash: "hash"}, to: "to", from: "from", hash: "hash" }]
 }
 

@@ -8,8 +8,9 @@ const accountsSchema = Mongoose.Schema({
     {
       protocol: String,
       address: String,
+      status: String
     },
-  ],
+  ]
 });
 
 const Accounts = Mongoose.model('Accounts', accountsSchema);

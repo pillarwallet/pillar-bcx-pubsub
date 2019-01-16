@@ -16,6 +16,8 @@ const abiPath = require('app-root-path') + '/src/abi/';
 const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
+const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS ? process.env.MAX_TOTAL_TRANSACTIONS : 100;
+const CronJob = require('cron').CronJob;
 
 let entry = {};
 let startBlock;
@@ -110,76 +112,39 @@ module.exports.recoverTransactions = recoverTransactions;
 async function recoverAll(wallet, pillarId) {
     try {
         logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
-        var transactions = await ethService.getAllTransactionsForWallet(wallet);
-        logger.info(`Housekeeper.recoverAll - Found ${transactions.length} transactions for wallet - ${wallet}`);
+        var totalTransactions = await ethService.getTransactionCountForWallet(wallet)
+        logger.info(`Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`);
         var index = 0;
-        var totalTransactions;
-        transactions.forEach(async (transaction) => {
-            totalTransactions = transactions.length;
-            var entry;
-            var tmstmp = time.now();
-            var asset, status, value, to, contractAddress;
-            if(transaction.action.input !== '0x') {
-                var theAsset = await dbServices.getAsset(transaction.action.to);
-                contractAddress = theAsset.contractAddress;
-                if(theAsset !== undefined) {
-                    asset = theAsset.symbol;
-                    if(fs.existsSync(abiPath + asset + '.json')) {
-                        const theAbi = require(abiPath + asset + '.json');
-                        abiDecoder.addABI(theAbi);
-                    } else {
-                        abiDecoder.addABI(ERC20ABI);
-                    }
-                } else {
-                    abiDecoder.addABI(ERC20ABI);
-                }
-                var data = abiDecoder.decodeMethod(transaction.action.input);   
-                if ((typeof data !== 'undefined') && (transaction.action.input !== '0x')) {
-                    if(data.name  === 'transfer'){ 
-                        //smart contract call hence the asset must be the token name
-                        to = data.params[0].value;
-                        value = data.params[1].value;
-                    } else {
-                        to = transaction.action.to;
-                        value = transaction.action.value;  
-                    }
-                } else {
-                    to = transaction.action.to;
-                    value = transaction.action.value;
-                }
-            } else {
-                asset = 'ETH';
-                value = parseInt(transaction.action.value,16);
-                to = transaction.action.to;
-                contractAddress = null;
-            }
-            if(typeof transaction.error === 'Reverted') {
-                status = 'failed';
-            } else {
-                status = 'confirmed';
-            }
-            entry = {
-                protocol,
-                pillarId,
-                toAddress: to,
-                fromAddress: transaction.action.from,
-                txHash: transaction.transactionHash,
-                asset,
-                contractAddress: contractAddress,
-                timestamp: tmstmp,
-                value:  value,
-                blockNumber: transaction.blockNumber,
-                status,
-                gasUsed: transaction.result.gasUsed,
-            };
-            logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
-            dbServices.dbCollections.transactions.addTx(entry);
+        if (totalTransactions < MAX_TOTAL_TRANSACTIONS){
+            var transactions = await ethService.getAllTransactionsForWallet(wallet);
+            transactions.forEach(async (transaction) => {
+                index++;
+                processTxn(transaction, wallet, pillarId)
 
-            if(index === totalTransactions) {
-                logger.info(`Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`);
-                return;
-            }
-        });
+                if(index === totalTransactions) {
+                    logger.info(`Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`);
+                    return;
+                }
+            });
+        }else{
+            dbServices.dbCollections.accounts.findByWalletId(pillarId).then((result) => {
+                if (result) {
+                    result.addresses.forEach((acc) => {
+                        if (acc.address === wallet) {
+                            logger.debug('Housekeeper.recoverAll: matched address '+acc.address);
+                            acc.status = "deferred"
+                            result.save((err) => {
+                                if (err) {
+                                    logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
+                                    reject(err);
+                                }
+                                resolve();
+                            });
+                        }
+                    })
+                }
+            });
+        }
         
     }catch(e) {
         logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
@@ -187,6 +152,68 @@ async function recoverAll(wallet, pillarId) {
     }
 }
 module.exports.recoverAll = recoverAll;
+
+
+async function processTxn(transaction, wallet ,pillarId){
+    var entry;
+    var tmstmp = await ethService.getBlockTx(transaction.blockNumber).timestamp
+    var asset, status, value, to, contractAddress;
+    if (transaction.action.input !== '0x') {
+        var theAsset = await dbServices.getAsset(transaction.action.to);
+        contractAddress = theAsset.contractAddress;
+        if (theAsset !== undefined) {
+            asset = theAsset.symbol;
+            if (fs.existsSync(abiPath + asset + '.json')) {
+                const theAbi = require(abiPath + asset + '.json');
+                abiDecoder.addABI(theAbi);
+            } else {
+                abiDecoder.addABI(ERC20ABI);
+            }
+        } else {
+            abiDecoder.addABI(ERC20ABI);
+        }
+        var data = abiDecoder.decodeMethod(transaction.action.input);
+        if ((typeof data !== 'undefined') && (transaction.action.input !== '0x')) {
+            if (data.name === 'transfer') {
+                //smart contract call hence the asset must be the token name
+                to = data.params[0].value;
+                value = data.params[1].value;
+            } else {
+                to = transaction.action.to;
+                value = transaction.action.value;
+            }
+        } else {
+            to = transaction.action.to;
+            value = transaction.action.value;
+        }
+    } else {
+        asset = 'ETH';
+        value = parseInt(transaction.action.value, 16);
+        to = transaction.action.to;
+        contractAddress = null;
+    }
+    if (typeof transaction.error === 'Reverted') {
+        status = 'failed';
+    } else {
+        status = 'confirmed';
+    }
+    entry = {
+        protocol,
+        pillarId,
+        toAddress: to,
+        fromAddress: transaction.action.from,
+        txHash: transaction.transactionHash,
+        asset,
+        contractAddress: contractAddress,
+        timestamp: tmstmp,
+        value: value,
+        blockNumber: transaction.blockNumber,
+        status,
+        gasUsed: transaction.result.gasUsed,
+    };
+    logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
+    dbServices.dbCollections.transactions.addTx(entry);
+}
 
 /**
  * Function to process the newly registered wallets
@@ -238,12 +265,59 @@ function processData(lastId) {
 }
 module.exports.processData = processData;
 
+
+/**
+ * Function that start housekeeper cron 
+ */
+
+async function cronInit() {
+    const job = new CronJob('0/1 0/5 0/1 ? * * *', () => {
+        module.exports.init()
+    });
+    job.start();
+}
+
+module.exports.cronInit = cronInit;
 /**
  * Function that reads from the REDIS server to determine the configuration parameters.
  */
+
+
+
+
+async function launch() {
+    try {
+        client.get('housekeeper', async (err, configStr) => {
+            logger.info(`Housekeeper: Configuration fetched from REDIS = ${configStr}`);
+            if (err || configStr === null || configStr === false) {
+                this.cronInit()
+            } else {
+                var config = JSON.parse(configStr);
+                //check the config parameters to check the status of last run
+                logger.info(`Housekeeper previous runs status: ${config.status}`);
+                if (config.status !== 'completed') {
+                    logger.error('HOUSKEEPER FAILED!! PREVIOUS PROCESS IS STILL RUNNING!!');
+                    entry = config;
+                    process.exit(0);
+                } else {
+                    //the previous run was successful so start process 
+                    this.cronInit()
+                }
+            }
+        });
+    } catch (e) {
+        logger.error(`deferred.launch() failed: ${e.message}`);
+    }
+}
+
+module.exports.launch = launch;
+
+
 async function init() {
     logger.info(`Housekeeper(PID: ${process.pid}) started processing.`);
     this.logMemoryUsage();
+
+    logger.info('starting a cron to run init each 5 minutes');
     try {
         startBlock = await ethService.getLastBlockNumber();
         entry.blockNumber = startBlock - LOOK_BACK_BLOCKS;
@@ -271,6 +345,7 @@ async function init() {
                     process.exit(0);
                 } else {
                     //the previous run was successful so start process 
+                    
                     logger.info(`Housekeeper processing records since last record: ${config.lastId}`);
                     entry.lastId = config.lastId;
                     entry.pid = process.pid;
@@ -282,6 +357,7 @@ async function init() {
                 }
             }
         });
+        logger.info('Started executing deferred.launch()');
     } catch(e) {
         logger.error(`Housekeeper failed with error: ${e}`);
         entry.status = 'failed';
@@ -292,4 +368,7 @@ async function init() {
 }
 module.exports.init = init;
 
-this.init(); 
+
+
+
+this.launch()
