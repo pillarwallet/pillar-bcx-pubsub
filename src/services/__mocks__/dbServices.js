@@ -1,8 +1,9 @@
 const accounts = require('../../controllers/__mocks__/accounts_ctrl.js');
 const assets = require('../../controllers/__mocks__/assets_ctrl.js');
 const transactions = require('../../controllers/__mocks__/transactions_ctrl.js');
+const historicTransactions = require('../../controllers/__mocks__/historic_transactions_ctrl.js');
 
-module.exports.dbCollections = { accounts, assets, transactions };
+module.exports.dbCollections = { accounts, assets, transactions, historicTransactions };
 module.exports.dbConnectDisplayAccounts = () => {};
 module.exports.initDB = () => {};
 module.exports.initDBTxHistory = () => {};

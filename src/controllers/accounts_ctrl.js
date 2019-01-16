@@ -56,6 +56,22 @@ function findByAddress(address) {
 }
 module.exports.findByAddress = findByAddress;
 
+
+function findByStatus(status) {
+  return new Promise(((resolve, reject) => {
+    try {
+      accounts.Accounts.findOne({ "addresses.status": status, protocol: "Ethereum" }, (err, result) => {
+        if (err) {
+          logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
+          reject(err);
+        }
+        resolve(result);
+      });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.findByStatus = findByStatus;
+
 function findByWalletId(pillarId) {
   return new Promise(((resolve, reject) => {
     try {
@@ -70,6 +86,7 @@ function findByWalletId(pillarId) {
   }));
 }
 module.exports.findByWalletId = findByWalletId;
+
 
 function addAddress(pillarId, address) {
   return new Promise(((resolve, reject) => {
