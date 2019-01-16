@@ -1,4 +1,5 @@
 /** @module ethService.js */
+const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
@@ -13,10 +14,13 @@ const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const dbServices = require('./dbServices');
 const hashMaps = require('../utils/hashMaps');
+const redis = require('redis');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
 let wsCnt = 0;
+let client = redis.createClient();
+bluebird.promisifyAll(redis);
 
 
 /**
@@ -180,10 +184,20 @@ function subscribeBlockHeaders() {
                 // Check for pending tx in database and update their status
                 module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
                     logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
-                });
+                });     
                 module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
                 //capture gas price statistics
                 module.exports.storeGasInfo(blockHeader);
+
+                // Check MarketMaker Transactions
+                web3.eth.getBlock(blockHeader.number).then(response => {
+                    response.transactions.forEach(async transaction => {
+                        if(await client.existsAsync(transaction)) {
+                            rmqServices.sendOffersMessage(await getTxInfo(transaction));
+                            client.del(transaction);
+                        }
+                    });
+                });
             }
         })
         .on("error", (err) => {
@@ -437,6 +451,7 @@ function checkPendingTx(pendingTxArray) {
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item.txHash);
+
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
                     }
@@ -644,3 +659,49 @@ async function getAllTransactionsForWallet(wallet) {
     }
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
+
+/**
+ * Gets the transaction info/receipt and returns the transaction object 
+ * @param {string} txHash Transaction hash 
+ */
+async function getTxInfo(txHash) {
+
+    const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
+
+    var to, value, asset, contractAddress;
+    if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
+        to = txInfo.to;
+    } else {
+        const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+        contractAddress = contractDetail.contractAddress;
+        asset = contractDetail.symbol;
+        if(fs.existsSync(abiPath + asset + '.json')) {
+            const theAbi = require(abiPath + asset + '.json');
+            abiDecoder.addABI(theAbi);
+        } else {
+            abiDecoder.addABI(ERC20ABI);
+        }
+        data = abiDecoder.decodeMethod(txInfo.input);
+        if ((data !== undefined) && (data.name === 'transfer')) { 
+            //smart contract call hence the asset must be the token name
+            to = data.params[0].value;
+            value = data.params[1].value;
+        } else {
+            to = txInfo.to;
+        }
+    }
+         return {
+            txHash: txInfo.hash,
+            fromAddress: txInfo.from,
+            toAddress: to,
+            value,
+            asset,
+            contractAddress,
+            status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+            gasPrice: txInfo.gasPrice,
+            gasUsed: txReceipt.gasUsed,
+            blockNumber: txReceipt.blockNumber
+        };
+};
+
+module.exports.getTxInfo = getTxInfo;

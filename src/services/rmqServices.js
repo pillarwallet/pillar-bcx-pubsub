@@ -10,7 +10,9 @@ const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
+let offersChannel;
 const pubSubQueue = 'bcx-pubsub';
+const offersQueue = 'bcx-offers';
 const notificationsQueue = typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined' ?
   process.env.NOTIFICATIONS_QUEUE : 'bcx-notifications';
 const MQ_URL = 'amqp://' + process.env.MQ_BCX_USERNAME + ':' + process.env.MQ_BCX_PASSWORD + '@' + process.env.RABBITMQ_SERVER;
@@ -45,7 +47,8 @@ function initPubSubMQ() {
           });
 
           logger.info('Publisher RMQ Connected');
-          initializePubSubChannel(connection)
+          initializePubSubChannel(connection);
+          initializeOffersChannel(connection);
 
         });
         resolve();
@@ -92,7 +95,18 @@ function initializePubSubChannel(connection) {
 
 module.exports.initializePubSubChannel = initializePubSubChannel;
 
+/**
+ * Function that initialize the connection
+ * @param {any} connection - the connection
+ */
+function initializeOffersChannel(connection) {
+  connection.createChannel((err, ch) => {
+    offersChannel = ch;
+    ch.assertQueue(offersQueue, { durable: true });
+  });
+};
 
+module.exports.initializeOffersChannel = initializeOffersChannel;
 
 /**
  * Calculate checksum of payload
@@ -104,8 +118,20 @@ function calculateChecksum(payload, checksumKey) {
 
 module.exports.calculateChecksum = calculateChecksum;
 
+/**
+ * Function that writes to queue
+ * @param {any} payload - the payload/message to be send to queue
+ */
+function sendOffersMessage(payload) {
 
+  if (!offersChannel){
+    throw new Error("pubSubChannel is not initialized")
+  }
+  offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
+  logger.info(`Message sent to ${offersQueue}, Content: ${payload}`)
+};
 
+module.exports.sendOffersMessage = sendOffersMessage;
 
 /**
  * Function to generate the notification payload thats send to notification queue
