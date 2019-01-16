@@ -10,6 +10,7 @@ const fs = require('fs');
 const abiPath = require('app-root-path') + '/src/abi/';
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./ERC20ABI.json');
+const ERC721ABI = require('./ERC721ABI.json');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const dbServices = require('./dbServices');
@@ -570,76 +571,6 @@ async function addERC721(receipt) {
 }
 module.exports.addERC721 = addERC721;
 
-/**
- * Get past transfer events associated with token
- * @param {String} address - the smart contract address to get events
- * @param {String} symbol - the symbol/ticker of the contract
- * @param {String} eventName - the eventName
- * @param {Number} blockNumber - the block number from which to listen to contract events
- * @param {String} walletAddress - the wallet address relevant to the transaction
- * @param {String} pillarId - The pillarId corresponding to the transactions
- */
-async function getPastEvents(address, symbol, eventName = 'Transfer' ,blockNumber = 0, wallet = undefined, pillarId = undefined) {
-    try {
-        var cnt = 0;
-        var status = 'confirmed';
-        var protocol = 'Ethereum';
-        var tmstmp = time.now();
-        if(module.exports.connect()) {
-            const asset = symbol;
-            var theAbi = ERC20ABI;
-            if(fs.existsSync(abiPath + asset + '.json')) {
-                theAbi = require(abiPath + asset + '.json');
-                logger.info('ethService.getPastEvents() - Fetched ABI for token: ' + asset);
-            }
-            const contract = new web3.eth.Contract(theAbi,address);
-            
-            var events = await contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'});
-            if((events !== null || events !== undefined) && events.length > 0) {
-                var index = 0;
-                var totalEvents = events.length;
-                logger.info(`ethService.getPastEvents(): Fetching ${totalEvents} past events of contract ${address} from block: ${blockNumber}`);
-                events.forEach(async (event) => { 
-                    index++;
-                    if((typeof event.returnValues._to.toLowerCase() === wallet) || (typeof event.returnValues._from.toLowerCase() === wallet)) {
-                        var tran = await dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash);    
-                        if(tran === null) {
-                            cnt++;
-                            let entry = {
-                                pillarId,
-                                protocol,
-                                toAddress: event.returnValues._to,
-                                fromAddress: event.returnValues._from,
-                                txHash: event.transactionHash,
-                                asset,
-                                contractAddress: null,
-                                timestamp: tmstmp,
-                                value: event.returnValues._value,
-                                blockNumber: event.blockNumber,
-                                status,
-                                gasPrice: txn.gasPrice,
-                                gasUsed: txn.gasUsed
-                            };
-                            logger.debug('ethService.getPastEvents(): Saving transaction into the database: ' + entry);
-                            dbServices.dbCollections.transactions.addTx(entry);  
-                        }
-                    }
-                    if(index === totalEvents) {
-                        logger.info(`ethService.getPastEvents(): Recovered ${cnt} transactions for ${wallet} involving asset: ${asset}`);
-                        return;
-                    }
-                });
-            } else {
-                return;
-            }
-        } else {
-            logger.error('ethService.getPastEvents(): Connection to geth failed!'); 
-        }
-    } catch(err) {
-        logger.error(`ethService.getPastEvents(): for contract: ${address} failed with error: ${err}`);
-    }
-}
-module.exports.getPastEvents = getPastEvents;
 
 async function getAllTransactionsForWallet(wallet) {
     try {

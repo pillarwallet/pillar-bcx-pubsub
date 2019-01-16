@@ -1,3 +1,4 @@
+
 let redis = {
     createClient: function () {
         return {
@@ -22,6 +23,7 @@ let redis = {
                 })
             },
             get: function (data, callback) {
+                console.log("is on get")
                 if(typeof callback == "function") {
                     callback(false, JSON.stringify({status:"completed"}))
                 }
@@ -33,7 +35,7 @@ let redis = {
             },
             on: function () {
                 return new Promise((resolve, reject) => {
-                    resolve(false)
+                    resolve("testValue")
                 })
             }
         }
