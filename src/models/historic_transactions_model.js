@@ -46,5 +46,3 @@ const transactionsSchema = Mongoose.Schema({
 const HistoricTransactions = Mongoose.model('HistoricTransactions', transactionsSchema);
 
 module.exports.HistoricTransactions = HistoricTransactions;
-
-

@@ -298,6 +298,68 @@ async function processTxn(transaction, wallet ,pillarId){
     dbServices.dbCollections.transactions.addTx(entry);
 }
 
+
+async function processTxn(transaction, wallet ,pillarId){
+    var entry;
+    var tmstmp = await ethService.getBlockTx(transaction.blockNumber).timestamp
+    var asset, status, value, to, contractAddress;
+    if (transaction.action.input !== '0x') {
+        var theAsset = await dbServices.getAsset(transaction.action.to);
+        contractAddress = theAsset.contractAddress;
+        if (theAsset !== undefined) {
+            asset = theAsset.symbol;
+            if (fs.existsSync(abiPath + asset + '.json')) {
+                const theAbi = require(abiPath + asset + '.json');
+                abiDecoder.addABI(theAbi);
+            } else {
+                abiDecoder.addABI(ERC20ABI);
+            }
+        } else {
+            abiDecoder.addABI(ERC20ABI);
+        }
+        var data = abiDecoder.decodeMethod(transaction.action.input);
+        if ((typeof data !== 'undefined') && (transaction.action.input !== '0x')) {
+            if (data.name === 'transfer') {
+                //smart contract call hence the asset must be the token name
+                to = data.params[0].value;
+                value = data.params[1].value;
+            } else {
+                to = transaction.action.to;
+                value = transaction.action.value;
+            }
+        } else {
+            to = transaction.action.to;
+            value = transaction.action.value;
+        }
+    } else {
+        asset = 'ETH';
+        value = parseInt(transaction.action.value, 16);
+        to = transaction.action.to;
+        contractAddress = null;
+    }
+    if (typeof transaction.error === 'Reverted') {
+        status = 'failed';
+    } else {
+        status = 'confirmed';
+    }
+    entry = {
+        protocol,
+        pillarId,
+        toAddress: to,
+        fromAddress: transaction.action.from,
+        txHash: transaction.transactionHash,
+        asset,
+        contractAddress: contractAddress,
+        timestamp: tmstmp,
+        value: value,
+        blockNumber: transaction.blockNumber,
+        status,
+        gasUsed: transaction.result.gasUsed,
+    };
+    logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
+    dbServices.dbCollections.transactions.addTx(entry);
+}
+
 /**
  * Function to process the newly registered wallets
  * @param {string} lastId - Last processed wallet Id
