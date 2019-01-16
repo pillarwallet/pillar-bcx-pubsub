@@ -209,17 +209,6 @@ describe('The addERC721 function tests', () => {
   });
 });
 
-describe('The getPastEvents function tests', () => {
-  test('should have been called once', done => {
-    const rmqServices = require('./rmqServices');
-    const ethService = require('./ethService');
-    const address = 'string';
-    ethService.getPastEvents([], "symbol", "Transfer", 0, address)
-    const dbServicesMock = jest.spyOn(dbServices.dbCollections.transactions, 'addTx');
-    var doneFn = jest.fn(() => done())
-    dbServicesMock.mockImplementation(doneFn);
-  });
-});
 
 describe('The getAllTransactionsForWallet function tests', () => {
   test('should have been called once', done => {
