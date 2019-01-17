@@ -8,11 +8,18 @@ const dbService = require('./services/dbServices');
 
 function init() {
     dbService.dbConnect().then(async () => {
-        let addresses = await dbService.getAccounts('NEM');
-        nemService.connect().then(() => {
-            nemService.subscribePendingTxn(addresses);
-            nemService.subscribeNewBlock();
+        let accounts = await dbService.getAccounts('NEM');
+        let addresses = [];
+        accounts.forEach((account) => {
+            account.addresses.forEach((address) => {
+                if(address.protocol === 'NEM') {
+                    addresses.push(address);
+                }
+            });
         });
+        nemService.connect();
+        nemService.subscribePendingTxn(addresses);
+        nemService.subscribeNewBlock();
     });
 }
 init();

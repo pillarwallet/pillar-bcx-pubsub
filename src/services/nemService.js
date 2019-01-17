@@ -1,10 +1,10 @@
 /** @module newService.js */
-require('dotenv').config();
 const logger = require('../utils/logger');
 const nemlib = require('nem-library');
-const UnconfirmedTransactionListener = nemlib.UnconfirmedTransactionListener;
-const AccountHttp = nemlib.AccountHttp;
 const NetworkTypes = nemlib.NetworkTypes;
+const UnconfirmedTransactionListener = nemlib.UnconfirmedTransactionListener;
+const NEMAddress = nemlib.Address;
+const AccountHttp = nemlib.AccountHttp;
 const BlockchainListener = nemlib.BlockchainListener;
 const hashMaps = require('../utils/hashMaps');
 const rmqServices = require('./rmqServices.js');
@@ -14,7 +14,8 @@ const protocol = 'NEM';
  * Establish connection to the geth node
  */
 function connect() {
-    nemlib.bootstrap(NetworkTypes.TEST_NET);
+    //nemlib.NEMbootstrap(NetworkTypes.TEST_NET);
+    nemlib.NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
 }
 module.exports.connect = connect;
 
@@ -23,7 +24,8 @@ module.exports.connect = connect;
  */
 function subscribePendingTxn (addresses) {
     addresses.forEach((address) => {
-        const theAddress = new nemlib.address(address);
+        logger.info(`nemService.js - Subscribing to pending transactions for address - ${address.address}`);
+        const theAddress = new NEMAddress(address.address);
         let unconfirmedTransactionListener = new UnconfirmedTransactionListener().given(theAddress);
         unconfirmedTransactionListener.subscribe(tran => {
             hashMaps.pendingTx.set(tran.transactionInfo.hash,JSON.stringify(tran));
@@ -56,8 +58,9 @@ function subscribeNewBlock() {
     let blockchainListener = new BlockchainListener().newBlock();
 
     blockchainListener.subscribe(blockInfo => {
-        logger.info(`nemService.js - new block mined - ${blockInfo.BlockHeight}`);
+        logger.info(`nemService.js - new block mined - ${JSON.stringify(blockInfo.height)}`);
         blockInfo.transactions.forEach((tran) => {
+            console.log("Transaction: ", JSON.stringify(tran));
             if(hashMaps.pendingTx.has(tran)) {
                 //format the output in desired schema
                 const txMsg = {
