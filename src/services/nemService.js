@@ -26,8 +26,10 @@ function subscribePendingTxn (addresses) {
     addresses.forEach((address) => {
         logger.info(`nemService.js - Subscribing to pending transactions for address - ${address.address}`);
         const theAddress = new NEMAddress(address.address);
-        let unconfirmedTransactionListener = new UnconfirmedTransactionListener().given(theAddress);
+        let unconfirmedTransactionListener = new UnconfirmedTransactionListener([{domain: '178.128.23.127'}]).given(theAddress);
         unconfirmedTransactionListener.subscribe(tran => {
+            console.log("Transaction: ",JSON.stringify(tran));
+            /*
             hashMaps.pendingTx.set(tran.transactionInfo.hash,JSON.stringify(tran));
             //PUBLISH THE PENDING TRANSACTION MESSAGE TO SUBSCRIBER
             const txMsg = {
@@ -44,6 +46,7 @@ function subscribePendingTxn (addresses) {
             logger.info(`nemService.js - received a new pending transaction for address - ${address}, tran - ${JSON.stringify(txMsg)}`);
             //send notifications to the subscriber
             rmqServices.sendPubSubMessage(txMsg);
+            */
         }, err => {
             logger.error(`nemService.js - subscribe pending transactions failed with error - ${err}, for address - ${address}`);
         });
@@ -55,12 +58,13 @@ module.exports.subscribePendingTxn = subscribePendingTxn;
  * Subscribe to new blocks on NEM blockchain.
  */
 function subscribeNewBlock() {
-    let blockchainListener = new BlockchainListener().newBlock();
+    let blockchainListener = new BlockchainListener([{domain: '178.128.23.127'}]).newBlock();
 
     blockchainListener.subscribe(blockInfo => {
         logger.info(`nemService.js - new block mined - ${JSON.stringify(blockInfo.height)}`);
+        console.log(JSON.stringify(blockInfo.transactions));
         blockInfo.transactions.forEach((tran) => {
-            console.log("Transaction: ", JSON.stringify(tran));
+            
             if(hashMaps.pendingTx.has(tran)) {
                 //format the output in desired schema
                 const txMsg = {
