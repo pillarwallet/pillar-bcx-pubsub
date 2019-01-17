@@ -1,6 +1,6 @@
 /** @module newService.js */
 require('dotenv').config();
-const logger = require('./utils/logger');
+const logger = require('../utils/logger');
 const nemlib = require('nem-library');
 const UnconfirmedTransactionListener = nemlib.UnconfirmedTransactionListener;
 const AccountHttp = nemlib.AccountHttp;
