@@ -48,6 +48,7 @@
     "sinon": "^6.3.5",
     "sizeof": "^1.0.0",
     "sleep": "^5.2.3",
+    "ts-node": "^7.0.1",
     "unix-timestamp": "^0.2.0",
     "web3": "1.0.0-beta.35",
     "web3-core-helpers": "1.0.0-beta.35"

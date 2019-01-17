@@ -277,3 +277,20 @@ function getAsset(asset) {
     }));
 }
 module.exports.getAsset = getAsset;
+
+function getAccounts(protocol) {
+    logger.debug(`dbServices.getAccounts - Fetching all accounts for protocol - ${protocol}`);
+    return new Promise(((resolve, reject) => {
+        try {
+            if(dbCollections) {
+                dbCollections.accounts.find({"addresses.protocol":protocol}).then((result) => {
+                    resolve(result);
+                });
+            }
+        }catch(e) {
+            logger.error(`dbServices.getAccounts failed with error - ${e}`);
+            reject(e);
+        }
+    }));
+}
+module.exports.getAccounts = getAccounts;
