@@ -3,9 +3,11 @@ require('dotenv').config();
 const logger = require('./utils/logger');
 const nemlib = require('nem-library');
 const UnconfirmedTransactionListener = nemlib.UnconfirmedTransactionListener;
+const AccountHttp = nemlib.AccountHttp;
 const NetworkTypes = nemlib.NetworkTypes;
 const BlockchainListener = nemlib.BlockchainListener;
 const hashMaps = require('../utils/hashMaps');
+const rmqServices = require('./rmqServices.js');
 const protocol = 'NEM';
 
 /**
@@ -24,8 +26,22 @@ function subscribePendingTxn (addresses) {
         const theAddress = new nemlib.address(address);
         let unconfirmedTransactionListener = new UnconfirmedTransactionListener().given(theAddress);
         unconfirmedTransactionListener.subscribe(tran => {
-            //hashMaps.pendingTx.set(address,JSON.stringify(tran));
             hashMaps.pendingTx.set(tran.transactionInfo.hash,JSON.stringify(tran));
+            //PUBLISH THE PENDING TRANSACTION MESSAGE TO SUBSCRIBER
+            const txMsg = {
+                type: 'newTx',
+                protocol: protocol, 
+                fromAddress: tran.signer.address.value,
+                toAddress: tran.recipient.address.value,
+                txHash: tran.transactionInfo.hash,
+                asset: tran._xem.assetId.namespaceId + ':' + tran._xem.assetId.name,
+                timestamp: tran.timeWindow.timeStamp,
+                value: tran._xem.quantity,
+                status: 'pending'
+            };
+            logger.info(`nemService.js - received a new pending transaction for address - ${address}, tran - ${JSON.stringify(txMsg)}`);
+            //send notifications to the subscriber
+            rmqServices.sendPubSubMessage(txMsg);
         }, err => {
             logger.error(`nemService.js - subscribe pending transactions failed with error - ${err}, for address - ${address}`);
         });
@@ -40,14 +56,32 @@ function subscribeNewBlock() {
     let blockchainListener = new BlockchainListener().newBlock();
 
     blockchainListener.subscribe(blockInfo => {
+        logger.info(`nemService.js - new block mined - ${blockInfo.BlockHeight}`);
         blockInfo.transactions.forEach((tran) => {
             if(hashMaps.pendingTx.has(tran)) {
+                //format the output in desired schema
+                const txMsg = {
+                    type: 'updateTx',
+                    protocol: protocol, 
+                    fromAddress: tran.signer.address.value,
+                    toAddress: tran.recipient.address.value,
+                    txHash: tran.transactionInfo.hash,
+                    asset: tran._xem.assetId.namespaceId + '-' + tran._xem.assetId.name,
+                    timestamp: tran.timeWindow.timeStamp,
+                    value: tran._xem.quantity,
+                    gasPrice: tran.fee,
+                    blockNumber: blockInfo.BlockHeight,
+                    status: 'confirmed'
+                };
+                logger.info(`nemService.js - transaction confirmed - ${JSON.stringify(txMsg)}`);
                 //send notifications to the subscriber
-
+                rmqServices.sendPubSubMessage(txMsg);
+                //delete the pending transaction from hashmap
+                hashMaps.pendingTx.delete(tran);
             }
         });
     }, err => {
-        console.log(err);
+        logger.error(`nemService.js - new block subscription failed with error - ${err}`);
     });
 }
 module.exports.subscribeNewBlock = subscribeNewBlock;
@@ -56,9 +90,15 @@ module.exports.subscribeNewBlock = subscribeNewBlock;
 /**
  * Fetch all transactions for a given set of addresses
  */
-function fetchAllTran(addresses) {
-    
+function fetchAllTran(address) {
+    let accountHttp = new AccountHttp();
+    let trans;
+    accountHttp.allTransactions(new Address(address)).subscribe(allTransactions => {
+       trans = JSON.stringify(allTransactions);
+    });
+    console.log(trans);
+    return trans;
 }
-module.exports.subscribeNewBlock = subscribeNewBlock;
+module.exports.fetchAllTran = fetchAllTran;
 
 
