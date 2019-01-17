@@ -87,6 +87,21 @@ function findByWalletId(pillarId) {
 }
 module.exports.findByWalletId = findByWalletId;
 
+function findByProtocol(protocol) {
+  return new Promise(((resolve, reject) => {
+    try {
+      accounts.Accounts.find({ 'addresses.protocol': protocol }, (err, result) => {
+        if (err) {
+          logger.info(`accounts.findByProtocol DB controller ERROR: ${err}`);
+          reject(err);
+        }
+        resolve(result);
+      });
+    } catch (e) { reject(e); }
+  }));
+}
+module.exports.findByProtocol = findByProtocol;
+
 
 function addAddress(pillarId, address) {
   return new Promise(((resolve, reject) => {

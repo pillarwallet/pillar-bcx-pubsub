@@ -283,7 +283,7 @@ function getAccounts(protocol) {
     return new Promise(((resolve, reject) => {
         try {
             if(dbCollections) {
-                dbCollections.accounts.find({"addresses.protocol":protocol}).then((result) => {
+                dbCollections.accounts.findByProtocol(protocol).then((result) => {
                     resolve(result);
                 });
             }
