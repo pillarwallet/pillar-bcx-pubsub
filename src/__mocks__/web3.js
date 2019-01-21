@@ -950,8 +950,6 @@ const tokenTransfer = {
   s: '0x65a02305bdc1f57563cf14a44983db03c2c3e7a8381a8355da11e5972604f8f4',
 };
 
-
-
 const txReceipt = {
   blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
   blockNumber: 2461146,

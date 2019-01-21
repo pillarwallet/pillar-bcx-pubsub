@@ -222,3 +222,13 @@ describe('The getAllTransactionsForWallet function tests', () => {
     done()
   });
 });
+
+describe('The getTxInfo function tests', () => {
+  test('should return the txObject with the same hash', done => {
+    const ethService = require('./ethService');
+    ethService.getTxInfo(Web3.txHash).then(txObject => {
+      expect(txObject.txHash).toBe(Web3.txHash);
+      done();
+    });
+  });
+});
