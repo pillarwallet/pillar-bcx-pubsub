@@ -10,27 +10,29 @@ const CronJob = require('cron').CronJob;
 
 function saveDefferedTransactions(result, entry) {
     try{
-        dbServices.dbCollections.accounts.findByStatus('deferred').then((result) => {
-                if(result){
-                    result.addresses.forEach((acc) => {
-                        if (acc.status === "deferred"){
-                            ethService.getAllTransactionsForWallet(result).then((transactions) => {
-                                var totalTransactions = transactions.length;
-                                logger.info(`deferred.saveDefferedTransactions: started processing for wallet ${acc.address} and recovered ${totalTransactions}`);
-                                dbServices.dbCollections.historicTransactions.addMultipleTx(transactions);
-                                logger.debug('deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added');
-                                acc.status = "deferred_done"
-                                result.save((err) => {
-                                    if (err) {
-                                        logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
-                                        reject(err);
-                                    }
-                                    resolve();
-                                });
-                            })
-                        }
-                    })
-                }
+        dbServices.dbConnect().then(async () => {
+            dbServices.dbCollections.accounts.findByStatus('deferred').then((result) => {
+                    if(result){
+                        result.addresses.forEach((acc) => {
+                            if (acc.status === "deferred"){
+                                ethService.getAllTransactionsForWallet(acc.address).then((transactions) => {
+                                    var totalTransactions = transactions.length;
+                                    logger.info(`deferred.saveDefferedTransactions: started processing for wallet ${acc.address} and recovered ${totalTransactions}`);
+                                    dbServices.dbCollections.historicTransactions.addMultipleTx(transactions).then((transactions) => {
+                                        logger.debug('deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added');
+                                        acc.status = "deferred_done"
+                                        result.save((err) => {
+                                            if (err) {
+                                                logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
+                                                reject(err);
+                                            }
+                                        });
+                                    })
+                                })
+                            }
+                        })
+                    }
+            })
         })
     }catch (e) {
         logger.error('deferred.saveDefferedTransactions failed with error ' + e);
@@ -45,10 +47,11 @@ async function launch() {
     try {
         logger.info('Started executing deferred.launch()');
         logger.info('starting a cron to run saveDefferedTransactions each hour');
-        const job = new CronJob('0/1 0 0/1 ? * * *', () => {
+        const job = new CronJob('0 * * * *', () => {
             module.exports.saveDefferedTransactions();
         });
         job.start();
+        module.exports.saveDefferedTransactions();
     } catch (e) {
         logger.error(`deferred.launch() failed: ${e.message}`);
     }

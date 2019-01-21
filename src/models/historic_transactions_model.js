@@ -5,14 +5,16 @@ const transactionsSchema = Mongoose.Schema({
     action: {
         from: { type: String, required: true },
         gas: { type: String, required: true },
-        init: { type: String, required: true },
+        init: { type: String, required: false },
         value: { type: String, required: true },
+        input: { type: String, required: false },
+        to: { type: String, required: false }
     },
     blockHash: { type: String, required: true },
     blockNumber: { type: Number, required: true },
     result: {
-        address: { type: String, required: true },
-        code: { type: String, required: true },
+        address: { type: String, required: false },
+        code: { type: String, required: false },
         gasUsed: { type: String, required: true },
     },
     transactionHash: { type: String, required: true },

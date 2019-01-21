@@ -127,7 +127,7 @@ async function recoverAll(wallet, pillarId) {
                 }
             });
         }else{
-            dbServices.dbCollections.accounts.findByWalletId(pillarId).then((result) => {
+            dbServices.dbCollections.accounts.findByAddress(wallet).then((result) => {
                 if (result) {
                     result.addresses.forEach((acc) => {
                         if (acc.address === wallet) {
@@ -138,7 +138,6 @@ async function recoverAll(wallet, pillarId) {
                                     logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
                                     reject(err);
                                 }
-                                resolve();
                             });
                         }
                     })
@@ -271,10 +270,11 @@ module.exports.processData = processData;
  */
 
 async function cronInit() {
-    const job = new CronJob('0/1 0/5 0/1 ? * * *', () => {
+    const job = new CronJob('*/5 * * * * *', () => {
         module.exports.init()
     });
     job.start();
+    module.exports.init()
 }
 
 module.exports.cronInit = cronInit;

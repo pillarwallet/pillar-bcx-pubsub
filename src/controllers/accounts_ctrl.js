@@ -44,7 +44,7 @@ module.exports.listRecent = listRecent;
 function findByAddress(address) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ "addresses.address" : address, protocol: "Ethereum" }, (err, result) => {
+      accounts.Accounts.findOne({ "addresses.address": address, "addresses.protocol": "Ethereum" }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -60,7 +60,7 @@ module.exports.findByAddress = findByAddress;
 function findByStatus(status) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ "addresses.status": status, protocol: "Ethereum" }, (err, result) => {
+      accounts.Accounts.findOne({ "addresses.status": status, "addresses.protocol": "Ethereum" }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
