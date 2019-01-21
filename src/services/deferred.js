@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /** @module deferred.js */
-const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
+const diagnostics = require('../utils/diagnostics');
 const dbServices = require('./dbServices.js');
 const ethService = require('./ethService.js');
 const logger = require('../utils/logger');
