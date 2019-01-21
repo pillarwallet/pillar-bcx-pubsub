@@ -736,7 +736,7 @@ async function getTxInfo(txHash) {
         } else {
             abiDecoder.addABI(ERC20ABI);
         }
-        data = abiDecoder.decodeMethod(txInfo.input);
+        const data = abiDecoder.decodeMethod(txInfo.input);
         if ((data !== undefined) && (data.name === 'transfer')) { 
             //smart contract call hence the asset must be the token name
             to = data.params[0].value;
@@ -760,21 +760,3 @@ async function getTxInfo(txHash) {
 };
 
 module.exports.getTxInfo = getTxInfo;
-
-async function getTransactionCountForWallet(wallet) {
-    try {
-
-        logger.info(`ethService.getTransactionCountForWallet(${wallet}) started processing`);
-        if (module.exports.connect()) {
-            var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
-            return transCount
-        } else {
-            logger.error(`ethService.getTransactionCountForWallet() - failed connecting to web3 provider`);
-            return;
-        }
-    } catch (err) {
-        logger.error(`ethService.getTransactionCountForWallet(${wallet}) - failed with error - ${err}`);
-        return;
-    }
-}
-module.exports.getTransactionCountForWallet = getTransactionCountForWallet;

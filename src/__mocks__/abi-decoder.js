@@ -25,6 +25,6 @@ function addABI() {
 module.exports.addABI = addABI;
 
 function decodeMethod() {
-  return ('smart contract call input data');
+  return {name:"transfer", params: [{value:"0xAddress"}, {value:"1"}]};
 }
 module.exports.decodeMethod = decodeMethod;

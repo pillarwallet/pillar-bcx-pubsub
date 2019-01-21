@@ -23,12 +23,13 @@ exports.assets = {
 	values: () => {
 		return ['asset1', 'asset2', 'asset3'];
 	},
+	get: (address) => {
+		return {contractAddress: "0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b", symbol: "ETH"}
+	}
 }
 
 exports.accounts = {
 		has: (address) => {
-			console.log('HASHMAPS ADDRESS')
-			console.log(address)
 			if (address === '0x81b7E08F65Bdf5648606c89998A9CC8164397647'.toLowerCase()) {
 				return true;
 			} else {
