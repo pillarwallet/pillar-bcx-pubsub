@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /** @module publisher.js */
 'use strict';
-const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
+const diagnostics = require('./utils/diagnostics');
 require('dotenv').config();
 const bluebird = require('bluebird');
 const logger = require('./utils/logger');
