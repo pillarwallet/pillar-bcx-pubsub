@@ -428,7 +428,7 @@ function checkPendingTx(pendingTxArray) {
                             } else {
                                 abiDecoder.addABI(ERC20ABI);
                             }
-                            data = abiDecoder.decodeMethod(item.input);
+                            const data = abiDecoder.decodeMethod(item.input);
                             if ((data !== undefined) && (data.name === 'transfer')) { 
                                 //smart contract call hence the asset must be the token name
                                 to = data.params[0].value;
@@ -598,7 +598,6 @@ module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
 async function getTxInfo(txHash) {
 
     const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
-
     var to, value, asset, contractAddress;
     if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
         to = txInfo.to;
@@ -612,7 +611,7 @@ async function getTxInfo(txHash) {
         } else {
             abiDecoder.addABI(ERC20ABI);
         }
-        data = abiDecoder.decodeMethod(txInfo.input);
+        const data = abiDecoder.decodeMethod(txInfo.input);
         if ((data !== undefined) && (data.name === 'transfer')) { 
             //smart contract call hence the asset must be the token name
             to = data.params[0].value;
