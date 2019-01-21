@@ -7,11 +7,12 @@ const dbServices = require('./dbServices.js');
 const ethService = require('./ethService.js');
 const logger = require('../utils/logger');
 const CronJob = require('cron').CronJob;
+const protocol = 'Ethereum'
 
 function saveDefferedTransactions(result, entry) {
     try{
         dbServices.dbConnect().then(async () => {
-            dbServices.dbCollections.accounts.findByStatus('deferred').then((result) => {
+            dbServices.dbCollections.accounts.findByStatus('deferred', protocol).then((result) => {
                     if(result){
                         result.addresses.forEach((acc) => {
                             if (acc.status === "deferred"){
