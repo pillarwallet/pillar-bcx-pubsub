@@ -35,7 +35,7 @@ describe('Test accounts.listAll function', () => {
 		jest.mock('../models/accounts_model.js');
 		const accountsModel = require('../models/accounts_model.js');
 		const spy = jest.spyOn(accountsModel.Accounts, 'findOne');
-		return accountsCtrl.findByAddress('address')
+		return accountsCtrl.findByAddress('address', 'Ethereum')
 		.then(() => {
 			expect(spy).toHaveBeenCalled();
 			done();
