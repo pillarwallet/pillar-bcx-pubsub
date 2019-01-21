@@ -4,7 +4,7 @@ const logger = require('./logger');
 const whitelistedEnvironments = ['staging', 'develop', 'production'];
 
 const sentryConfiguration = {
-  dsn: 'https://1qaz2wsx3edc4rfv@sentry.io/1234567',
+  dsn: 'https://1qaz2wsx3edc4rfv@sentry.io/1289773',
   debug: true,
 };
 
