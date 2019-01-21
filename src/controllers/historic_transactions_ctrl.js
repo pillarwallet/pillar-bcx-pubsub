@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
 Copyright (C) 2019 Stiftung Pillar Project
 
@@ -20,26 +19,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-=======
->>>>>>> First version deferred
 const historicTransactions = require('../models/historic_transactions_model');
 
 
 function addMultipleTx(txObject) {
     return new Promise((resolve, reject) => {
         try {
-<<<<<<< HEAD
             historicTransactions.HistoricTransactions.insertMany(txObject).then(function (mongooseDocuments) {
                resolve()
             })
             .catch(function (err) {
                 
-=======
-            historicTransactions.insert(txObject).then(function (mongooseDocuments) {
-               resolve()
-            })
-            .catch(function (err) {
->>>>>>> First version deferred
                 reject(err)
             });
         } catch (e) { reject(e); }
