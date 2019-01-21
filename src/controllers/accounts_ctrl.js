@@ -41,10 +41,10 @@ function listRecent(idFrom) {
 }
 module.exports.listRecent = listRecent;
 
-function findByAddress(address) {
+function findByAddress(address , protocol) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ "addresses.address": address, "addresses.protocol": "Ethereum" }, (err, result) => {
+      accounts.Accounts.findOne({ "addresses.address": address, "addresses.protocol": protocol }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -57,10 +57,10 @@ function findByAddress(address) {
 module.exports.findByAddress = findByAddress;
 
 
-function findByStatus(status) {
+function findByStatus(status, protocol) {
   return new Promise(((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ "addresses.status": status, "addresses.protocol": "Ethereum" }, (err, result) => {
+      accounts.Accounts.findOne({"addresses.status": status, "addresses.protocol": protocol }, (err, result) => {
         if (err) {
           logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
           reject(err);
