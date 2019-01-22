@@ -30,8 +30,14 @@ const abiPath = require('app-root-path') + '/src/abi/';
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
 const bluebird = require('bluebird');
+
+// Redis
 const redis = require('redis');
-let client = redis.createClient();
+const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+try {
+  redis.createClient(redisOptions);
+  logger.info("Successfully connected to Redis server")
+} catch (e) { logger.error(e) }
 bluebird.promisifyAll(redis);
 
 /**
