@@ -21,8 +21,7 @@ SOFTWARE.
 
 #!/usr/bin/env node*/
 /** @module subscriber.js */
-const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://190ad2a95b2842fbabd4e6c213ac9b9e@sentry.io/1285042' });
+const diagnostics = require('./utils/diagnostics');
 const CronJob = require('cron').CronJob;
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
