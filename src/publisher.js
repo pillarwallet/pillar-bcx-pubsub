@@ -218,6 +218,8 @@ module.exports.initSubscriptions = function () {
       ethService.subscribeTransferEvents(ERC20SmartContract.contractAddress);
     });
   }
+  //subscribe to NEM events
+  
   logger.info('Publisher completed websocket subscriptions.');
 };
 
