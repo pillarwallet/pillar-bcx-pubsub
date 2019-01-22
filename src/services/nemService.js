@@ -46,11 +46,17 @@ function subscribeNewBlock() {
                     trans.txes.forEach((tran) => {
                         console.log("Tran: ", tran.tx);
                         //check if either of the addresses in the transaction is a pillar address
+                        //TODO - Handle multisig transactions
                         if((await client.existsAsync(tran.tx.signer)) || (await client.existsAsync(tran.tx.recipient))) {
                             let asset, quantity;
                             if(typeof tran.tx.mosaics !== "undefined") {
-                                asset = tran.tx.mosaics[0].mosaicId.namespaceId + "-" + tran.tx.mosaics[0].mosaicId.name;
-                                quantity = tran.tx.mosaics[0].quantity;
+                                if(tran.tx.mosaics.length == 1) {
+                                    asset = tran.tx.mosaics[0].mosaicId.namespaceId + "-" + tran.tx.mosaics[0].mosaicId.name;
+                                    quantity = tran.tx.mosaics[0].quantity;
+                                } else {
+                                    //this is a multi asset transfer
+                                    //TODO - handle multi asset transacter
+                                }
                             } else {
                                 asset = 'xem-nem';
                                 quantity = tran.tx.amount;
@@ -78,38 +84,9 @@ function subscribeNewBlock() {
                         }                        
                     })
               } else {
-                console.log("error: ",error);
-                console.log("statusCode: ", response.statusCode);
+                logger.error(`nemService.subscribeNewBlock - error fetching tran data from localhost ${error}`);
             }
         });
-        /*
-        console.log(JSON.stringify(blockInfo.transactions));
-        blockInfo.transactions.forEach((tran) => {
-            //check if either of the addresses in the transaction is a pillar address
-            if((await client.existsAsync(tran.signer.address.value)) || (await client.existsAsync(tran.recipient.value))) {
-                
-                //format the output in desired schema
-                const txMsg = {
-                    type: 'updateTx',
-                    protocol: protocol, 
-                    fromAddress: tran.signer.address.value,
-                    toAddress: tran.recipient.address.value,
-                    txHash: tran.transactionInfo.hash,
-                    asset: tran._xem.assetId.namespaceId + '-' + tran._xem.assetId.name,
-                    timestamp: tran.timeWindow.timeStamp,
-                    value: tran._xem.quantity,
-                    gasPrice: tran.fee,
-                    blockNumber: blockInfo.BlockHeight,
-                    status: 'confirmed'
-                };
-                logger.info(`nemService.js - transaction confirmed - ${JSON.stringify(txMsg)}`);
-                //send notifications to the subscriber
-                rmqServices.sendPubSubMessage(txMsg);
-                //delete the pending transaction from hashmap
-                hashMaps.pendingTx.delete(tran);
-            }
-        });
-        */
     }, err => {
         logger.error(`nemService.js - new block subscription failed with error - ${err}`);
     });
@@ -126,9 +103,7 @@ function fetchAllTran(address) {
     accountHttp.allTransactions(new Address(address)).subscribe(allTransactions => {
        trans = JSON.stringify(allTransactions);
     });
-    console.log(trans);
+    logger.info(`nemService.fethAllTransactions for wallet ${address} - ${trans}`);
     return trans;
 }
 module.exports.fetchAllTran = fetchAllTran;
-
-
