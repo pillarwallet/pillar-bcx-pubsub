@@ -10,14 +10,24 @@ const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
 const bluebird = require('bluebird');
 
-// Redis
+/**
+ * Connecting to Redis
+ */
 const redis = require('redis');
 const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+let client;
 try {
-  redis.createClient(redisOptions);
-  logger.info("Successfully connected to Redis server")
+  client = redis.createClient(redisOptions);
+  logger.info("processTx successfully connected to Redis server")
 } catch (e) { logger.error(e) }
 bluebird.promisifyAll(redis);
+
+/**
+ * Function that subscribes to redis related connection errors.
+ */
+client.on("error", function (err) {
+    logger.error("processTx failed with REDIS client error: " + err);
+  });
 
 /**
  * Store the gas information corresponding to the block

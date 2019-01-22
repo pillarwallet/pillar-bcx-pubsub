@@ -18,12 +18,15 @@ const protocol = 'Ethereum';
 let entry = {};
 let startBlock;
 
-// Redis
+/**
+ * Connecting to Redis
+ */
 const redis = require('redis');
 const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+let client;
 try {
-  redis.createClient(redisOptions);
-  logger.info("Successfully connected to Redis server")
+  client = redis.createClient(redisOptions);
+  logger.info("Housekeeper successfully connected to Redis server")
 } catch (e) { logger.error(e) }
 
 /**
