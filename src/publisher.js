@@ -9,6 +9,7 @@ const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
+const nemService - require('./services/nemService.js');
 const fs = require('fs');
 const GETH_STATUS_FILE = '/tmp/geth_status';
 const redis = require('redis');
@@ -219,6 +220,7 @@ module.exports.initSubscriptions = function () {
     });
   }
   //subscribe to NEM events
+  nemService.subscribeNewBlock();
   
   logger.info('Publisher completed websocket subscriptions.');
 };

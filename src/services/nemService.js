@@ -29,6 +29,7 @@ module.exports.connect = connect;
  * Subscribe to new blocks on NEM blockchain.
  */
 function subscribeNewBlock() {
+    logger.info(`nemService.subscribeNewBlock - subscribing to new NEM blocks from ${NEM_NODE}`);
     let blockchainListener = new BlockchainListener([{domain: NEM_NODE}]).newBlock();
 
     blockchainListener.subscribe(blockInfo => {
