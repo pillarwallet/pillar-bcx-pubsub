@@ -10,10 +10,7 @@ const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 const fs = require('fs');
 const GETH_STATUS_FILE = '/tmp/geth_status';
-const redis = require('redis');
 const CronJob = require('cron').CronJob;
-let client = redis.createClient();;
-bluebird.promisifyAll(redis);
 let latestId = '';
 let runId = 0;
 let MAX_WALLETS = 500000;
@@ -22,6 +19,18 @@ let gethCheck = 0;
 let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
+
+/**
+ * Connecting to Redis
+ */
+const redis = require('redis');
+const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+let client;
+try {
+  client = redis.createClient(redisOptions);
+  logger.info("Publisher successfully connected to Redis server")
+} catch (e) { logger.error(e) }
+bluebird.promisifyAll(redis);
 
 /**
  * Function that subscribes to redis related connection errors.
