@@ -163,7 +163,16 @@ describe('The getPendingTxArray function tests', () => {
       const ethService = require('./ethService');
       const pendingTxArray = [{ toAddress: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b', txHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'}];
       const rmqServiceMock = jest.spyOn(rmqServices, 'sendPubSubMessage');
-      var doneFn = jest.fn(() => done())
+      var doneFn = jest.fn((message) => { 
+        var messageKeys= ['type', 'txHash', 'protocol', 'fromAddress', 'toAddress', 'value',
+          'asset', 'contractAddress', 'status', 'gasUsed', 'blockNumber', 'input']
+        //Check that the message have all the keys
+        var allKeysInArray = messageKeys.every(elem => Object.keys(message).indexOf(elem) > -1);
+        if (allKeysInArray){
+          done() 
+        }
+
+      })
       rmqServiceMock.mockImplementation(doneFn);
       ethService.checkPendingTx(pendingTxArray)
     });

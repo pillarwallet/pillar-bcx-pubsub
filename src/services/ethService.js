@@ -449,7 +449,6 @@ function checkPendingTx(pendingTxArray) {
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item.txHash,
-                                pillarId: item.pillarId,
                                 protocol:  item.protocol,
                                 fromAddress: item.fromAddress,
                                 toAddress: to,
