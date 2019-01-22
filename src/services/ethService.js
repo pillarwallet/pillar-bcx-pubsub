@@ -437,17 +437,28 @@ function checkPendingTx(pendingTxArray) {
                                 to = item.toAddress;
                             }
                         }
-        
+
+                        if(!value){
+                            value = item.value
+                        }
+
+                        if (!asset) {
+                            asset = item.asset
+                        }
+
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item.txHash,
+                                protocol:  item.protocol,
                                 fromAddress: item.fromAddress,
                                 toAddress: to,
                                 value,
                                 asset,
+                                contractAddress: item.contractAddress,
                                 status,
                                 gasUsed,
-                                blockNumber: receipt.blockNumber
+                                blockNumber: receipt.blockNumber,
+                                input: item.input
                             };         
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
