@@ -620,6 +620,16 @@ async function addERC721(receipt) {
 }
 module.exports.addERC721 = addERC721;
 
+function generateList(number) {
+    var lista = []
+    lessNumber = number;
+    while (number > 0) {
+        lista.push(number);
+        number -= 10000
+    }
+    lista.push('earliest')
+    return lista
+}
 
 async function getAllTransactionsForWallet(wallet, fromBlockNumber, toBlockNumber) {
     try {

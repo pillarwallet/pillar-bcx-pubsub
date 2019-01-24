@@ -12,7 +12,7 @@ describe('Deferred unit tests', () => {
 
     describe('The recoverAll function tests', () => {
 
-        it('should have been called', done => {
+        it('should have been called', () => {
             jest.mock('./ethService.js');
             jest.mock('./dbServices.js')
             const ethService = require('./ethService.js')
