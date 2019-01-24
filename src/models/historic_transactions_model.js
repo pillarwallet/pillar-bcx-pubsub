@@ -15,7 +15,7 @@ const transactionsSchema = Mongoose.Schema({
     result: {
         address: { type: String, required: false },
         code: { type: String, required: false },
-        gasUsed: { type: String, required: true },
+        gasUsed: { type: String, required: false },
     },
     transactionHash: { type: String, required: true },
     transactionPosition: { type: Number, required: true },

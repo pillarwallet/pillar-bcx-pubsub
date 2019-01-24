@@ -126,7 +126,7 @@ async function recoverAll(wallet, pillarId) {
                 }
             });
         }else{
-            dbServices.dbCollections.accounts.findByAddress(wallet).then((result) => {
+            dbServices.dbCollections.accounts.findByAddress(wallet, protocol).then((result) => {
                 if (result) {
                     result.addresses.forEach((acc) => {
                         if (acc.address === wallet) {
