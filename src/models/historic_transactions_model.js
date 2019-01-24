@@ -3,10 +3,10 @@ const Mongoose = require('../services/dbServices.js').mongoose;
 // NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
     action: {
-        from: { type: String, required: true },
-        gas: { type: String, required: true },
+        from: { type: String, required: false },
+        gas: { type: String, required: false },
         init: { type: String, required: false },
-        value: { type: String, required: true },
+        value: { type: String, required: false },
         input: { type: String, required: false },
         to: { type: String, required: false }
     },
@@ -17,11 +17,13 @@ const transactionsSchema = Mongoose.Schema({
         code: { type: String, required: false },
         gasUsed: { type: String, required: false },
     },
-    transactionHash: { type: String, required: true },
-    transactionPosition: { type: Number, required: true },
+    transactionHash: { type: String, required: false },
+    transactionPosition: { type: Number, required: false },
     type: { type: String, required: true }
 })
 
 const HistoricTransactions = Mongoose.model('HistoricTransactions', transactionsSchema);
 
 module.exports.HistoricTransactions = HistoricTransactions;
+
+

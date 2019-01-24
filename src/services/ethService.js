@@ -78,6 +78,7 @@ function connect() {
                 });
                 web3._provider.on('end', (eventObj) => {
                     logger.error('Websocket disconnected!! Restarting connection....');
+                    logger.error("ws error"+ eventObj)
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 });
                 web3._provider.on('close',(eventObj) => {
@@ -582,14 +583,32 @@ async function addERC721(receipt) {
 }
 module.exports.addERC721 = addERC721;
 
+function generateList(number) {
+    var lista = []
+    lessNumber = number;
+    while (number > 0) {
+        lista.push(number);
+        number -= 10000
+    }
+    lista.push('earliest')
+    return lista
+}
 
-async function getAllTransactionsForWallet(wallet) {
+async function getAllTransactionsForWallet(wallet, fromBlockNumber, toBlockNumber) {
     try {
 
         logger.info(`ethService.getAllTransactionsForWallet(${wallet}) started processing`);
         if(module.exports.connect()) {
-            var transTo = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "toAddress": [wallet.toLowerCase()]});
-            var transFrom = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "fromAddress": [wallet.toLowerCase()]});
+            if (!fromBlockNumber){
+                fromBlockNumber = 'earliest'
+            }
+
+            if (!toBlockNumber) {
+                toBlockNumber = 'latest'
+            }
+
+            var transTo = await web3.trace.filter({"fromBlock": fromBlockNumber, "toBlock" : toBlockNumber, "toAddress": [wallet.toLowerCase()]});
+            var transFrom = await web3.trace.filter({"fromBlock": fromBlockNumber, "toBlock" : toBlockNumber, "fromAddress": [wallet.toLowerCase()]});
             return transTo.concat(transFrom);
         } else {
             logger.error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
