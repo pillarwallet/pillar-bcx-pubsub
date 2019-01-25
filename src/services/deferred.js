@@ -13,7 +13,7 @@ function generateList(number) {
     var lista = []
     while (number > 0) {
         lista.push(number);
-        number -= 1000
+        number -= 100
     }
     lista.push(0)
     return lista
@@ -27,17 +27,21 @@ function decimalToHexString(number) {
     return "0x"+number.toString(16).toUpperCase();
 }
 
-function saveTransactions(transactions, acc, result){
-    dbServices.dbCollections.historicTransactions.addMultipleTx(transactions).then((transactions) => {
-        logger.debug('deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added');
+function saveTransactions(transactions, acc, result, toBlock){
+    return dbServices.dbCollections.historicTransactions.addMultipleTx(transactions)
+}
+
+
+function setDeferredDone(acc, result){
         acc.status = "deferred_done"
         result.save((err) => {
             if (err) {
                 logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
                 reject(err);
+            }else{
+                logger.info(`accounts.addAddress ${acc.address} saved ok`);
             }
         });
-    })
 }
 
 
@@ -54,7 +58,7 @@ async function saveDefferedTransactions(result, entry) {
                                     logger.info("totaltransacions is" + totalTrans)
                                     var listOfTrans = generateList(lastBlock)
                                     logger.info("list of trans " + listOfTrans.length )
-                                    getTransactions(listOfTrans, 0, acc, result, totalTrans, [])
+                                    getTransactions(listOfTrans, 0, acc, result, totalTrans, 0)
                                 })
                             })
                         }
@@ -70,7 +74,7 @@ async function saveDefferedTransactions(result, entry) {
 module.exports.saveDefferedTransactions = saveDefferedTransactions;
 
 
-function getTransactions(listOfTrans, i, acc, result, totalTrans, transList){
+function getTransactions(listOfTrans, i, acc, result, totalTrans, transListCount){
        
         var toBlock = decimalToHexString(listOfTrans[i + 1])
         var fromBlock
@@ -79,26 +83,31 @@ function getTransactions(listOfTrans, i, acc, result, totalTrans, transList){
         }else{
             fromBlock = decimalToHexString(listOfTrans[i] + 1 )
         }
-        logger.info(`deferred.getTransactions: started processing for wallet ${acc.address} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transList.length}`);
+    logger.info(`deferred.getTransactions: started processing for wallet ${acc.address} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`);
         ethService.getAllTransactionsForWallet(acc.address, toBlock, fromBlock).then((transactions) => {
             if (transactions && transactions.length >0){
               
                 var totalTransactions = transactions.length
-                logger.info(`found transactions ${totalTransactions} `)
                 if (totalTransactions > 0){
-                    transList = transList.concat(transactions)
+                    transListCount += totalTransactions
                 }
-                var transListLength = transList.length
-                if (transListLength >= totalTrans) {
-                    logger.info(`finished, transListLength ${transListLength} totalTrans  ${totalTrans}`)
-                    // saveTransactions(transList, acc, result)
-                    return
-                }else{
-                    getTransactions(listOfTrans, i + 1, acc, result, totalTrans, transList)
-                }
-                logger.info(`deferred.getTransactions: started processing for wallet ${acc.address} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListLength} total trans ${totalTrans}`);
+                saveTransactions(transactions).then((transactions) => {
+                    logger.debug('deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added');
+                    if (toBlock == "0x0") {
+                        logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
+                        setDeferredDone(acc, result)
+                    }else{
+                        getTransactions(listOfTrans, i + 1, acc, result, totalTrans, transListCount)
+                    }
+                    logger.info(`deferred.getTransactions: started processing for wallet ${acc.address} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`);
+                })
             }else{
-                getTransactions(listOfTrans, i + 1, acc, result, totalTrans, transList)
+                if (toBlock == "0x0") {
+                    logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
+                    setDeferredDone(acc, result)
+                }else{
+                    getTransactions(listOfTrans, i + 1, acc, result, totalTrans, transListCount)
+                }
             }
 
         })
@@ -108,8 +117,8 @@ function getTransactions(listOfTrans, i, acc, result, totalTrans, transList){
 async function launch() {
     try {
         logger.info('Started executing deferred.launch()');
-        logger.info('starting a cron to run saveDefferedTransactions each hour');
-        const job = new CronJob('0 * * * *', () => {
+        logger.info('starting a cron to run saveDefferedTransactions each 20 minutes');
+        const job = new CronJob('*/20 * * * *', () => {
             module.exports.saveDefferedTransactions();
         });
         job.start();
