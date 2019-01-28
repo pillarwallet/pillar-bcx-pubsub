@@ -1,4 +1,25 @@
-#!/usr/bin/env node
+/*
+Copyright (C) 2019 Stiftung Pillar Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+#!/usr/bin/env node*/
 'use strict';
 /** @module housekeeper.js */
 const diagnostics = require('./utils/diagnostics');
@@ -67,7 +88,7 @@ async function checkTxPool() {
                             logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
                             //update the status of the transaction
                             let status;
-                            if(receipt.status === '0x1') { 
+                            if(receipt.status === '0x1') {
                                 status = 'confirmed';
                             } else {
                                 status = 'failed';
@@ -97,7 +118,7 @@ module.exports.checkTxPool = checkTxPool;
 
 async function recoverTransactions(startBlock, endBlock, walletId) {
     var transactions = [];
-    for(var i = startBlock; i >= endBlock; i--) { 
+    for(var i = startBlock; i >= endBlock; i--) {
         var txns = await ethService.getBlockTx(i);
         txns.transactions.forEach(async (txn) => {
             if(txn.from.toLowerCase() === walletId || (txn.to !== null && txn.to.toLowerCase() === walletId)) {
@@ -141,7 +162,7 @@ async function recoverWallet(walletId, pillarId, nbBlocks) {
                     asset = theAsset.symbol;
                     abiDecoder.addABI(ERC20ABI);
                     data = abiDecoder.decodeMethod(receipt.input);
-                    if ((data !== undefined) && (data.name === 'transfer')) { 
+                    if ((data !== undefined) && (data.name === 'transfer')) {
                         //smart contract call hence the asset must be the token name
                         to = data.params[0].value;
                         value = data.params[1].value;
@@ -152,7 +173,7 @@ async function recoverWallet(walletId, pillarId, nbBlocks) {
                     }
                 } else {
                     asset = 'ETH';
-                    value = receipt.value; 
+                    value = receipt.value;
                 }
                 var tran = await dbServices.dbCollections.transactions.findOneByTxHash(hash);
                 if (tran === null) {
@@ -176,7 +197,7 @@ async function recoverWallet(walletId, pillarId, nbBlocks) {
                 }
                 //log after all processing
                 if(index === totalTransactions) {
-                    logger.info(`Housekeeper.recoverWallet(): finished recovering ${cnt} transactions for wallets: ${walletId}`);    
+                    logger.info(`Housekeeper.recoverWallet(): finished recovering ${cnt} transactions for wallets: ${walletId}`);
                     return;
                 }
             });
@@ -185,7 +206,7 @@ async function recoverWallet(walletId, pillarId, nbBlocks) {
             return;
         }
     }catch(e) {
-        logger.error(`Housekeeper.recoverWallet(): Failed with error ${e}`); 
+        logger.error(`Housekeeper.recoverWallet(): Failed with error ${e}`);
         return new Promise.reject(new Error(e));
     }
 }
@@ -220,7 +241,7 @@ async function recoverAssetEvents(wallet,pillarId) {
 module.exports.recoverAssetEvents = recoverAssetEvents;
 
 /**
- * 
+ *
  * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
@@ -250,15 +271,15 @@ async function recoverAll(wallet, pillarId) {
                 } else {
                     abiDecoder.addABI(ERC20ABI);
                 }
-                var data = abiDecoder.decodeMethod(transaction.action.input);   
+                var data = abiDecoder.decodeMethod(transaction.action.input);
                 if ((typeof data !== 'undefined') && (transaction.action.input !== '0x')) {
-                    if(data.name  === 'transfer'){ 
+                    if(data.name  === 'transfer'){
                         //smart contract call hence the asset must be the token name
                         to = data.params[0].value;
                         value = data.params[1].value;
                     } else {
                         to = transaction.action.to;
-                        value = transaction.action.value;  
+                        value = transaction.action.value;
                     }
                 } else {
                     to = transaction.action.to;
@@ -297,7 +318,7 @@ async function recoverAll(wallet, pillarId) {
                 return;
             }
         });
-        
+
     }catch(e) {
         logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
         return;
@@ -387,7 +408,7 @@ async function init() {
                     entry = config;
                     process.exit(0);
                 } else {
-                    //the previous run was successful so start process 
+                    //the previous run was successful so start process
                     logger.info(`Housekeeper processing records since last record: ${config.lastId}`);
                     entry.lastId = config.lastId;
                     entry.pid = process.pid;
