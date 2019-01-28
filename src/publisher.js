@@ -19,12 +19,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 #!/usr/bin/env node*/
 =======
 */
 #!/usr/bin/env node
 >>>>>>> Added copyright disclaimer
+=======
+
+#!/usr/bin/env node*/
+>>>>>>> Commented out usr/bin/env node, cause tests to fail
 /** @module publisher.js */
 'use strict';
 const diagnostics = require('./utils/diagnostics');
