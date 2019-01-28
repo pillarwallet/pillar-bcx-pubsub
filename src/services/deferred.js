@@ -10,13 +10,13 @@ const protocol = 'Ethereum'
 
 
 function generateList(number) {
-    var lista = []
+    var list = []
     while (number > 0) {
-        lista.push(number);
-        number -= 100
+        list.push(number);
+        number -= 500
     }
-    lista.push(0)
-    return lista
+    list.push(0)
+    return list
 }
 
 function decimalToHexString(number) {
@@ -45,7 +45,7 @@ function setDeferredDone(acc, result){
 }
 
 
-async function saveDefferedTransactions(result, entry) {
+async function saveDefferedTransactions() {
     try{
         dbServices.dbConnect().then(async () => {
             dbServices.dbCollections.accounts.findByStatus('deferred', protocol).then((result) => {
