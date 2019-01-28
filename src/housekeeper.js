@@ -1,4 +1,25 @@
-#!/usr/bin/env node
+/*
+Copyright (C) 2019 Stiftung Pillar Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+#!/usr/bin/env node*/
 'use strict';
 /** @module housekeeper.js */
 const diagnostics = require('./utils/diagnostics');
@@ -59,7 +80,7 @@ async function checkTxPool() {
                             logger.debug('Housekeeper.checkTxPool(): checking status of txn : ' + receipt.transactionHash);
                             //update the status of the transaction
                             let status;
-                            if(receipt.status === '0x1') { 
+                            if(receipt.status === '0x1') {
                                 status = 'confirmed';
                             } else {
                                 status = 'failed';
@@ -89,7 +110,7 @@ module.exports.checkTxPool = checkTxPool;
 
 async function recoverTransactions(startBlock, endBlock, walletId) {
     var transactions = [];
-    for(var i = startBlock; i >= endBlock; i--) { 
+    for(var i = startBlock; i >= endBlock; i--) {
         var txns = await ethService.getBlockTx(i);
         txns.transactions.forEach(async (txn) => {
             if(txn.from.toLowerCase() === walletId || (txn.to !== null && txn.to.toLowerCase() === walletId)) {
@@ -104,7 +125,7 @@ module.exports.recoverTransactions = recoverTransactions;
 
 
 /**
- * 
+ *
  * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
@@ -143,7 +164,7 @@ async function recoverAll(wallet, pillarId) {
                 }
             });
         }
-        
+
     }catch(e) {
         logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
         return;
@@ -265,7 +286,7 @@ module.exports.processData = processData;
 
 
 /**
- * Function that start housekeeper cron 
+ * Function that start housekeeper cron
  */
 
 async function cronInit() {
@@ -299,7 +320,7 @@ async function launch() {
                     entry = config;
                     process.exit(0);
                 } else {
-                    //the previous run was successful so start process 
+                    //the previous run was successful so start process
                     this.cronInit()
                 }
             }
@@ -343,8 +364,8 @@ async function init() {
                     entry = config;
                     process.exit(0);
                 } else {
-                    //the previous run was successful so start process 
-                    
+                    //the previous run was successful so start process
+
                     logger.info(`Housekeeper processing records since last record: ${config.lastId}`);
                     entry.lastId = config.lastId;
                     entry.pid = process.pid;
