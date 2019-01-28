@@ -19,6 +19,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+<<<<<<< HEAD
+=======
+
+>>>>>>> Added copyright disclaimer
 var runId = process.argv[2];
 describe('Test init functions ', () => {
 

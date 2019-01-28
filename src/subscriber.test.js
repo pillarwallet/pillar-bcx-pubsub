@@ -19,7 +19,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+<<<<<<< HEAD
 
+=======
+>>>>>>> Added copyright disclaimer
 const rmqServices = require('./services/rmqServices.js');
 const CronJob = require('cron').CronJob;
 
