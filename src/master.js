@@ -18,8 +18,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
-#!/usr/bin/env node
+
+#!/usr/bin/env node */
 /** @module master.js */
 const diagnostics = require('./utils/diagnostics');
 
@@ -130,7 +130,7 @@ module.exports.launch = function () {
                   module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
                 }
               });
-            } 
+            }
           });
         }
       } catch(e) {
