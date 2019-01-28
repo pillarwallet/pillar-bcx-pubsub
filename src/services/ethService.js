@@ -1,3 +1,4 @@
+
 /** @module ethService.js */
 const bluebird = require('bluebird');
 const logger = require('../utils/logger');
@@ -78,7 +79,6 @@ function connect() {
                 });
                 web3._provider.on('end', (eventObj) => {
                     logger.error('Websocket disconnected!! Restarting connection....');
-                    logger.error("ws error"+ eventObj)
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 });
                 web3._provider.on('close',(eventObj) => {
@@ -583,16 +583,6 @@ async function addERC721(receipt) {
 }
 module.exports.addERC721 = addERC721;
 
-function generateList(number) {
-    var lista = []
-    lessNumber = number;
-    while (number > 0) {
-        lista.push(number);
-        number -= 10000
-    }
-    lista.push('earliest')
-    return lista
-}
 
 async function getAllTransactionsForWallet(wallet, fromBlockNumber, toBlockNumber) {
     try {
@@ -672,6 +662,7 @@ async function getTransactionCountForWallet(wallet) {
         logger.info(`ethService.getTransactionCountForWallet(${wallet}) started processing`);
         if (module.exports.connect()) {
             var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
+            logger.info(`ethService.getTransactionCountForWallet(${wallet}) resolved ${transCount}`);
             return transCount
         } else {
             logger.error(`ethService.getTransactionCountForWallet() - failed connecting to web3 provider`);

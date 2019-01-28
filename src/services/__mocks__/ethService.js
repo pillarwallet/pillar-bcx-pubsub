@@ -16,11 +16,15 @@ module.exports.getPastEvents = () => {
 }
 
 module.exports.getLastBlockNumber = () => {
-    return 500
+    return new Promise((resolve, reject) => {
+     resolve(500)
+    })
 }
 
 module.exports.getTransactionCountForWallet = () => {
-    return 50
+    return new Promise((resolve, reject) => {
+        resolve(50)
+    })
 }
 
 module.exports.getAllTransactionsForWallet =  () => {

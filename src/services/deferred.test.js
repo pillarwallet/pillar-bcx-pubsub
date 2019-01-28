@@ -12,7 +12,7 @@ describe('Deferred unit tests', () => {
 
     describe('The recoverAll function tests', () => {
 
-        it('should have been called', () => {
+        it('should have been called', done => {
             jest.mock('./ethService.js');
             jest.mock('./dbServices.js')
             const ethService = require('./ethService.js')
@@ -117,7 +117,7 @@ describe('Deferred unit tests', () => {
 
 
             const deferred = require('./deferred.js')
-            deferred.saveDefferedTransactions({ wallet: "address1", pillarId:"pillarId"})
+            deferred.saveDefferedTransactions()
         });
     });
 
