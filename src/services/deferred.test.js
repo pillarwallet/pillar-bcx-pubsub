@@ -117,7 +117,7 @@ describe('Deferred unit tests', () => {
 
 
             const deferred = require('./deferred.js')
-            deferred.saveDefferedTransactions({ wallet: "address1", pillarId:"pillarId"})
+            deferred.saveDefferedTransactions()
         });
     });
 

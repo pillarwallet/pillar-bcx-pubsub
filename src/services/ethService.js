@@ -1,3 +1,4 @@
+
 /** @module ethService.js */
 const bluebird = require('bluebird');
 const logger = require('../utils/logger');
@@ -583,13 +584,21 @@ async function addERC721(receipt) {
 module.exports.addERC721 = addERC721;
 
 
-async function getAllTransactionsForWallet(wallet) {
+async function getAllTransactionsForWallet(wallet, fromBlockNumber, toBlockNumber) {
     try {
 
         logger.info(`ethService.getAllTransactionsForWallet(${wallet}) started processing`);
         if(module.exports.connect()) {
-            var transTo = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "toAddress": [wallet.toLowerCase()]});
-            var transFrom = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "fromAddress": [wallet.toLowerCase()]});
+            if (!fromBlockNumber){
+                fromBlockNumber = 'earliest'
+            }
+
+            if (!toBlockNumber) {
+                toBlockNumber = 'latest'
+            }
+
+            var transTo = await web3.trace.filter({"fromBlock": fromBlockNumber, "toBlock" : toBlockNumber, "toAddress": [wallet.toLowerCase()]});
+            var transFrom = await web3.trace.filter({"fromBlock": fromBlockNumber, "toBlock" : toBlockNumber, "fromAddress": [wallet.toLowerCase()]});
             return transTo.concat(transFrom);
         } else {
             logger.error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
@@ -653,6 +662,7 @@ async function getTransactionCountForWallet(wallet) {
         logger.info(`ethService.getTransactionCountForWallet(${wallet}) started processing`);
         if (module.exports.connect()) {
             var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
+            logger.info(`ethService.getTransactionCountForWallet(${wallet}) resolved ${transCount}`);
             return transCount
         } else {
             logger.error(`ethService.getTransactionCountForWallet() - failed connecting to web3 provider`);
