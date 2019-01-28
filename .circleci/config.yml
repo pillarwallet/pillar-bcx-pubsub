@@ -33,6 +33,23 @@ jobs:
           path: ./reports/
           destination: reports
 
+  whitesource:
+    working_directory: ~/pillar-bcx-pubsub
+    docker:
+      - image: circleci/openjdk:8-node-browsers
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/pillar-bcx-pubsub/workspace
+      - run :
+          name: Setup WhiteSource
+          command: curl -LJO https://github.com/whitesource/fs-agent-distribution/raw/master/standAlone/wss_agent.sh
+      - run:
+          name: execute whitesource
+          command: |
+            cd .whitesource/
+            chmod +x wss_agent.sh && ./wss_agent.sh -apiKey $WHITESOURCE_API_KEY -c ./whitesource-fs-agent.config  -project pillar-bcx-pubsub -f files.list
+
   publish:
     working_directory: ~/pillar-bcx-pubsub
     docker:
@@ -61,6 +78,9 @@ workflows:
   test_and_publish:
     jobs:
       - build
+      - whitesource:
+          requires:
+             - build
       - publish:
           requires:
              - build
