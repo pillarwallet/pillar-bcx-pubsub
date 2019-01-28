@@ -54,10 +54,10 @@ async function saveDefferedTransactions() {
                         if (acc.status === "deferred"){
                             ethService.getTransactionCountForWallet(acc.address).then((totalTrans) => {
                                 ethService.getLastBlockNumber().then((lastBlock) => {
-                                    logger.info("lastblock is" + lastBlock)
-                                    logger.info("totaltransacions is" + totalTrans)
+                                    logger.debug("lastblock is " + lastBlock)
+                                    logger.debug("totaltransacions is " + totalTrans)
                                     var listOfTrans = generateList(lastBlock)
-                                    logger.info("list of trans " + listOfTrans.length )
+                                    logger.debug("list of trans " + listOfTrans.length )
                                     getTransactions(listOfTrans, 0, acc, result, totalTrans, 0)
                                 })
                             })
