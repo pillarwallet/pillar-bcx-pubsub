@@ -1,4 +1,25 @@
-#!/usr/bin/env node
+/*
+Copyright (C) 2019 Stiftung Pillar Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+#!/usr/bin/env node*/
 /** @module publisher.js */
 'use strict';
 const Sentry = require('@sentry/node');
@@ -45,9 +66,9 @@ client.on("error", function (err) {
  */
 memwatch.on('stats',function(stats) {
   logger.info('Publisher: GARBAGE COLLECTION: ' + JSON.stringify(stats));
-  logger.info('Size of hashmaps:  Assets= ' + hashMaps.assets.keys().length + 
+  logger.info('Size of hashmaps:  Assets= ' + hashMaps.assets.keys().length +
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
-  logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
+  logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) +
               ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
 });
 
@@ -63,7 +84,7 @@ process.on('message', async (data) => {
   try {
     const { message } = data;
     logger.info(`Publisher has received message from master: ${data.type}`);
-    
+
     if (data.type === 'accounts') {
       logger.info(`Publisher received accounts: ${message.length} to monitor.`);
       for (let i = 0; i < message.length; i++) {
@@ -135,7 +156,7 @@ module.exports.initIPC = function () {
           }
         });
       }, 100);
-  
+
       logger.info('Publisher starting a cron to poll master for new wallets every 5 seconds');
       const job = new CronJob('*/5 * * * * *',() => {
         module.exports.poll();
@@ -190,10 +211,10 @@ module.exports.poll = function () {
   var total = Math.round((mem.heapTotal*10.0) / (1024*1024*10.0),2);
   var external = Math.round((mem.external*10.0) / (1024*1024*10.0),2);
   // request new wallets
-  logger.info('Size of hashmaps: Assets= ' + hashMaps.assets.keys().length + 
+  logger.info('Size of hashmaps: Assets= ' + hashMaps.assets.keys().length +
               ', PendingTx= ' + hashMaps.pendingTx.keys().length + ', PendingAssets= ' + hashMaps.pendingAssets.keys().length);
-  logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) + 
-              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));             
+  logger.info('Hashmap size: Assets= ' + sizeof.sizeof(hashMaps.assets,true) +
+              ', PendingTx= ' + sizeof.sizeof(hashMaps.pendingTx,true) + ', PendingAssets= ' + sizeof.sizeof(hashMaps.pendingAssets,true));
   logger.info(`Publisher - PID: ${process.pid}, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`);
   logger.info(`LAST PROCESSED BLOCK= ${LAST_BLOCK_NUMBER}, LATEST BLOCK NUMBER= ${hashMaps.LATEST_BLOCK_NUMBER}`);
   process.send({ type: 'wallet.request', message: latestId });
@@ -220,4 +241,3 @@ module.exports.initSubscriptions = function () {
 };
 
 this.initIPC();
-
