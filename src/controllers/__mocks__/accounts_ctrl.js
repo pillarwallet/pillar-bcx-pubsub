@@ -34,13 +34,6 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function getFCMIID() {
-  const FCMIID = 'FCMIID';
-  return new Promise(((resolve) => {
-    resolve(FCMIID);
-  }));
-}
-module.exports.getFCMIID = getFCMIID;
 
 function findByAddress(address) {
   return new Promise(((resolve) => {
@@ -52,3 +45,20 @@ function findByAddress(address) {
 }
 module.exports.findByAddress = findByAddress;
 
+
+function findByWalletId(address) {
+  return new Promise((resolve) => {
+    resolve({ save: (closure) => { closure(false) }, addresses: [{ address: "address1", status: "deferrred" }, { save: (closure) => { closure(false) }, address: "address2", status: null }], pillarId: 'pillarId' })
+  })
+}
+
+module.exports.findByWalletId = findByWalletId;
+
+
+function findByStatus(status) {
+  return new Promise((resolve) => {
+    resolve({ save: (closure) => { closure(false) }, addresses: [{ address: "address1", status: status }, { save: (closure) => { closure(false) }, address: "address2", status: null }], pillarId: 'pillarId' })
+  })
+}
+
+module.exports.findByStatus = findByStatus;

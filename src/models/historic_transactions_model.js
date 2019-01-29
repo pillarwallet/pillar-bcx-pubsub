@@ -19,44 +19,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const events = require('events');
+const Mongoose = require('../services/dbServices.js').mongoose;
 
-const connection = new events.EventEmitter();
+// NEW DB SCHEMA
+const transactionsSchema = Mongoose.Schema({
+    action: {
+        from: { type: String, required: false },
+        gas: { type: String, required: false },
+        init: { type: String, required: false },
+        value: { type: String, required: false },
+        input: { type: String, required: false },
+        to: { type: String, required: false }
+    },
+    blockHash: { type: String, required: true },
+    blockNumber: { type: Number, required: true },
+    result: {
+        address: { type: String, required: false },
+        code: { type: String, required: false },
+        gasUsed: { type: String, required: false },
+    },
+    transactionHash: { type: String, required: false },
+    transactionPosition: { type: Number, required: false },
+    type: { type: String, required: true }
+})
 
-connection.connect = function (dbUrl) {
-	this.emit('open');
-	/*
-  if (dbUrl === 'mongodb://127.0.0.1:27017/PillarBCX') {
-    this.emit('open');
-  } else {
-    this.emit('error');
-  }
-  */
-};
-module.exports.connection = connection;
+const HistoricTransactions = Mongoose.model('HistoricTransactions', transactionsSchema);
 
-function connect(dbUrl, useMongoClient) {
-  return new Promise(((resolve, reject) => {
-    try {
-      module.exports.connection.connect(dbUrl, useMongoClient);
-      resolve();
-    } catch (e) {
-      reject();
-    }
-  }));
-}
-module.exports.connect = connect;
+module.exports.HistoricTransactions = HistoricTransactions;
 
 
-var types = {
-  ObjectId: () =>{}
-}
-module.exports.Types = types
-
-function Schema() {}
-module.exports.Schema = Schema;
-
-function model() {
-  return ('model');
-}
-module.exports.model = model;
