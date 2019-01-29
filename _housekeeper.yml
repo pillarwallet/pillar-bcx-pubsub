@@ -1,0 +1,21 @@
+apps:
+  - script : ./src/housekeeper.js
+    args: '--protocol=XXX'
+    instances: XXX
+
+    env:
+      SERVER: XXX
+      MONGO_USER: XXX
+      MONGO_PWD: XXX
+      DBNAME: XXX
+      GETH_NODE_URL: XXX
+      GETH_NODE_PORT: XXX
+      CHECKSUM_KEY: XXX
+      RABBITMQ_SERVER: XXX
+      MQ_BCX_USERNAME: XXX
+      MQ_BCX_PASSWORD: XXX
+      NOTIFICATIONS_QUEUE: XXX
+      PUB_SUB_QUEUE: XXX
+      MAX_TOTAL_TRANSACTIONS: XXX
+      LOGS_DIR: XXX
+      LOGS_LEVEL: XXX
