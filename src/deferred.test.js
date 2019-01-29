@@ -34,10 +34,10 @@ describe('Deferred unit tests', () => {
     describe('The recoverAll function tests', () => {
 
         it('should have been called', done => {
-            jest.mock('./ethService.js');
-            jest.mock('./dbServices.js')
-            const ethService = require('./ethService.js')
-            const dbServices = require('./dbServices.js')
+            jest.mock('./services/ethService');
+            jest.mock('./services/dbServices')
+            const ethService = require('./services/ethService')
+            const dbServices = require('./services/dbServices')
             const getAllTransactionsForWalletMock = jest.spyOn(ethService, 'getAllTransactionsForWallet');
             const ret = [
                 {
@@ -142,4 +142,26 @@ describe('Deferred unit tests', () => {
         });
     });
 
+    describe('decimal and generate list function tests', () => {
+
+    describe('decimal to string function tests', () => {
+
+        it('should have been called', () => {
+            const deferred = require('./deferred.js')
+            var number= deferred.decimalToHexString(1)
+            expect(number).toEqual("0x1")
+        })
+    })
+
+    describe('generate list function tests', () => {
+
+        it('should have been called', () => {
+            const deferred = require('./deferred.js')
+            var list = deferred.generateList(1000)
+            expect(list).toEqual([1000, 500, 0])
+        })
+    })
+
 });
+
+})

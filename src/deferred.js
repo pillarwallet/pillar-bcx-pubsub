@@ -22,10 +22,10 @@ SOFTWARE.
 #!/usr/bin/env node*/
 'use strict';
 /** @module deferred.js */
-const diagnostics = require('../utils/diagnostics');
-const dbServices = require('./dbServices.js');
-const ethService = require('./ethService.js');
-const logger = require('../utils/logger');
+const diagnostics = require('./utils/diagnostics');
+const dbServices = require('./services/dbServices');
+const ethService = require('./services/ethService');
+const logger = require('./utils/logger');
 const CronJob = require('cron').CronJob;
 const protocol = 'Ethereum'
 
@@ -40,6 +40,8 @@ function generateList(number) {
     return list
 }
 
+module.exports.generateList = generateList;
+
 function decimalToHexString(number) {
     if (number < 0) {
         number = 0xFFFFFFFF + number + 1;
@@ -47,6 +49,9 @@ function decimalToHexString(number) {
 
     return "0x"+number.toString(16).toUpperCase();
 }
+
+module.exports.decimalToHexString = decimalToHexString;
+
 
 function saveTransactions(transactions, acc, result, toBlock){
     return dbServices.dbCollections.historicTransactions.addMultipleTx(transactions)
