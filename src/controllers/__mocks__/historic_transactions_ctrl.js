@@ -19,44 +19,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const events = require('events');
 
-const connection = new events.EventEmitter();
 
-connection.connect = function (dbUrl) {
-	this.emit('open');
-	/*
-  if (dbUrl === 'mongodb://127.0.0.1:27017/PillarBCX') {
-    this.emit('open');
-  } else {
-    this.emit('error');
-  }
-  */
-};
-module.exports.connection = connection;
-
-function connect(dbUrl, useMongoClient) {
-  return new Promise(((resolve, reject) => {
-    try {
-      module.exports.connection.connect(dbUrl, useMongoClient);
-      resolve();
-    } catch (e) {
-      reject();
-    }
-  }));
+function addMultipleTx(txObject) {
+    return new Promise((resolve, reject) => {
+       resolve()
+          
+    });
 }
-module.exports.connect = connect;
-
-
-var types = {
-  ObjectId: () =>{}
-}
-module.exports.Types = types
-
-function Schema() {}
-module.exports.Schema = Schema;
-
-function model() {
-  return ('model');
-}
-module.exports.model = model;
+module.exports.addMultipleTx = addMultipleTx;
