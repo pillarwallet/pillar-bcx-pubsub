@@ -18,8 +18,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
 
+#!/usr/bin/env node*/
 'use strict';
 /** @module deferred.js */
 const diagnostics = require('./utils/diagnostics');
@@ -67,7 +67,6 @@ function setDeferredDone(acc, result){
             }else{
                 logger.info(`accounts.addAddress ${acc.address} saved ok`);
             }
-            dbServices.mongoose.disconnect();
         });
 }
 
@@ -145,7 +144,7 @@ async function launch() {
     try {
         logger.info('Started executing deferred.launch()');
         logger.info('starting a cron to run saveDefferedTransactions each 20 minutes');
-        const job = new CronJob('0 */30 * * * *', () => {
+        const job = new CronJob('*/20 * * * *', () => {
             module.exports.saveDefferedTransactions();
         });
         job.start();
