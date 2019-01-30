@@ -299,7 +299,7 @@ module.exports.processData = processData;
  */
 
 async function cronInit() {
-    const job = new CronJob('*/5 * * * *', () => {
+    const job = new CronJob('0 */10 * * * *', () => {
         module.exports.init()
     });
     job.start();
