@@ -345,8 +345,6 @@ function processData(lastId) {
                     client.set('housekeeper',JSON.stringify(entry), redis.print);
                     logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`)
                     this.logMemoryUsage();
-                    process.exit();
-
                 } else {
                     var promises = [];
                     accounts.forEach((account) => {
@@ -365,7 +363,6 @@ function processData(lastId) {
                         client.set('housekeeper',JSON.stringify(entry), redis.print);
                         logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`);
                         this.logMemoryUsage();
-                        process.exit();
                     });
                 }
             });
@@ -406,7 +403,6 @@ async function init() {
                 if(config.status !== 'completed') {
                     logger.error('HOUSKEEPER FAILED!! PREVIOUS PROCESS IS STILL RUNNING!!');
                     entry = config;
-                    process.exit(0);
                 } else {
                     //the previous run was successful so start process
                     logger.info(`Housekeeper processing records since last record: ${config.lastId}`);
