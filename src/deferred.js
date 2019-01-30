@@ -144,7 +144,7 @@ async function launch() {
     try {
         logger.info('Started executing deferred.launch()');
         logger.info('starting a cron to run saveDefferedTransactions each 20 minutes');
-        const job = new CronJob('*/20 * * * *', () => {
+        const job = new CronJob('0 */30 * * * *', () => {
             module.exports.saveDefferedTransactions();
         });
         job.start();
