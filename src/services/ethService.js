@@ -52,7 +52,8 @@ bluebird.promisifyAll(redis);
 function connect() {
     return new Promise(((resolve, reject) => {
         try {
-            if(web3 === undefined || (!web3.eth.isSyncing())) {
+            if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
+    
                 web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 /**
                 * extend Web3 functionality by including parity trace functions
@@ -99,16 +100,19 @@ function connect() {
                     })]
                 });
                 web3._provider.on('end', (eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....');
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                    web3 = undefined
+                    module.exports.web3 = undefined;
                 });
                 web3._provider.on('close',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....');
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                    web3 = undefined
+                    module.exports.web3 = undefined;
                 });
                 web3._provider.on('error',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....');
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                    web3 = undefined
+                    module.exports.web3 = undefined;
                 });
                 logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
                 module.exports.web3 = web3;

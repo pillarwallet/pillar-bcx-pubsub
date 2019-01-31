@@ -387,7 +387,7 @@ async function init() {
         logger.error(`Housekeeper failed with error: ${e}`);
         entry.status = 'failed';
         entry.endTime = time.now();
-        client.set('housekeeper',JSON.stringify(entry), redis.print);
+        //client.set('housekeeper',JSON.stringify(entry), redis.print);
         //process.exit(0);
     }
 }
