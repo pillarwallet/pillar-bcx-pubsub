@@ -156,22 +156,7 @@ async function recoverAll(wallet, pillarId) {
                 }
             });
         }else{
-            dbServices.dbCollections.accounts.findByAddress(wallet, protocol).then((result) => {
-                if (result) {
-                    result.addresses.forEach((acc) => {
-                        if (acc.address === wallet) {
-                            logger.debug('Housekeeper.recoverAll: matched address '+acc.address);
-                            acc.status = "deferred"
-                            result.save((err) => {
-                                if (err) {
-                                    logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
-                                    reject(err);
-                                }
-                            });
-                        }
-                    })
-                }
-            });
+            saveDeferred(wallet, protocol)
         }
 
     }catch(e) {
@@ -180,6 +165,27 @@ async function recoverAll(wallet, pillarId) {
     }
 }
 module.exports.recoverAll = recoverAll;
+
+
+    async function saveDeferred(wallet,protocol){
+        dbServices.dbCollections.accounts.findByAddress(wallet, protocol).then((result) => {
+            if (result) {
+                result.addresses.forEach((acc) => {
+                    if (acc.address === wallet) {
+                        logger.debug('Housekeeper.recoverAll: matched address ' + acc.address);
+                        acc.status = "deferred"
+                        result.save((err) => {
+                            if (err) {
+                                logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
+                            }
+                        });
+                    }
+                })
+            }
+        });
+    }
+
+    module.exports.saveDeferred = saveDeferred;
 
 
 async function processTxn(transaction, wallet ,pillarId){
@@ -269,7 +275,11 @@ function processData(lastId) {
                             if(acc.protocol === protocol) {
                                 //promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
                                 //promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
-                                promises.push(this.recoverAll(acc.address,account.pillarId));
+                                try{
+                                    promises.push(this.recoverAll(acc.address,account.pillarId));
+                                }catch(e){
+                                    promises.push(this.saveDeferred(acc.address, protocol))
+                                }
                             }
                         });
                         entry.lastId = account._id;
@@ -385,9 +395,9 @@ async function init() {
         logger.info('Started executing deferred.launch()');
     } catch(e) {
         logger.error(`Housekeeper failed with error: ${e}`);
-        entry.status = 'failed';
+        entry.status = 'completed';
         entry.endTime = time.now();
-        //client.set('housekeeper',JSON.stringify(entry), redis.print);
+        client.set('housekeeper',JSON.stringify(entry), redis.print);
         //process.exit(0);
     }
 }
