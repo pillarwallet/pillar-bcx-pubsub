@@ -326,6 +326,26 @@ function getBlockTx(blockNumber) {
 }
 module.exports.getBlockTx = getBlockTx;
 
+
+
+async function getBlockTxRPC(block) {
+    try {
+
+        logger.info(`ethService.getAllTransactionsForWallet(${wallet}) started processing`);
+        if (module.exports.connect()) {
+            var transTo = await web3.trace.block(block);
+            return transTo
+        } else {
+            logger.error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
+            return;
+        }
+    } catch (err) {
+        logger.error(`ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`);
+        return;
+    }
+}
+module.exports.getBlockTxRPC = getBlockTxRPC;
+
 /**
  * Fetch block number for a given block hash
  * @param {any} blockHash - the block hash
