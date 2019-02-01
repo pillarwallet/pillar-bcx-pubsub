@@ -29,6 +29,9 @@ let dbServices = require('./dbServices.js');
 afterAll(() => {
 	jest.restoreAllMocks(); 
 });	
+beforeAll(() => {
+	jest.restoreAllMocks();
+});
 
 describe('Test checksum', () => {
 	test('Expect a valid checksum', () => {

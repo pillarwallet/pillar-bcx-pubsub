@@ -27,11 +27,13 @@ var runId = process.argv[2];
 describe('Subscriber tests', () => {
 
   beforeAll(() =>{
-		process.argv[2] = 0;
+    process.argv[2] = 0;
+    jest.restoreAllMocks(); 
 	});
 
 	afterAll(() =>{
-		process.argv[2] = runId;
+    process.argv[2] = runId;
+    jest.restoreAllMocks(); 
 	});
 
   test('Expect initServices() to be called', done => {
