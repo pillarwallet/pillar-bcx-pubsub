@@ -190,7 +190,7 @@ module.exports.recoverAll = recoverAll;
 
 async function processTxn(transaction, wallet ,pillarId){
     var entry;
-    var tmstmp = await ethService.getBlockTx(transaction.blockNumber).timestamp
+    var tmstmp = time.now();
     var asset, status, value, to, contractAddress;
     if (transaction.action.input !== '0x') {
         var theAsset = await dbServices.getAsset(transaction.action.to);
