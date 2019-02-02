@@ -268,7 +268,7 @@ module.exports.newPendingTran = newPendingTran;
 async function checkTokenTransfer(evnt, theContract, protocol) {
     logger.debug('processTx.checkTokenTransfer(): received event: ' + JSON.stringify(evnt));
     try {
-        var pillarId;
+        var pillarId = '';
         var tmstmp = time.now();
         if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
             pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
