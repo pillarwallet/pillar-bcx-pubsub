@@ -19,7 +19,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 /** @module ethService.js */
+const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
@@ -30,14 +32,18 @@ const fs = require('fs');
 const abiPath = require('app-root-path') + '/src/abi/';
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./ERC20ABI.json');
+const ERC721ABI = require('./ERC721ABI.json');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const dbServices = require('./dbServices');
 const hashMaps = require('../utils/hashMaps');
+const redis = require('redis');
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
 let web3;
 let wsCnt = 0;
+let client = redis.createClient();
+bluebird.promisifyAll(redis);
 
 
 /**
@@ -46,7 +52,8 @@ let wsCnt = 0;
 function connect() {
     return new Promise(((resolve, reject) => {
         try {
-            if(web3 === undefined || (!web3.eth.isSyncing())) {
+            if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
+    
                 web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 /**
                 * extend Web3 functionality by including parity trace functions
@@ -93,16 +100,19 @@ function connect() {
                     })]
                 });
                 web3._provider.on('end', (eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....');
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                    web3 = undefined
+                    module.exports.web3 = undefined;
                 });
                 web3._provider.on('close',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....');
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                    web3 = undefined
+                    module.exports.web3 = undefined;
                 });
                 web3._provider.on('error',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....');
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                    web3 = undefined
+                    module.exports.web3 = undefined;
                 });
                 logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
                 module.exports.web3 = web3;
@@ -201,10 +211,20 @@ function subscribeBlockHeaders() {
                 // Check for pending tx in database and update their status
                 module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
                     logger.debug('ethService.subscribeBlockHeaders(): Finished validating pending transactions.');
-                });
+                });     
                 module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
                 //capture gas price statistics
                 module.exports.storeGasInfo(blockHeader);
+
+                // Check MarketMaker Transactions
+                web3.eth.getBlock(blockHeader.number).then(response => {
+                    response.transactions.forEach(async transaction => {
+                        if(await client.existsAsync(transaction)) {
+                            rmqServices.sendOffersMessage(await getTxInfo(transaction));
+                            client.del(transaction);
+                        }
+                    });
+                });
             }
         })
         .on("error", (err) => {
@@ -434,7 +454,7 @@ function checkPendingTx(pendingTxArray) {
                             } else {
                                 abiDecoder.addABI(ERC20ABI);
                             }
-                            data = abiDecoder.decodeMethod(item.input);
+                            const data = abiDecoder.decodeMethod(item.input);
                             if ((data !== undefined) && (data.name === 'transfer')) { 
                                 //smart contract call hence the asset must be the token name
                                 to = data.params[0].value;
@@ -443,21 +463,33 @@ function checkPendingTx(pendingTxArray) {
                                 to = item.toAddress;
                             }
                         }
-        
+
+                        if(!value){
+                            value = item.value
+                        }
+
+                        if (!asset) {
+                            asset = item.asset
+                        }
+
                         const txMsg = {
                                 type: 'updateTx',
                                 txHash: item.txHash,
+                                protocol:  item.protocol,
                                 fromAddress: item.fromAddress,
                                 toAddress: to,
                                 value,
                                 asset,
+                                contractAddress: item.contractAddress,
                                 status,
                                 gasUsed,
-                                blockNumber: receipt.blockNumber
+                                blockNumber: receipt.blockNumber,
+                                input: item.input
                             };         
                         rmqServices.sendPubSubMessage(txMsg);
                         logger.info(`ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${receipt.blockNumber}`);
                         hashMaps.pendingTx.delete(item.txHash);
+
                     } else {
                         logger.debug('ethService.checkPendingTx(): Txn ' + item + ' is still pending.');
                     }
@@ -576,84 +608,22 @@ async function addERC721(receipt) {
 }
 module.exports.addERC721 = addERC721;
 
-/**
- * Get past transfer events associated with token
- * @param {String} address - the smart contract address to get events
- * @param {String} symbol - the symbol/ticker of the contract
- * @param {String} eventName - the eventName
- * @param {Number} blockNumber - the block number from which to listen to contract events
- * @param {String} walletAddress - the wallet address relevant to the transaction
- * @param {String} pillarId - The pillarId corresponding to the transactions
- */
-async function getPastEvents(address, symbol, eventName = 'Transfer' ,blockNumber = 0, wallet = undefined, pillarId = undefined) {
-    try {
-        var cnt = 0;
-        var status = 'confirmed';
-        var protocol = 'Ethereum';
-        var tmstmp = time.now();
-        if(module.exports.connect()) {
-            const asset = symbol;
-            var theAbi = ERC20ABI;
-            if(fs.existsSync(abiPath + asset + '.json')) {
-                theAbi = require(abiPath + asset + '.json');
-                logger.info('ethService.getPastEvents() - Fetched ABI for token: ' + asset);
-            }
-            const contract = new web3.eth.Contract(theAbi,address);
-            
-            var events = await contract.getPastEvents(eventName,{fromBlock: blockNumber,toBlock: 'latest'});
-            if((events !== null || events !== undefined) && events.length > 0) {
-                var index = 0;
-                var totalEvents = events.length;
-                logger.info(`ethService.getPastEvents(): Fetching ${totalEvents} past events of contract ${address} from block: ${blockNumber}`);
-                events.forEach(async (event) => { 
-                    index++;
-                    if((typeof event.returnValues._to.toLowerCase() === wallet) || (typeof event.returnValues._from.toLowerCase() === wallet)) {
-                        var tran = await dbServices.dbCollections.transactions.findOneByTxHash(event.transactionHash);    
-                        if(tran === null) {
-                            cnt++;
-                            let entry = {
-                                pillarId,
-                                protocol,
-                                toAddress: event.returnValues._to,
-                                fromAddress: event.returnValues._from,
-                                txHash: event.transactionHash,
-                                asset,
-                                contractAddress: null,
-                                timestamp: tmstmp,
-                                value: event.returnValues._value,
-                                blockNumber: event.blockNumber,
-                                status,
-                                gasPrice: txn.gasPrice,
-                                gasUsed: txn.gasUsed
-                            };
-                            logger.debug('ethService.getPastEvents(): Saving transaction into the database: ' + entry);
-                            dbServices.dbCollections.transactions.addTx(entry);  
-                        }
-                    }
-                    if(index === totalEvents) {
-                        logger.info(`ethService.getPastEvents(): Recovered ${cnt} transactions for ${wallet} involving asset: ${asset}`);
-                        return;
-                    }
-                });
-            } else {
-                return;
-            }
-        } else {
-            logger.error('ethService.getPastEvents(): Connection to geth failed!'); 
-        }
-    } catch(err) {
-        logger.error(`ethService.getPastEvents(): for contract: ${address} failed with error: ${err}`);
-    }
-}
-module.exports.getPastEvents = getPastEvents;
 
-async function getAllTransactionsForWallet(wallet) {
+async function getAllTransactionsForWallet(wallet, fromBlockNumber, toBlockNumber) {
     try {
 
         logger.info(`ethService.getAllTransactionsForWallet(${wallet}) started processing`);
         if(module.exports.connect()) {
-            var transTo = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "toAddress": [wallet.toLowerCase()]});
-            var transFrom = await web3.trace.filter({"fromBlock": 'earliest', "toBlock" : 'latest', "fromAddress": [wallet.toLowerCase()]});
+            if (!fromBlockNumber){
+                fromBlockNumber = 'earliest'
+            }
+
+            if (!toBlockNumber) {
+                toBlockNumber = 'latest'
+            }
+
+            var transTo = await web3.trace.filter({"fromBlock": fromBlockNumber, "toBlock" : toBlockNumber, "toAddress": [wallet.toLowerCase()]});
+            var transFrom = await web3.trace.filter({"fromBlock": fromBlockNumber, "toBlock" : toBlockNumber, "fromAddress": [wallet.toLowerCase()]});
             return transTo.concat(transFrom);
         } else {
             logger.error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
@@ -665,3 +635,67 @@ async function getAllTransactionsForWallet(wallet) {
     }
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
+
+/**
+ * Gets the transaction info/receipt and returns the transaction object 
+ * @param {string} txHash Transaction hash 
+ */
+async function getTxInfo(txHash) {
+
+    const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
+    var to, value, asset, contractAddress;
+    if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
+        to = txInfo.to;
+    } else {
+        const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+        contractAddress = contractDetail.contractAddress;
+        asset = contractDetail.symbol;
+        if(fs.existsSync(abiPath + asset + '.json')) {
+            const theAbi = require(abiPath + asset + '.json');
+            abiDecoder.addABI(theAbi);
+        } else {
+            abiDecoder.addABI(ERC20ABI);
+        }
+        const data = abiDecoder.decodeMethod(txInfo.input);
+        if ((data !== undefined) && (data.name === 'transfer')) { 
+            //smart contract call hence the asset must be the token name
+            to = data.params[0].value;
+            value = data.params[1].value;
+        } else {
+            to = txInfo.to;
+        }
+    }
+         return {
+            txHash: txInfo.hash,
+            fromAddress: txInfo.from,
+            toAddress: to,
+            value,
+            asset,
+            contractAddress,
+            status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+            gasPrice: txInfo.gasPrice,
+            gasUsed: txReceipt.gasUsed,
+            blockNumber: txReceipt.blockNumber
+        };
+};
+
+module.exports.getTxInfo = getTxInfo;
+
+async function getTransactionCountForWallet(wallet) {
+    try {
+
+        logger.info(`ethService.getTransactionCountForWallet(${wallet}) started processing`);
+        if (module.exports.connect()) {
+            var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
+            logger.info(`ethService.getTransactionCountForWallet(${wallet}) resolved ${transCount}`);
+            return transCount
+        } else {
+            logger.error(`ethService.getTransactionCountForWallet() - failed connecting to web3 provider`);
+            return;
+        }
+    } catch (err) {
+        logger.error(`ethService.getTransactionCountForWallet(${wallet}) - failed with error - ${err}`);
+        return;
+    }
+}
+module.exports.getTransactionCountForWallet = getTransactionCountForWallet;

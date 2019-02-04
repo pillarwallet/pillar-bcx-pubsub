@@ -19,44 +19,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const events = require('events');
+const diagnostics = require('@pillarwallet/common-diagnostics');
+const logger = require('./logger');
 
-const connection = new events.EventEmitter();
+const whitelistedEnvironments = ['staging', 'develop', 'production'];
 
-connection.connect = function (dbUrl) {
-	this.emit('open');
-	/*
-  if (dbUrl === 'mongodb://127.0.0.1:27017/PillarBCX') {
-    this.emit('open');
-  } else {
-    this.emit('error');
-  }
-  */
+const sentryConfiguration = {
+  dsn: 'https://1qaz2wsx3edc4rfv@sentry.io/1289773',
+  debug: true,
 };
-module.exports.connection = connection;
 
-function connect(dbUrl, useMongoClient) {
-  return new Promise(((resolve, reject) => {
-    try {
-      module.exports.connection.connect(dbUrl, useMongoClient);
-      resolve();
-    } catch (e) {
-      reject();
-    }
-  }));
+try {
+    diagnostics.sentryBuilder.setWhitelistedEnvironments(whitelistedEnvironments)
+        .setConfiguration(sentryConfiguration)
+        .start();
+    logger.info("Sentry successfully started")
+} catch (e) {
+logger.error({ err: e }, 'Sentry failed to start');
 }
-module.exports.connect = connect;
-
-
-var types = {
-  ObjectId: () =>{}
-}
-module.exports.Types = types
-
-function Schema() {}
-module.exports.Schema = Schema;
-
-function model() {
-  return ('model');
-}
-module.exports.model = model;

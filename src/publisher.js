@@ -18,12 +18,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
 
-#!/usr/bin/env node*/
 /** @module publisher.js */
 'use strict';
-const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
+const diagnostics = require('./utils/diagnostics');
 require('dotenv').config();
 const bluebird = require('bluebird');
 const logger = require('./utils/logger');
@@ -32,10 +31,7 @@ const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 const fs = require('fs');
 const GETH_STATUS_FILE = '/tmp/geth_status';
-const redis = require('redis');
 const CronJob = require('cron').CronJob;
-let client = redis.createClient();;
-bluebird.promisifyAll(redis);
 let latestId = '';
 let runId = 0;
 let MAX_WALLETS = 500000;
@@ -45,14 +41,17 @@ let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 
-process
-  .on('unhandledRejection', (reason, p) => {
-    logger.error(`Publisher - Unhandled Rejection at Promise reason - ${reason}, p - ${p}`);
-  })
-  .on('uncaughtException', err => {
-    logger.error(`Publisher - Uncaught Exception thrown error - ${err}`);
-    process.exit(1);
-  });
+/**
+ * Connecting to Redis
+ */
+const redis = require('redis');
+const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+let client;
+try {
+  client = redis.createClient(redisOptions);
+  logger.info("Publisher successfully connected to Redis server")
+} catch (e) { logger.error(e) }
+bluebird.promisifyAll(redis);
 
 /**
  * Function that subscribes to redis related connection errors.

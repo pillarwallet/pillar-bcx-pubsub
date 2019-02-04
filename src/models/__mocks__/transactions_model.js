@@ -19,31 +19,61 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const Transactions = (function () {
-  return {
-    find(query, callback) {
-      if (callback == null) {
-        query('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
-      } else {
-        callback('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
-      }
-    },
-    findOne(query, callback) {
-      if (callback == null) {
-        query('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
-      } else {
-        callback('', [{_id: "pillarId", txHash: "hash", protocol: "Ethereum"}]);
-      }
-    },
-    save() {
+const Transactions = class Transactions {
+  save(callback){
+    callback(false)
 
-    },
-    update() {
+  }
+}
 
-    },
-    remove() {
+Transactions.find = function(query, callback) {
+  const returnValue = [{ _id: "pillarId", txHash: "hash", protocol: "Ethereum" }]
+  if (query && typeof query === "function" && callback == null) {
+    query('', returnValue);
+  } else if(callback != null && typeof callback === "function"){
+    callback('', returnValue);
+  }else{
+    return new Promise((resolve, reject) => {
+      resolve(returnValue)
+    })
+  }
+}
 
-    },
-  };
-}());
+Transactions.findOne = function (query, callback) {
+  const returnValue = [{ _id: "pillarId", txHash: "hash", protocol: "Ethereum" }]
+  if (query && typeof query === "function" && callback == null) {
+    query('', returnValue);
+  } else if (callback != null && typeof callback === "function") {
+    callback('', returnValue);
+  } else {
+    return new Promise((resolve, reject) => {
+      resolve(returnValue)
+    })
+  }
+}
+
+
+Transactions.aggregate = function (query, callback) {
+
+  const returnValue = [{balance : 5}]
+  if (query && typeof query === "function" && callback == null) {
+    query('', returnValue);
+  } else if (callback != null && typeof callback === "function") {
+    callback('', returnValue);
+  } else {
+    return new Promise((resolve, reject) => {
+      resolve(returnValue)
+    })
+  }
+}
+
+Transactions.save = function () {
+}
+
+Transactions.update = function () {
+}
+
+Transactions.remove= function() {
+}
+  
 module.exports.Transactions = Transactions;

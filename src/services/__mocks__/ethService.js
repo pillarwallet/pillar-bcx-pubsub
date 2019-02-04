@@ -19,44 +19,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const events = require('events');
-
-const connection = new events.EventEmitter();
-
-connection.connect = function (dbUrl) {
-	this.emit('open');
-	/*
-  if (dbUrl === 'mongodb://127.0.0.1:27017/PillarBCX') {
-    this.emit('open');
-  } else {
-    this.emit('error');
-  }
-  */
-};
-module.exports.connection = connection;
-
-function connect(dbUrl, useMongoClient) {
-  return new Promise(((resolve, reject) => {
-    try {
-      module.exports.connection.connect(dbUrl, useMongoClient);
-      resolve();
-    } catch (e) {
-      reject();
+module.exports.getBlockTx = ()=>{
+    return {
+        transactions: [{ to: "to", from: "from", hash: "hash"}]
     }
-  }));
 }
-module.exports.connect = connect;
 
-
-var types = {
-  ObjectId: () =>{}
+module.exports.getTxReceipt = ()=>{ return new Promise((resolve, reject) => {
+    resolve({ status: "0x1" })
+})
 }
-module.exports.Types = types
 
-function Schema() {}
-module.exports.Schema = Schema;
-
-function model() {
-  return ('model');
+module.exports.getPastEvents = () => {
+    return {
+        transactions: [{ to: "to", from: "from", hash: "hash" }]
+    }
 }
-module.exports.model = model;
+
+module.exports.getLastBlockNumber = () => {
+    return new Promise((resolve, reject) => {
+     resolve(500)
+    })
+}
+
+module.exports.getTransactionCountForWallet = () => {
+    return new Promise((resolve, reject) => {
+        resolve(50)
+    })
+}
+
+module.exports.getAllTransactionsForWallet =  () => {
+    return [{result:{gasUsed:5}, action: { input: "input", to: "to", from: "from", hash: "hash"}, to: "to", from: "from", hash: "hash" }]
+}
+
+
+

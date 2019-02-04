@@ -18,11 +18,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
 
-#!/usr/bin/env node*/
 /** @module master.js */
-const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://ab9bcca15a4e44aa917794a0b9d4f4c3@sentry.io/1289773' });
+const diagnostics = require('./utils/diagnostics');
 
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;
