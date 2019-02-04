@@ -104,13 +104,13 @@ function assetDetails(asset, $arg = { useMongoClient: true }) {
 }
 module.exports.assetDetails = assetDetails;
 
-function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
+function recentAccounts(idFrom, limitNum = 1000 , protocol, $arg = { useMongoClient: true }) {
     return new Promise(((resolve, reject) => {
       try {
         if (dbCollections) {
           if ((typeof idFrom !== undefined) && idFrom !== '') {
             // fetch accounts registered after a given Id
-            dbCollections.accounts.listRecent(idFrom)
+              dbCollections.accounts.listRecent(idFrom, limitNum)
               .then((ethAddressesArray) => {
                 if(ethAddressesArray.length > 0) {
                   logger.debug(`FOUND ${ethAddressesArray.length} NEW ACCOUNTS:`);

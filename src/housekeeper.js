@@ -37,6 +37,7 @@ const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS ? process.env.MAX_TOTAL_TRANSACTIONS : 100;
+const MAX_TOTAL_ACCOUNTS = process.env.MAX_TOTAL_ACCOUNTS ? process.env.MAX_TOTAL_ACCOUNTS : 100;
 const CronJob = require('cron').CronJob;
 
 let entry = {};
@@ -245,7 +246,7 @@ function processData(lastId) {
             await this.checkTxPool();
             //fetch new registrations since last run
             logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
-            await dbServices.recentAccounts(lastId).then(async (accounts) => {
+            await dbServices.recentAccounts(lastId, MAX_TOTAL_ACCOUNTS).then(async (accounts) => {
                 logger.info(`Housekeeper found accounts: ${accounts.length} wallets to process.`);
                 if(accounts === null || accounts.length === 0) {
                     entry.status = 'completed';

@@ -35,10 +35,13 @@ const Accounts = class Accounts {
       }]);
     } else if (callback == null && typeof address == "object"){
         return{
-          limit: function (params) {
-            return{
-            exec: function(callback){
-              callback(false, [{ "address": "address" }])
+          sort: function (params) {
+            return { limit: function (params) {
+              return{
+                exec: function(callback){
+                  callback(false, [{ "address": "address" }])
+                }
+              }
             }
           }
         }

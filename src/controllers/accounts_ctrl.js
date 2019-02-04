@@ -40,14 +40,13 @@ function listAll() {
 }
 module.exports.listAll = listAll;
 
-function listRecent(idFrom) {
+function listRecent(idFrom, limitNum = 1000) {
   return new Promise(((resolve, reject) => {
     try {
       oId = mongoose.Types.ObjectId(idFrom);
-      var query = "{_id : {$gt: " + oId + ")}}";
       //accounts.Accounts.find(query, (err, result) => {
       //limit the number of results to 1000 records
-      var q = accounts.Accounts.find({_id : {$gt: oId}}).limit(1000);
+      var q = accounts.Accounts.find({ _id: { $gt: oId } }).sort({ "_id": 1 }).limit(limitNum)
       q.exec((err, result) => {
         if(err) {
           logger.error(`accounts.listRecent DB controller ERROR: ${err}`);
