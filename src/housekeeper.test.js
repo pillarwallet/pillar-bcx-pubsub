@@ -40,13 +40,7 @@ SOFTWARE.
 			var dbServices = require('./services/dbServices.js')
 			const ethServices = require('./services/ethService');
 			const housekeeper = require('./housekeeper.js')
-			const spy = jest.spyOn(housekeeper, 'recoverTransactions');
-			var recoverAllMockImpl = () => {
-				return new Promise((resolve, reject) => {
-					resolve([{ transactionHash: "hash" }])
-				})
-			}
-			spy.mockImplementation(recoverAllMockImpl);
+			
 			const dbServicesAddTxMock = jest.spyOn(dbServices.dbCollections.transactions, 'addTx');
 			var dbServicesAddTxMockImpl = function () {
 				done()

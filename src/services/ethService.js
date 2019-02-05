@@ -54,7 +54,12 @@ function connect() {
         try {
             if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
     
-                web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                var isWebSocket = (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
+                if (isWebSocket) {
+                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                } else {
+                    web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
+                }
                 /**
                 * extend Web3 functionality by including parity trace functions
                 */
