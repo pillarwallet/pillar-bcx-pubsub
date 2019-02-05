@@ -180,7 +180,7 @@ async function processTxn(transaction, wallet ,pillarId){
     var asset, status, value, to, contractAddress;
     if (transaction.action.input !== '0x') {
         var theAsset = await dbServices.getAsset(transaction.action.to);
-        if (theAsset !== undefined) {
+        if (theAsset !== undefined && theAsset !== null) {
             contractAddress = theAsset.contractAddress;
             asset = theAsset.symbol;
             if (fs.existsSync(abiPath + asset + '.json')) {
@@ -241,16 +241,7 @@ async function processTxn(transaction, wallet ,pillarId){
  */
 function processData(lastId) {
     try {
-        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined) {
-            try {
-                dbServices.mongoose.disconnect()
-            } catch (e) {
-                logger.error(`disconnect Failed with error ${e}`);
-            }
-        }
-
-        
-        dbServices.dbConnect().then(async () => {
+        connectDb().then(async () => {
             //Update pending transactions in the db
             await this.checkTxPool();
             //fetch new registrations since last run
@@ -297,9 +288,24 @@ function processData(lastId) {
 module.exports.processData = processData;
 
 
+
+async function connectDb() {
+    return new Promise(async (resolve, reject) => {
+        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined && dbServices.mongoose.connection.readyState != 0) {
+            resolve()
+        }else{
+            dbServices.dbConnect().then(() => {
+                resolve()
+            })
+        }
+
+    })
+}
 /**
  * Function that start housekeeper cron
  */
+
+module.exports.connectDb = connectDb;
 
 async function cronInit() {
     const job = new CronJob('0 */10 * * * *', () => {
