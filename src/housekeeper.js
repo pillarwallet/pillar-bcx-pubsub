@@ -117,20 +117,6 @@ async function checkTxPool() {
 }
 module.exports.checkTxPool = checkTxPool;
 
-async function recoverTransactions(startBlock, endBlock, walletId) {
-    var transactions = [];
-    for(var i = startBlock; i >= endBlock; i--) {
-        var txns = await ethService.getBlockTx(i);
-        txns.transactions.forEach(async (txn) => {
-            if(txn.from.toLowerCase() === walletId || (txn.to !== null && txn.to.toLowerCase() === walletId)) {
-                receipt = await ethService.getTxReceipt(txn.hash);
-                transactions.push(receipt);
-            }
-        });
-    }
-    return transactions;
-}
-module.exports.recoverTransactions = recoverTransactions;
 
 
 /**
@@ -289,6 +275,7 @@ function processData(lastId) {
                         entry.endTime = time.now();
                         client.set('housekeeper',JSON.stringify(entry), redis.print);
                         logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`);
+                        dbServices.mongoose.disconnect();
                         this.logMemoryUsage();
                     });
                 }
