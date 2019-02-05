@@ -194,8 +194,8 @@ async function processTxn(transaction, wallet ,pillarId){
     var asset, status, value, to, contractAddress;
     if (transaction.action.input !== '0x') {
         var theAsset = await dbServices.getAsset(transaction.action.to);
-        contractAddress = theAsset.contractAddress;
         if (theAsset !== undefined) {
+            contractAddress = theAsset.contractAddress;
             asset = theAsset.symbol;
             if (fs.existsSync(abiPath + asset + '.json')) {
                 const theAbi = require(abiPath + asset + '.json');
@@ -255,6 +255,15 @@ async function processTxn(transaction, wallet ,pillarId){
  */
 function processData(lastId) {
     try {
+        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined) {
+            try {
+                dbServices.mongoose.disconnect()
+            } catch (e) {
+                logger.error(`disconnect Failed with error ${e}`);
+            }
+        }
+
+        
         dbServices.dbConnect().then(async () => {
             //Update pending transactions in the db
             await this.checkTxPool();
