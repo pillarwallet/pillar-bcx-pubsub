@@ -67,6 +67,7 @@ function setDeferredDone(acc, result){
             }else{
                 logger.info(`accounts.addAddress ${acc.address} saved ok`);
             }
+            dbServices.mongoose.disconnect();
         });
 }
 
