@@ -178,7 +178,7 @@ async function processTxn(transaction, wallet ,pillarId){
     var entry;
     var tmstmp = await ethService.getBlockTx(transaction.blockNumber).timestamp
     var asset, status, value, to, contractAddress;
-    if (transaction.action.input !== '0x') {
+    if (transaction.action.input !== '0x' && transaction.action.input !== undefined && transaction.action.input  !== null) {
         var theAsset = await dbServices.getAsset(transaction.action.to);
         if (theAsset !== undefined && theAsset !== null) {
             contractAddress = theAsset.contractAddress;
@@ -229,7 +229,7 @@ async function processTxn(transaction, wallet ,pillarId){
         value: value,
         blockNumber: transaction.blockNumber,
         status,
-        gasUsed: transaction.result.gasUsed,
+        gasUsed: (transaction.result? transaction.result.gasUsed : undefined),
     };
     logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
     dbServices.dbCollections.transactions.addTx(entry);
