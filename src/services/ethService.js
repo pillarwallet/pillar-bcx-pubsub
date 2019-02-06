@@ -694,6 +694,9 @@ async function getTransactionCountForWallet(wallet) {
         if (module.exports.connect()) {
             var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
             logger.info(`ethService.getTransactionCountForWallet(${wallet}) resolved ${transCount}`);
+            if(transCount === undefined){
+                return 0
+            }
             return transCount
         } else {
             logger.error(`ethService.getTransactionCountForWallet() - failed connecting to web3 provider`);
