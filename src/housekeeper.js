@@ -36,6 +36,7 @@ const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS ? process.env.MAX_TOTAL_TRANSACTIONS : 100;
 const CronJob = require('cron').CronJob;
+var ACCOUNTS_WAIT_INTERVAL = 1000;
 
 let entry = {};
 let startBlock;
@@ -257,15 +258,17 @@ function processData(lastId) {
                 } else {
                     var promises = [];
                     accounts.forEach((account) => {
-                        account.addresses.forEach((acc) => {
+                        account.addresses.forEach((acc, index) => {
                             if(acc.protocol === protocol) {
                                 //promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
                                 //promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
-                                try{
-                                    promises.push(this.recoverAll(acc.address,account.pillarId));
-                                }catch(e){
-                                    promises.push(this.saveDeferred(acc.address, protocol))
-                                }
+                                setTimeout( () =>{
+                                    try{
+                                        promises.push(this.recoverAll(acc.address,account.pillarId));
+                                    }catch(e){
+                                        promises.push(this.saveDeferred(acc.address, protocol))
+                                    }
+                                }, index * ACCOUNTS_WAIT_INTERVAL);
                             }
                         });
                         entry.lastId = account._id;
