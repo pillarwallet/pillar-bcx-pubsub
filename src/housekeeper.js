@@ -124,7 +124,7 @@ function generateList(number) {
     var list = []
     while (number > 0) {
         list.push(number);
-        number -= 500
+        number -= 50000
     }
     list.push(0)
     return list
@@ -192,6 +192,9 @@ async function recoverAll(wallet, pillarId) {
         logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
         var totalTransactions = await ethService.getTransactionCountForWallet(wallet)
         logger.info(`Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`);
+        if(totalTransactions == 0){
+            return
+        }
         var index = 0;
         if (totalTransactions < MAX_TOTAL_TRANSACTIONS){
                 ethService.getLastBlockNumber().then((lastBlock) => {
@@ -290,7 +293,7 @@ async function processTxn(transaction, wallet ,pillarId){
         status,
         gasUsed: (transaction.result? transaction.result.gasUsed : undefined),
     };
-    logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
+    logger.debug(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
     dbServices.dbCollections.transactions.addTx(entry);
 }
 
