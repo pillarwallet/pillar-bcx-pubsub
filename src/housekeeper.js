@@ -120,6 +120,68 @@ module.exports.checkTxPool = checkTxPool;
 
 
 
+function generateList(number) {
+    var list = []
+    while (number > 0) {
+        list.push(number);
+        number -= 500
+    }
+    list.push(0)
+    return list
+}
+
+module.exports.generateList = generateList;
+
+function decimalToHexString(number) {
+    if (number < 0) {
+        number = 0xFFFFFFFF + number + 1;
+    }
+
+    return "0x" + number.toString(16).toUpperCase();
+}
+
+module.exports.decimalToHexString = decimalToHexString;
+
+
+
+function getTransactions(listOfTrans, i, wallet, totalTrans, transListCount, pillarId){
+
+        var toBlock = decimalToHexString(listOfTrans[i + 1])
+        var fromBlock
+        if(i == 0){
+            fromBlock = decimalToHexString(listOfTrans[i])
+        }else{
+            fromBlock = decimalToHexString(listOfTrans[i] + 1 )
+        }
+    logger.info(`housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`);
+        ethService.getAllTransactionsForWallet(wallet, toBlock, fromBlock).then((transactions) => {
+            if (transactions && transactions.length >0){
+
+                var totalTransactions = transactions.length
+                if (totalTransactions > 0){
+                    transListCount += totalTransactions
+                }
+                transactions.forEach((transaction) => {
+                    processTxn(transaction, wallet, pillarId)
+                })
+                logger.debug('housekeeper.getTransactions processed txns');
+                if (toBlock == "0x0") {
+                    logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
+                }else{
+                    getTransactions(listOfTrans, i + 1, wallet, totalTrans, transListCount, pillarId)
+                }
+                logger.info(`housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`);
+            }else{
+                if (toBlock == "0x0") {
+                    logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
+                }else{
+                    getTransactions(listOfTrans, i + 1, wallet, totalTrans, transListCount, pillarId)
+                }
+            }
+
+        })
+    }
+
 /**
  *
  * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
@@ -132,16 +194,12 @@ async function recoverAll(wallet, pillarId) {
         logger.info(`Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`);
         var index = 0;
         if (totalTransactions < MAX_TOTAL_TRANSACTIONS){
-            var transactions = await ethService.getAllTransactionsForWallet(wallet);
-            transactions.forEach(async (transaction) => {
-                index++;
-                processTxn(transaction, wallet, pillarId)
-
-                if(index === totalTransactions) {
-                    logger.info(`Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`);
-                    return;
-                }
-            });
+                ethService.getLastBlockNumber().then((lastBlock) => {
+                    logger.debug("lastblock is " + lastBlock)
+                    var listOfTrans = generateList(lastBlock)
+                    logger.debug("list of trans " + listOfTrans.length)
+                    getTransactions(listOfTrans, 0, wallet, totalTransactions, 0, pillarId)
+                })
         }else{
             saveDeferred(wallet, protocol)
         }
