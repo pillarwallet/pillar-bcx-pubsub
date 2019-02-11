@@ -49,7 +49,9 @@ module.exports.getTransactionCountForWallet = () => {
 }
 
 module.exports.getAllTransactionsForWallet =  () => {
-    return [{result:{gasUsed:5}, action: { input: "input", to: "to", from: "from", hash: "hash"}, to: "to", from: "from", hash: "hash" }]
+    return new Promise((resolve, reject) => {
+     resolve([{result:{gasUsed:5}, action: { input: "input", to: "to", from: "from", hash: "hash"}, to: "to", from: "from", hash: "hash" }])
+    })
 }
 
 
