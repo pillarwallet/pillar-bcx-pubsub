@@ -36,7 +36,8 @@ const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS ? process.env.MAX_TOTAL_TRANSACTIONS : 100;
 const CronJob = require('cron').CronJob;
-var ACCOUNTS_WAIT_INTERVAL = 1000;
+var ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
+var PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
 
 let entry = {};
 let startBlock;
@@ -124,7 +125,7 @@ function generateList(number) {
     var list = []
     while (number > 0) {
         list.push(number);
-        number -= 50000
+        number -= PROCESS_BLOCKS_INTERVAL
     }
     list.push(0)
     return list
