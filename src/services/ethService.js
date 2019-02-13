@@ -53,18 +53,10 @@ function connect() {
     return new Promise(((resolve, reject) => {
         try {
             if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
-<<<<<<< HEAD
                 var isWebSocket =  (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
                 if (isWebSocket){
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
                 }else{
-=======
-    
-                var isWebSocket = (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
-                if (isWebSocket) {
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
-                } else {
->>>>>>> master
                     web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
                 }
                 /**
@@ -113,7 +105,6 @@ function connect() {
                 });
                 if (isWebSocket){
                 web3._provider.on('end', (eventObj) => {
-<<<<<<< HEAD
                         logger.error('Websocket disconnected!! Restarting connection....', eventObj);
                         web3 = undefined
                         module.exports.web3 = undefined;
@@ -129,22 +120,6 @@ function connect() {
                         module.exports.web3 = undefined;
                     });
                 }
-=======
-                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                    web3 = undefined
-                    module.exports.web3 = undefined;
-                });
-                web3._provider.on('close',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                    web3 = undefined
-                    module.exports.web3 = undefined;
-                });
-                web3._provider.on('error',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                    web3 = undefined
-                    module.exports.web3 = undefined;
-                });
->>>>>>> master
                 logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
                 module.exports.web3 = web3;
                 resolve(true);
@@ -672,7 +647,6 @@ module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
  * @param {string} txHash Transaction hash 
  */
 async function getTxInfo(txHash) {
-<<<<<<< HEAD
 
     const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
     var to, value, asset, contractAddress;
@@ -713,48 +687,6 @@ async function getTxInfo(txHash) {
 
 module.exports.getTxInfo = getTxInfo;
 
-=======
-
-    const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
-    var to, value, asset, contractAddress;
-    if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
-        to = txInfo.to;
-    } else {
-        const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-        contractAddress = contractDetail.contractAddress;
-        asset = contractDetail.symbol;
-        if(fs.existsSync(abiPath + asset + '.json')) {
-            const theAbi = require(abiPath + asset + '.json');
-            abiDecoder.addABI(theAbi);
-        } else {
-            abiDecoder.addABI(ERC20ABI);
-        }
-        const data = abiDecoder.decodeMethod(txInfo.input);
-        if ((data !== undefined) && (data.name === 'transfer')) { 
-            //smart contract call hence the asset must be the token name
-            to = data.params[0].value;
-            value = data.params[1].value;
-        } else {
-            to = txInfo.to;
-        }
-    }
-         return {
-            txHash: txInfo.hash,
-            fromAddress: txInfo.from,
-            toAddress: to,
-            value,
-            asset,
-            contractAddress,
-            status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
-            gasPrice: txInfo.gasPrice,
-            gasUsed: txReceipt.gasUsed,
-            blockNumber: txReceipt.blockNumber
-        };
-};
-
-module.exports.getTxInfo = getTxInfo;
-
->>>>>>> master
 async function getTransactionCountForWallet(wallet) {
     try {
 
@@ -762,11 +694,7 @@ async function getTransactionCountForWallet(wallet) {
         if (module.exports.connect()) {
             var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
             logger.info(`ethService.getTransactionCountForWallet(${wallet}) resolved ${transCount}`);
-<<<<<<< HEAD
             if(transCount === undefined){
-=======
-            if (transCount === undefined) {
->>>>>>> master
                 return 0
             }
             return transCount
