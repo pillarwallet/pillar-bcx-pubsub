@@ -19,7 +19,7 @@
   "homepage": "https://github.com/pillarwallet/pillar-bcx-pubsub#readme",
   "dependencies": {
     "@pillarwallet/common-diagnostics": "^1.1.18",
-    "@pillarwallet/common-logger": "1.2.38",
+    "@pillarwallet/common-logger": "1.2.57",
     "@sentry/node": "^4.0.0",
     "abi-decoder": "^1.2.0",
     "amqplib": "^0.5.2",
