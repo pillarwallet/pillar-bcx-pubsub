@@ -36,8 +36,13 @@ const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS ? process.env.MAX_TOTAL_TRANSACTIONS : 100;
 const CronJob = require('cron').CronJob;
+<<<<<<< HEAD
 const ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
 const PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
+=======
+var ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
+var PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
+>>>>>>> master
 
 let entry = {};
 let startBlock;
