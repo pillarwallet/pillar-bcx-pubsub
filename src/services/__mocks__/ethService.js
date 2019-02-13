@@ -25,12 +25,15 @@ module.exports.getBlockTx = ()=>{
     }
 }
 
+<<<<<<< HEAD
 module.exports.getBlockTxRPC = () => {
     return {
         transactions: [{ to: "to", from: "from", hash: "hash" }]
     }
 }
 
+=======
+>>>>>>> master
 module.exports.getTxReceipt = ()=>{ return new Promise((resolve, reject) => {
     resolve({ status: "0x1" })
 })
