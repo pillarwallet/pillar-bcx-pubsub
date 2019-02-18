@@ -39,3 +39,42 @@ npm install
 pm2 start process.yml
 
 ```
+
+### Migrations
+
+ To create a new migration file execute the command
+
+  ```
+npm run migrate:create <migrationName>
+```
+
+ Write your code inside the up and down methods
+
+ ```
+module.exports.up = function (next) {
+  next()
+}
+ module.exports.down = function (next) {
+  next()
+}
+```
+
+ Execute all migrations (up method) with the command
+
+ ```
+npm run migrate
+```
+
+ You can also run migrations incrementally by specifying a migration
+
+ ```
+npm run migrate:up <migrationFullName>
+```
+
+ This will run up-migrations up to (and including) <migrationFullName>
+
+ Execute all migrations (down method) with the command
+
+ ```
+npm run migrate:down
+```

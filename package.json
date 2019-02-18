@@ -5,7 +5,11 @@
   "main": "./src/master.js",
   "scripts": {
     "test": "jest",
-    "test:coverage": "jest --coverage --forceExit"
+    "test:coverage": "jest --coverage --forceExit",
+    "migrate": "migrate",
+    "migrate:up": "migrate up",
+    "migrate:create": "migrate create",
+    "migrate:down": "migrate down"
   },
   "repository": {
     "type": "git",
@@ -49,7 +53,8 @@
     "sleep": "^5.2.3",
     "unix-timestamp": "^0.2.0",
     "web3": "1.0.0-beta.35",
-    "web3-core-helpers": "1.0.0-beta.35"
+    "web3-core-helpers": "1.0.0-beta.35",
+    "migrate": "^1.6.2"
   },
   "devDependencies": {
     "eslint-plugin-jest": "^21.18.0",
