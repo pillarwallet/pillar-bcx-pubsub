@@ -136,3 +136,5 @@ dist/*.exe
 doc/
 /*-cov
 src/logs/pillar-bcx-pubsub-debug.log
+
+.migrate
