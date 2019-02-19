@@ -96,11 +96,15 @@ module.exports.publisherOnMessage = function () { process.on('message', async (d
         if(obj !== undefined) {
           const exists = await client.existsAsync(obj.walletId.toLowerCase());
           logger.info(`Wallet : ${obj.walletId} exists in redis? : ${exists}`);
+          latestId = await client.getAsync('latestId');
+          if (!(exists) || obj.id > latestId) {
+            await client.setAsync("latestId", obj.id);
+            latestId = obj.id;
+          }
           if(!(exists)) {
             await client.setAsync(obj.walletId.toLowerCase(),obj.pillarId);
             logger.info(`Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${obj.pillarId} , accountsSize: ${hashMaps.accounts.keys().length}`);
-            latestId = obj.id;
-            await client.setAsync('latestId',obj.id);
+           
             logger.info(`Updated redis with latestId: ${latestId}`);
           }
         }
