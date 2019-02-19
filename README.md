@@ -64,7 +64,8 @@ module.exports.up = function (next) {
  ```
 npm run migrate
 ```
-
+ That will run the lock.js process that will adquire a lock on redis and then execute the full migration
+ 
  You can also run migrations incrementally by specifying a migration
 
  ```

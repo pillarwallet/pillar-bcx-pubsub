@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage --forceExit",
-    "migrate": "migrate",
+    "migrate": "node ./lock.js",
     "migrate:up": "migrate up",
     "migrate:create": "migrate create",
     "migrate:down": "migrate down",
@@ -52,6 +52,7 @@
     "moment": "^2.22.2",
     "mongoose": "^5.3.12",
     "redis": "^2.8.0",
+    "redlock": "^3.1.2",
     "sinon": "^6.2.0",
     "sizeof": "^1.0.0",
     "sleep": "^5.2.3",
