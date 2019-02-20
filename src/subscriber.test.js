@@ -22,38 +22,37 @@ SOFTWARE.
 const rmqServices = require('./services/rmqServices.js');
 const CronJob = require('cron').CronJob;
 
-var runId = process.argv[2];
+const runId = process.argv[2];
 
 describe('Subscriber tests', () => {
-
-  beforeAll(() =>{
+  beforeAll(() => {
     process.argv[2] = 0;
-    jest.restoreAllMocks(); 
-	});
+    jest.restoreAllMocks();
+  });
 
-	afterAll(() =>{
+  afterAll(() => {
     process.argv[2] = runId;
-    jest.restoreAllMocks(); 
-	});
+    jest.restoreAllMocks();
+  });
 
   test('Expect initServices() to be called', done => {
     const spy = jest.spyOn(rmqServices, 'initSubPubMQ');
     const dummyMock = () => {
-      done()
-    }
+      done();
+    };
     const subscriber = require('./subscriber.js');
     spy.mockImplementation(dummyMock);
-    subscriber.initServices()
+    subscriber.initServices();
   });
 
   test('Expect job.start() to be called', done => {
     const spy = jest.spyOn(CronJob.prototype, 'start');
     const dummyMock = () => {
-      done()
-    }
+      done();
+    };
     spy.mockImplementation(dummyMock);
     const subscriber = require('./subscriber.js');
-    subscriber.initServices()
+    subscriber.initServices();
   });
 
   test('MemoryUsage', done => {
@@ -61,25 +60,27 @@ describe('Subscriber tests', () => {
     const logger = require('./utils/logger');
     const stubLoggerInfo = jest.spyOn(logger, 'info');
 
-    const stubCheckDone = jest.fn((message) => {
-      if (message.indexOf("RSS: 0 MB, HEAP: 0 MB, EXTERNAL: 0 MB, TOTAL AVAILABLE: 0 MB") >= 0) {
+    const stubCheckDone = jest.fn(message => {
+      if (
+        message.indexOf(
+          'RSS: 0 MB, HEAP: 0 MB, EXTERNAL: 0 MB, TOTAL AVAILABLE: 0 MB',
+        ) >= 0
+      ) {
         stubLoggerInfo.mockRestore();
-        done()
+        done();
       }
-    })
+    });
 
     stubLoggerInfo.mockImplementation(stubCheckDone);
 
-    const dummyMock = () => {
-      return {
-        rss: 0,
-        heapUsed: 0,
-        heapTotal: 0,
-        external: 0
-      }
-    }
+    const dummyMock = () => ({
+      rss: 0,
+      heapUsed: 0,
+      heapTotal: 0,
+      external: 0,
+    });
     const subscriber = require('./subscriber.js');
     spy.mockImplementation(dummyMock);
-    subscriber.logMemoryUsage()
+    subscriber.logMemoryUsage();
   });
 });

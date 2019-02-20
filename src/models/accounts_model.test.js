@@ -20,11 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 const accounts = require('./accounts_model.js');
 
 describe('Test accounts', () => {
-	test('accounts should be defined', () => {
-		expect(accounts.Accounts).toBeDefined();
-	});
+  test('accounts should be defined', () => {
+    expect(accounts.Accounts).toBeDefined();
+  });
 });

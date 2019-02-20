@@ -19,24 +19,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const start = () => {
-    return "0xc1912fEE45d61C87Cc5EA59DaE31190FFFFf232d"
-}
+const start = () => '0xc1912fEE45d61C87Cc5EA59DaE31190FFFFf232d';
 
 class CronJob {
-    constructor() {
-    }
+  constructor() {}
 
-    start() {
-        return start
-    }
+  start() {
+    return start;
+  }
 }
 
-
-let cron = {
-    CronJob: CronJob
-
-}
-
+const cron = {
+  CronJob,
+};
 
 module.exports = cron;

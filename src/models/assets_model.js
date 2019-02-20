@@ -29,7 +29,7 @@ const assetsSchema = Mongoose.Schema({
   contractAddress: { type: String, required: true },
   totalSupply: { type: Number, required: false },
   url: { type: String, required: false },
-  category: {type: String, required: false}
+  category: { type: String, required: false },
 });
 
 const Assets = Mongoose.model('Assets', assetsSchema);

@@ -20,49 +20,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 function addTx() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.addTx = addTx;
 
 function updateTx() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.updateTx = updateTx;
 
 function addTxHistory() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.addTxHistory = addTxHistory;
 
 function findByTxHash() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.findByTxHash = findByTxHash;
 
 function findOneByTxHash() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve(null);
-  }));
+  });
 }
 module.exports.findOneByTxHash = findOneByTxHash;
 
 function listPending() {
   const transactions = [
     {
-      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      blockHash:
+        '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
       blockNumber: 2461146,
       from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
       gas: 21000,
       gasPrice: '120000000000',
-      hash: '0x06e8511b535abcffd4e715429358540a0e2b94ca4b9f1c67a58c42868193138a',
+      hash:
+        '0x06e8511b535abcffd4e715429358540a0e2b94ca4b9f1c67a58c42868193138a',
       input: '0x',
       nonce: 1243024,
       to: '0x31Cce510798Aa8E8dE42EB3339C494FC79E90583',
@@ -74,12 +76,14 @@ function listPending() {
     },
 
     {
-      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      blockHash:
+        '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
       blockNumber: 2461146,
       from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
       gas: 21000,
       gasPrice: '120000000000',
-      hash: '0x10b01e7af83a2d2e97f649eaec6d2590d3ac06f0834d226bab83dc1f01874b52',
+      hash:
+        '0x10b01e7af83a2d2e97f649eaec6d2590d3ac06f0834d226bab83dc1f01874b52',
       input: '0x',
       nonce: 1243025,
       to: '0x4e4eeACA5BE6B0fd8B5c83470AbB4A996B7d289C',
@@ -91,12 +95,14 @@ function listPending() {
     },
 
     {
-      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      blockHash:
+        '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
       blockNumber: 2461146,
       from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
       gas: 21000,
       gasPrice: '120000000000',
-      hash: '0x6f298f0a65077269cb30c95af525800c5840d080725dc47fad16d9d3d5810bfb',
+      hash:
+        '0x6f298f0a65077269cb30c95af525800c5840d080725dc47fad16d9d3d5810bfb',
       input: '0x',
       nonce: 1243026,
       to: '0x13C0C69B3C6C2670e08d5B1dABe9BE44BFaD5795',
@@ -109,23 +115,23 @@ function listPending() {
   ];
 
   const receipt = {
-    blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+    blockHash:
+      '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
     blockNumber: 2461146,
     contractAddress: null,
     cumulativeGasUsed: 1944627,
     from: '0xdc8f20170c0946accf9627b3eb1513cfd1c0499f',
     gasUsed: 261731,
-    logs:
-    [],
+    logs: [],
     logsBloom: '0x00000000000000000000000000000000000000000000',
     status: '0x1',
     to: '0x39ada2edf9bda495fce0278c7a66331cdffdbec1',
-    transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+    transactionHash:
+      '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
     transactionIndex: 14,
   };
 
   const pendingTxArray = [
-
     {
       _id: 'id1',
       transaction: transactions[0],
@@ -164,21 +170,23 @@ function listPending() {
     },
   ];
 
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve(pendingTxArray);
-  }));
+  });
 }
 module.exports.listPending = listPending;
 
 function listHistory() {
   const transactions = [
     {
-      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      blockHash:
+        '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
       blockNumber: 2461146,
       from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
       gas: 21000,
       gasPrice: '120000000000',
-      hash: '0x06e8511b535abcffd4e715429358540a0e2b94ca4b9f1c67a58c42868193138a',
+      hash:
+        '0x06e8511b535abcffd4e715429358540a0e2b94ca4b9f1c67a58c42868193138a',
       input: '0x',
       nonce: 1243024,
       to: '0x31Cce510798Aa8E8dE42EB3339C494FC79E90583',
@@ -190,12 +198,14 @@ function listHistory() {
     },
 
     {
-      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      blockHash:
+        '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
       blockNumber: 2461146,
       from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
       gas: 21000,
       gasPrice: '120000000000',
-      hash: '0x10b01e7af83a2d2e97f649eaec6d2590d3ac06f0834d226bab83dc1f01874b52',
+      hash:
+        '0x10b01e7af83a2d2e97f649eaec6d2590d3ac06f0834d226bab83dc1f01874b52',
       input: '0x',
       nonce: 1243025,
       to: '0x4e4eeACA5BE6B0fd8B5c83470AbB4A996B7d289C',
@@ -207,12 +217,14 @@ function listHistory() {
     },
 
     {
-      blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+      blockHash:
+        '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
       blockNumber: 2461146,
       from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
       gas: 21000,
       gasPrice: '120000000000',
-      hash: '0x6f298f0a65077269cb30c95af525800c5840d080725dc47fad16d9d3d5810bfb',
+      hash:
+        '0x6f298f0a65077269cb30c95af525800c5840d080725dc47fad16d9d3d5810bfb',
       input: '0x',
       nonce: 1243026,
       to: '0x13C0C69B3C6C2670e08d5B1dABe9BE44BFaD5795',
@@ -225,23 +237,23 @@ function listHistory() {
   ];
 
   const receipt = {
-    blockHash: '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+    blockHash:
+      '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
     blockNumber: 2461146,
     contractAddress: null,
     cumulativeGasUsed: 1944627,
     from: '0xdc8f20170c0946accf9627b3eb1513cfd1c0499f',
     gasUsed: 261731,
-    logs:
-    [],
+    logs: [],
     logsBloom: '0x00000000000000000000000000000000000000000000',
     status: '0x1',
     to: '0x39ada2edf9bda495fce0278c7a66331cdffdbec1',
-    transactionHash: '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
+    transactionHash:
+      '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
     transactionIndex: 14,
   };
 
   const historyTxArray = [
-
     {
       _id: 'id1',
       transaction: transactions[0],
@@ -280,51 +292,50 @@ function listHistory() {
     },
   ];
 
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve(historyTxArray);
-  }));
+  });
 }
 module.exports.listHistory = listHistory;
 
 function listDbZeroConfTx() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve([]);
-  }));
+  });
 }
 module.exports.listDbZeroConfTx = listDbZeroConfTx;
 
 function updateTxHistoryHeight() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.updateTxHistoryHeight = updateTxHistoryHeight;
 
 function findTxHistoryHeight() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.findTxHistoryHeight = findTxHistoryHeight;
 
 function addZeroTxHistoryHeight() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.addZeroTxHistoryHeight = addZeroTxHistoryHeight;
 
 function getTxHistory() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve({ TxHist: 'TxHistory' });
-  }));
+  });
 }
 module.exports.getTxHistory = getTxHistory;
 
 function emptyCollection() {
-  return new Promise(((resolve) => {
+  return new Promise(resolve => {
     resolve();
-  }));
+  });
 }
 module.exports.emptyCollection = emptyCollection;
-

@@ -35,66 +35,78 @@ function listAll() {
         }
         resolve(result);
       });
-    } catch (e) { reject(e); }
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 module.exports.listAll = listAll;
 
 function listRecent(idFrom) {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       oId = mongoose.Types.ObjectId(idFrom);
-      var query = "{_id : {$gt: " + oId + ")}}";
-      //accounts.Accounts.find(query, (err, result) => {
-      //limit the number of results to 1000 records
-      var q = accounts.Accounts.find({_id : {$gt: oId}}).limit(1000);
+      const query = `{_id : {$gt: ${oId})}}`;
+      // accounts.Accounts.find(query, (err, result) => {
+      // limit the number of results to 1000 records
+      const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(1000);
       q.exec((err, result) => {
-        if(err) {
+        if (err) {
           logger.error(`accounts.listRecent DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
       });
-    } catch(e) {
+    } catch (e) {
       logger.error(`accounts.listRecent error occurred: " + ${e}`);
       reject(e);
-  }}));
+    }
+  });
 }
 module.exports.listRecent = listRecent;
 
-function findByAddress(address , protocol) {
-  return new Promise(((resolve, reject) => {
+function findByAddress(address, protocol) {
+  return new Promise((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({ "addresses.address": address, "addresses.protocol": protocol }, (err, result) => {
-        if (err) {
-          logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        resolve(result);
-      });
-    } catch (e) { reject(e); }
-  }));
+      accounts.Accounts.findOne(
+        { 'addresses.address': address, 'addresses.protocol': protocol },
+        (err, result) => {
+          if (err) {
+            logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
+            reject(err);
+          }
+          resolve(result);
+        },
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 module.exports.findByAddress = findByAddress;
 
-
 function findByStatus(status, protocol) {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      accounts.Accounts.findOne({"addresses.status": status, "addresses.protocol": protocol }, (err, result) => {
-        if (err) {
-          logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
-          reject(err);
-        }
-        resolve(result);
-      });
-    } catch (e) { reject(e); }
-  }));
+      accounts.Accounts.findOne(
+        { 'addresses.status': status, 'addresses.protocol': protocol },
+        (err, result) => {
+          if (err) {
+            logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
+            reject(err);
+          }
+          resolve(result);
+        },
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 module.exports.findByStatus = findByStatus;
 
 function findByWalletId(pillarId) {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       accounts.Accounts.findOne({ walletID: pillarId }, (err, result) => {
         if (err) {
@@ -103,34 +115,38 @@ function findByWalletId(pillarId) {
         }
         resolve(result);
       });
-    } catch (e) { reject(e); }
-  }));
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 module.exports.findByWalletId = findByWalletId;
 
-
 function addAddress(pillarId, address) {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      const ethAddress
-        = new accounts.Accounts({ pillarId, addresses: { protocol: 'Ethereum', address: address.toUpperCase() } });
-      ethAddress.save((err) => {
+      const ethAddress = new accounts.Accounts({
+        pillarId,
+        addresses: { protocol: 'Ethereum', address: address.toUpperCase() },
+      });
+      ethAddress.save(err => {
         if (err) {
           logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve();
       });
-    } catch (e) { reject(e); }
-  }));
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 module.exports.addAddress = addAddress;
 
-
 function removeAddress(pillarId) {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
-      accounts.Accounts.remove({ pillarId }, (err) => {
+      accounts.Accounts.remove({ pillarId }, err => {
         if (err) {
           logger.info(`accounts.removeAddress DB controller ERROR: ${err}`);
           reject(err);
@@ -138,23 +154,29 @@ function removeAddress(pillarId) {
         logger.info(`REMOVED ACCOUNT ${pillarId}\n`);
         resolve();
       });
-    } catch (e) { reject(e); }
-  }));
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 module.exports.removeAddress = removeAddress;
 
 function emptyCollection() {
-  return new Promise(((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       accounts.Accounts.remove((err, result) => {
         if (err) {
           logger.info(`accounts.emptyCollection DB controller ERROR: ${err}`);
           reject(err);
         }
-        logger.info(`Removed ${result.result.n} documents from accounts database...\n`);
+        logger.info(
+          `Removed ${result.result.n} documents from accounts database...\n`,
+        );
         resolve();
       });
-    } catch (e) { reject(e); }
-  }));
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 module.exports.emptyCollection = emptyCollection;
