@@ -26,7 +26,7 @@ SOFTWARE.
 #!/usr/bin/env node */
 >>>>>>> Linter changes
 /** @module master.js */
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 
 const logger = require('./utils/logger');
 const fork = require('child_process').fork;

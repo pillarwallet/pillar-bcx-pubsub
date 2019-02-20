@@ -22,7 +22,7 @@ SOFTWARE.
 #!/usr/bin/env node */
 
 /** @module deferred.js */
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 const dbServices = require('./services/dbServices');
 const ethService = require('./services/ethService');
 const logger = require('./utils/logger');

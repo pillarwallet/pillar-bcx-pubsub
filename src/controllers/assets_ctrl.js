@@ -19,7 +19,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const colors = require('colors');
 const assets = require('../models/assets_model');
 const logger = require('../utils/logger.js');
 const mongoose = require('mongoose');
@@ -65,7 +64,6 @@ function listRecent(idFrom) {
   return new Promise((resolve, reject) => {
     try {
       oId = mongoose.Types.ObjectId(idFrom);
-      const query = `{_id : {$gt: ${oId})}}`;
       // console.log("Query: ",query);
       // accounts.Accounts.find(query, (err, result) => {
       assets.Assets.find({ _id: { $gt: oId } }, (err, result) => {

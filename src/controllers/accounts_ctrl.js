@@ -46,7 +46,6 @@ function listRecent(idFrom) {
   return new Promise((resolve, reject) => {
     try {
       oId = mongoose.Types.ObjectId(idFrom);
-      const query = `{_id : {$gt: ${oId})}}`;
       // accounts.Accounts.find(query, (err, result) => {
       // limit the number of results to 1000 records
       const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(1000);

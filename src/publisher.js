@@ -21,9 +21,7 @@ SOFTWARE.
 */
 
 
-/** @module publisher.js */
-'use strict';
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 require('dotenv').config();
 const bluebird = require('bluebird');
 const logger = require('./utils/logger');

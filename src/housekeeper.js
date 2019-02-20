@@ -22,7 +22,7 @@ SOFTWARE.
 
 'use strict';
 /** @module housekeeper.js */
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 require('dotenv').config();
 const time = require('unix-timestamp');
 const abiDecoder = require('abi-decoder');

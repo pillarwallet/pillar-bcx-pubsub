@@ -35,7 +35,6 @@ describe('Test method: master.init()', () => {
   test('Expect master.init() to be called', done => {
     jest.mock('./services/dbServices');
     const master = require('./master');
-    const options = { protocol: 'Ethereum', maxWallets: 500000 };
     const launchMock = jest.spyOn(master, 'launch');
     const launchMockImpl = jest.fn(() => {
       done();
