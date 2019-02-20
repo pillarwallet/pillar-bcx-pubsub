@@ -22,7 +22,7 @@ SOFTWARE.
 #!/usr/bin/env node */
 
 /** @module housekeeper.js */
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 require('dotenv').config();
 const redis = require('redis');
 

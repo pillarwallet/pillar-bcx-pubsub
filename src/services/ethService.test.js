@@ -23,7 +23,6 @@ const processTx = require('./processTx');
 const Web3 = require('web3');
 
 jest.mock('./dbServices.js');
-const dbServices = require('./dbServices.js');
 
 afterAll(() => {
   jest.restoreAllMocks();
@@ -121,7 +120,6 @@ describe('The getBlockTx function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    const doneFn = jest.fn(() => done());
     ethService.getBlockTx(blockNumber).then(value => {
       done();
     });
@@ -132,7 +130,6 @@ describe('The getBlockNumber function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    const doneFn = jest.fn(() => done());
     ethService.getBlockNumber(blockNumber).then(value => {
       done();
     });
@@ -143,7 +140,6 @@ describe('The getLastBlockNumber function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    const doneFn = jest.fn(() => done());
     ethService.getLastBlockNumber(blockNumber).then(value => {
       done();
     });
@@ -155,7 +151,6 @@ describe('The getTxReceipt function tests', () => {
     const blockNumber =
       '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b';
     const ethService = require('./ethService');
-    const doneFn = jest.fn(() => done());
     ethService.getTxReceipt(blockNumber).then(value => {
       done();
     });
@@ -166,7 +161,6 @@ describe('The getBlockTransactionCount function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    const doneFn = jest.fn(() => done());
     ethService.getBlockTransactionCount(blockNumber).then(value => {
       done();
     });
@@ -177,7 +171,6 @@ describe('The getPendingTxArray function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    const doneFn = jest.fn(() => done());
     ethService.getPendingTxArray(blockNumber).then(value => {
       done();
     });

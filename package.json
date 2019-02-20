@@ -10,8 +10,8 @@
     "migrate:up": "migrate up",
     "migrate:create": "migrate create",
     "migrate:down": "migrate down",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint": "eslint ./src",
+    "lint:fix": "eslint --fix ./src"
   },
   "repository": {
     "type": "git",
@@ -59,15 +59,15 @@
     "migrate": "^1.6.2"
   },
   "devDependencies": {
-    "eslint-plugin-jest": "^21.18.0",
-    "jest": "^23.4.2",
-    "jest-cli": "^23.4.2",
     "eslint": "4.19.1",
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-config-prettier": "2.9.0",
     "eslint-plugin-import": "2.11.0",
+    "eslint-plugin-jest": "^21.27.2",
     "eslint-plugin-no-only-tests": "2.0.1",
     "eslint-plugin-prettier": "2.6.2",
+    "jest": "^23.4.2",
+    "jest-cli": "^23.4.2",
     "prettier": "1.13.7"
   },
   "jest": {

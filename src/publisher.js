@@ -22,7 +22,7 @@ SOFTWARE.
 #!/usr/bin/env node */
 /** @module publisher.js */
 
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 require('dotenv').config();
 const bluebird = require('bluebird');
 const logger = require('./utils/logger');

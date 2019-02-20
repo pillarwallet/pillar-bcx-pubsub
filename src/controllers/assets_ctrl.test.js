@@ -81,7 +81,7 @@ describe('Test assets_ctrl', () => {
     jest.mock('../models/assets_model.js');
     const assetsCtrl = require('./assets_ctrl.js');
     const assetsModel = require('../models/assets_model.js');
-    const spy = jest.spyOn(assetsModel.Assets, 'find');
+    jest.spyOn(assetsModel.Assets, 'find');
     return assetsCtrl.addContract().then(result => {
       done();
     });

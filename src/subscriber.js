@@ -21,7 +21,7 @@ SOFTWARE.
 
 #!/usr/bin/env node */
 /** @module subscriber.js */
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 const CronJob = require('cron').CronJob;
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');

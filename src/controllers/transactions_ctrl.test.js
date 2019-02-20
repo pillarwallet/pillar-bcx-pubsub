@@ -126,7 +126,6 @@ describe('Test transactions_ctrl functions', () => {
   test('addTx function should call save()', done => {
     const transactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/transactions_model.js');
-    const transactionsModel = require('../models/transactions_model.js');
     return transactionsCtrl.addTx({}).then(result => {
       done();
     });
