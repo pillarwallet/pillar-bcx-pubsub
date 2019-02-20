@@ -21,7 +21,6 @@ SOFTWARE.
 */
 const Mongoose = require('../services/dbServices').mongoose;
 
-
 // NEW DB SCHEMA
 const accountsSchema = Mongoose.Schema({
   pillarId: { type: String, required: true },
@@ -29,9 +28,9 @@ const accountsSchema = Mongoose.Schema({
     {
       protocol: String,
       address: String,
-      status: String
+      status: String,
     },
-  ]
+  ],
 });
 
 const Accounts = Mongoose.model('Accounts', accountsSchema);

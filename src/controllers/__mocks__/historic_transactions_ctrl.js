@@ -21,12 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-
 function addMultipleTx(txObject) {
-    return new Promise((resolve, reject) => {
-       resolve()
-          
-    });
+  return new Promise((resolve, reject) => {
+    resolve();
+  });
 }
 module.exports.addMultipleTx = addMultipleTx;

@@ -20,50 +20,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-let redis = {
-    createClient: function () {
-        return {
-            getAsync: function () {
-                return new Promise((resolve, reject) => {
-                    resolve(false)
-                })
-            },
-            existsAsync: function () {
-                return new Promise((resolve, reject) => {
-                    resolve(false)
-                })
-            },
-            setAsync: function () {
-                return new Promise((resolve, reject) => {
-                    resolve(false)
-                })
-            },
-            set: function () {
-                return new Promise((resolve, reject) => {
-                    resolve(false)
-                })
-            },
-            get: function (data, callback) {
-                if(typeof callback == "function") {
-                    callback(false, JSON.stringify({status:"completed"}))
-                }
-                else{
-                    return new Promise((resolve, reject) => {
-                        resolve(false)
-                    })
-                }
-            },
-            on: function () {
-                return new Promise((resolve, reject) => {
-                    resolve("testValue")
-                })
-            }
+const redis = {
+  createClient() {
+    return {
+      getAsync() {
+        return new Promise((resolve, reject) => {
+          resolve(false);
+        });
+      },
+      existsAsync() {
+        return new Promise((resolve, reject) => {
+          resolve(false);
+        });
+      },
+      setAsync() {
+        return new Promise((resolve, reject) => {
+          resolve(false);
+        });
+      },
+      set() {
+        return new Promise((resolve, reject) => {
+          resolve(false);
+        });
+      },
+      get(data, callback) {
+        console.log('is on get');
+        if (typeof callback === 'function') {
+          callback(false, JSON.stringify({ status: 'completed' }));
+        } else {
+          return new Promise((resolve, reject) => {
+            resolve(false);
+          });
         }
-    }
-
-}
-
-
-
+      },
+      on() {
+        return new Promise((resolve, reject) => {
+          resolve('testValue');
+        });
+      },
+    };
+  },
+};
 
 module.exports = redis;

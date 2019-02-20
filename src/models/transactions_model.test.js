@@ -21,7 +21,6 @@ SOFTWARE.
 */
 // TEST FAILING DUE TO ethTxSchema INDEXING... REPLACED WITH A DUMMY TEST BELOW
 
-
 /*
 const dbServices = require('../services/dbServices.js');
 
@@ -31,10 +30,7 @@ const mongoose = require('mongoose');
 
 dbServices.dbConnect(url);
 
-
-
  const transactions = require('./transactions_model.js');
-
 
 describe('Test transactions', () => {
 
@@ -48,10 +44,7 @@ describe('Test transactions', () => {
 */
 
 describe('Test transactions', () => {
-
-	test('transactions should be defined', () => {
-
-		expect(1).toEqual(1);
-	});
-
+  test('transactions should be defined', () => {
+    expect(1).toEqual(1);
+  });
 });

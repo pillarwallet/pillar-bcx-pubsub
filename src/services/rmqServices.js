@@ -164,7 +164,6 @@ function sendPubSubMessage(payloadParam) {
 
 module.exports.sendPubSubMessage = sendPubSubMessage;
 
-
 /**
  * Function that initialize the connection
  * @param {any} connection - the connection
@@ -175,7 +174,7 @@ function initializePubSubChannel(connection) {
     ch.assertQueue(pubSubQueue, { durable: true });
     // Note: on Node 6 Buffer.from(msg) should be used
   });
-};
+}
 
 module.exports.initializePubSubChannel = initializePubSubChannel;
 
@@ -188,7 +187,7 @@ function initializeOffersChannel(connection) {
     offersChannel = ch;
     ch.assertQueue(offersQueue, { durable: true });
   });
-};
+}
 
 module.exports.initializeOffersChannel = initializeOffersChannel;
 
@@ -208,7 +207,7 @@ module.exports.bindOffersQueue = bindOffersQueue;
  */
 function calculateChecksum(payload, checksumKey) {
   return SHA256.hex(checksumKey + JSON.stringify(payload));
-};
+}
 
 module.exports.calculateChecksum = calculateChecksum;
 
@@ -218,13 +217,12 @@ module.exports.calculateChecksum = calculateChecksum;
  */
 
 function sendOffersMessage(payload) {
-
-  if (!offersChannel){
-    throw new Error("pubSubChannel is not initialized")
+  if (!offersChannel) {
+    throw new Error('pubSubChannel is not initialized');
   }
   offersChannel.sendToQueue(offersQueue, Buffer.from(JSON.stringify(payload)));
-  logger.info(`Message sent to ${offersQueue}, Content: ${payload}`)
-};
+  logger.info(`Message sent to ${offersQueue}, Content: ${payload}`);
+}
 
 module.exports.sendOffersMessage = sendOffersMessage;
 
@@ -272,48 +270,26 @@ function initSubPubMQ() {
   try {
     let connection;
     logger.info('Subscriber Started executing initSubPubMQ()');
-    amqp.connect(MQ_URL, (error, conn) => {
-
-      if (error) {
-        logger.error(`Subscriber failed initializing RabbitMQ, error: ${error}`);
-        return setTimeout(initSubPubMQ, 5000);
-      }
-      if (conn) {
-        connection = conn;
-      }
-      connection.on('error', (err) => {
-        logger.error(`Subscriber RMQ connection errored out: ${err}`);
-        return setTimeout(initSubPubMQ, 5000);
-      });
-      connection.on('close', () => {
-        logger.error('Subscriber RMQ Connection closed');
-        return setTimeout(initSubPubMQ, 5000);
-      });
-    
-      logger.info('Subscriber RMQ Connected');
-
-      connection.createChannel((err, ch) => {
-        ch.assertQueue(pubSubQueue, { durable: true });
-        ch.consume(pubSubQueue, (msg) => {
-          
-          logger.info(`Subscriber received rmq message: ${msg.content}`);
-          if (typeof msg.content !== 'undefined' && msg.content !== '' &&
-            validatePubSubMessage(JSON.parse(msg.content), checksumKey)) {
-            const entry = JSON.parse(msg.content);
-            const { type, txHash } = entry;
-            delete entry.type;
-            delete entry.checksum;
-            switch (type) {
-              case 'newTx':
-                // Removes all txn hash's after 3 minutes.
-                resetTxMap(TX_MAP);
-
-                // Added to stop duplicate transactions.
-                if (txHash in TX_MAP) {
-                  break;
-                } else {
-                  TX_MAP[txHash] = { timestamp: moment() };
-                }
+    amqp.connect(
+      MQ_URL,
+      (error, conn) => {
+        if (error) {
+          logger.error(
+            `Subscriber failed initializing RabbitMQ, error: ${error}`,
+          );
+          return setTimeout(initSubPubMQ, 5000);
+        }
+        if (conn) {
+          connection = conn;
+        }
+        connection.on('error', err => {
+          logger.error(`Subscriber RMQ connection errored out: ${err}`);
+          return setTimeout(initSubPubMQ, 5000);
+        });
+        connection.on('close', () => {
+          logger.error('Subscriber RMQ Connection closed');
+          return setTimeout(initSubPubMQ, 5000);
+        });
 
         logger.info('Subscriber RMQ Connected');
 
@@ -434,7 +410,7 @@ function initSubPubMQ() {
   } finally {
     logger.info('Exited initSubPubMQ()');
   }
-};
+}
 
 module.exports.initSubPubMQ = initSubPubMQ;
 
@@ -449,6 +425,6 @@ function validatePubSubMessage(payload, checksumKey) {
     return true;
   }
   return false;
-};
+}
 
 module.exports.initSubPubMQ = initSubPubMQ;

@@ -30,10 +30,11 @@ const sentryConfiguration = {
 };
 
 try {
-    diagnostics.sentryBuilder.setWhitelistedEnvironments(whitelistedEnvironments)
-        .setConfiguration(sentryConfiguration)
-        .start();
-    logger.info("Sentry successfully started")
+  diagnostics.sentryBuilder
+    .setWhitelistedEnvironments(whitelistedEnvironments)
+    .setConfiguration(sentryConfiguration)
+    .start();
+  logger.info('Sentry successfully started');
 } catch (e) {
-logger.error({ err: e }, 'Sentry failed to start');
+  logger.error({ err: e }, 'Sentry failed to start');
 }
