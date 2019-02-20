@@ -301,7 +301,7 @@ async function processTxn(transaction, wallet ,pillarId){
 
 async function processTxn(transaction, wallet ,pillarId){
     var entry;
-    var tmstmp = await ethService.getBlockTx(transaction.blockNumber).timestamp
+    var tmstmp = await ethService.getBlockTx(transaction.blockNumber)
     var asset, status, value, to, contractAddress;
     if (transaction.action.input !== '0x') {
         var theAsset = await dbServices.getAsset(transaction.action.to);
@@ -343,18 +343,18 @@ async function processTxn(transaction, wallet ,pillarId){
         status = 'confirmed';
     }
     entry = {
-        protocol,
-        pillarId,
-        toAddress: to,
-        fromAddress: transaction.action.from,
-        txHash: transaction.transactionHash,
-        asset,
-        contractAddress: contractAddress,
-        timestamp: tmstmp,
-        value: value,
-        blockNumber: transaction.blockNumber,
-        status,
-        gasUsed: transaction.result.gasUsed,
+      protocol,
+      pillarId,
+      toAddress: to,
+      fromAddress: transaction.action.from,
+      txHash: transaction.transactionHash,
+      asset,
+      contractAddress: contractAddress,
+      timestamp: tmstmp.timestamp,
+      value: value,
+      blockNumber: transaction.blockNumber,
+      status,
+      gasUsed: transaction.result.gasUsed
     };
     logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
     dbServices.dbCollections.transactions.addTx(entry);
