@@ -19,12 +19,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-function addABI() {
-
-}
+function addABI() {}
 module.exports.addABI = addABI;
 
 function decodeMethod() {
-  return {name:"transfer", params: [{value:"0xAddress"}, {value:"1"}]};
+  return { name: 'transfer', params: [{ value: '0xAddress' }, { value: '1' }] };
 }
 module.exports.decodeMethod = decodeMethod;

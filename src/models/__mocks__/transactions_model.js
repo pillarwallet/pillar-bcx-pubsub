@@ -20,60 +20,58 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 const Transactions = class Transactions {
-  save(callback){
-    callback(false)
-
+  save(callback) {
+    callback(false);
   }
-}
+};
 
 Transactions.find = function(query, callback) {
-  const returnValue = [{ _id: "pillarId", txHash: "hash", protocol: "Ethereum" }]
-  if (query && typeof query === "function" && callback == null) {
+  const returnValue = [
+    { _id: 'pillarId', txHash: 'hash', protocol: 'Ethereum' },
+  ];
+  if (query && typeof query === 'function' && callback == null) {
     query('', returnValue);
-  } else if(callback != null && typeof callback === "function"){
-    callback('', returnValue);
-  }else{
-    return new Promise((resolve, reject) => {
-      resolve(returnValue)
-    })
-  }
-}
-
-Transactions.findOne = function (query, callback) {
-  const returnValue = [{ _id: "pillarId", txHash: "hash", protocol: "Ethereum" }]
-  if (query && typeof query === "function" && callback == null) {
-    query('', returnValue);
-  } else if (callback != null && typeof callback === "function") {
+  } else if (callback != null && typeof callback === 'function') {
     callback('', returnValue);
   } else {
     return new Promise((resolve, reject) => {
-      resolve(returnValue)
-    })
+      resolve(returnValue);
+    });
   }
-}
+};
 
-
-Transactions.aggregate = function (query, callback) {
-
-  const returnValue = [{balance : 5}]
-  if (query && typeof query === "function" && callback == null) {
+Transactions.findOne = function(query, callback) {
+  const returnValue = [
+    { _id: 'pillarId', txHash: 'hash', protocol: 'Ethereum' },
+  ];
+  if (query && typeof query === 'function' && callback == null) {
     query('', returnValue);
-  } else if (callback != null && typeof callback === "function") {
+  } else if (callback != null && typeof callback === 'function') {
     callback('', returnValue);
   } else {
     return new Promise((resolve, reject) => {
-      resolve(returnValue)
-    })
+      resolve(returnValue);
+    });
   }
-}
+};
 
-Transactions.save = function () {
-}
+Transactions.aggregate = function(query, callback) {
+  const returnValue = [{ balance: 5 }];
+  if (query && typeof query === 'function' && callback == null) {
+    query('', returnValue);
+  } else if (callback != null && typeof callback === 'function') {
+    callback('', returnValue);
+  } else {
+    return new Promise((resolve, reject) => {
+      resolve(returnValue);
+    });
+  }
+};
 
-Transactions.update = function () {
-}
+Transactions.save = function() {};
 
-Transactions.remove= function() {
-}
-  
+Transactions.update = function() {};
+
+Transactions.remove = function() {};
+
 module.exports.Transactions = Transactions;

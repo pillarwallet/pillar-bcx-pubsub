@@ -19,38 +19,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-module.exports.getBlockTx = ()=>{
-    return {
-        transactions: [{ to: "to", from: "from", hash: "hash"}]
-    }
-}
+module.exports.getBlockTx = () => ({
+  transactions: [{ to: 'to', from: 'from', hash: 'hash' }],
+});
 
-module.exports.getTxReceipt = ()=>{ return new Promise((resolve, reject) => {
-    resolve({ status: "0x1" })
-})
-}
+module.exports.getTxReceipt = () =>
+  new Promise((resolve, reject) => {
+    resolve({ status: '0x1' });
+  });
 
-module.exports.getPastEvents = () => {
-    return {
-        transactions: [{ to: "to", from: "from", hash: "hash" }]
-    }
-}
+module.exports.getPastEvents = () => ({
+  transactions: [{ to: 'to', from: 'from', hash: 'hash' }],
+});
 
-module.exports.getLastBlockNumber = () => {
-    return new Promise((resolve, reject) => {
-     resolve(500)
-    })
-}
+module.exports.getLastBlockNumber = () =>
+  new Promise((resolve, reject) => {
+    resolve(500);
+  });
 
-module.exports.getTransactionCountForWallet = () => {
-    return new Promise((resolve, reject) => {
-        resolve(50)
-    })
-}
+module.exports.getTransactionCountForWallet = () =>
+  new Promise((resolve, reject) => {
+    resolve(50);
+  });
 
-module.exports.getAllTransactionsForWallet =  () => {
-    return [{result:{gasUsed:5}, action: { input: "input", to: "to", from: "from", hash: "hash"}, to: "to", from: "from", hash: "hash" }]
-}
-
-
-
+module.exports.getAllTransactionsForWallet = () => [
+  {
+    result: { gasUsed: 5 },
+    action: { input: 'input', to: 'to', from: 'from', hash: 'hash' },
+    to: 'to',
+    from: 'from',
+    hash: 'hash',
+  },
+];
