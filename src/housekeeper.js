@@ -291,33 +291,33 @@ async function processTxn(transaction, wallet ,pillarId){
             to = transaction.action.to;
             value = transaction.action.value;
         }
-    } else {
-        asset = 'ETH';
-        value = parseInt(transaction.action.value, 16);
-        to = transaction.action.to;
-        contractAddress = null;
-    }
-    if (typeof transaction.error === 'Reverted') {
-        status = 'failed';
-    } else {
-        status = 'confirmed';
-    }
-    entry = {
-        protocol,
-        pillarId,
-        toAddress: to,
-        fromAddress: transaction.action.from,
-        txHash: transaction.transactionHash,
-        asset,
-        contractAddress: contractAddress,
-        timestamp: tmstmp.timestamp,
-        value: value,
-        blockNumber: transaction.blockNumber,
-        status,
-        gasUsed: (transaction.result? transaction.result.gasUsed : undefined),
-    };
-    logger.debug(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
-    dbServices.dbCollections.transactions.addTx(entry);
+  } else {
+    asset = 'ETH';
+    value = parseInt(transaction.action.value, 16);
+    to = transaction.action.to;
+    contractAddress = null;
+  }
+  if (transaction.error === 'Reverted') {
+    status = 'failed';
+  } else {
+    status = 'confirmed';
+  }
+  entry = {
+    protocol,
+    pillarId,
+    toAddress: to,
+    fromAddress: transaction.action.from,
+    txHash: transaction.transactionHash,
+    asset,
+    contractAddress,
+    timestamp: tmstmp.timestamp,
+    value,
+    blockNumber: transaction.blockNumber,
+    status,
+    gasUsed: transaction.result.gasUsed,
+  };
+  logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
+  dbServices.dbCollections.transactions.addTx(entry);
 }
 
 
