@@ -248,7 +248,7 @@ async function processTxn(transaction, wallet, pillarId) {
     to = transaction.action.to;
     contractAddress = null;
   }
-  if (typeof transaction.error === 'Reverted') {
+  if (transaction.error === 'Reverted') {
     status = 'failed';
   } else {
     status = 'confirmed';
