@@ -241,13 +241,10 @@ async function newPendingTran(tx, protocol) {
       logger.debug(
         `processTx.newPendingTran(): txn ${hash} from= ${from} to= ${to}`,
       );
-      if (to !== null && (await client.existsAsync(to.toLowerCase()))) {
+      if (await client.existsAsync(to.toLowerCase())) {
         // fetch the pillarId corresponding to the to address and
         pillarId = await client.getAsync(to.toLowerCase());
-      } else if (
-        from !== null &&
-        (await client.existsAsync(from.toLowerCase()))
-      ) {
+      } else if (await client.existsAsync(from.toLowerCase())) {
         pillarId = await client.getAsync(from.toLowerCase());
       }
       if (!hashMaps.assets.has(to.toLowerCase())) {
