@@ -36,7 +36,7 @@ beforeAll(() => {
 
 describe('Test checksum', () => {
   test('Expect a valid checksum', () => {
-    checksumKey = 'abc';
+    const checksumKey = 'abc';
     const payload = {
       key: 'value',
       checksum:
@@ -50,7 +50,7 @@ describe('Test checksum', () => {
   });
 
   test('Expect an invalid checksum', () => {
-    checksumKey = 'abc';
+    const checksumKey = 'abc';
     const payload = {
       key: 'value',
       checksum: 'hello',
@@ -63,7 +63,7 @@ describe('Test checksum', () => {
   });
 
   test('Expect checksum', () => {
-    checksumKey = 'abc';
+    const checksumKey = 'abc';
     const payload = {
       key: 'value',
     };
