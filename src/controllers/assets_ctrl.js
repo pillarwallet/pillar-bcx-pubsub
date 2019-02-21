@@ -63,7 +63,7 @@ module.exports.listAssets = listAssets;
 function listRecent(idFrom) {
   return new Promise((resolve, reject) => {
     try {
-      oId = mongoose.Types.ObjectId(idFrom);
+      var oId = mongoose.Types.ObjectId(idFrom);
       // console.log("Query: ",query);
       // accounts.Accounts.find(query, (err, result) => {
       assets.Assets.find({ _id: { $gt: oId } }, (err, result) => {

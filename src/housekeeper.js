@@ -142,7 +142,7 @@ async function recoverTransactions(startBlock, endBlock, walletId) {
         txn.from.toLowerCase() === walletId ||
         (txn.to !== null && txn.to.toLowerCase() === walletId)
       ) {
-        receipt = await ethService.getTxReceipt(txn.hash);
+        var receipt = await ethService.getTxReceipt(txn.hash);
         transactions.push(receipt);
       }
     });
@@ -248,7 +248,7 @@ async function processTxn(transaction, wallet, pillarId) {
     to = transaction.action.to;
     contractAddress = null;
   }
-  if (typeof transaction.error === 'Reverted') {
+  if (transaction.error === 'Reverted') {
     status = 'failed';
   } else {
     status = 'confirmed';
