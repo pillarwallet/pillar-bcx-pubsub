@@ -143,6 +143,7 @@ async function checkTxPool() {
 }
 module.exports.checkTxPool = checkTxPool;
 
+<<<<<<< HEAD
 
 
 function generateList(number) {
@@ -163,6 +164,23 @@ function decimalToHexString(number) {
     }
 
     return "0x" + number.toString(16).toUpperCase();
+=======
+async function recoverTransactions(startBlock, endBlock, walletId) {
+  const transactions = [];
+  for (let i = startBlock; i >= endBlock; i--) {
+    const txns = await ethService.getBlockTx(i);
+    txns.transactions.forEach(async txn => {
+      if (
+        txn.from.toLowerCase() === walletId ||
+        (txn.to !== null && txn.to.toLowerCase() === walletId)
+      ) {
+        var receipt = await ethService.getTxReceipt(txn.hash);
+        transactions.push(receipt);
+      }
+    });
+  }
+  return transactions;
+>>>>>>> fixing warnings
 }
 
 module.exports.decimalToHexString = decimalToHexString;

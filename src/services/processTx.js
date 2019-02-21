@@ -162,7 +162,7 @@ module.exports.storeTokenEvent = storeTokenEvent;
 async function storeIfRelevant(tx, protocol) {
   const tmstmp = time.now();
   let pillarId = '';
-  let data, value;
+  let asset, data, value;
   const from = tx.from;
   let to = tx.to;
   const status = tx.status === '0x1' ? 'confirmed' : 'failed';

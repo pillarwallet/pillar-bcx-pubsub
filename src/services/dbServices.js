@@ -133,7 +133,7 @@ function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
   return new Promise((resolve, reject) => {
     try {
       if (dbCollections) {
-        if (typeof idFrom !== undefined && idFrom !== '') {
+        if (idFrom !== undefined && idFrom !== '') {
           // fetch accounts registered after a given Id
           dbCollections.accounts
             .listRecent(idFrom)
@@ -171,7 +171,7 @@ function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
   return new Promise((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
     if (dbCollections) {
-      if (typeof idFrom !== undefined && idFrom !== '') {
+      if (idFrom !== undefined && idFrom !== '') {
         // fetch accounts registered after a given Id
         dbCollections.assets
           .listRecent(idFrom)
