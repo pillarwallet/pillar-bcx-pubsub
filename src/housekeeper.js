@@ -26,7 +26,7 @@ require('./utils/diagnostics');
 require('dotenv').config();
 const time = require('unix-timestamp');
 const abiDecoder = require('abi-decoder');
-const ERC20ABI = require('./services/ERC20ABI');
+const ERC20ABI = require('./abi/ERC20ABI');
 const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices');
 const fs = require('fs');
