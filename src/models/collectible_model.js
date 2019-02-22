@@ -31,6 +31,6 @@ const collectibleSchema = Mongoose.Schema({
   txHash: { type: String, required: true }
 });
 
-const Collectible = Mongoose.model('Collectible', collectibleSchema);
+const Collectibles = Mongoose.model('Collectibles', collectibleSchema);
 
-module.exports.Collectible = Collectible;
+module.exports.Collectibles = Collectibles;
