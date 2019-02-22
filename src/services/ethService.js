@@ -384,7 +384,7 @@ function subscribeCollectibleEvents(theContract) {
           ERC721ABI,
           theContract.contractAddress,
         );
-        collectible.events.Transfer({}, (error, result) => {
+        collectible.events.Transfer({}, async (error, result) => {
           logger.debug(
             `ethService: Collectible transfer event occurred for contract: ${JSON.stringify(
               theContract,
