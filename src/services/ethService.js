@@ -30,7 +30,7 @@ require('dotenv').config();
 const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
-const ERC20ABI = require('../abi');
+const ERC20ABI = require('../abi/ERC20ABI');
 const ERC721ABI = require('../abi/ERC721ABI');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
