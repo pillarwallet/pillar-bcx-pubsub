@@ -29,6 +29,7 @@ const dbServices = require('./dbServices.js');
 
 const TRANSACTION_PENDING = 'transactionPendingEvent';
 const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
+const COLLECTIBLE_TRANSFER = 'collectibleTransferEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
@@ -342,17 +343,31 @@ function initSubPubMQ() {
                       .then(() => {
                         logger.info(`newTx: Transaction inserted: ${txHash}`);
                         ch.assertQueue(notificationsQueue, { durable: true });
-                        ch.sendToQueue(
-                          notificationsQueue,
-                          new Buffer.from(
-                            JSON.stringify(
-                              getNotificationPayload(
-                                TRANSACTION_PENDING,
-                                entry,
+                        if(typeof entry.tokenId === 'undefined') {
+                          ch.sendToQueue(
+                            notificationsQueue,
+                            new Buffer.from(
+                              JSON.stringify(
+                                getNotificationPayload(
+                                  TRANSACTION_PENDING,
+                                  entry,
+                                ),
                               ),
                             ),
-                          ),
-                        );
+                          );
+                        } else {
+                          ch.sendToQueue(
+                            notificationsQueue,
+                            new Buffer.from(
+                              JSON.stringify(
+                                getNotificationPayload(
+                                  COLLECTIBLE_TRANSFER,
+                                  entry,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
                         logger.info(
                           `newTx: Transaction produced to: ${notificationsQueue}`,
                         );
