@@ -288,6 +288,9 @@ function initSubPubMQ() {
                             ),
                           );
                         } else {
+                          //insert the record to collectibles schema
+                          
+
                           ch.sendToQueue(
                             notificationsQueue,
                             new Buffer.from(
