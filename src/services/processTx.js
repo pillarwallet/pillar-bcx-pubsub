@@ -310,22 +310,44 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
         // send a message to the notifications queue reporting a new transactions
-        const txMsgTo = {
-          type: 'newTx',
-          pillarId,
-          protocol,
-          fromAddress: from,
-          toAddress: to,
-          txHash: hash,
-          asset,
-          contractAddress,
-          timestamp: tmstmp,
-          value,
-          gasPrice: tx.gasPrice,
-          blockNumber: tx.blockNumber,
-          status: 'pending',
-          input: tx.input,
-        };
+        var txMsgTo  = '';
+        if(typeof contractDetail.category === 'Collectible') {
+          txMsgTo = {
+            type: 'newTx',
+            pillarId,
+            protocol,
+            fromAddress: from,
+            toAddress: to,
+            txHash: hash,
+            asset,
+            contractAddress,
+            timestamp: tmstmp,
+            value,
+            gasPrice: tx.gasPrice,
+            blockNumber: tx.blockNumber,
+            status: 'pending',
+            input: tx.input,
+            tokenId: 0
+          };
+          
+        } else {
+          txMsgTo = {
+            type: 'newTx',
+            pillarId,
+            protocol,
+            fromAddress: from,
+            toAddress: to,
+            txHash: hash,
+            asset,
+            contractAddress,
+            timestamp: tmstmp,
+            value,
+            gasPrice: tx.gasPrice,
+            blockNumber: tx.blockNumber,
+            status: 'pending',
+            input: tx.input,
+          };
+        }
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
             txMsgTo,

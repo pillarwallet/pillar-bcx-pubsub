@@ -402,7 +402,7 @@ function subscribeCollectibleEvents(theContract) {
             }
             if (pillarId !== null && pillarId !== '') {
               const txMsg = {
-                type: 'newTx',
+                type: 'updateTx',
                 pillarId,
                 protocol,
                 fromAddress: evnt.returnValues._from,
