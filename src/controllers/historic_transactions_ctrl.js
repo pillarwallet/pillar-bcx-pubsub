@@ -25,7 +25,7 @@ function addMultipleTx(txObject) {
   return new Promise((resolve, reject) => {
     try {
       historicTransactions.HistoricTransactions.insertMany(txObject)
-        .then(mongooseDocuments => {
+        .then(() => {
           resolve();
         })
         .catch(err => {

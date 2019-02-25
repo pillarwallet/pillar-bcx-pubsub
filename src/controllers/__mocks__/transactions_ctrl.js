@@ -48,23 +48,9 @@ function findByTxHash() {
 module.exports.findByTxHash = findByTxHash;
 
 function findOneByTxHash() {
-<<<<<<< HEAD
-  return new Promise(((resolve) => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    resolve(null);
-=======
-    resolve();
->>>>>>> Added unit tests for rmq
-=======
-    resolve(null);
->>>>>>> Added tests for ethService
-  }));
-=======
   return new Promise(resolve => {
     resolve(null);
   });
->>>>>>> Linter changes
 }
 module.exports.findOneByTxHash = findOneByTxHash;
 

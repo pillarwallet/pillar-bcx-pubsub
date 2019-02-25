@@ -32,21 +32,8 @@ beforeAll(() => {
   jest.restoreAllMocks();
 });
 
-<<<<<<< HEAD
-
-const processTx = require('./processTx');
-const Web3 = require('web3');
-jest.mock('./dbServices.js')
-const dbServices = require('./dbServices.js')
 
 
-afterAll(() => {
-  jest.restoreAllMocks();
-});
-
-beforeAll(() => {
-  jest.restoreAllMocks();
-});
 
 
   describe('The connect function tests', () => {
@@ -56,15 +43,6 @@ beforeAll(() => {
         expect(value).toBe(true)
         done()
       })
-=======
-describe('The connect function tests', () => {
-  test('should return true', done => {
-    const ethService = require('./ethService');
-    ethService.connect().then(value => {
-      expect(value).toBe(true);
-      done();
-    });
->>>>>>> Linter changes
   });
 });
 
@@ -146,7 +124,7 @@ describe('The getBlockTx function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    ethService.getBlockTx(blockNumber).then(value => {
+    ethService.getBlockTx(blockNumber).then(() => {
       done();
     });
   });
@@ -156,7 +134,7 @@ describe('The getBlockNumber function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    ethService.getBlockNumber(blockNumber).then(value => {
+    ethService.getBlockNumber(blockNumber).then(() => {
       done();
     });
   });
@@ -166,7 +144,7 @@ describe('The getLastBlockNumber function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    ethService.getLastBlockNumber(blockNumber).then(value => {
+    ethService.getLastBlockNumber(blockNumber).then(() => {
       done();
     });
   });
@@ -177,7 +155,7 @@ describe('The getTxReceipt function tests', () => {
     const blockNumber =
       '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b';
     const ethService = require('./ethService');
-    ethService.getTxReceipt(blockNumber).then(value => {
+    ethService.getTxReceipt(blockNumber).then(() => {
       done();
     });
   });
@@ -187,7 +165,7 @@ describe('The getBlockTransactionCount function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    ethService.getBlockTransactionCount(blockNumber).then(value => {
+    ethService.getBlockTransactionCount(blockNumber).then(() => {
       done();
     });
   });
@@ -197,7 +175,7 @@ describe('The getPendingTxArray function tests', () => {
   test('should have been called once', done => {
     const blockNumber = '0x0000000000000000000000000000000000000000';
     const ethService = require('./ethService');
-    ethService.getPendingTxArray(blockNumber).then(value => {
+    ethService.getPendingTxArray(blockNumber).then(() => {
       done();
     });
   });
@@ -272,7 +250,7 @@ describe('The addERC20 function tests', () => {
     const rmqServiceMock = jest.spyOn(rmqServices, 'sendPubSubMessage');
     const doneFn = jest.fn(() => done());
     rmqServiceMock.mockImplementation(doneFn);
-    ethService.connect().then(value => {
+    ethService.connect().then(() => {
       ethService.addERC20(contractAddressObj);
     });
   });
@@ -290,7 +268,7 @@ describe('The addERC721 function tests', () => {
     const rmqServiceMock = jest.spyOn(rmqServices, 'sendPubSubMessage');
     const doneFn = jest.fn(() => done());
     rmqServiceMock.mockImplementation(doneFn);
-    ethService.connect().then(value => {
+    ethService.connect().then(() => {
       ethService.addERC721(contractAddressObj);
     });
   });

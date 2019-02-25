@@ -27,53 +27,50 @@ const Transactions = class Transactions {
   }
 };
 
-Transactions.find = function(query, callback) {
+Transactions.find = (query, callback) => {
   const returnValue = [
     { _id: 'pillarId', txHash: 'hash', protocol: 'Ethereum' },
   ];
   if (query && typeof query === 'function' && callback == null) {
-    query('', returnValue);
+    return query('', returnValue);
   } else if (callback != null && typeof callback === 'function') {
-    callback('', returnValue);
-  } else {
-    return new Promise((resolve, reject) => {
-      resolve(returnValue);
-    });
+    return callback('', returnValue);
   }
+  return new Promise(resolve => {
+    resolve(returnValue);
+  });
 };
 
-Transactions.findOne = function(query, callback) {
+Transactions.findOne = (query, callback) => {
   const returnValue = [
     { _id: 'pillarId', txHash: 'hash', protocol: 'Ethereum' },
   ];
   if (query && typeof query === 'function' && callback == null) {
-    query('', returnValue);
+    return query('', returnValue);
   } else if (callback != null && typeof callback === 'function') {
-    callback('', returnValue);
-  } else {
-    return new Promise((resolve, reject) => {
-      resolve(returnValue);
-    });
+    return callback('', returnValue);
   }
+  return new Promise(resolve => {
+    resolve(returnValue);
+  });
 };
 
-Transactions.aggregate = function(query, callback) {
+Transactions.aggregate = (query, callback) => {
   const returnValue = [{ balance: 5 }];
   if (query && typeof query === 'function' && callback == null) {
-    query('', returnValue);
+    return query('', returnValue);
   } else if (callback != null && typeof callback === 'function') {
-    callback('', returnValue);
-  } else {
-    return new Promise((resolve, reject) => {
-      resolve(returnValue);
-    });
+    return callback('', returnValue);
   }
+  return new Promise(resolve => {
+    resolve(returnValue);
+  });
 };
 
-Transactions.save = function() {};
+Transactions.save = () => {};
 
-Transactions.update = function() {};
+Transactions.update = () => {};
 
-Transactions.remove = function() {};
+Transactions.remove = () => {};
 
 module.exports.Transactions = Transactions;

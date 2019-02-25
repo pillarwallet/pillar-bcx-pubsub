@@ -102,8 +102,8 @@ describe('Test method: master.launch()', () => {
     const contractsToMonitorMock = jest.spyOn(dbServices, 'recentAccounts');
     const doneMock = jest.fn(() => {
       done();
-      return new Promise((resolve, reject) => {
-        resolve(s);
+      return new Promise(resolve => {
+        resolve();
       });
     });
     contractsToMonitorMock.mockImplementation(doneMock);

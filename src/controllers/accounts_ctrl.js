@@ -28,15 +28,15 @@ const mongoose = require('mongoose');
 function listAll() {
   return new Promise((resolve, reject) => {
     try {
-      accounts.Accounts.find((err, result) => {
+      return accounts.Accounts.find((err, result) => {
         if (err) {
           logger.info(`accounts.listAll DB controller ERROR: ${err}`);
-          reject(err);
+          return reject(err);
         }
-        resolve(result);
+        return resolve(result);
       });
     } catch (e) {
-      reject(e);
+      return reject(e);
     }
   });
 }
@@ -45,7 +45,7 @@ module.exports.listAll = listAll;
 function listRecent(idFrom) {
   return new Promise((resolve, reject) => {
     try {
-      var oId = mongoose.Types.ObjectId(idFrom);
+      const oId = mongoose.Types.ObjectId(idFrom);
       // accounts.Accounts.find(query, (err, result) => {
       // limit the number of results to 1000 records
       const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(1000);

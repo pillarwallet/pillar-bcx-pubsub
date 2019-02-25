@@ -26,35 +26,34 @@ const Accounts = class Accounts {
   }
 };
 
-Accounts.find = function(address, callback) {
+Accounts.find = (address, callback) => {
   if (callback == null && typeof address === 'function') {
     const newCallback = address;
     const newAddress = 'address';
-    newCallback('', [
+    return newCallback('', [
       {
         address: newAddress,
       },
     ]);
   } else if (callback == null && typeof address === 'object') {
     return {
-      limit(params) {
+      limit() {
         return {
-          exec(callback) {
-            callback(false, [{ address: 'address' }]);
+          exec(callbackTwo) {
+            callbackTwo(false, [{ address: 'address' }]);
           },
         };
       },
     };
-  } else {
-    callback('', [
-      {
-        address,
-      },
-    ]);
   }
+  return callback('', [
+    {
+      address,
+    },
+  ]);
 };
 
-Accounts.findOne = function(address, callback) {
+Accounts.findOne = (address, callback) => {
   if (callback == null) {
     const newCallback = address;
     const newAddress = 'address';
@@ -72,7 +71,7 @@ Accounts.findOne = function(address, callback) {
   }
 };
 
-Accounts.remove = function(id, callback) {
+Accounts.remove = (id, callback) => {
   if (callback == null) {
     const newCallback = id;
     newCallback('', { result: { n: '9999' } });
@@ -81,11 +80,11 @@ Accounts.remove = function(id, callback) {
   }
 };
 
-Accounts.update = function(findParams, updateParams, callback) {
+Accounts.update = (findParams, updateParams, callback) => {
   callback('', 1);
 };
 
-Accounts.save = function(callback) {
+Accounts.save = callback => {
   callback(false);
 };
 

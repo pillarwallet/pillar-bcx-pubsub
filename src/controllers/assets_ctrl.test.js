@@ -81,7 +81,7 @@ describe('Test assets_ctrl', () => {
     const assetsCtrl = require('./assets_ctrl.js');
     const assetsModel = require('../models/assets_model.js');
     jest.spyOn(assetsModel.Assets, 'find');
-    return assetsCtrl.addContract().then(result => {
+    return assetsCtrl.addContract().then(() => {
       done();
     });
   });

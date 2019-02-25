@@ -126,7 +126,7 @@ describe('Test transactions_ctrl functions', () => {
   test('addTx function should call save()', done => {
     const transactionsCtrl = require('./transactions_ctrl.js');
     jest.mock('../models/transactions_model.js');
-    return transactionsCtrl.addTx({}).then(result => {
+    return transactionsCtrl.addTx({}).then(() => {
       done();
     });
   });
@@ -173,7 +173,7 @@ describe('Test transactions_ctrl functions', () => {
     const TransactionsFindDistinctResult = jest.fn(() => ({
       limit: jest.fn(
         () =>
-          new Promise((resolve, reject) => {
+          new Promise(resolve => {
             resolve({ blockNumber: 1 });
           }),
       ),
@@ -185,7 +185,7 @@ describe('Test transactions_ctrl functions', () => {
     };
     const TransactionsFind = jest.fn(() => TransactionsFindResult);
     TransactionsFindMock.mockImplementation(TransactionsFind);
-    transactionsCtrl.findMaxBlock().then(result => {
+    transactionsCtrl.findMaxBlock().then(() => {
       done();
     });
   });

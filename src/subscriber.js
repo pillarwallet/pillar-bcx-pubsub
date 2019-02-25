@@ -27,13 +27,10 @@ SOFTWARE.
 >>>>>>> Linter changes
 /** @module subscriber.js */
 require('./utils/diagnostics');
-const CronJob = require('cron').CronJob;
+const { CronJob } = require('cron');
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');
-
-let runId = 0;
-
 /**
  * Function for reporting unhandled promise rejections.
  * @param {any} reason - reason for failure/stack trace
@@ -41,7 +38,7 @@ let runId = 0;
  */
 
 process
-  .on('unhandledRejection', (reason, promise) => {
+  .on('unhandledRejection', (reason, p) => {
     logger.error(
       `Subscriber - Unhandled Rejection at Promise reason - ${reason}, p - ${p}`,
     );
@@ -72,11 +69,6 @@ module.exports.logMemoryUsage = logMemoryUsage;
  * Function that initializes the subscriber service
  */
 module.exports.initServices = function() {
-  if (process.argv[2] === undefined) {
-    throw { message: 'Invalid runId parameter.' };
-  } else {
-    runId = process.argv[2];
-  }
   dbServices
     .dbConnect()
     .then(() => {

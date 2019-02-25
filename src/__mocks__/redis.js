@@ -24,37 +24,35 @@ const redis = {
   createClient() {
     return {
       getAsync() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           resolve(false);
         });
       },
       existsAsync() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           resolve(false);
         });
       },
       setAsync() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           resolve(false);
         });
       },
       set() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           resolve(false);
         });
       },
       get(data, callback) {
-        console.log('is on get');
         if (typeof callback === 'function') {
-          callback(false, JSON.stringify({ status: 'completed' }));
-        } else {
-          return new Promise((resolve, reject) => {
-            resolve(false);
-          });
+          return callback(false, JSON.stringify({ status: 'completed' }));
         }
+        return new Promise(resolve => {
+          resolve(false);
+        });
       },
       on() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           resolve('testValue');
         });
       },

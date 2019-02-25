@@ -14,6 +14,14 @@
   },
   "rules": {
     "prettier/prettier": "error",
+    "global-require": 0,
+    "no-underscore-dangle": 0,
+    "class-methods-use-this": 0,
+    "import/no-dynamic-require": 0,
+    "no-loop-func": 0,
+    "new-cap": 0,
+    "no-restricted-syntax": 0,
+    "guard-for-in": 0,
     "no-plusplus": [
       2,
       {

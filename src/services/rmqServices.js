@@ -167,53 +167,6 @@ function sendPubSubMessage(payloadParam) {
 module.exports.sendPubSubMessage = sendPubSubMessage;
 
 /**
- * Function that initialize the connection
- * @param {any} connection - the connection
- */
-function initializePubSubChannel(connection) {
-  connection.createChannel((err, ch) => {
-    pubSubChannel = ch;
-    ch.assertQueue(pubSubQueue, { durable: true });
-    // Note: on Node 6 Buffer.from(msg) should be used
-  });
-}
-
-module.exports.initializePubSubChannel = initializePubSubChannel;
-
-/**
- * Function that initialize the connection
- * @param {any} connection - the connection
- */
-function initializeOffersChannel(connection) {
-  connection.createChannel((err, ch) => {
-    offersChannel = ch;
-    ch.assertQueue(offersQueue, { durable: true });
-  });
-}
-
-module.exports.initializeOffersChannel = initializeOffersChannel;
-
-/**
- * Function to bind queue
- * @param {String} mmID 
- */
-function bindOffersQueue(mmID) {
-  offersChannel.bindQueue(mmID, offersExchange, mmID);
-};
-
-module.exports.bindOffersQueue = bindOffersQueue;
-
-/**
- * Calculate checksum of payload
- * @param {any} payload - the payload/message to calculate checksum
- */
-function calculateChecksum(payload, checksumKey) {
-  return SHA256.hex(checksumKey + JSON.stringify(payload));
-}
-
-module.exports.calculateChecksum = calculateChecksum;
-
-/**
  * Function that writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
@@ -440,21 +393,6 @@ function initSubPubMQ() {
   } finally {
     logger.info('Exited initSubPubMQ()');
   }
-}
-
-module.exports.initSubPubMQ = initSubPubMQ;
-
-/**
- * Function that validates the checksum of the payload received.
- * @param {any} payload - The IPC message received from the master
- */
-function validatePubSubMessage(payload, checksumKey) {
-  const checksum = payload.checksum;
-  delete payload.checksum;
-  if (calculateChecksum(payload, checksumKey) === checksum) {
-    return true;
-  }
-  return false;
 }
 
 module.exports.initSubPubMQ = initSubPubMQ;

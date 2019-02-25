@@ -25,15 +25,15 @@ const logger = require('../utils/logger.js');
 function listAll() {
   return new Promise((resolve, reject) => {
     try {
-      transactions.Transactions.find((err, result) => {
+      return transactions.Transactions.find((err, result) => {
         if (err) {
           logger.info(`transactions.listAll DB controller ERROR: ${err}`);
-          reject(err);
+          return reject(err);
         }
-        resolve(result);
+        return resolve(result);
       });
     } catch (e) {
-      reject(e);
+      return reject(e);
     }
   });
 }
