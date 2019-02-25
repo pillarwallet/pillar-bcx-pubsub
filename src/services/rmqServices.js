@@ -46,6 +46,59 @@ const TX_MAP = {};
 moment.locale('en_GB');
 
 /**
+ * Calculate checksum of payload
+ * @param {any} payload - the payload/message to calculate checksum
+ */
+function calculateChecksum(payload, checksumKeyParam) {
+  return SHA256.hex(checksumKeyParam + JSON.stringify(payload));
+}
+
+module.exports.calculateChecksum = calculateChecksum;
+
+/**
+ * Function that validates the checksum of the payload received.
+ * @param {any} payload - The IPC message received from the master
+ */
+function validatePubSubMessage(payloadParam, checksumKeyParam) {
+  const payload = payloadParam;
+  const { checksum } = payload;
+  delete payload.checksum;
+  if (calculateChecksum(payload, checksumKeyParam) === checksum) {
+    return true;
+  }
+  return false;
+}
+
+module.exports.validatePubSubMessage = validatePubSubMessage;
+
+/**
+ * Function that initialize the connection
+ * @param {any} connection - the connection
+ */
+function initializePubSubChannel(connection) {
+  connection.createChannel((err, ch) => {
+    pubSubChannel = ch;
+    ch.assertQueue(pubSubQueue, { durable: true });
+    // Note: on Node 6 Buffer.from(msg) should be used
+  });
+}
+
+module.exports.initializePubSubChannel = initializePubSubChannel;
+
+/**
+ * Function that initialize the connection
+ * @param {any} connection - the connection
+ */
+function initializeOffersChannel(connection) {
+  connection.createChannel((err, ch) => {
+    offersChannel = ch;
+    ch.assertQueue(offersQueue, { durable: true });
+  });
+}
+
+module.exports.initializeOffersChannel = initializeOffersChannel;
+
+/**
  * Initialize the pub-sub rabbit mq.
  */
 
@@ -78,6 +131,7 @@ function initPubSubMQ() {
           logger.info('Publisher RMQ Connected');
           initializePubSubChannel(connection);
           initializeOffersChannel(connection);
+          return undefined;
         },
       );
       resolve();
@@ -96,7 +150,8 @@ module.exports.initPubSubMQ = initPubSubMQ;
  * Function that calculates the checksum for a given payload and then writes to queue
  * @param {any} payload - the payload/message to be send to queue
  */
-function sendPubSubMessage(payload) {
+function sendPubSubMessage(payloadParam) {
+  const payload = payloadParam;
   const checksum = calculateChecksum(payload, checksumKey);
   payload.checksum = checksum;
 
@@ -107,43 +162,6 @@ function sendPubSubMessage(payload) {
 }
 
 module.exports.sendPubSubMessage = sendPubSubMessage;
-
-/**
- * Function that initialize the connection
- * @param {any} connection - the connection
- */
-function initializePubSubChannel(connection) {
-  connection.createChannel((err, ch) => {
-    pubSubChannel = ch;
-    ch.assertQueue(pubSubQueue, { durable: true });
-    // Note: on Node 6 Buffer.from(msg) should be used
-  });
-}
-
-module.exports.initializePubSubChannel = initializePubSubChannel;
-
-/**
- * Function that initialize the connection
- * @param {any} connection - the connection
- */
-function initializeOffersChannel(connection) {
-  connection.createChannel((err, ch) => {
-    offersChannel = ch;
-    ch.assertQueue(offersQueue, { durable: true });
-  });
-}
-
-module.exports.initializeOffersChannel = initializeOffersChannel;
-
-/**
- * Calculate checksum of payload
- * @param {any} payload - the payload/message to calculate checksum
- */
-function calculateChecksum(payload, checksumKey) {
-  return SHA256.hex(checksumKey + JSON.stringify(payload));
-}
-
-module.exports.calculateChecksum = calculateChecksum;
 
 /**
  * Function that writes to queue
@@ -179,7 +197,8 @@ module.exports.getNotificationPayload = getNotificationPayload;
  * Function that resets a given  transaction map
  * @param {any}  txMap -  TX_MAP like param
  */
-function resetTxMap(txMap) {
+function resetTxMap(txMapParam) {
+  const txMap = txMapParam;
   for (const x in txMap) {
     logger.debug(`resetTxMap Loop: ${x}`);
     const timestamp = moment().diff(txMap[x].timestamp, 'minutes');
@@ -335,6 +354,7 @@ function initSubPubMQ() {
             { noAck: true },
           );
         });
+        return undefined;
       },
     );
   } catch (err) {
@@ -345,18 +365,3 @@ function initSubPubMQ() {
 }
 
 module.exports.initSubPubMQ = initSubPubMQ;
-
-/**
- * Function that validates the checksum of the payload received.
- * @param {any} payload - The IPC message received from the master
- */
-function validatePubSubMessage(payload, checksumKey) {
-  const checksum = payload.checksum;
-  delete payload.checksum;
-  if (calculateChecksum(payload, checksumKey) === checksum) {
-    return true;
-  }
-  return false;
-}
-
-module.exports.validatePubSubMessage = validatePubSubMessage;

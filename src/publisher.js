@@ -33,13 +33,11 @@ const fs = require('fs');
 
 const GETH_STATUS_FILE = '/tmp/geth_status';
 const redis = require('redis');
-const CronJob = require('cron').CronJob;
+const { CronJob } = require('cron');
 
 const client = redis.createClient();
 bluebird.promisifyAll(redis);
 let latestId = '';
-let runId = 0;
-let MAX_WALLETS = 500000;
 let processCnt = 0;
 let gethCheck = 0;
 let LAST_BLOCK_NUMBER = 0;
@@ -106,25 +104,32 @@ module.exports.publisherOnMessage = function() {
         for (let i = 0; i < message.length; i++) {
           const obj = message[i];
           if (obj !== undefined) {
-            const exists = await client.existsAsync(obj.walletId.toLowerCase());
-            logger.info(
-              `Wallet : ${obj.walletId} exists in redis? : ${exists}`,
-            );
-            latestId = await client.getAsync('latestId');
-            if (!exists || obj.id > latestId) {
-              await client.setAsync('latestId', obj.id);
-              latestId = obj.id;
-            }
-            if (!exists) {
-              await client.setAsync(obj.walletId.toLowerCase(), obj.pillarId);
+            client.existsAsync(obj.walletId.toLowerCase()).then(exists => {
               logger.info(
-                `Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${
-                  obj.pillarId
-                } , accountsSize: ${hashMaps.accounts.keys().length}`,
+                `Wallet : ${obj.walletId} exists in redis? : ${exists}`,
               );
+              client.getAsync('latestId').then(latestIdRedis => {
+                latestId = latestIdRedis;
+                if (!exists || obj.id > latestId) {
+                  client.setAsync('latestId', obj.id).then(() => {
+                    latestId = obj.id;
+                  });
+                }
+                if (!exists) {
+                  client
+                    .setAsync(obj.walletId.toLowerCase(), obj.pillarId)
+                    .then(() => {
+                      logger.info(
+                        `Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${
+                          obj.pillarId
+                        } , accountsSize: ${hashMaps.accounts.keys().length}`,
+                      );
 
-              logger.info(`Updated redis with latestId: ${latestId}`);
-            }
+                      logger.info(`Updated redis with latestId: ${latestId}`);
+                    });
+                }
+              });
+            });
           }
         }
       } else if (data.type === 'assets') {
@@ -142,9 +147,6 @@ module.exports.publisherOnMessage = function() {
             ethService.subscribeTransferEvents(obj);
           }
         }
-      } else if (data.type == 'config') {
-        MAX_WALLETS = message;
-        logger.info(`Updated MAX_WALLETS, new value: ${message}`);
       }
     } catch (e) {
       logger.error(`Publisher: Error occured in publisher: ${e}`);
@@ -159,12 +161,6 @@ module.exports.initIPC = function() {
   return new Promise(async (resolve, reject) => {
     try {
       logger.info('Started executing publisher.initIPC()');
-
-      if (process.argv[2] === undefined) {
-        throw { message: 'Invalid runId parameter.' };
-      } else {
-        runId = process.argv[2];
-      }
 
       // check if latestId key exists in redis, if not set an empty value
       if (await client.existsAsync('latestId')) {
@@ -225,10 +221,10 @@ module.exports.initIPC = function() {
  * Function that continuosly polls master for new wallets/assets.
  */
 module.exports.poll = function() {
-  processCnt++;
+  processCnt += 1;
   if (processCnt === 12) {
     processCnt = 0;
-    gethCheck++;
+    gethCheck += 1;
     if (hashMaps.LATEST_BLOCK_NUMBER <= LAST_BLOCK_NUMBER) {
       logger.error('####GETH DOWN?? NO SYNC FOR PAST 1 MINUTE####');
     }

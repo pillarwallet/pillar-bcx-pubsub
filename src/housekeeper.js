@@ -42,7 +42,7 @@ const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS
   ? process.env.MAX_TOTAL_TRANSACTIONS
   : 100;
-const CronJob = require('cron').CronJob;
+const { CronJob } = require('cron');
 
 let entry = {};
 let startBlock;
@@ -106,20 +106,22 @@ async function checkTxPool() {
               } else {
                 status = 'failed';
               }
-              const gasUsed = receipt.gasUsed;
-              const entry = {
+              const { gasUsed } = receipt;
+              const entryTxn = {
                 txHash: item.txHash,
                 status,
                 gasUsed,
                 blockNumber: receipt.blockNumber,
               };
-              dbServices.dbCollections.transactions.updateTx(entry).then(() => {
-                logger.info(
-                  `Housekeeper.checkTxPool(): Transaction updated: ${
-                    entry.txHash
-                  }`,
-                );
-              });
+              dbServices.dbCollections.transactions
+                .updateTx(entryTxn)
+                .then(() => {
+                  logger.info(
+                    `Housekeeper.checkTxPool(): Transaction updated: ${
+                      entryTxn.txHash
+                    }`,
+                  );
+                });
             }
           });
         });
@@ -133,23 +135,88 @@ async function checkTxPool() {
 }
 module.exports.checkTxPool = checkTxPool;
 
-async function recoverTransactions(startBlock, endBlock, walletId) {
+async function recoverTransactions(startingBlock, endBlock, walletId) {
   const transactions = [];
-  for (let i = startBlock; i >= endBlock; i--) {
-    const txns = await ethService.getBlockTx(i);
-    txns.transactions.forEach(async txn => {
-      if (
-        txn.from.toLowerCase() === walletId ||
-        (txn.to !== null && txn.to.toLowerCase() === walletId)
-      ) {
-        var receipt = await ethService.getTxReceipt(txn.hash);
-        transactions.push(receipt);
-      }
+  for (let i = startingBlock; i >= endBlock; i--) {
+    ethService.getBlockTx(i).then(txns => {
+      txns.transactions.forEach(async txn => {
+        if (
+          txn.from.toLowerCase() === walletId ||
+          (txn.to !== null && txn.to.toLowerCase() === walletId)
+        ) {
+          const receipt = await ethService.getTxReceipt(txn.hash);
+          transactions.push(receipt);
+        }
+      });
     });
   }
   return transactions;
 }
 module.exports.recoverTransactions = recoverTransactions;
+
+async function processTxn(transaction, wallet, pillarId) {
+  const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
+  let asset;
+  let status;
+  let value;
+  let to;
+  let contractAddress;
+  if (transaction.action.input !== '0x') {
+    const theAsset = await dbServices.getAsset(transaction.action.to);
+    ({ contractAddress } = theAsset);
+    if (theAsset !== undefined) {
+      asset = theAsset.symbol;
+      if (fs.existsSync(`${abiPath + asset}.json`)) {
+        const theAbi = require(`${abiPath + asset}.json`);
+        abiDecoder.addABI(theAbi);
+      } else {
+        abiDecoder.addABI(ERC20ABI);
+      }
+    } else {
+      abiDecoder.addABI(ERC20ABI);
+    }
+    const data = abiDecoder.decodeMethod(transaction.action.input);
+    if (typeof data !== 'undefined' && transaction.action.input !== '0x') {
+      if (data.name === 'transfer') {
+        // smart contract call hence the asset must be the token name
+        to = data.params[0].value;
+        [, { value }] = data.params;
+      } else {
+        ({ to } = transaction.action);
+        ({ value } = transaction.action);
+      }
+    } else {
+      ({ to } = transaction.action);
+      ({ value } = transaction.action);
+    }
+  } else {
+    asset = 'ETH';
+    value = parseInt(transaction.action.value, 16);
+    ({ to } = transaction.action);
+    contractAddress = null;
+  }
+  if (transaction.error === 'Reverted') {
+    status = 'failed';
+  } else {
+    status = 'confirmed';
+  }
+  const entryTxn = {
+    protocol,
+    pillarId,
+    toAddress: to,
+    fromAddress: transaction.action.from,
+    txHash: transaction.transactionHash,
+    asset,
+    contractAddress,
+    timestamp: tmstmp.timestamp,
+    value,
+    blockNumber: transaction.blockNumber,
+    status,
+    gasUsed: transaction.result.gasUsed,
+  };
+  logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entryTxn}`);
+  dbServices.dbCollections.transactions.addTx(entryTxn);
+}
 
 /**
  *
@@ -171,7 +238,7 @@ async function recoverAll(wallet, pillarId) {
     if (totalTransactions < MAX_TOTAL_TRANSACTIONS) {
       const transactions = await ethService.getAllTransactionsForWallet(wallet);
       transactions.forEach(async transaction => {
-        index++;
+        index += 1;
         processTxn(transaction, wallet, pillarId);
 
         if (index === totalTransactions) {
@@ -196,7 +263,6 @@ async function recoverAll(wallet, pillarId) {
                     logger.info(
                       `accounts.addAddress DB controller ERROR: ${err}`,
                     );
-                    reject(err);
                   }
                 });
               }
@@ -209,67 +275,6 @@ async function recoverAll(wallet, pillarId) {
   }
 }
 module.exports.recoverAll = recoverAll;
-
-async function processTxn(transaction, wallet, pillarId) {
-  let entry;
-  const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
-  let asset, status, value, to, contractAddress;
-  if (transaction.action.input !== '0x') {
-    const theAsset = await dbServices.getAsset(transaction.action.to);
-    contractAddress = theAsset.contractAddress;
-    if (theAsset !== undefined) {
-      asset = theAsset.symbol;
-      if (fs.existsSync(`${abiPath + asset}.json`)) {
-        const theAbi = require(`${abiPath + asset}.json`);
-        abiDecoder.addABI(theAbi);
-      } else {
-        abiDecoder.addABI(ERC20ABI);
-      }
-    } else {
-      abiDecoder.addABI(ERC20ABI);
-    }
-    const data = abiDecoder.decodeMethod(transaction.action.input);
-    if (typeof data !== 'undefined' && transaction.action.input !== '0x') {
-      if (data.name === 'transfer') {
-        // smart contract call hence the asset must be the token name
-        to = data.params[0].value;
-        value = data.params[1].value;
-      } else {
-        to = transaction.action.to;
-        value = transaction.action.value;
-      }
-    } else {
-      to = transaction.action.to;
-      value = transaction.action.value;
-    }
-  } else {
-    asset = 'ETH';
-    value = parseInt(transaction.action.value, 16);
-    to = transaction.action.to;
-    contractAddress = null;
-  }
-  if (transaction.error === 'Reverted') {
-    status = 'failed';
-  } else {
-    status = 'confirmed';
-  }
-  entry = {
-    protocol,
-    pillarId,
-    toAddress: to,
-    fromAddress: transaction.action.from,
-    txHash: transaction.transactionHash,
-    asset,
-    contractAddress,
-    timestamp: tmstmp.timestamp,
-    value,
-    blockNumber: transaction.blockNumber,
-    status,
-    gasUsed: transaction.result.gasUsed,
-  };
-  logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
-  dbServices.dbCollections.transactions.addTx(entry);
-}
 
 /**
  * Function to process the newly registered wallets

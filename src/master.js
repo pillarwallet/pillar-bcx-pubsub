@@ -24,7 +24,7 @@ SOFTWARE.
 require('./utils/diagnostics');
 
 const logger = require('./utils/logger');
-const fork = require('child_process').fork;
+const { fork } = require('child_process');
 
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
@@ -44,7 +44,7 @@ module.exports.index = 0;
 /**
  * Subscribe to unhandled promise rejection events in order fix any such errors
  */
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', reason => {
   logger.error(
     '***************************************************************',
   );
@@ -56,27 +56,27 @@ process.on('unhandledRejection', (reason, promise) => {
 
 /**
  * Function that initializes the master after validating command line arguments.
- * @param {any} options - List of command line arguments
+ * @param {any} optionsParam - List of command line arguments
  */
-module.exports.init = function(options) {
+module.exports.init = optionsParam => {
   try {
     logger.info('Started executing master.init()');
 
     // validating input parameters
-    if (options.protocol !== undefined) {
-      protocol = options.protocol;
+    if (optionsParam.protocol !== undefined) {
+      ({ protocol } = optionsParam);
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
 
-    if (options.maxWallets == undefined || options.maxWallets <= 0) {
-      throw { message: 'Invalid configuration parameter maxWallets' };
+    if (optionsParam.maxWallets === undefined || optionsParam.maxWallets <= 0) {
+      throw Error('Invalid configuration parameter maxWallets');
     } else {
       logger.info(
         `master.init(): A new publisher will be spawned for every ${
-          options.maxWallets
+          optionsParam.maxWallets
         } wallets..`,
       );
-      maxWalletsPerPub = options.maxWallets;
+      ({ maxWalletsPerPub } = optionsParam);
     }
     dbServices.dbConnect().then(() => {
       this.launch();
@@ -89,7 +89,7 @@ module.exports.init = function(options) {
 /**
  * Function that spawns housekeeper, publisher and subscriber.
  */
-module.exports.launch = function() {
+module.exports.launch = () => {
   try {
     logger.info('Started executing master.launch()');
 
@@ -149,11 +149,12 @@ module.exports.launch = function() {
               let i = 0;
               const cnt = theWallets.length;
               theWallets.forEach(theWallet => {
-                i++;
+                i += 1;
                 const addresses = theWallet.addresses.filter(address => {
                   if (address.protocol === 'Ethereum') {
                     return address;
                   }
+                  return false;
                 });
                 logger.info(`Filtered message: ${JSON.stringify(addresses)}`);
                 addresses.forEach(address => {
@@ -200,7 +201,7 @@ module.exports.launch = function() {
       );
     });
 
-    module.exports.index++;
+    module.exports.index += 1;
   } catch (err) {
     logger.error(`Master.launch(): exited with error ${err}`);
   } finally {
@@ -213,7 +214,7 @@ module.exports.launch = function() {
  * @param {String} idFrom - The last known pillarId corresponding to a wallet.
  * @param {any} socket - Reference to the process id corresponding to the publisher
  */
-module.exports.notify = function(message, socket) {
+module.exports.notify = (message, socket) => {
   try {
     logger.info('Started executing master.notify()');
     logger.info(`Message: ${JSON.stringify(message)}`);
