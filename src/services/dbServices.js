@@ -36,7 +36,6 @@ const assets = require('../controllers/assets_ctrl.js');
 const transactions = require('../controllers/transactions_ctrl.js');
 const historicTransactions = require('../controllers/historic_transactions_ctrl.js');
 const gasinfo = require('../controllers/gasinfo_ctrl.js');
-const collectibles = require('../controllers/collectibles_ctrl.js');
 
 let dbCollections;
 
@@ -75,7 +74,6 @@ function dbConnect() {
           transactions,
           gasinfo,
           historicTransactions,
-          collectibles
         };
         module.exports.dbCollections = dbCollections;
         resolve();
@@ -376,9 +374,3 @@ function getAsset(asset) {
 }
 module.exports.getAsset = getAsset;
 
-function addCollectible(wallet, name, symbol, contractAddress, tokenId) {
-  logger.debug(`dbService.addCollectible(${wallet},${name}, ${symbol}, ${contractAddress}, ${tokenId}) added`);
-  dbCollections.collectibles.add(wallet,name,symbol,contractAddress,tokenId);
-
-}
-module.exports.addCollectible = addCollectible;
