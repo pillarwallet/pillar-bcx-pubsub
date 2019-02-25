@@ -291,7 +291,7 @@ async function newPendingTran(tx, protocol) {
         );
         // send a message to the notifications queue reporting a new transactions
         var txMsgTo  = '';
-        if(typeof contractDetail.category === 'Collectible') {
+        if(typeof contractDetail.category !== 'undefined') {
           txMsgTo = {
             type: 'newTx',
             pillarId,
