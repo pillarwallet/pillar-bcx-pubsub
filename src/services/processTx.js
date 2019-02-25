@@ -25,7 +25,7 @@ const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
-const ERC20ABI = require('./ERC20ABI');
+const ERC20ABI = require('../abi/ERC20ABI');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
@@ -290,22 +290,44 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
         // send a message to the notifications queue reporting a new transactions
-        const txMsgTo = {
-          type: 'newTx',
-          pillarId,
-          protocol,
-          fromAddress: from,
-          toAddress: to,
-          txHash: hash,
-          asset,
-          contractAddress,
-          timestamp: tmstmp,
-          value,
-          gasPrice: tx.gasPrice,
-          blockNumber: tx.blockNumber,
-          status: 'pending',
-          input: tx.input,
-        };
+        var txMsgTo  = '';
+        if(typeof contractDetail.category !== 'undefined') {
+          txMsgTo = {
+            type: 'newTx',
+            pillarId,
+            protocol,
+            fromAddress: from,
+            toAddress: to,
+            txHash: hash,
+            asset,
+            contractAddress,
+            timestamp: tmstmp,
+            value,
+            gasPrice: tx.gasPrice,
+            blockNumber: tx.blockNumber,
+            status: 'pending',
+            input: tx.input,
+            tokenId: 0
+          };
+          
+        } else {
+          txMsgTo = {
+            type: 'newTx',
+            pillarId,
+            protocol,
+            fromAddress: from,
+            toAddress: to,
+            txHash: hash,
+            asset,
+            contractAddress,
+            timestamp: tmstmp,
+            value,
+            gasPrice: tx.gasPrice,
+            blockNumber: tx.blockNumber,
+            status: 'pending',
+            input: tx.input,
+          };
+        }
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
             txMsgTo,
@@ -373,3 +395,53 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
   }
 }
 module.exports.checkTokenTransfer = checkTokenTransfer;
+
+/**
+ * Validated if the wallets involved in a monitored collectible transfer needs to be persisted in database
+ * @param {any} evnt - the event associated with the token transfer
+ * @param {String} theContract - the smart contract address associated with the token
+ * @param {String} protocol - the protocol corresponding to the token blockchain
+ */
+async function checkCollectibleTransfer(evnt, theContract, protocol) {
+  logger.debug(
+    `processTx.checkCollectibleTransfer(): received event: ${JSON.stringify(evnt)}`,
+  );
+  try {
+    let pillarId = '';
+    const tmstmp = time.now();
+    if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
+      pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
+    } else if (
+      await client.existsAsync(evnt.returnValues._from.toLowerCase())
+    ) {
+      pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
+    }
+    if (pillarId !== null && pillarId !== '') {
+      const txMsg = {
+        type: 'newTx',
+        pillarId,
+        protocol,
+        fromAddress: evnt.returnValues._from,
+        toAddress: evnt.returnValues._to,
+        txHash: evnt.transactionHash,
+        asset: theContract.ticker,
+        contractAddress: theContract.address,
+        timestamp: tmstmp,
+        value: evnt.returnValues._value,
+        gasPrice: evnt.gasPrice,
+        blockNumber: evnt.blockNumber,
+        status: 'confirmed',
+        tokenId: evnt.returnValues._tokenId
+      };
+      logger.debug(
+        `processTx.checkCollectibleTransfer(): notifying subscriber of new tran: ${JSON.stringify(
+          txMsg,
+        )}`,
+      );
+      rmqServices.sendPubSubMessage(txMsg);
+    }
+  } catch (err) {
+    logger.error(`processTx.checkCollectibleTransfer failed with error - ${err}`);
+  }
+}
+module.exports.checkCollectibleTransfer = checkCollectibleTransfer;

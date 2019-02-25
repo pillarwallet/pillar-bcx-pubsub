@@ -139,7 +139,13 @@ module.exports.publisherOnMessage = function() {
                 hashMaps.assets.keys().length
               }`,
             );
-            ethService.subscribeTransferEvents(obj);
+            if(obj.category === 'Collectible') {
+              //subscribe to events of collectibles
+              ethService.subsribeCollectibleEvents(obj);
+
+            } else {
+              ethService.subscribeTransferEvents(obj);
+            }
           }
         }
       } else if (data.type == 'config') {

@@ -30,8 +30,8 @@ require('dotenv').config();
 const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
-const ERC20ABI = require('./ERC20ABI.json');
-const ERC721ABI = require('./ERC721ABI.json');
+const ERC20ABI = require('../abi/ERC20ABI');
+const ERC721ABI = require('../abi/ERC721ABI');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
@@ -367,6 +367,79 @@ function subscribeTransferEvents(theContract) {
   }
 }
 module.exports.subscribeTransferEvents = subscribeTransferEvents;
+
+/**
+ * Subscribe to collectible transfer event corresponding to a given smart contract.
+ * @param {any} theContract - the smart contract address
+ */
+function subscribeCollectibleEvents(theContract) {
+  try {
+    logger.info(
+      `ethService.subscribeCollectibleEvents() subscribed to events for contract: ${theContract}`,
+    );
+    if (module.exports.connect()) {
+      if (web3.utils.isAddress(theContract.contractAddress)) {
+        const collectible = new web3.eth.Contract(
+          ERC721ABI,
+          theContract.contractAddress,
+        );
+        collectible.events.Transfer({}, async (error, result) => {
+          logger.debug(
+            `ethService: Collectible transfer event occurred for contract: ${JSON.stringify(
+              theContract,
+            )} result: ${result} error: ${error}`,
+          );
+          if (!error) {
+            let pillarId = '';
+            const tmstmp = time.now();
+            if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
+              pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
+            } else if (
+              await client.existsAsync(evnt.returnValues._from.toLowerCase())
+            ) {
+              pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
+            }
+            if (pillarId !== null && pillarId !== '') {
+              const txMsg = {
+                type: 'updateTx',
+                pillarId,
+                protocol,
+                fromAddress: evnt.returnValues._from,
+                toAddress: evnt.returnValues._to,
+                txHash: evnt.transactionHash,
+                asset: theContract.ticker,
+                contractAddress: theContract.address,
+                timestamp: tmstmp,
+                value: evnt.returnValues._value,
+                gasPrice: evnt.gasPrice,
+                blockNumber: evnt.blockNumber,
+                status: 'confirmed',
+                tokenId: evnt.returnValues._tokenId
+              };
+              logger.debug(
+                `ethService.subscribeCollectibleEvents(): notifying subscriber of new tran: ${JSON.stringify(
+                  txMsg,
+                )}`,
+              );
+              rmqServices.sendPubSubMessage(txMsg);
+            }
+          } else {
+            logger.error(
+              `ethService.subscribeCollectibleEvents() failed: ${error}`,
+            );
+          }
+        });
+      }
+    } else {
+      logger.error(
+        'ethService.subscribeCollectibleEvents(): Connection to geth failed!',
+      );
+    }
+  } catch (e) {
+    logger.error(`ethService.subscribeCollectibleEvents() failed: ${e}`);
+  }
+}
+module.exports.subscribeCollectibleEvents = subscribeCollectibleEvents;
 
 /**
  * Fetch transaction details corresponding to given block number
