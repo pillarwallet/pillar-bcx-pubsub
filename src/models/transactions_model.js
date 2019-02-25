@@ -36,15 +36,8 @@ const transactionsSchema = Mongoose.Schema({
   status: { type: String, required: false },
   gasPrice: { type: Number, required: false },
   gasUsed: { type: Number, required: false },
-  trans: [
-    {
-      fromAddress: { type: String, required: false },
-      toAddress: { type: String, required: false },
-      value: { type: Number, required: false },
-      asset: { type: String, required: false },
-    },
-  ],
 });
+
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
 
