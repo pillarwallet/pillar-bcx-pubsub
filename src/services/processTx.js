@@ -141,6 +141,7 @@ async function newPendingTran(tx, protocol) {
             blockNumber: tx.blockNumber,
             status: 'pending',
             input: tx.input,
+            tokenName: contractDetail.name,
             tokenId: 0
           };
           
