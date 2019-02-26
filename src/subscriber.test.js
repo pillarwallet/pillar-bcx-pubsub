@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 const rmqServices = require('./services/rmqServices.js');
-const CronJob = require('cron').CronJob;
+const { CronJob } = require('cron');
 
 const runId = process.argv[2];
 

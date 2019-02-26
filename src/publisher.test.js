@@ -73,40 +73,6 @@ function mockProcessOn(name, message) {
 }
 
 describe('Process on message', () => {
-  test('config type message', done => {
-    process.argv[2] = 0;
-    const logger = require('./utils/logger');
-    const dummyMock = jest.fn();
-
-    const stubLoggerInfo = jest.spyOn(logger, 'info');
-
-    const ethServices = require('./services/ethService.js');
-    const stubCheckDone = jest.fn(message => {
-      if (message === 'Updated MAX_WALLETS, new value: 1') {
-        stubLoggerInfo.mockRestore();
-        done();
-      }
-    });
-
-    stubLoggerInfo.mockImplementation(stubCheckDone);
-    const publisher = require('./publisher.js');
-    mockProcessOn('config', 1); // could be whatever number
-    const stubSubscribePendingTxn = jest.spyOn(
-      ethServices,
-      'subscribePendingTxn',
-    );
-    const stubSubscribeBlockHeaders = jest.spyOn(
-      ethServices,
-      'subscribeBlockHeaders',
-    );
-    const stubInitIPC = jest.spyOn(publisher, 'initIPC');
-
-    stubSubscribePendingTxn.mockImplementation(dummyMock);
-    stubSubscribeBlockHeaders.mockImplementation(dummyMock);
-    stubInitIPC.mockImplementation(dummyMock);
-    publisher.publisherOnMessage();
-  });
-
   test('assets type message', done => {
     const dummyMock = jest.fn();
     const ethServices = require('./services/ethService.js');

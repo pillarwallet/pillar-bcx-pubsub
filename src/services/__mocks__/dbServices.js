@@ -39,44 +39,37 @@ module.exports.listHistory = () => {};
 module.exports.findERC20SmartContractsHistoryHeight = () => {};
 module.exports.updateERC20SmartContractsHistoryHeight = () => {};
 module.exports.addTransactionStats = () => {};
-module.exports.listPending = function() {
-  return new Promise((resolve, reject) => {
+module.exports.listPending = () =>
+  new Promise(resolve => {
     resolve([{ txHash: 'hash' }]);
   });
-};
 
-module.exports.listAssets = function() {
-  return new Promise((resolve, reject) => {
+module.exports.listAssets = () =>
+  new Promise(resolve => {
     resolve([{ txHash: 'hash' }]);
   });
-};
 
-module.exports.dbConnect = function() {
-  return new Promise((resolve, reject) => {
+module.exports.dbConnect = () =>
+  new Promise(resolve => {
     resolve([{ txHash: 'hash' }]);
   });
-};
 
-module.exports.recentAccounts = function() {
-  return new Promise((resolve, reject) => {
+module.exports.recentAccounts = () =>
+  new Promise(resolve => {
     resolve([{ addresses: [{ protocol: 'Ethereum' }], txHash: 'hash' }]);
   });
-};
 
-module.exports.contractsToMonitor = function() {
-  return new Promise((resolve, reject) => {
+module.exports.contractsToMonitor = () =>
+  new Promise(resolve => {
     resolve(true);
   });
-};
 
-module.exports.assetDetails = function() {
-  return new Promise((resolve, reject) => {
+module.exports.assetDetails = () =>
+  new Promise(resolve => {
     resolve([{ addresses: [{ protocol: 'Ethereum' }], txHash: 'hash' }]);
   });
-};
 
-module.exports.getAsset = function() {
-  return new Promise((resolve, reject) => {
+module.exports.getAsset = () =>
+  new Promise(resolve => {
     resolve({ contractAddress: 'AT' });
   });
-};

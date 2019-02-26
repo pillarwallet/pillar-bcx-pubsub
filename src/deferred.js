@@ -26,15 +26,16 @@ require('./utils/diagnostics');
 const dbServices = require('./services/dbServices');
 const ethService = require('./services/ethService');
 const logger = require('./utils/logger');
-const CronJob = require('cron').CronJob;
+const { CronJob } = require('cron');
 
 const protocol = 'Ethereum';
 
 function generateList(number) {
+  let counter = number;
   const list = [];
-  while (number > 0) {
-    list.push(number);
-    number -= 500;
+  while (counter > 0) {
+    list.push(counter);
+    counter -= 500;
   }
   list.push(0);
   return list;
@@ -43,16 +44,16 @@ function generateList(number) {
 module.exports.generateList = generateList;
 
 function decimalToHexString(number) {
-  if (number < 0) {
-    number = 0xffffffff + number + 1;
+  let counter = number;
+  if (counter < 0) {
+    counter = 0xffffffff + counter + 1;
   }
-
-  return `0x${number.toString(16).toUpperCase()}`;
+  return `0x${counter.toString(16).toUpperCase()}`;
 }
 
 module.exports.decimalToHexString = decimalToHexString;
 
-function saveTransactions(transactions, acc, result, toBlock) {
+function saveTransactions(transactions) {
   return dbServices.dbCollections.historicTransactions.addMultipleTx(
     transactions,
   );
@@ -63,11 +64,82 @@ function setDeferredDone(acc, result) {
   result.save(err => {
     if (err) {
       logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
-      reject(err);
     } else {
       logger.info(`accounts.addAddress ${acc.address} saved ok`);
     }
   });
+}
+
+function getTransactions(
+  listOfTrans,
+  i,
+  acc,
+  result,
+  totalTrans,
+  transListCnt,
+) {
+  let transListCount = transListCnt;
+  const toBlock = decimalToHexString(listOfTrans[i + 1]);
+  let fromBlock;
+  if (i === 0) {
+    fromBlock = decimalToHexString(listOfTrans[i]);
+  } else {
+    fromBlock = decimalToHexString(listOfTrans[i] + 1);
+  }
+  logger.info(
+    `deferred.getTransactions: started processing for wallet ${
+      acc.address
+    } and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
+  );
+  ethService
+    .getAllTransactionsForWallet(acc.address, toBlock, fromBlock)
+    .then(transactions => {
+      if (transactions && transactions.length > 0) {
+        const totalTransactions = transactions.length;
+        if (totalTransactions > 0) {
+          transListCount += totalTransactions;
+        }
+        saveTransactions(transactions).then(() => {
+          logger.debug(
+            'deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added',
+          );
+          if (toBlock === '0x0') {
+            logger.info(
+              `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
+            );
+            setDeferredDone(acc, result);
+          } else {
+            getTransactions(
+              listOfTrans,
+              i + 1,
+              acc,
+              result,
+              totalTrans,
+              transListCount,
+            );
+          }
+          logger.info(
+            `deferred.getTransactions: started processing for wallet ${
+              acc.address
+            } and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
+          );
+        });
+      } else if (toBlock === '0x0') {
+        logger.info(
+          `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
+        );
+        setDeferredDone(acc, result);
+      } else {
+        getTransactions(
+          listOfTrans,
+          i + 1,
+          acc,
+          result,
+          totalTrans,
+          transListCount,
+        );
+      }
+    });
 }
 
 async function saveDefferedTransactions() {
@@ -108,77 +180,6 @@ async function saveDefferedTransactions() {
 }
 
 module.exports.saveDefferedTransactions = saveDefferedTransactions;
-
-function getTransactions(
-  listOfTrans,
-  i,
-  acc,
-  result,
-  totalTrans,
-  transListCount,
-) {
-  const toBlock = decimalToHexString(listOfTrans[i + 1]);
-  let fromBlock;
-  if (i == 0) {
-    fromBlock = decimalToHexString(listOfTrans[i]);
-  } else {
-    fromBlock = decimalToHexString(listOfTrans[i] + 1);
-  }
-  logger.info(
-    `deferred.getTransactions: started processing for wallet ${
-      acc.address
-    } and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
-  );
-  ethService
-    .getAllTransactionsForWallet(acc.address, toBlock, fromBlock)
-    .then(transactions => {
-      if (transactions && transactions.length > 0) {
-        const totalTransactions = transactions.length;
-        if (totalTransactions > 0) {
-          transListCount += totalTransactions;
-        }
-        saveTransactions(transactions).then(transactions => {
-          logger.debug(
-            'deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added',
-          );
-          if (toBlock == '0x0') {
-            logger.info(
-              `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-            );
-            setDeferredDone(acc, result);
-          } else {
-            getTransactions(
-              listOfTrans,
-              i + 1,
-              acc,
-              result,
-              totalTrans,
-              transListCount,
-            );
-          }
-          logger.info(
-            `deferred.getTransactions: started processing for wallet ${
-              acc.address
-            } and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
-          );
-        });
-      } else if (toBlock == '0x0') {
-        logger.info(
-          `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-        );
-        setDeferredDone(acc, result);
-      } else {
-        getTransactions(
-          listOfTrans,
-          i + 1,
-          acc,
-          result,
-          totalTrans,
-          transListCount,
-        );
-      }
-    });
-}
 
 async function launch() {
   try {

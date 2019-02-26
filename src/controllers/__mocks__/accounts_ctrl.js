@@ -45,7 +45,7 @@ function findByAddress(address) {
 }
 module.exports.findByAddress = findByAddress;
 
-function findByWalletId(address) {
+function findByWalletId() {
   return new Promise(resolve => {
     resolve({
       save: closure => {

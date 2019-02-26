@@ -22,7 +22,6 @@ SOFTWARE.
 /** @module processTx.js */
 const time = require('unix-timestamp');
 const logger = require('../utils/logger.js');
-const dbServices = require('./dbServices.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
@@ -34,182 +33,6 @@ const redis = require('redis');
 
 const client = redis.createClient();
 bluebird.promisifyAll(redis);
-
-/**
- * Store the gas information corresponding to the block
- * @param {any} entry - the json string corresponding to gas information.
- */
-function storeTransactionStats(entry) {
-  try {
-    logger.debug(
-      `processTx.storeTransactionStats() storing the transaction ${JSON.stringify(
-        entry,
-      )}`,
-    );
-    dbServices.addTransactionStats(entry);
-    logger.debug(
-      'processTx.storeTransactionStats(): Successfully saved the transaction stats.',
-    );
-  } catch (e) {
-    logger.error(
-      `processTx.storeTransactionStats(): failed storing transaction details ${e}`,
-    );
-  }
-}
-module.exports.storeTransactionStats = storeTransactionStats;
-/**
- * Store the token event if either of the wallets are being monitored
- * @param {any} event - the token transfer event
- * @param {String} asset - the asset symbol
- * @param {String} protocol - the protocol
- * @param {any} txn - the transaction receipt
- */
-function storeTokenEvent(event, asset, protocol, txn) {
-  try {
-    logger.debug(
-      `processTx.storeTokenEvent(): for transaction ${
-        event.transactionHash
-      } of asset ${asset}`,
-    );
-    dbServices.dbCollections.transactions
-      .findOneByTxHash(event.transactionHash)
-      .then(async tran => {
-        let pillarId, status;
-        const tmstmp = time.now();
-        status = 'confirmed';
-        if (tran === null) {
-          if (
-            event.returnValues._to !== null &&
-            (await client.existsAsync(event.returnValues._to.toLowerCase()))
-          ) {
-            // fetch the pillarId corresponding to the to address and
-            pillarId = await client.getAsync(
-              event.returnValues._to.toLowerCase(),
-            );
-          } else if (
-            event.returnValues._from !== null &&
-            (await client.existsAsync(event.returnValues._from.toLowerCase()))
-          ) {
-            pillarId = await client.getAsync(
-              event.returnValues._from.toLowerCase(),
-            );
-          }
-          if (pillarId !== undefined) {
-            const entry = {
-              pillarId,
-              protocol,
-              toAddress: event.returnValues._to,
-              fromAddress: event.returnValues._from,
-              txHash: event.transactionHash,
-              asset,
-              contractAddress: null,
-              timestamp: tmstmp,
-              value: event.returnValues._value,
-              blockNumber: event.blockNumber,
-              status,
-              gasPrice: txn.gasPrice,
-              gasUsed: txn.gasUsed,
-            };
-            logger.debug(
-              `processTx.storeTokenEvent(): Saving transaction into the database: ${entry}`,
-            );
-            dbServices.dbCollections.transactions.addTx(entry);
-          } else {
-            logger.debug(
-              `processTx.storeTokenEvent(): Not relevant ignoring transaction: ${
-                event.transactionHash
-              }`,
-            );
-          }
-        } else {
-          logger.debug(
-            `processTx.storeTokenEvent(): Transaction ${
-              event.transactionHash
-            } already exists in the database, ignoring!`,
-          );
-        }
-      });
-  } catch (e) {
-    logger.error(`processTx.storeTokenEvent(): Failed with error ${e}`);
-  }
-}
-module.exports.storeTokenEvent = storeTokenEvent;
-/**
- * Check if given transaction is relevant and store in the database
- * @param {any} tx - the transaction object
- * @param {any} protocol - the transaction object
- */
-async function storeIfRelevant(tx, protocol) {
-  const tmstmp = time.now();
-  let pillarId = '';
-  let asset, data, value;
-  const from = tx.from;
-  let to = tx.to;
-  const status = tx.status === '0x1' ? 'confirmed' : 'failed';
-  const hash = tx.transactionHash;
-  if (tx.to !== null && (await client.existsAsync(tx.to.toLowerCase()))) {
-    // fetch the pillarId corresponding to the to address and
-    pillarId = await client.getAsync(tx.to.toLowerCase());
-  } else if (
-    tx.from !== null &&
-    (await client.existsAsync(tx.from.toLowerCase()))
-  ) {
-    pillarId = await client.getAsync(tx.from.toLowerCase());
-  }
-  if (!hashMaps.assets.has(tx.to.toLowerCase())) {
-    asset = 'ETH';
-    value = tx.value;
-  } else {
-    // fetch the asset from the assets hashmap
-    const contractDetail = hashMaps.assets.get(tx.to.toLowerCase());
-    contractAddress = contractDetail.contractAddress;
-    asset = contractDetail.symbol;
-    if (fs.existsSync(`${abiPath + asset}.json`)) {
-      const theAbi = require(`${abiPath + asset}.json`);
-      logger.debug(`processTx - Fetched ABI for token: ${asset}`);
-      abiDecoder.addABI(theAbi);
-    } else {
-      abiDecoder.addABI(ERC20ABI);
-    }
-    data = abiDecoder.decodeMethod(tx.input);
-    if (data !== undefined && data.name === 'transfer') {
-      // smart contract call hence the asset must be the token name
-      to = data.params[0].value;
-      value = data.params[1].value;
-    }
-  }
-
-  if (pillarId !== '') {
-    dbServices.dbCollections.transactions.findOneByTxHash(hash).then(txn => {
-      if (txn === null) {
-        const entry = {
-          pillarId,
-          protocol,
-          toAddress: to,
-          fromAddress: from,
-          txHash: hash,
-          asset,
-          contractAddress: null,
-          timestamp: tmstmp,
-          value,
-          gasPrice: tx.gasPrice,
-          blockNumber: tx.blockNumber,
-          status,
-        };
-        logger.debug(
-          `processTx.saveIfRelevant(): Saving transaction into the database: ${entry}`,
-        );
-        dbServices.dbCollections.transactions.addTx(entry);
-      }
-      throw new Error('newTx: Transaction already exists');
-    });
-  } else {
-    logger.debug(
-      'processTx.storeIfRelevant(): ignoring txn as its not relevant!',
-    );
-  }
-}
-module.exports.storeIfRelevant = storeIfRelevant;
 
 /**
  * Store the new pending transaction in memeory if the transaction corresponds
@@ -226,10 +49,13 @@ async function newPendingTran(tx, protocol) {
     );
     const tmstmp = time.now();
     let pillarId = '';
-    let asset, contractAddress, data, from, to, value, hash;
-    from = typeof tx.from !== 'undefined' ? tx.from : tx.fromAddress;
-    to = typeof tx.to !== 'undefined' ? tx.to : tx.toAddress;
-    hash = typeof tx.hash !== 'undefined' ? tx.hash : tx.txHash;
+    let asset;
+    let contractAddress;
+    let data;
+    let value;
+    const from = typeof tx.from !== 'undefined' ? tx.from : tx.fromAddress;
+    let to = typeof tx.to !== 'undefined' ? tx.to : tx.toAddress;
+    const hash = typeof tx.hash !== 'undefined' ? tx.hash : tx.txHash;
     // ignore contract creation transactions, these have the to as null
     if (to === null) {
       logger.debug(
@@ -249,12 +75,12 @@ async function newPendingTran(tx, protocol) {
       }
       if (!hashMaps.assets.has(to.toLowerCase())) {
         asset = 'ETH';
-        value = tx.value;
+        ({ value } = tx);
       } else {
-        value = tx.value;
+        ({ value } = tx);
         // fetch the asset from the assets hashmap
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
-        contractAddress = contractDetail.contractAddress;
+        ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
 
         if (fs.existsSync(`${abiPath + asset}.json`)) {
@@ -278,7 +104,7 @@ async function newPendingTran(tx, protocol) {
             // smart contract call hence the asset must be the token name
             to = data.params[0].value;
             pillarId = await client.getAsync(to);
-            value = data.params[1].value;
+            [, { value }] = data.params;
           }
         }
       }
