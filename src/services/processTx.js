@@ -290,29 +290,7 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
         // send a message to the notifications queue reporting a new transactions
-        var txMsgTo  = '';
-        if(typeof contractDetail.category !== 'undefined') {
-          txMsgTo = {
-            type: 'newTx',
-            pillarId,
-            protocol,
-            fromAddress: from,
-            toAddress: to,
-            txHash: hash,
-            asset,
-            contractAddress,
-            timestamp: tmstmp,
-            value,
-            gasPrice: tx.gasPrice,
-            blockNumber: tx.blockNumber,
-            status: 'pending',
-            input: tx.input,
-            tokenName: contractDetail.name,
-            tokenId: 0
-          };
-          
-        } else {
-          txMsgTo = {
+        var txMsgTo = {
             type: 'newTx',
             pillarId,
             protocol,
@@ -328,7 +306,6 @@ async function newPendingTran(tx, protocol) {
             status: 'pending',
             input: tx.input,
           };
-        }
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
             txMsgTo,
@@ -419,7 +396,7 @@ async function checkCollectibleTransfer(evnt, theContract, protocol) {
     }
     if (pillarId !== null && pillarId !== '') {
       const txMsg = {
-        type: 'newTx',
+        type: 'updateTx',
         pillarId,
         protocol,
         fromAddress: evnt.returnValues._from,
