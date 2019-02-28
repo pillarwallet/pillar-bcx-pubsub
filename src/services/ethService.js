@@ -323,7 +323,8 @@ function subscribeBlockHeaders() {
           web3.eth.getBlock(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
               if (await client.existsAsync(transaction)) {
-                rmqServices.sendOffersMessage(await getTxInfo(transaction));
+                var txObject = await getTxInfo(transaction);
+                rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
             });
