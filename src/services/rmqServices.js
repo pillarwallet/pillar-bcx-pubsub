@@ -297,31 +297,17 @@ function initSubPubMQ() {
                       .then(() => {
                         logger.info(`newTx: Transaction inserted: ${txHash}`);
                         ch.assertQueue(notificationsQueue, { durable: true });
-                        if(typeof entry.tokenId === 'undefined') {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  TRANSACTION_PENDING,
-                                  entry,
-                                ),
+                        ch.sendToQueue(
+                          notificationsQueue,
+                          new Buffer.from(
+                            JSON.stringify(
+                              getNotificationPayload(
+                                TRANSACTION_PENDING,
+                                entry,
                               ),
                             ),
-                          );
-                        } else {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  COLLECTIBLE_TRANSFER,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
+                          ),
+                        );
                         logger.info(
                           `newTx: Transaction produced to: ${notificationsQueue}`,
                         );
