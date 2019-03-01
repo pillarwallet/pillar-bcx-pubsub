@@ -256,7 +256,7 @@ async function getTxInfo(txHash) {
     value,
     asset,
     contractAddress,
-    status: txReceipt.status === '0x1' ? 'confirmed' : 'failed',
+    status: txReceipt.status ? 'confirmed' : 'failed',
     gasPrice: txInfo.gasPrice,
     gasUsed: txReceipt.gasUsed,
     blockNumber: txReceipt.blockNumber,
