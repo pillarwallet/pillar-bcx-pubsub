@@ -29,7 +29,6 @@ const dbServices = require('./dbServices.js');
 
 const TRANSACTION_PENDING = 'transactionPendingEvent';
 const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
-const COLLECTIBLE_PENDING = 'collectiblePendingnEvent';
 const COLLECTIBLE_CONFIRMATION = 'collectibleConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
