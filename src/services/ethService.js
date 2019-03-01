@@ -256,7 +256,7 @@ async function getTxInfo(txHash) {
     value,
     asset,
     contractAddress,
-    status: txReceipt.status === '0x1' ? 'confirmed' : 'failed',
+    status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
     gasPrice: txInfo.gasPrice,
     gasUsed: txReceipt.gasUsed,
     blockNumber: txReceipt.blockNumber,
@@ -653,7 +653,7 @@ function checkPendingTx(pendingTxArray) {
             if (receipt !== null) {
               let status;
               const { gasUsed } = receipt;
-              if (receipt.status === '0x1') {
+              if (receipt.status == '0x1') {
                 status = 'confirmed';
               } else {
                 status = 'failed';
@@ -791,7 +791,7 @@ async function addERC20(receipt) {
     const decimals = await contract.methods.decimals().call();
     const totalSupply = await contract.methods.totalSupply().call();
 
-    if (receipt.status === '0x1') {
+    if (receipt.status == '0x1') {
       const txMsg = {
         type: 'newAsset',
         name,
@@ -834,7 +834,7 @@ async function addERC721(receipt) {
     const symbol = await contract.methods.symbol().call();
     const name = await contract.methods.name().call();
 
-    if (receipt.status === '0x1') {
+    if (receipt.status == '0x1') {
       const txMsg = {
         type: 'newAsset',
         name,
