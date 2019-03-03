@@ -427,16 +427,3 @@ async function checkCollectibleTransfer(evnt, theContract, protocol) {
   }
 }
 module.exports.checkCollectibleTransfer = checkCollectibleTransfer;
-
-function isJson (jsonString){
-  try {
-      var o = JSON.parse(jsonString);
-      if (o && typeof o === "object") {
-          return true;
-      }
-  }
-  catch (e) { }
-
-  return false;
-};
-
