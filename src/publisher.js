@@ -133,8 +133,8 @@ module.exports.publisherOnMessage = function() {
         for (let i = 0; i < message.length; i++) {
           const obj = message[i];
           if (obj !== undefined) {
-            //hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
-            await client.setAsync(obj.contractAddress.toLowerCase(), obj);
+            hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
+            //await client.setAsync(obj.contractAddress.toLowerCase(), JSON.stringify(obj));
             logger.info(
               `Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`,
             );
