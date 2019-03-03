@@ -25,6 +25,7 @@ const logger = require('../utils/logger.js');
 const rmqServices = require('./rmqServices.js');
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
+const ERC721ABI = require('../abi/ERC721ABI');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
@@ -90,13 +91,16 @@ async function newPendingTran(tx, protocol) {
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
-
-        if (fs.existsSync(`${abiPath + asset}.json`)) {
-          const theAbi = require(`${abiPath + asset}.json`);
-          logger.debug(`processTx - Fetched ABI for token: ${asset}`);
-          abiDecoder.addABI(theAbi);
+        if(typeof contractDetail.category !== 'undefined') {
+          if (fs.existsSync(`${abiPath + asset}.json`)) {
+            const theAbi = require(`${abiPath + asset}.json`);
+            logger.debug(`processTx - Fetched ABI for token: ${asset}`);
+            abiDecoder.addABI(theAbi);
+          } else {
+            abiDecoder.addABI(ERC20ABI);
+          }
         } else {
-          abiDecoder.addABI(ERC20ABI);
+          abiDecoder.addABI(ERC721ABI);
         }
         data = abiDecoder.decodeMethod(tx.input);
         logger.debug(
@@ -257,3 +261,16 @@ async function checkCollectibleTransfer(evnt, theContract, protocol) {
   }
 }
 module.exports.checkCollectibleTransfer = checkCollectibleTransfer;
+
+function isJson (jsonString){
+  try {
+      var o = JSON.parse(jsonString);
+      if (o && typeof o === "object") {
+          return true;
+      }
+  }
+  catch (e) { }
+
+  return false;
+};
+
