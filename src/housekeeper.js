@@ -77,18 +77,20 @@ function logMemoryUsage() {
 }
 module.exports.logMemoryUsage = logMemoryUsage;
 
-
 async function connectDb() {
-    return new Promise(async (resolve) => {
-        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined && dbServices.mongoose.connection.readyState != 0) {
-            resolve()
-        } else {
-            dbServices.dbConnect().then(() => {
-                resolve()
-            })
-        }
-
-    })
+  return new Promise(async resolve => {
+    if (
+      dbServices.mongoose !== undefined &&
+      dbServices.dbCollections !== undefined &&
+      dbServices.mongoose.connection.readyState != 0
+    ) {
+      resolve();
+    } else {
+      dbServices.dbConnect().then(() => {
+        resolve();
+      });
+    }
+  });
 }
 
 /**
@@ -296,7 +298,7 @@ module.exports.recoverAll = recoverAll;
  */
 function processData(lastId) {
   try {
-        connectDb().then(async () => {
+    connectDb().then(async () => {
       // Update pending transactions in the db
       await this.checkTxPool();
       // fetch new registrations since last run
