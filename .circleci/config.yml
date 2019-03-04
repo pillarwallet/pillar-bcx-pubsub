@@ -95,7 +95,7 @@ jobs:
             chmod +x .circleci/announceDeployment.sh
             .circleci/announceDeployment.sh "BCX-PUBSUB" "Development" "$(cat ./pillar-bcx-pubsub.txt)"
 
-  publish-and-push-staging:
+  publish-and-push-qa:
     working_directory: ~/pillar-bcx-pubsub
     docker:
       - image: circleci/node:8.9.4
@@ -133,12 +133,12 @@ jobs:
             echo "$(node -e "console.log(require('./package.json').name)")@$(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-staging" > pillar-bcx-pubsub.txt
             export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
-            aws s3 cp pillar-bcx-pubsub.txt $STAGING_RELEASE_BUCKET
+            aws s3 cp pillar-bcx-pubsub.txt $QA_RELEASE_BUCKET
       - run:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
-            .circleci/announceDeployment.sh "BCX-PUBSUB" "Staging" "$(cat ./pillar-bcx-pubsub.txt)"
+            .circleci/announceDeployment.sh "BCX-PUBSUB" "QA" "$(cat ./pillar-bcx-pubsub.txt)"
 
   publish-prod:
     working_directory: ~/pillar-bcx-pubsub
@@ -178,7 +178,7 @@ workflows:
             branches:
               only:
                   - develop
-      - publish-and-push-staging:
+      - publish-and-push-qa:
           requires:
              - build
           filters:

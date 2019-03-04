@@ -36,8 +36,8 @@ const ethService = require('./services/ethService');
 const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS ? process.env.MAX_TOTAL_TRANSACTIONS : 100;
 const CronJob = require('cron').CronJob;
-var ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
-var PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
+const ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
+const PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
 
 let entry = {};
 let startBlock;
@@ -239,7 +239,7 @@ module.exports.recoverAll = recoverAll;
 
 async function processTxn(transaction, wallet ,pillarId){
     var entry;
-    var tmstmp = await ethService.getBlockTx(transaction.blockNumber).timestamp
+    const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
     var asset, status, value, to, contractAddress;
     if (transaction.action.input !== '0x' && transaction.action.input !== undefined && transaction.action.input  !== null) {
         var theAsset = await dbServices.getAsset(transaction.action.to);
@@ -288,7 +288,7 @@ async function processTxn(transaction, wallet ,pillarId){
         txHash: transaction.transactionHash,
         asset,
         contractAddress: contractAddress,
-        timestamp: tmstmp,
+        timestamp: tmstmp.timestamp,
         value: value,
         blockNumber: transaction.blockNumber,
         status,

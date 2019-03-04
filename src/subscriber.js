@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+'use strict';
 /** @module subscriber.js */
 const diagnostics = require('./utils/diagnostics');
 const CronJob = require('cron').CronJob;

@@ -53,11 +53,10 @@ function connect() {
     return new Promise(((resolve, reject) => {
         try {
             if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
-    
-                var isWebSocket = (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
-                if (isWebSocket) {
+                var isWebSocket =  (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
+                if (isWebSocket){
                     web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
-                } else {
+                }else{
                     web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
                 }
                 /**
@@ -104,21 +103,23 @@ function connect() {
                         params: 1
                     })]
                 });
+                if (isWebSocket){
                 web3._provider.on('end', (eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                    web3 = undefined
-                    module.exports.web3 = undefined;
-                });
-                web3._provider.on('close',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                    web3 = undefined
-                    module.exports.web3 = undefined;
-                });
-                web3._provider.on('error',(eventObj) => {
-                    logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                    web3 = undefined
-                    module.exports.web3 = undefined;
-                });
+                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                        web3 = undefined
+                        module.exports.web3 = undefined;
+                    });
+                    web3._provider.on('close',(eventObj) => {
+                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                        web3 = undefined
+                        module.exports.web3 = undefined;
+                    });
+                    web3._provider.on('error',(eventObj) => {
+                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
+                        web3 = undefined
+                        module.exports.web3 = undefined;
+                    });
+                }
                 logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
                 module.exports.web3 = web3;
                 resolve(true);
@@ -225,8 +226,9 @@ function subscribeBlockHeaders() {
                 web3.eth.getBlock(blockHeader.number).then(response => {
                     response.transactions.forEach(async transaction => {
                         if(await client.existsAsync(transaction)) {
-                            rmqServices.sendOffersMessage(await getTxInfo(transaction));
-                            client.del(transaction);
+                          var txObject = await getTxInfo(transaction);
+                          rmqServices.sendOffersMessage(txObject);
+                          client.del(transaction);
                         }
                     });
                 });
@@ -693,7 +695,7 @@ async function getTransactionCountForWallet(wallet) {
         if (module.exports.connect()) {
             var transCount = await web3.eth.getTransactionCount(wallet.toLowerCase())
             logger.info(`ethService.getTransactionCountForWallet(${wallet}) resolved ${transCount}`);
-            if (transCount === undefined) {
+            if(transCount === undefined){
                 return 0
             }
             return transCount
