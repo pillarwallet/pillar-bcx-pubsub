@@ -20,9 +20,9 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
-#      - run:
-#          name: eslint
-#          command: npm run lint
+      - run:
+          name: eslint
+          command: npm run lint
       - run:
           name: unit-test
           command: npm run test:coverage
