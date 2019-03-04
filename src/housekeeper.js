@@ -239,7 +239,7 @@ module.exports.recoverAll = recoverAll;
 
 async function processTxn(transaction, wallet ,pillarId){
     var entry;
-    var tmstmp = time.now();
+    const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
     var asset, status, value, to, contractAddress;
     if (transaction.action.input !== '0x' && transaction.action.input !== undefined && transaction.action.input  !== null) {
         var theAsset = await dbServices.getAsset(transaction.action.to);
@@ -288,7 +288,7 @@ async function processTxn(transaction, wallet ,pillarId){
         txHash: transaction.transactionHash,
         asset,
         contractAddress: contractAddress,
-        timestamp: tmstmp,
+        timestamp: tmstmp.timestamp,
         value: value,
         blockNumber: transaction.blockNumber,
         status,
