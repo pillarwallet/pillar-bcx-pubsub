@@ -256,7 +256,7 @@ async function getTxInfo(txHash) {
     value,
     asset,
     contractAddress,
-    status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+    status: txReceipt.status == '0x1' ? 'confirmed' : 'failed',
     gasPrice: txInfo.gasPrice,
     gasUsed: txReceipt.gasUsed,
     blockNumber: txReceipt.blockNumber,
@@ -323,7 +323,7 @@ function subscribeBlockHeaders() {
           web3.eth.getBlock(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
               if (await client.existsAsync(transaction)) {
-                var txObject = await getTxInfo(transaction);
+                const txObject = await getTxInfo(transaction);
                 rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
@@ -453,11 +453,15 @@ function subscribeCollectibleEvents(theContract) {
             let pillarId = '';
             const tmstmp = time.now();
             if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
-              pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
+              pillarId = await client.getAsync(
+                evnt.returnValues._to.toLowerCase(),
+              );
             } else if (
               await client.existsAsync(evnt.returnValues._from.toLowerCase())
             ) {
-              pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
+              pillarId = await client.getAsync(
+                evnt.returnValues._from.toLowerCase(),
+              );
             }
             if (pillarId !== null && pillarId !== '') {
               const txMsg = {
@@ -474,7 +478,7 @@ function subscribeCollectibleEvents(theContract) {
                 gasPrice: evnt.gasPrice,
                 blockNumber: evnt.blockNumber,
                 status: 'confirmed',
-                tokenId: evnt.returnValues._tokenId
+                tokenId: evnt.returnValues._tokenId,
               };
               logger.debug(
                 `ethService.subscribeCollectibleEvents(): notifying subscriber of new tran: ${JSON.stringify(

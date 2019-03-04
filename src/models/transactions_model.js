@@ -38,7 +38,6 @@ const transactionsSchema = Mongoose.Schema({
   gasUsed: { type: Number, required: false },
 });
 
-
 const Transactions = Mongoose.model('Transactions', transactionsSchema);
 
 module.exports.Transactions = Transactions;

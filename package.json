@@ -11,7 +11,8 @@
     "migrate:create": "migrate create",
     "migrate:down": "migrate down",
     "lint": "eslint ./src",
-    "lint:fix": "eslint --fix ./src"
+    "lint:fix": "eslint --fix ./src",
+    "precommit": "npm run lint && npm run test:unit"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
     "@pillarwallet/common-logger": "1.2.38",
     "@sentry/node": "^4.0.0",
     "abi-decoder": "^1.2.0",
+    "husky": "0.14.3",
     "amqplib": "^0.5.2",
     "app-root-path": "^2.1.0",
     "arraybuffer-to-string": "^1.0.2",

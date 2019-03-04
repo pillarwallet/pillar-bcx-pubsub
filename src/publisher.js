@@ -139,12 +139,12 @@ module.exports.publisherOnMessage = function() {
           const obj = message[i];
           if (obj !== undefined) {
             hashMaps.assets.set(obj.contractAddress.toLowerCase(), obj);
-            //await client.setAsync(obj.contractAddress.toLowerCase(), JSON.stringify(obj));
+            // await client.setAsync(obj.contractAddress.toLowerCase(), JSON.stringify(obj));
             logger.info(
               `Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`,
             );
-            if(obj.category === 'Collectible') {
-              //subscribe to events of collectibles
+            if (obj.category === 'Collectible') {
+              // subscribe to events of collectibles
               ethService.subsribeCollectibleEvents(obj);
             } else {
               ethService.subscribeTransferEvents(obj);
