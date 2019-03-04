@@ -20,206 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-function emitTx(emitter, index) {
-  if (index === module.exports.transactions.length) {
-    setTimeout(() => {
-      emitter.emit('endSubscribePendingTx');
-    }, 10);
-  } else {
-    setTimeout(() => {
-      emitter.emit('data', module.exports.transactions[index].hash);
-      return emitTx(emitter, index + 1);
-    }, 10);
-  }
-}
-
-function emitBlock(emitter, index) {
-  emitter.emit('data', {
-    number: module.exports.transactions[index].blockNumber,
-    hash: module.exports.transactions[index].blockHash,
-  });
-}
-
-const eth = {
-  call(callParams, callback) {
-    const properCallParams = {
-      to: '0xSmartContractAddress',
-      data: '0x70a08231000000000000000000000000address',
-    };
-    if (JSON.stringify(callParams) === JSON.stringify(properCallParams)) {
-      callback('', 1000000000000000000);
-    } else {
-      callback('error');
-    }
-  },
-
-  subscribe(subscribtion) {
-    return {
-      on(algo, callback) {
-        if (subscribtion != 'newBlockHeaders') {
-          callback(txHash);
-        } else {
-          callback({
-            number: module.exports.transactions[0].blockNumber,
-            hash: module.exports.transactions[0].blockHash,
-          });
-        }
-        return {
-          on(algo, callback) {},
-        };
-      },
-    };
-  },
-  getBlockTransactionCount() {
-    return new Promise(resolve => {
-      resolve(5);
-    });
-  },
-  isSyncing() {
-    return false;
-  },
-
-  getBlock(blockNumberOrHash, $returnTransactionObjects = false) {
-    return new Promise((resolve, reject) => {
-      try {
-        let tx;
-        if ($returnTransactionObjects) {
-          tx = module.exports.transactions;
-        } else {
-          const txHashesArray = [];
-          module.exports.transactions.forEach(txn => {
-            txHashesArray.push(txn.hash);
-          });
-          tx = txHashesArray;
-        }
-
-        const blockObject = {
-          number: 2461146,
-          hash:
-            '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
-          parentHash:
-            '0xbc7af3e4eb34c19f7aeb6d040084076b2b610e4818692ac39fd140e4620019c4',
-          nonce: '0xaf4802b00993b63d',
-          sha3Uncles:
-            '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
-          logsBloom:
-            '0x00000000000000000000000000000000000000000000100100000000000000000000000000000000000000080000000000040000000008000000000000000000000000000020000000000008000000000000000000000000000000000000000000000000020000000001040000000800000000000000400100008010000000800000100000000000000000000800000000000128000000002000000000000000000080000000000000000000000000000000000000000000004000000000000000000002020000000008200000200000000000000000000010000000080020000010000000000000000000008000000020000000000000080000000202800000',
-          transactionsRoot:
-            '0x80f766cb5d3ba068dc62647772b880beb5fe232daf7292e4bb83ecbf3098139f',
-          stateRoot:
-            '0xfb8252cb4bacbef246d5b0436c028d06e9f52efbce82621d83bd5be2b7f0b4a4',
-          miner: '0xD049bfd667cB46Aa3Ef5Df0dA3e57DB3Be39E511',
-          difficulty: '2975666092',
-          totalDifficulty: '7495574361293090',
-          extraData: '0xd783010703846765746887676f312e392e32856c696e7578',
-          size: 7435,
-          gasLimit: 4712388,
-          gasUsed: 1944627,
-          timestamp: 1516028907,
-          transactions: tx,
-          uncles: [],
-        };
-        resolve(blockObject);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
-
-  getTransaction(txHash) {
-    return new Promise((resolve, reject) => {
-      try {
-        if (
-          txHash ===
-          '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'
-        ) {
-          resolve(module.exports.txObject);
-        } else {
-          reject(new Error('Not A Tx Hash'));
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
-
-  getBlockNumber() {
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(module.exports.blockNumber);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
-
-  getTransactionReceipt(txHash) {
-    return new Promise((resolve, reject) => {
-      try {
-        if (
-          txHash ===
-          '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'
-        ) {
-          resolve(module.exports.txReceipt);
-        } else {
-          reject(new Error('Not A Tx Hash'));
-        }
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
-
-  getBalance() {
-    return new Promise((resolve, reject) => {
-      try {
-        resolve(100000000000000000);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
-
-  Contract: class Contract {
-    constructor() {}
-    get events() {
-      return {
-        Transfer(algo, callback) {
-          callback(false, txObject);
-        },
-      };
-    }
-
-    get getPastEvents() {
-      return () =>
-        new Promise((resolve, reject) => {
-          try {
-            resolve([
-              {
-                returnValues: {
-                  _to: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
-                  _from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
-                },
-              },
-            ]);
-          } catch (e) {
-            reject(e);
-          }
-        });
-    }
-
-    get methods() {
-      return {
-        symbol: () => ({ call: () => {} }),
-        name: () => ({ call: () => {} }),
-        decimals: () => ({ call: () => {} }),
-        totalSupply: () => ({ call: () => {} }),
-      };
-    }
-  },
-};
-
 const blockNumber = 2461146;
 
 const txHash =
@@ -586,20 +386,199 @@ const txReceipt = {
   transactionIndex: 14,
 };
 
+function emitBlock(emitter, index) {
+  emitter.emit('data', {
+    number: module.exports.transactions[index].blockNumber,
+    hash: module.exports.transactions[index].blockHash,
+  });
+}
+
+const eth = {
+  call(callParams, callback) {
+    const properCallParams = {
+      to: '0xSmartContractAddress',
+      data: '0x70a08231000000000000000000000000address',
+    };
+    if (JSON.stringify(callParams) === JSON.stringify(properCallParams)) {
+      callback('', 1000000000000000000);
+    } else {
+      callback('error');
+    }
+  },
+
+  subscribe(subscribtion) {
+    return {
+      on(algo, callback) {
+        if (subscribtion !== 'newBlockHeaders') {
+          callback(txHash);
+        } else {
+          callback({
+            number: module.exports.transactions[0].blockNumber,
+            hash: module.exports.transactions[0].blockHash,
+          });
+        }
+        return {
+          on() {},
+        };
+      },
+    };
+  },
+  getBlockTransactionCount() {
+    return new Promise(resolve => {
+      resolve(5);
+    });
+  },
+  isSyncing() {
+    return false;
+  },
+
+  getBlock(blockNumberOrHash, $returnTransactionObjects = false) {
+    return new Promise((resolve, reject) => {
+      try {
+        let tx;
+        if ($returnTransactionObjects) {
+          tx = module.exports.transactions;
+        } else {
+          const txHashesArray = [];
+          module.exports.transactions.forEach(txn => {
+            txHashesArray.push(txn.hash);
+          });
+          tx = txHashesArray;
+        }
+
+        const blockObject = {
+          number: 2461146,
+          hash:
+            '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
+          parentHash:
+            '0xbc7af3e4eb34c19f7aeb6d040084076b2b610e4818692ac39fd140e4620019c4',
+          nonce: '0xaf4802b00993b63d',
+          sha3Uncles:
+            '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347',
+          logsBloom:
+            '0x00000000000000000000000000000000000000000000100100000000000000000000000000000000000000080000000000040000000008000000000000000000000000000020000000000008000000000000000000000000000000000000000000000000020000000001040000000800000000000000400100008010000000800000100000000000000000000800000000000128000000002000000000000000000080000000000000000000000000000000000000000000004000000000000000000002020000000008200000200000000000000000000010000000080020000010000000000000000000008000000020000000000000080000000202800000',
+          transactionsRoot:
+            '0x80f766cb5d3ba068dc62647772b880beb5fe232daf7292e4bb83ecbf3098139f',
+          stateRoot:
+            '0xfb8252cb4bacbef246d5b0436c028d06e9f52efbce82621d83bd5be2b7f0b4a4',
+          miner: '0xD049bfd667cB46Aa3Ef5Df0dA3e57DB3Be39E511',
+          difficulty: '2975666092',
+          totalDifficulty: '7495574361293090',
+          extraData: '0xd783010703846765746887676f312e392e32856c696e7578',
+          size: 7435,
+          gasLimit: 4712388,
+          gasUsed: 1944627,
+          timestamp: 1516028907,
+          transactions: tx,
+          uncles: [],
+        };
+        resolve(blockObject);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+
+  getTransaction(txHashParam) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (
+          txHashParam ===
+          '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'
+        ) {
+          resolve(module.exports.txObject);
+        } else {
+          reject(new Error('Not A Tx Hash'));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+
+  getBlockNumber() {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(module.exports.blockNumber);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+
+  getTransactionReceipt(txHashParam) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (
+          txHashParam ===
+          '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'
+        ) {
+          resolve(module.exports.txReceipt);
+        } else {
+          reject(new Error('Not A Tx Hash'));
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+
+  getBalance() {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(100000000000000000);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  },
+
+  Contract: class Contract {
+    get events() {
+      return {
+        Transfer(algo, callback) {
+          callback(false, txObject);
+        },
+      };
+    }
+
+    get getPastEvents() {
+      return () =>
+        new Promise((resolve, reject) => {
+          try {
+            resolve([
+              {
+                returnValues: {
+                  _to: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
+                  _from: '0x81b7E08F65Bdf5648606c89998A9CC8164397647',
+                },
+              },
+            ]);
+          } catch (e) {
+            reject(e);
+          }
+        });
+    }
+
+    get methods() {
+      return {
+        symbol: () => ({ call: () => {} }),
+        name: () => ({ call: () => {} }),
+        decimals: () => ({ call: () => {} }),
+        totalSupply: () => ({ call: () => {} }),
+      };
+    }
+  },
+};
+
 const providers = {
-  WebsocketProvider: class WebsocketProvider {
-    constructor() {}
-  },
-  HttpProvider: class HttpProvider {
-    constructor() {}
-  },
+  WebsocketProvider: class WebsocketProvider {},
+  HttpProvider: class HttpProvider {},
 };
 
-const method = class Method {
-  constructor() {}
-};
+const method = class Method {};
 
-const ex = function(extension) {};
+const ex = function exs() {};
 
 ex.Method = method;
 
@@ -608,8 +587,6 @@ const toChecksumAddress = () => '0xc1912fEE45d61C87Cc5EA59DaE31190FFFFf232d';
 const isAddress = () => true;
 
 class Web3 {
-  constructor() {}
-
   static get providers() {
     return providers;
   }

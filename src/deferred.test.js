@@ -137,7 +137,7 @@ describe('Deferred unit tests', () => {
 
       getAllTransactionsForWalletMock.mockImplementation(
         () =>
-          new Promise((resolve, reject) => {
+          new Promise(resolve => {
             resolve(ret);
           }),
       );
@@ -149,7 +149,7 @@ describe('Deferred unit tests', () => {
 
       addMultipleTxMock.mockImplementation(
         () =>
-          new Promise((resolve, reject) => {
+          new Promise(resolve => {
             done();
             resolve();
           }),

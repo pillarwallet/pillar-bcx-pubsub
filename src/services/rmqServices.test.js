@@ -206,7 +206,7 @@ describe('initsRMQ ', () => {
     );
     const dbServiceAddTransactionStatsImpl = jest.fn(() => {
       done();
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         resolve(null);
       });
     });
@@ -240,7 +240,7 @@ describe('initsRMQ ', () => {
     );
     const dbServiceSaveMockImpl = jest.fn(() => {
       done();
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         resolve(null);
       });
     });
@@ -273,7 +273,7 @@ describe('initsRMQ ', () => {
     );
     const dbServiceSaveMockImpl = jest.fn(
       () =>
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           resolve(null);
         }),
     );
@@ -306,7 +306,7 @@ describe('initsRMQ ', () => {
     );
     const dbServiceSaveMockFindeOneByTxImpl = jest.fn(
       () =>
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           resolve(true);
         }),
     );
@@ -316,7 +316,7 @@ describe('initsRMQ ', () => {
     );
     const dbServiceSaveMockImpl = jest.fn(
       () =>
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           resolve(null);
         }),
     );
