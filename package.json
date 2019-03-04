@@ -41,7 +41,7 @@
     "command-line-args": "^5.0.2",
     "cron": "^1.4.1",
     "dotenv": "^5.0.1",
-    "eslint": "^4.19.1",
+    "eslint": "^5.15.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.13.0",
     "fs": "0.0.1-security",
@@ -60,7 +60,7 @@
     "web3-core-helpers": "1.0.0-beta.35"
   },
   "devDependencies": {
-    "eslint": "4.19.1",
+    "eslint": "5.15.0",
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-config-prettier": "2.9.0",
     "eslint-plugin-import": "2.11.0",
