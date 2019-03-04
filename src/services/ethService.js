@@ -21,7 +21,6 @@ SOFTWARE.
 */
 
 /** @module ethService.js */
-const time = require('unix-timestamp');
 const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
