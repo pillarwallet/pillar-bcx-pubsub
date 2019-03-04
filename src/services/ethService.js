@@ -613,7 +613,7 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.connect()) {
-            web3.eth.getTransactionReceipt(item.txHash).then(receipt => {
+            web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
                 let to;
                 let value;
                 let asset;
