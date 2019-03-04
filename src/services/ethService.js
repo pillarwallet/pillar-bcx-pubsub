@@ -256,7 +256,7 @@ async function getTxInfo(txHash) {
     value,
     asset,
     contractAddress,
-    status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+    status: txReceipt.status === '0x1' ? 'confirmed' : 'failed',
     gasPrice: txInfo.gasPrice,
     gasUsed: txReceipt.gasUsed,
     blockNumber: txReceipt.blockNumber,
@@ -323,7 +323,7 @@ function subscribeBlockHeaders() {
           web3.eth.getBlock(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
               if (await client.existsAsync(transaction)) {
-                var txObject = await getTxInfo(transaction);
+                let txObject = await getTxInfo(transaction);
                 rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
@@ -450,39 +450,7 @@ function subscribeCollectibleEvents(theContract) {
             )} result: ${result} error: ${error}`,
           );
           if (!error) {
-            let pillarId = '';
-            const tmstmp = time.now();
-            if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
-              pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
-            } else if (
-              await client.existsAsync(evnt.returnValues._from.toLowerCase())
-            ) {
-              pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
-            }
-            if (pillarId !== null && pillarId !== '') {
-              const txMsg = {
-                type: 'updateTx',
-                pillarId,
-                protocol,
-                fromAddress: evnt.returnValues._from,
-                toAddress: evnt.returnValues._to,
-                txHash: evnt.transactionHash,
-                asset: theContract.ticker,
-                contractAddress: theContract.address,
-                timestamp: tmstmp,
-                value: evnt.returnValues._value,
-                gasPrice: evnt.gasPrice,
-                blockNumber: evnt.blockNumber,
-                status: 'confirmed',
-                tokenId: evnt.returnValues._tokenId
-              };
-              logger.debug(
-                `ethService.subscribeCollectibleEvents(): notifying subscriber of new tran: ${JSON.stringify(
-                  txMsg,
-                )}`,
-              );
-              rmqServices.sendPubSubMessage(txMsg);
-            }
+            processTx.checkCollectibleTransfer(result,theContract,protocol);
           } else {
             logger.error(
               `ethService.subscribeCollectibleEvents() failed: ${error}`,
@@ -653,7 +621,7 @@ function checkPendingTx(pendingTxArray) {
             if (receipt !== null) {
               let status;
               const { gasUsed } = receipt;
-              if (receipt.status == '0x1') {
+              if (receipt.status === '0x1') {
                 status = 'confirmed';
               } else {
                 status = 'failed';
@@ -791,7 +759,7 @@ async function addERC20(receipt) {
     const decimals = await contract.methods.decimals().call();
     const totalSupply = await contract.methods.totalSupply().call();
 
-    if (receipt.status == '0x1') {
+    if (receipt.status === '0x1') {
       const txMsg = {
         type: 'newAsset',
         name,
@@ -834,7 +802,7 @@ async function addERC721(receipt) {
     const symbol = await contract.methods.symbol().call();
     const name = await contract.methods.name().call();
 
-    if (receipt.status == '0x1') {
+    if (receipt.status === '0x1') {
       const txMsg = {
         type: 'newAsset',
         name,

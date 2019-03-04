@@ -82,7 +82,7 @@ async function connectDb() {
     if (
       dbServices.mongoose !== undefined &&
       dbServices.dbCollections !== undefined &&
-      dbServices.mongoose.connection.readyState != 0
+      dbServices.mongoose.connection.readyState !== 0
     ) {
       resolve();
     } else {
