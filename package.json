@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage --forceExit",
+    "test:unit": "NODE_ENV=test jest unit --verbose",
     "migrate": "migrate",
     "migrate:up": "migrate up",
     "migrate:create": "migrate create",
