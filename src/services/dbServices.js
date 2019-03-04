@@ -85,17 +85,17 @@ function dbConnect() {
 }
 module.exports.dbConnect = dbConnect;
 
-function accountDetails(address, $arg = { useMongoClient: true }) {
+function accountDetails(address) {
   return new Promise((resolve, reject) => {
     try {
       if (dbCollections) {
         dbCollections.accounts
           .findByEthAddress(address)
-          .then(accounts => {
-            if (accounts !== undefined) {
-              logger.debug(`Account details ${accounts.length}`);
+          .then(accountsRes => {
+            if (accountsRes !== undefined) {
+              logger.debug(`Account details ${accountsRes.length}`);
             }
-            resolve(accounts);
+            resolve(accountsRes);
           })
           .catch(e => {
             reject(e);
@@ -108,28 +108,7 @@ function accountDetails(address, $arg = { useMongoClient: true }) {
 }
 module.exports.accountDetails = accountDetails;
 
-function assetDetails(asset, $arg = { useMongoClient: true }) {
-  return new Promise((resolve, reject) => {
-    try {
-      if (dbCollections) {
-        dbCollections.assets
-          .findByAddress(asset)
-          .then(assets => {
-            logger.debug(`Asset details ${assets}`);
-            resolve(accounts);
-          })
-          .catch(e => {
-            reject(e);
-          });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-module.exports.assetDetails = assetDetails;
-
-function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
+function recentAccounts(idFrom) {
   return new Promise((resolve, reject) => {
     try {
       if (dbCollections) {
@@ -167,7 +146,7 @@ function recentAccounts(idFrom, protocol, $arg = { useMongoClient: true }) {
 }
 module.exports.recentAccounts = recentAccounts;
 
-function contractsToMonitor(idFrom, $arg = { useMongoClient: true }) {
+function contractsToMonitor(idFrom) {
   return new Promise((resolve, reject) => {
     // code to fetch list of contracts/assets to monitor
     if (dbCollections) {
@@ -311,12 +290,13 @@ function findMaxBlock(protocol, asset = null) {
   return new Promise((resolve, reject) => {
     try {
       if (dbCollections) {
-        if (asset == null) {
+        if (asset === null) {
           dbCollections.transactions.findMaxBlock(protocol).then(maxBlock => {
             if (maxBlock !== undefined && maxBlock !== null) {
               logger.debug(`dbServices.findMaxBlock(): maxBlock = ${maxBlock}`);
             } else {
-              maxBlock = 0;
+              resolve(0);
+              return;
             }
             resolve(maxBlock);
           });
@@ -329,7 +309,8 @@ function findMaxBlock(protocol, asset = null) {
                   `dbServices.findMaxBlock(): maxBlock = ${maxBlock}`,
                 );
               } else {
-                maxBlock = 0;
+                resolve(0);
+                return;
               }
               resolve(maxBlock);
             });

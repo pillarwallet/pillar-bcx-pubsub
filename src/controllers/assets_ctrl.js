@@ -26,16 +26,16 @@ const mongoose = require('mongoose');
 function listAll() {
   return new Promise((resolve, reject) => {
     try {
-      assets.Assets.find((err, result) => {
+      return assets.Assets.find((err, result) => {
         if (err) {
           logger.info(`smartContracts.listAll DB controller ERROR: ${err}`);
-          reject(err);
+          return reject(err);
         }
 
-        resolve(result);
+        return resolve(result);
       });
     } catch (e) {
-      reject(e);
+      return reject(e);
     }
   });
 }
@@ -63,7 +63,7 @@ module.exports.listAssets = listAssets;
 function listRecent(idFrom) {
   return new Promise((resolve, reject) => {
     try {
-      var oId = mongoose.Types.ObjectId(idFrom);
+      const oId = mongoose.Types.ObjectId(idFrom);
       // console.log("Query: ",query);
       // accounts.Accounts.find(query, (err, result) => {
       assets.Assets.find({ _id: { $gt: oId } }, (err, result) => {

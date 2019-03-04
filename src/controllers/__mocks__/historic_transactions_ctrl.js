@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-function addMultipleTx(txObject) {
-  return new Promise((resolve, reject) => {
+function addMultipleTx() {
+  return new Promise(resolve => {
     resolve();
   });
 }

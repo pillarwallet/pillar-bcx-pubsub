@@ -104,15 +104,24 @@ function connect() {
           ],
         });
         web3._provider.on('end', eventObj => {
-          logger.error('Websocket disconnected!! Restarting connection....');
+          logger.error(
+            'Websocket disconnected!! Restarting connection....',
+            eventObj,
+          );
           web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
         });
         web3._provider.on('close', eventObj => {
-          logger.error('Websocket disconnected!! Restarting connection....');
+          logger.error(
+            'Websocket disconnected!! Restarting connection....',
+            eventObj,
+          );
           web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
         });
         web3._provider.on('error', eventObj => {
-          logger.error('Websocket disconnected!! Restarting connection....');
+          logger.error(
+            'Websocket disconnected!! Restarting connection....',
+            eventObj,
+          );
           web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
         });
         logger.info(
@@ -125,7 +134,7 @@ function connect() {
       }
     } catch (e) {
       logger.error(`ethService.connect() failed with error: ${e}`);
-      reject(false);
+      reject(new Error(false));
     }
   });
 }
@@ -207,6 +216,56 @@ function subscribePendingTxn() {
 module.exports.subscribePendingTxn = subscribePendingTxn;
 
 /**
+ * Gets the transaction info/receipt and returns the transaction object
+ * @param {string} txHash Transaction hash
+ */
+async function getTxInfo(txHash) {
+  const [txInfo, txReceipt] = await Promise.all([
+    web3.eth.getTransaction(txHash),
+    web3.eth.getTransactionReceipt(txHash),
+  ]);
+  let to;
+  let value;
+  let asset;
+  let contractAddress;
+  if (!hashMaps.assets.has(txInfo.to.toLowerCase())) {
+    ({ to } = txInfo);
+  } else {
+    const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+    ({ contractAddress } = contractDetail);
+    asset = contractDetail.symbol;
+    if (fs.existsSync(`${abiPath + asset}.json`)) {
+      const theAbi = require(`${abiPath + asset}.json`);
+      abiDecoder.addABI(theAbi);
+    } else {
+      abiDecoder.addABI(ERC20ABI);
+    }
+    const data = abiDecoder.decodeMethod(txInfo.input);
+    if (data !== undefined && data.name === 'transfer') {
+      // smart contract call hence the asset must be the token name
+      to = data.params[0].value;
+      [, { value }] = data.params;
+    } else {
+      ({ to } = txInfo);
+    }
+  }
+  return {
+    txHash: txInfo.hash,
+    fromAddress: txInfo.from,
+    toAddress: to,
+    value,
+    asset,
+    contractAddress,
+    status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+    gasPrice: txInfo.gasPrice,
+    gasUsed: txReceipt.gasUsed,
+    blockNumber: txReceipt.blockNumber,
+  };
+}
+
+module.exports.getTxInfo = getTxInfo;
+
+/**
  * Subscribe to geth WS events corresponding to new block headers.
  */
 function subscribeBlockHeaders() {
@@ -233,10 +292,10 @@ function subscribeBlockHeaders() {
           }`,
         );
         if (blockHeader && blockHeader.number && blockHeader.hash) {
-          if (blockHeader.number == hashMaps.LATEST_BLOCK_NUMBER) {
-            wsCnt++;
+          if (blockHeader.number === hashMaps.LATEST_BLOCK_NUMBER) {
+            wsCnt += 1;
             // if the same block number is reported for 5 times, then report websocket is stale
-            if (wsCnt == 5) {
+            if (wsCnt === 5) {
               logger.error(
                 '## WEB SOCKET STALE?? NO NEW BLOCK REPORTED FOR PAST 5 TRIES!####',
               );
@@ -264,7 +323,8 @@ function subscribeBlockHeaders() {
           web3.eth.getBlock(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
               if (await client.existsAsync(transaction)) {
-                rmqServices.sendOffersMessage(await getTxInfo(transaction));
+                var txObject = await getTxInfo(transaction);
+                rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
             });
@@ -454,7 +514,9 @@ function getBlockTx(blockNumber) {
       if (module.exports.connect()) {
         resolve(web3.eth.getBlock(blockNumber, true));
       } else {
-        reject('ethService.getBlockTx Error: Connection to geth failed!');
+        reject(
+          new Error('ethService.getBlockTx Error: Connection to geth failed!'),
+        );
       }
     } catch (e) {
       logger.error(`ethService.getBlockTx(): ${e}`);
@@ -476,7 +538,11 @@ function getBlockNumber(blockHash) {
           resolve(result.number);
         });
       } else {
-        reject('ethService.getBlockNumber Error: Connection to geth failed!');
+        reject(
+          new Error(
+            'ethService.getBlockNumber Error: Connection to geth failed!',
+          ),
+        );
       }
     } catch (e) {
       reject(e);
@@ -493,6 +559,7 @@ function getLastBlockNumber() {
     return web3.eth.getBlockNumber();
   }
   logger.error('ethService.getLastBlockNumber(): connection to geth failed!');
+  return undefined;
 }
 module.exports.getLastBlockNumber = getLastBlockNumber;
 
@@ -505,6 +572,7 @@ function getTxReceipt(txHash) {
     return web3.eth.getTransactionReceipt(txHash);
   }
   logger.error('ethService.getTxReceipt(): connection to geth failed!');
+  return undefined;
 }
 module.exports.getTxReceipt = getTxReceipt;
 
@@ -519,6 +587,7 @@ function getBlockTransactionCount(hashStringOrBlockNumber) {
   logger.error(
     'ethService.getBlockTransactionCount(): connection to geth failed!',
   );
+  return undefined;
 }
 module.exports.getBlockTransactionCount = getBlockTransactionCount;
 
@@ -534,6 +603,7 @@ function getTransactionFromBlock(hashStringOrBlockNumber, index) {
   logger.error(
     'ethService.getTransactionFromBlock(): connection to geth failed!',
   );
+  return undefined;
 }
 module.exports.getTransactionFromBlock = getTransactionFromBlock;
 
@@ -545,14 +615,12 @@ function getPendingTxArray() {
     try {
       if (module.exports.connect()) {
         web3.eth.getBlock('pending', true).then(result => {
-          // logger.info(result)
           resolve(result.transactions);
         });
-      } else {
-        reject('ethService.getPendingTxArray(): connection to geth failed!');
       }
+      return undefined;
     } catch (e) {
-      reject(e);
+      return reject(e);
     }
   });
 }
@@ -578,11 +646,13 @@ function checkPendingTx(pendingTxArray) {
         );
         if (module.exports.connect()) {
           web3.eth.getTransactionReceipt(item.txHash).then(receipt => {
-            let to, value, asset;
+            let to;
+            let value;
+            let asset;
             logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
             if (receipt !== null) {
               let status;
-              const gasUsed = receipt.gasUsed;
+              const { gasUsed } = receipt;
               if (receipt.status == '0x1') {
                 status = 'confirmed';
               } else {
@@ -595,7 +665,6 @@ function checkPendingTx(pendingTxArray) {
                 const contractDetail = hashMaps.assets.get(
                   item.toAddress.toLowerCase(),
                 );
-                contractAddress = contractDetail.contractAddress;
                 asset = contractDetail.symbol;
                 if (fs.existsSync(`${abiPath + asset}.json`)) {
                   const theAbi = require(`${abiPath + asset}.json`);
@@ -608,18 +677,18 @@ function checkPendingTx(pendingTxArray) {
                 if (data !== undefined && data.name === 'transfer') {
                   // smart contract call hence the asset must be the token name
                   to = data.params[0].value;
-                  value = data.params[1].value;
+                  [, { value }] = data.params;
                 } else {
                   to = item.toAddress;
                 }
               }
 
               if (!value) {
-                value = item.value;
+                ({ value } = item);
               }
 
               if (!asset) {
-                asset = item.asset;
+                ({ asset } = item);
               }
 
               const txMsg = {
@@ -650,7 +719,11 @@ function checkPendingTx(pendingTxArray) {
             }
           });
         } else {
-          reject('ethService.checkPendingTx(): connection to geth failed!');
+          reject(
+            new Error(
+              'ethService.checkPendingTx(): connection to geth failed!',
+            ),
+          );
         }
       });
     }
@@ -693,7 +766,11 @@ function checkNewAssets(pendingAssets) {
             }
           });
         } else {
-          reject('ethService.checkPendingTx(): connection to geth failed!');
+          reject(
+            new Error(
+              'ethService.checkPendingTx(): connection to geth failed!',
+            ),
+          );
         }
       });
     }
@@ -757,7 +834,7 @@ async function addERC721(receipt) {
     const symbol = await contract.methods.symbol().call();
     const name = await contract.methods.name().call();
 
-    if (receipt.status === '0x1') {
+    if (receipt.status == '0x1') {
       const txMsg = {
         type: 'newAsset',
         name,
@@ -791,10 +868,12 @@ module.exports.addERC721 = addERC721;
 
 async function getAllTransactionsForWallet(
   wallet,
-  fromBlockNumber,
-  toBlockNumber,
+  fromBlockNumberParam,
+  toBlockNumberParam,
 ) {
   try {
+    let fromBlockNumber = fromBlockNumberParam;
+    let toBlockNumber = toBlockNumberParam;
     logger.info(
       `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
     );
@@ -822,61 +901,15 @@ async function getAllTransactionsForWallet(
     logger.error(
       `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
     );
-    return;
+    return undefined;
   } catch (err) {
     logger.error(
       `ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`,
     );
+    return undefined;
   }
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
-
-/**
- * Gets the transaction info/receipt and returns the transaction object
- * @param {string} txHash Transaction hash
- */
-async function getTxInfo(txHash) {
-  const [txInfo, txReceipt] = await Promise.all([
-    web3.eth.getTransaction(txHash),
-    web3.eth.getTransactionReceipt(txHash),
-  ]);
-  let to, value, asset, contractAddress;
-  if (!hashMaps.assets.has(txInfo.to.toLowerCase())) {
-    to = txInfo.to;
-  } else {
-    const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-    contractAddress = contractDetail.contractAddress;
-    asset = contractDetail.symbol;
-    if (fs.existsSync(`${abiPath + asset}.json`)) {
-      const theAbi = require(`${abiPath + asset}.json`);
-      abiDecoder.addABI(theAbi);
-    } else {
-      abiDecoder.addABI(ERC20ABI);
-    }
-    const data = abiDecoder.decodeMethod(txInfo.input);
-    if (data !== undefined && data.name === 'transfer') {
-      // smart contract call hence the asset must be the token name
-      to = data.params[0].value;
-      value = data.params[1].value;
-    } else {
-      to = txInfo.to;
-    }
-  }
-  return {
-    txHash: txInfo.hash,
-    fromAddress: txInfo.from,
-    toAddress: to,
-    value,
-    asset,
-    contractAddress,
-    status: txReceipt.status == '0x1' ? 'confirmed' : 'failed',
-    gasPrice: txInfo.gasPrice,
-    gasUsed: txReceipt.gasUsed,
-    blockNumber: txReceipt.blockNumber,
-  };
-}
-
-module.exports.getTxInfo = getTxInfo;
 
 async function getTransactionCountForWallet(wallet) {
   try {
@@ -895,11 +928,12 @@ async function getTransactionCountForWallet(wallet) {
     logger.error(
       `ethService.getTransactionCountForWallet() - failed connecting to web3 provider`,
     );
-    return;
+    return undefined;
   } catch (err) {
     logger.error(
       `ethService.getTransactionCountForWallet(${wallet}) - failed with error - ${err}`,
     );
+    return undefined;
   }
 }
 module.exports.getTransactionCountForWallet = getTransactionCountForWallet;

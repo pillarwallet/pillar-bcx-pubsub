@@ -24,7 +24,7 @@ module.exports.getBlockTx = () => ({
 });
 
 module.exports.getTxReceipt = () =>
-  new Promise((resolve, reject) => {
+  new Promise(resolve => {
     resolve({ status: '0x1' });
   });
 
@@ -33,12 +33,17 @@ module.exports.getPastEvents = () => ({
 });
 
 module.exports.getLastBlockNumber = () =>
-  new Promise((resolve, reject) => {
+  new Promise(resolve => {
     resolve(500);
   });
 
+module.exports.getPendingTxArray = () =>
+  new Promise(resolve => {
+    resolve([]);
+  });
+
 module.exports.getTransactionCountForWallet = () =>
-  new Promise((resolve, reject) => {
+  new Promise(resolve => {
     resolve(50);
   });
 

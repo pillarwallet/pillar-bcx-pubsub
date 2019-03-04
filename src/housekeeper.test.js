@@ -37,11 +37,10 @@ describe('The recoverAll function tests less than MAX_TOTAL_TRANSACTIONS', () =>
     jest.mock('./services/ethService');
     jest.mock('./services/dbServices.js');
     const dbServices = require('./services/dbServices.js');
-    const ethServices = require('./services/ethService');
     const housekeeper = require('./housekeeper.js');
     const spy = jest.spyOn(housekeeper, 'recoverTransactions');
     const recoverAllMockImpl = () =>
-      new Promise((resolve, reject) => {
+      new Promise(resolve => {
         resolve([{ transactionHash: 'hash' }]);
       });
     spy.mockImplementation(recoverAllMockImpl);
@@ -49,7 +48,7 @@ describe('The recoverAll function tests less than MAX_TOTAL_TRANSACTIONS', () =>
       dbServices.dbCollections.transactions,
       'addTx',
     );
-    const dbServicesAddTxMockImpl = function() {
+    const dbServicesAddTxMockImpl = () => {
       done();
     };
     dbServicesAddTxMock.mockImplementation(dbServicesAddTxMockImpl);
@@ -80,13 +79,13 @@ describe('The processData function tests', () => {
     const housekeeper = require('./housekeeper.js');
     const spy = jest.spyOn(housekeeper, 'recoverAll');
     const recoverAllMockImpl = () =>
-      new Promise((resolve, reject) => {
+      new Promise(resolve => {
         resolve([{ txHash: 'hash' }]);
       });
     spy.mockImplementation(recoverAllMockImpl);
 
     const loggerLog = jest.spyOn(logger, 'info');
-    const loggerLogMockImpl = function(log) {
+    const loggerLogMockImpl = log => {
       if (log.indexOf('Completed processing') >= 0) {
         done();
       }

@@ -21,7 +21,7 @@ SOFTWARE.
 */
 exports.assets = {
   values: () => ['asset1', 'asset2', 'asset3'],
-  get: address => ({
+  get: () => ({
     contractAddress:
       '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b',
     symbol: 'ETH',
