@@ -254,7 +254,7 @@ async function newPendingTran(tx, protocol) {
       } else {
         value = tx.value;
         // fetch the asset from the assets hashmap
-        var contractDetail = hashMaps.assets.get(to.toLowerCase());
+        const contractDetail = hashMaps.assets.get(to.toLowerCase());
         contractAddress = contractDetail.contractAddress;
         asset = contractDetail.symbol;
         if(typeof contractDetail.category !== 'undefined') {
