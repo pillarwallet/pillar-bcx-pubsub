@@ -626,22 +626,36 @@ function checkPendingTx(pendingTxArray) {
                   item.toAddress.toLowerCase(),
                 );
                 asset = contractDetail.symbol;
-                if (fs.existsSync(`${abiPath + asset}.json`)) {
-                  const theAbi = require(`${abiPath + asset}.json`);
-                  logger.info(`processTx - Fetched ABI for token: ${asset}`);
-                  abiDecoder.addABI(theAbi);
+                if(typeof contractDetail.category !== 'undefined') {
+                    if (fs.existsSync(`${abiPath + asset}.json`)) {
+                        const theAbi = require(`${abiPath + asset}.json`);
+                        logger.info(`processTx - Fetched ABI for token: ${asset}`);
+                        abiDecoder.addABI(theAbi);
+                    } else {
+                        abiDecoder.addABI(ERC20ABI);
+                    }
                 } else {
-                  abiDecoder.addABI(ERC20ABI);
+                    abiDecoder.addABI(ERC721ABI);
                 }
+
                 const data = abiDecoder.decodeMethod(item.input);
-                if (data !== undefined && data.name === 'transfer') {
-                  // smart contract call hence the asset must be the token name
-                  to = data.params[0].value;
-                  [, { value }] = data.params;
-                } else {
-                  to = item.toAddress;
+                if (typeof data !== 'undefined' && tx.input !== '0x') {
+                    if (data.name === 'transfer') {
+                        // smart contract call hence the asset must be the token name
+                        to = data.params[0].value;
+                        pillarId = await client.getAsync(to);
+                        [, { value }] = data.params;
+                    } else if (
+                        data.name === 'transferFrom' 
+                        || 
+                        data.name === 'safeTransferFrom'
+                        ) {
+                        to = data.params[1].value;
+                        pillarId = await client.getAsync(to);
+                        [, , { tokenId }] = data.params;
+                    }
                 }
-              }
+            }
 
               if (!value) {
                 ({ value } = item);
@@ -664,6 +678,7 @@ function checkPendingTx(pendingTxArray) {
                 gasUsed,
                 blockNumber: receipt.blockNumber,
                 input: item.input,
+                tokenId
               };
               rmqServices.sendPubSubMessage(txMsg);
               logger.info(

@@ -124,7 +124,7 @@ async function newPendingTran(tx, protocol) {
             ) {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
-            [, , { value }] = data.params;
+            [, , { tokenId }] = data.params;
           }
         }
       }
@@ -151,6 +151,7 @@ async function newPendingTran(tx, protocol) {
             blockNumber: tx.blockNumber,
             status: 'pending',
             input: tx.input,
+            tokenId
           };
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
@@ -227,7 +228,7 @@ module.exports.checkTokenTransfer = checkTokenTransfer;
  * @param {String} protocol - the protocol corresponding to the token blockchain
  */
 async function checkCollectibleTransfer(evnt, theContract, protocol) {
-  logger.debug(
+  logger.info(
     `processTx.checkCollectibleTransfer(): received event: ${JSON.stringify(evnt)}`,
   );
   try {
