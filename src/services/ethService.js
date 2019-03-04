@@ -444,29 +444,29 @@ function subscribeCollectibleEvents(theContract) {
           if (!error) {
             let pillarId = '';
             const tmstmp = time.now();
-            if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
-              pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
+            if (await client.existsAsync(result.returnValues._to.toLowerCase())) {
+              pillarId = await client.getAsync(result.returnValues._to.toLowerCase());
             } else if (
-              await client.existsAsync(evnt.returnValues._from.toLowerCase())
+              await client.existsAsync(result.returnValues._from.toLowerCase())
             ) {
-              pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
+              pillarId = await client.getAsync(result.returnValues._from.toLowerCase());
             }
             if (pillarId !== null && pillarId !== '') {
               const txMsg = {
                 type: 'updateTx',
                 pillarId,
                 protocol,
-                fromAddress: evnt.returnValues._from,
-                toAddress: evnt.returnValues._to,
-                txHash: evnt.transactionHash,
+                fromAddress: result.returnValues._from,
+                toAddress: result.returnValues._to,
+                txHash: result.transactionHash,
                 asset: theContract.ticker,
                 contractAddress: theContract.address,
                 timestamp: tmstmp,
-                value: evnt.returnValues._value,
-                gasPrice: evnt.gasPrice,
-                blockNumber: evnt.blockNumber,
+                value: result.returnValues._value,
+                gasPrice: result.gasPrice,
+                blockNumber: result.blockNumber,
                 status: 'confirmed',
-                tokenId: evnt.returnValues._tokenId
+                tokenId: result.returnValues._tokenId
               };
               logger.debug(
                 `ethService.subscribeCollectibleEvents(): notifying subscriber of new tran: ${JSON.stringify(
