@@ -62,6 +62,7 @@ async function newPendingTran(tx, protocol) {
     let contractAddress;
     let data;
     let value;
+    let tokenId;
     const from = typeof tx.from !== 'undefined' ? tx.from : tx.fromAddress;
     let to = typeof tx.to !== 'undefined' ? tx.to : tx.toAddress;
     const hash = typeof tx.hash !== 'undefined' ? tx.hash : tx.txHash;
