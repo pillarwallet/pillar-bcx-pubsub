@@ -120,7 +120,7 @@ async function newPendingTran(tx, protocol) {
           } else if (data.name === 'transferFrom' || data.name === 'safeTransferFrom') {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
-            value = data.params[2].value;
+            [, , { value }] = data.params;
           }
         }
       }
