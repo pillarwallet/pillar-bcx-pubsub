@@ -109,7 +109,11 @@ async function newPendingTran(tx, protocol) {
             to = data.params[0].value;
             pillarId = await client.getAsync(to);
             [, { value }] = data.params;
-          } else if (data.name === 'transferFrom' || data.name === 'safeTransferFrom') {
+          } else if (
+            data.name === 'transferFrom' 
+            || 
+            data.name === 'safeTransferFrom'
+            ) {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
             [, , { value }] = data.params;
@@ -124,7 +128,7 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
         // send a message to the notifications queue reporting a new transactions
-        var txMsgTo = {
+        let txMsgTo = {
             type: 'newTx',
             pillarId,
             protocol,
@@ -187,8 +191,8 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
         fromAddress: evnt.returnValues._from,
         toAddress: evnt.returnValues._to,
         txHash: evnt.transactionHash,
-        asset: theContract.ticker,
-        contractAddress: theContract.address,
+        asset: theContract.symbol,
+        contractAddress: theContract.contractAddress,
         timestamp: tmstmp,
         value: evnt.returnValues._value,
         gasPrice: evnt.gasPrice,
@@ -236,8 +240,8 @@ async function checkCollectibleTransfer(evnt, theContract, protocol) {
         fromAddress: evnt.returnValues._from,
         toAddress: evnt.returnValues._to,
         txHash: evnt.transactionHash,
-        asset: theContract.ticker,
-        contractAddress: theContract.address,
+        asset: theContract.symbol,
+        contractAddress: theContract.contractAddress,
         timestamp: tmstmp,
         value: evnt.returnValues._value,
         gasPrice: evnt.gasPrice,
