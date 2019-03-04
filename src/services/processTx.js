@@ -282,11 +282,11 @@ async function newPendingTran(tx, protocol) {
             // smart contract call hence the asset must be the token name
             to = data.params[0].value;
             pillarId = await client.getAsync(to);
-            value = data.params[1].value;
+            [, { value }] = data.params;
           } else if (data.name === 'transferFrom' || data.name === 'safeTransferFrom') {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
-            value = data.params[2].value;
+            [, , { value }] = data.params;
           }
         }
       }
