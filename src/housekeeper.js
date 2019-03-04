@@ -87,6 +87,20 @@ function logMemoryUsage() {
 }
 module.exports.logMemoryUsage = logMemoryUsage;
 
+
+async function connectDb() {
+    return new Promise(async (resolve) => {
+        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined && dbServices.mongoose.connection.readyState != 0) {
+            resolve()
+        } else {
+            dbServices.dbConnect().then(() => {
+                resolve()
+            })
+        }
+
+    })
+}
+
 /**
  * Check the transactions pool and update pending transactions.
  */
@@ -277,7 +291,6 @@ async function processTxn(transaction, wallet, pillarId) {
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAll(wallet, pillarId) {
-<<<<<<< HEAD
     try {
         logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
         var totalTransactions = await ethService.getTransactionCountForWallet(wallet)
@@ -296,61 +309,12 @@ async function recoverAll(wallet, pillarId) {
         }else{
             saveDeferred(wallet, protocol)
         }
-=======
-  try {
-    logger.info(
-      `Housekeeper.recoverAll(${wallet}) - started recovering transactions`,
-    );
-    const totalTransactions = await ethService.getTransactionCountForWallet(
-      wallet,
-    );
-    logger.info(
-      `Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`,
-    );
-    let index = 0;
-    if (totalTransactions < MAX_TOTAL_TRANSACTIONS) {
-      const transactions = await ethService.getAllTransactionsForWallet(wallet);
-      transactions.forEach(async transaction => {
-        index += 1;
-        processTxn(transaction, wallet, pillarId);
-
-        if (index === totalTransactions) {
-          logger.info(
-            `Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`,
-          );
-        }
-      });
-    } else {
-      dbServices.dbCollections.accounts
-        .findByAddress(wallet, protocol)
-        .then(result => {
-          if (result) {
-            result.addresses.forEach(acc => {
-              if (acc.address === wallet) {
-                logger.debug(
-                  `Housekeeper.recoverAll: matched address ${acc.address}`,
-                );
-                acc.status = 'deferred';
-                result.save(err => {
-                  if (err) {
-                    logger.info(
-                      `accounts.addAddress DB controller ERROR: ${err}`,
-                    );
-                  }
-                });
-              }
-            });
-          }
-        });
-    }
->>>>>>> Fixed linter warnings
   } catch (e) {
     logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
   }
 }
 module.exports.recoverAll = recoverAll;
 
-<<<<<<< HEAD
 
     async function saveDeferred(wallet,protocol){
         dbServices.dbCollections.accounts.findByAddress(wallet, protocol).then((result) => {
@@ -435,8 +399,6 @@ async function processTxn(transaction, wallet ,pillarId){
 }
 
 
-=======
->>>>>>> Fixed linter warnings
 /**
  * Function to process the newly registered wallets
  * @param {string} lastId - Last processed wallet Id
