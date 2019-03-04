@@ -605,94 +605,94 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.connect()) {
-          web3.eth.getTransactionReceipt(item.txHash).then(receipt => {
-            let to;
-            let value;
-            let asset;
-            logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
-            if (receipt !== null) {
-              let status;
-              const { gasUsed } = receipt;
-              if (receipt.status === '0x1') {
-                status = 'confirmed';
-              } else {
-                status = 'failed';
-              }
-
-              if (!hashMaps.assets.has(item.toAddress.toLowerCase())) {
-                to = item.toAddress;
-              } else {
-                const contractDetail = hashMaps.assets.get(
-                  item.toAddress.toLowerCase(),
-                );
-                asset = contractDetail.symbol;
-                if(typeof contractDetail.category !== 'undefined') {
-                    if (fs.existsSync(`${abiPath + asset}.json`)) {
-                        const theAbi = require(`${abiPath + asset}.json`);
-                        logger.info(`processTx - Fetched ABI for token: ${asset}`);
-                        abiDecoder.addABI(theAbi);
+            web3.eth.getTransactionReceipt(item.txHash).then(receipt => {
+                let to;
+                let value;
+                let asset;
+                logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+                if (receipt !== null) {
+                    let status;
+                    const { gasUsed } = receipt;
+                    if (receipt.status === '0x1') {
+                        status = 'confirmed';
                     } else {
-                        abiDecoder.addABI(ERC20ABI);
+                        status = 'failed';
                     }
+
+                    if (!hashMaps.assets.has(item.toAddress.toLowerCase())) {
+                        to = item.toAddress;
+                    } else {
+                        const contractDetail = hashMaps.assets.get(
+                        item.toAddress.toLowerCase(),
+                        );
+                        asset = contractDetail.symbol;
+                        if(typeof contractDetail.category !== 'undefined') {
+                            if (fs.existsSync(`${abiPath + asset}.json`)) {
+                                const theAbi = require(`${abiPath + asset}.json`);
+                                logger.info(`processTx - Fetched ABI for token: ${asset}`);
+                                abiDecoder.addABI(theAbi);
+                            } else {
+                                abiDecoder.addABI(ERC20ABI);
+                            }
+                        } else {
+                            abiDecoder.addABI(ERC721ABI);
+                        }
+
+                        const data = abiDecoder.decodeMethod(item.input);
+                        if (typeof data !== 'undefined' && tx.input !== '0x') {
+                            if (data.name === 'transfer') {
+                                // smart contract call hence the asset must be the token name
+                                to = data.params[0].value;
+                                pillarId = await client.getAsync(to);
+                                [, { value }] = data.params;
+                            } else if (
+                                data.name === 'transferFrom' 
+                                || 
+                                data.name === 'safeTransferFrom'
+                                ) {
+                                to = data.params[1].value;
+                                pillarId = await client.getAsync(to);
+                                [, , { tokenId }] = data.params;
+                            }
+                        }
+                    }
+
+                    if (!value) {
+                        ({ value } = item);
+                    }
+
+                    if (!asset) {
+                        ({ asset } = item);
+                    }
+
+                    const txMsg = {
+                        type: 'updateTx',
+                        txHash: item.txHash,
+                        protocol: item.protocol,
+                        fromAddress: item.fromAddress,
+                        toAddress: to,
+                        value,
+                        asset,
+                        contractAddress: item.contractAddress,
+                        status,
+                        gasUsed,
+                        blockNumber: receipt.blockNumber,
+                        input: item.input,
+                        tokenId
+                    };
+                    rmqServices.sendPubSubMessage(txMsg);
+                    logger.info(
+                        `ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${
+                        receipt.blockNumber
+                        }`,
+                    );
+                    hashMaps.pendingTx.delete(item.txHash);
                 } else {
-                    abiDecoder.addABI(ERC721ABI);
+                    logger.debug(
+                        `ethService.checkPendingTx(): Txn ${item} is still pending.`,
+                    );
                 }
-
-                const data = abiDecoder.decodeMethod(item.input);
-                if (typeof data !== 'undefined' && tx.input !== '0x') {
-                    if (data.name === 'transfer') {
-                        // smart contract call hence the asset must be the token name
-                        to = data.params[0].value;
-                        pillarId = await client.getAsync(to);
-                        [, { value }] = data.params;
-                    } else if (
-                        data.name === 'transferFrom' 
-                        || 
-                        data.name === 'safeTransferFrom'
-                        ) {
-                        to = data.params[1].value;
-                        pillarId = await client.getAsync(to);
-                        [, , { tokenId }] = data.params;
-                    }
-                }
-            }
-
-              if (!value) {
-                ({ value } = item);
-              }
-
-              if (!asset) {
-                ({ asset } = item);
-              }
-
-              const txMsg = {
-                type: 'updateTx',
-                txHash: item.txHash,
-                protocol: item.protocol,
-                fromAddress: item.fromAddress,
-                toAddress: to,
-                value,
-                asset,
-                contractAddress: item.contractAddress,
-                status,
-                gasUsed,
-                blockNumber: receipt.blockNumber,
-                input: item.input,
-                tokenId
-              };
-              rmqServices.sendPubSubMessage(txMsg);
-              logger.info(
-                `ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${
-                  receipt.blockNumber
-                }`,
-              );
-              hashMaps.pendingTx.delete(item.txHash);
-            } else {
-              logger.debug(
-                `ethService.checkPendingTx(): Txn ${item} is still pending.`,
-              );
-            }
-          });
+            });
         } else {
           reject(
             new Error(
