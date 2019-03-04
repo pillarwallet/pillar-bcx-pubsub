@@ -617,6 +617,7 @@ function checkPendingTx(pendingTxArray) {
                 let to;
                 let value;
                 let asset;
+                let tokenId;
                 logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
                 if (receipt !== null) {
                     let status;
