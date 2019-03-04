@@ -87,18 +87,20 @@ function logMemoryUsage() {
 }
 module.exports.logMemoryUsage = logMemoryUsage;
 
-
 async function connectDb() {
-    return new Promise(async (resolve) => {
-        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined && dbServices.mongoose.connection.readyState != 0) {
-            resolve()
-        } else {
-            dbServices.dbConnect().then(() => {
-                resolve()
-            })
-        }
-
-    })
+  return new Promise(async resolve => {
+    if (
+      dbServices.mongoose !== undefined &&
+      dbServices.dbCollections !== undefined &&
+      dbServices.mongoose.connection.readyState != 0
+    ) {
+      resolve();
+    } else {
+      dbServices.dbConnect().then(() => {
+        resolve();
+      });
+    }
+  });
 }
 
 /**
