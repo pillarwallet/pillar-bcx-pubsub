@@ -29,6 +29,7 @@ const logger = require('./utils/logger');
 const { CronJob } = require('cron');
 
 const protocol = 'Ethereum';
+const DELAY_BETWEEN_PARITY_FILTER_REQUEST = process.env.DELAY_BETWEEN_PARITY_FILTER_REQUEST ? process.env.DELAY_BETWEEN_PARITY_FILTER_REQUEST : 1000;;
 
 function generateList(number) {
   let counter = number;
@@ -109,14 +110,15 @@ function getTransactions(
             );
             setDeferredDone(acc, result);
           } else {
-            getTransactions(
-              listOfTrans,
-              i + 1,
-              acc,
-              result,
-              totalTrans,
-              transListCount,
-            );
+            setTimeout(() => {
+              getTransactions(
+                listOfTrans,
+                i + 1,
+                acc,
+                result,
+                totalTrans,
+                transListCount,
+              );},DELAY_BETWEEN_PARITY_FILTER_REQUEST)
           }
           logger.info(
             `deferred.getTransactions: started processing for wallet ${
@@ -130,14 +132,15 @@ function getTransactions(
         );
         setDeferredDone(acc, result);
       } else {
-        getTransactions(
-          listOfTrans,
-          i + 1,
-          acc,
-          result,
-          totalTrans,
-          transListCount,
-        );
+        setTimeout(() => {
+          getTransactions(
+            listOfTrans,
+            i + 1,
+            acc,
+            result,
+            totalTrans,
+            transListCount,
+          );}, DELAY_BETWEEN_PARITY_FILTER_REQUEST)
       }
     });
 }
@@ -159,14 +162,16 @@ async function saveDefferedTransactions() {
                       logger.debug(`totaltransacions is ${totalTrans}`);
                       const listOfTrans = generateList(lastBlock);
                       logger.debug(`list of trans ${listOfTrans.length}`);
-                      getTransactions(
-                        listOfTrans,
-                        0,
-                        acc,
-                        result,
-                        totalTrans,
-                        0,
-                      );
+                      setTimeout(() => {
+                        getTransactions(
+                          listOfTrans,
+                          0,
+                          acc,
+                          result,
+                          totalTrans,
+                          0,
+                        );
+                      }, DELAY_BETWEEN_PARITY_FILTER_REQUEST)
                     });
                   });
               }
