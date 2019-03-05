@@ -54,6 +54,8 @@ async function newPendingTran(tx, protocol) {
     let contractAddress;
     let data;
     let value;
+    let tokenId;
+    let collectible = false;
     const from = typeof tx.from !== 'undefined' ? tx.from : tx.fromAddress;
     let to = typeof tx.to !== 'undefined' ? tx.to : tx.toAddress;
     const hash = typeof tx.hash !== 'undefined' ? tx.hash : tx.txHash;
@@ -93,6 +95,7 @@ async function newPendingTran(tx, protocol) {
           }
         } else {
           abiDecoder.addABI(ERC721ABI);
+          collectible = true;
         }
         data = abiDecoder.decodeMethod(tx.input);
         logger.debug(
@@ -117,6 +120,9 @@ async function newPendingTran(tx, protocol) {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
             [, , { value }] = data.params;
+          }
+          if (collectible) {
+            tokenId = value;
           }
         }
       }
@@ -143,6 +149,7 @@ async function newPendingTran(tx, protocol) {
             blockNumber: tx.blockNumber,
             status: 'pending',
             input: tx.input,
+            tokenId
           };
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
@@ -219,7 +226,7 @@ module.exports.checkTokenTransfer = checkTokenTransfer;
  * @param {String} protocol - the protocol corresponding to the token blockchain
  */
 async function checkCollectibleTransfer(evnt, theContract, protocol) {
-  logger.debug(
+  logger.info(
     `processTx.checkCollectibleTransfer(): received event: ${JSON.stringify(evnt)}`,
   );
   try {
