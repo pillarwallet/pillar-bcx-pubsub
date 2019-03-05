@@ -636,7 +636,7 @@ function checkPendingTx(pendingTxArray) {
                         item.toAddress.toLowerCase(),
                         );
                         asset = contractDetail.symbol;
-                        if(typeof contractDetail.category !== 'undefined') {
+                        if(typeof contractDetail.category === 'undefined') {
                             if (fs.existsSync(`${abiPath + asset}.json`)) {
                                 const theAbi = require(`${abiPath + asset}.json`);
                                 logger.info(`processTx - Fetched ABI for token: ${asset}`);

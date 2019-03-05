@@ -85,7 +85,8 @@ async function newPendingTran(tx, protocol) {
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
-        if(typeof contractDetail.category !== 'undefined') {
+        logger.info('Contract detail category: ' + contractDetail.category);
+        if(typeof contractDetail.category === 'undefined') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
             const theAbi = require(`${abiPath + asset}.json`);
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
@@ -94,6 +95,7 @@ async function newPendingTran(tx, protocol) {
             abiDecoder.addABI(ERC20ABI);
           }
         } else {
+          logger.info('Addding erc721 abi');
           abiDecoder.addABI(ERC721ABI);
           collectible = true;
         }
