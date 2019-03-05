@@ -143,7 +143,7 @@ module.exports.publisherOnMessage = function() {
               `Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`,
             );
             if(obj.category === 'Collectible') {
-              ethService.subsribeCollectibleEvents(obj);
+              ethService.subscribeCollectibleEvents(obj);
             } else {
               ethService.subscribeTransferEvents(obj);
             }
