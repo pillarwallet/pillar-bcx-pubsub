@@ -614,85 +614,29 @@ function checkPendingTx(pendingTxArray) {
         );
         if (module.exports.connect()) {
             web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
-                let to;
-                let value;
-                let asset;
-                let tokenId;
-                let collectible = false;
                 logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
                 if (receipt !== null) {
                     let status;
                     const { gasUsed } = receipt;
-                    if (receipt.status === '0x1') {
+                    if (receipt.status === '0x1' || receipt.status === true) {
                         status = 'confirmed';
                     } else {
                         status = 'failed';
                     }
-
-                    if (!hashMaps.assets.has(item.toAddress.toLowerCase())) {
-                        to = item.toAddress;
-                    } else {
-                        const contractDetail = hashMaps.assets.get(
-                        item.toAddress.toLowerCase(),
-                        );
-                        asset = contractDetail.symbol;
-                        if(typeof contractDetail.category === 'undefined') {
-                            if (fs.existsSync(`${abiPath + asset}.json`)) {
-                                const theAbi = require(`${abiPath + asset}.json`);
-                                logger.info(`processTx - Fetched ABI for token: ${asset}`);
-                                abiDecoder.addABI(theAbi);
-                            } else {
-                                abiDecoder.addABI(ERC20ABI);
-                            }
-                        } else {
-                            abiDecoder.addABI(ERC721ABI);
-                            collectible = true;
-                        }
-
-                        const data = abiDecoder.decodeMethod(item.input);
-                        if (typeof data !== 'undefined' && tx.input !== '0x') {
-                            if (data.name === 'transfer') {
-                                // smart contract call hence the asset must be the token name
-                                to = data.params[0].value;
-                                pillarId = await client.getAsync(to);
-                                [, { value }] = data.params;
-                            } else if (
-                                data.name === 'transferFrom' 
-                                || 
-                                data.name === 'safeTransferFrom'
-                                ) {
-                                to = data.params[1].value;
-                                pillarId = await client.getAsync(to);
-                                [, , { value }] = data.params;
-                            }
-                            if(collectible) {
-                              tokenId = value;
-                            }
-                        }
-                    }
-
-                    if (!value) {
-                        ({ value } = item);
-                    }
-
-                    if (!asset) {
-                        ({ asset } = item);
-                    }
-
                     const txMsg = {
                         type: 'updateTx',
                         txHash: item.txHash,
                         protocol: item.protocol,
                         fromAddress: item.fromAddress,
-                        toAddress: to,
-                        value,
-                        asset,
+                        toAddress: item.toAddress,
+                        value: item.value,
+                        asset: item.asset,
                         contractAddress: item.contractAddress,
                         status,
                         gasUsed,
                         blockNumber: receipt.blockNumber,
                         input: item.input,
-                        tokenId
+                        tokenId: item.tokenId
                     };
                     rmqServices.sendPubSubMessage(txMsg);
                     logger.info(
