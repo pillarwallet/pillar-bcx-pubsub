@@ -142,9 +142,7 @@ module.exports.publisherOnMessage = function() {
             logger.info(
               `Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`,
             );
-            if(obj.category === 'Collectible') {
-              ethService.subscribeCollectibleEvents(obj);
-            } else {
+            if(obj.category !== 'Collectible') {
               ethService.subscribeTransferEvents(obj);
             }
           }

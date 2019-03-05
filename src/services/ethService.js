@@ -429,47 +429,6 @@ function subscribeTransferEvents(theContract) {
 module.exports.subscribeTransferEvents = subscribeTransferEvents;
 
 /**
- * Subscribe to collectible transfer event corresponding to a given smart contract.
- * @param {any} theContract - the smart contract address
- */
-function subscribeCollectibleEvents(theContract) {
-  try {
-    logger.info(
-      `ethService.subscribeCollectibleEvents() subscribed to events for contract: ${theContract}`,
-    );
-    if (module.exports.connect()) {
-      if (web3.utils.isAddress(theContract.contractAddress)) {
-        const collectible = new web3.eth.Contract(
-          ERC721ABI,
-          theContract.contractAddress,
-        );
-        collectible.events.Transfer({}, async (error, result) => {
-          logger.debug(
-            `ethService: Collectible transfer event occurred for contract: ${JSON.stringify(
-              theContract,
-            )} result: ${result} error: ${error}`,
-          );
-          if (!error) {
-            processTx.checkCollectibleTransfer(result,theContract,protocol);
-          } else {
-            logger.error(
-              `ethService.subscribeCollectibleEvents() failed: ${error}`,
-            );
-          }
-        });
-      }
-    } else {
-      logger.error(
-        'ethService.subscribeCollectibleEvents(): Connection to geth failed!',
-      );
-    }
-  } catch (e) {
-    logger.error(`ethService.subscribeCollectibleEvents() failed: ${e}`);
-  }
-}
-module.exports.subscribeCollectibleEvents = subscribeCollectibleEvents;
-
-/**
  * Fetch transaction details corresponding to given block number
  * @param {Number} blockNumber - the block number
  */
