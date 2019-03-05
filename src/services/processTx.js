@@ -63,6 +63,7 @@ async function newPendingTran(tx, protocol) {
     let data;
     let value;
     let tokenId;
+    let collectible = false;
     const from = typeof tx.from !== 'undefined' ? tx.from : tx.fromAddress;
     let to = typeof tx.to !== 'undefined' ? tx.to : tx.toAddress;
     const hash = typeof tx.hash !== 'undefined' ? tx.hash : tx.txHash;
@@ -102,6 +103,7 @@ async function newPendingTran(tx, protocol) {
           }
         } else {
           abiDecoder.addABI(ERC721ABI);
+          collectible = true;
         }
         data = abiDecoder.decodeMethod(tx.input);
         logger.debug(
@@ -125,7 +127,10 @@ async function newPendingTran(tx, protocol) {
             ) {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
-            [, , { tokenId }] = data.params;
+            [, , { value }] = data.params;
+          }
+          if (collectible) {
+            tokenId = value;
           }
         }
       }
