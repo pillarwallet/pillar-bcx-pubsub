@@ -618,6 +618,7 @@ function checkPendingTx(pendingTxArray) {
                 let value;
                 let asset;
                 let tokenId;
+                let collectible = false;
                 logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
                 if (receipt !== null) {
                     let status;
@@ -645,6 +646,7 @@ function checkPendingTx(pendingTxArray) {
                             }
                         } else {
                             abiDecoder.addABI(ERC721ABI);
+                            collectible = true;
                         }
 
                         const data = abiDecoder.decodeMethod(item.input);
@@ -661,7 +663,10 @@ function checkPendingTx(pendingTxArray) {
                                 ) {
                                 to = data.params[1].value;
                                 pillarId = await client.getAsync(to);
-                                [, , { tokenId }] = data.params;
+                                [, , { value }] = data.params;
+                            }
+                            if(collectible) {
+                              tokenId = value;
                             }
                         }
                     }
