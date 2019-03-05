@@ -29,7 +29,10 @@ const logger = require('./utils/logger');
 const { CronJob } = require('cron');
 
 const protocol = 'Ethereum';
-const DELAY_BETWEEN_PARITY_FILTER_REQUEST = process.env.DELAY_BETWEEN_PARITY_FILTER_REQUEST ? process.env.DELAY_BETWEEN_PARITY_FILTER_REQUEST : 1000;;
+const DELAY_BETWEEN_PARITY_FILTER_REQUEST = process.env
+  .DELAY_BETWEEN_PARITY_FILTER_REQUEST
+  ? process.env.DELAY_BETWEEN_PARITY_FILTER_REQUEST
+  : 1000;
 
 function generateList(number) {
   let counter = number;
@@ -118,7 +121,8 @@ function getTransactions(
                 result,
                 totalTrans,
                 transListCount,
-              );},DELAY_BETWEEN_PARITY_FILTER_REQUEST)
+              );
+            }, DELAY_BETWEEN_PARITY_FILTER_REQUEST);
           }
           logger.info(
             `deferred.getTransactions: started processing for wallet ${
@@ -140,7 +144,8 @@ function getTransactions(
             result,
             totalTrans,
             transListCount,
-          );}, DELAY_BETWEEN_PARITY_FILTER_REQUEST)
+          );
+        }, DELAY_BETWEEN_PARITY_FILTER_REQUEST);
       }
     });
 }
@@ -171,7 +176,7 @@ async function saveDefferedTransactions() {
                           totalTrans,
                           0,
                         );
-                      }, DELAY_BETWEEN_PARITY_FILTER_REQUEST)
+                      }, DELAY_BETWEEN_PARITY_FILTER_REQUEST);
                     });
                   });
               }
