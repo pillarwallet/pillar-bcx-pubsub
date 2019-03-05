@@ -632,14 +632,14 @@ function checkPendingTx(pendingTxArray) {
                     };
                     rmqServices.sendPubSubMessage(txMsg);
                     logger.info(
-                        `ethService.checkPendingTx(): TRANSACTION ${item} CONFIRMED @ BLOCK # ${
+                        `ethService.checkPendingTx(): TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${
                         receipt.blockNumber
                         }`,
                     );
                     hashMaps.pendingTx.delete(item.txHash);
                 } else {
                     logger.debug(
-                        `ethService.checkPendingTx(): Txn ${item} is still pending.`,
+                        `ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`,
                     );
                 }
             });
