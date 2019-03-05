@@ -610,7 +610,7 @@ function checkPendingTx(pendingTxArray) {
                 if (receipt !== null) {
                     let status;
                     const { gasUsed } = receipt;
-                    if (receipt.status === '0x1' || receipt.status === true) {
+                    if (receipt.status === true) {
                         status = 'confirmed';
                     } else {
                         status = 'failed';
