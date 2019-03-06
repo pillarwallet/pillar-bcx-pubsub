@@ -184,7 +184,7 @@ workflows:
           filters:
             branches:
               only:
-                  - staging
+                  - master
       - publish-prod:
           requires:
              - build
