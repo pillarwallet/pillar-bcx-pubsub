@@ -1,3 +1,4 @@
+
 /*
 Copyright (C) 2019 Stiftung Pillar Project
 
@@ -20,11 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-function addMultipleTx(txObject) {
-    return new Promise((resolve, reject) => {
-       resolve()
-          
-    });
+function addMultipleTx() {
+  return new Promise(resolve => {
+    resolve();
+  });
 }
 module.exports.addMultipleTx = addMultipleTx;

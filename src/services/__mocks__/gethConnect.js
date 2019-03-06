@@ -19,8 +19,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-exports.web3 = require('../../__mocks__/web3.js')
+exports.web3 = require('../../__mocks__/web3.js');
 
-exports.gethConnectDisplay = () => {return new Promise((resolve, reject) => {
-	resolve();
-})};
+exports.gethConnectDisplay = () =>
+  new Promise(resolve => {
+    resolve();
+  });

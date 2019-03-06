@@ -19,26 +19,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const Assets = (function () {
-  return {
-    find(params, callback) {
-      if (callback == null) {
-        const newCallback = params;
-        newCallback('', 'list of assets');
-      } else {
-        callback('', 'list of assets');
-      }
-    },
-    findOne(params, callback) {
-      callback('', `${params.symbol}asset`);
-    },
-    save() {
-    },
-    remove() {
-    },
-    update(params, update, callback) {
-      callback('');
-    },
-  };
-}());
+const Assets = (() => ({
+  find(query, callback) {
+    const returnValue = 'list of assets';
+    if (query && typeof query === 'function' && callback == null) {
+      return query('', returnValue);
+    } else if (callback != null && typeof callback === 'function') {
+      return callback('', returnValue);
+    }
+    return new Promise(resolve => {
+      resolve(returnValue);
+    });
+  },
+  findOne(params, callback) {
+    callback('', `${params.symbol}asset`);
+  },
+  save() {},
+  remove() {},
+  update(params, update, callback) {
+    callback('');
+  },
+}))();
 module.exports.Assets = Assets;

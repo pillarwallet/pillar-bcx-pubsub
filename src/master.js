@@ -21,59 +21,66 @@ SOFTWARE.
 */
 
 'use strict';
-/** @module master.js */
-const diagnostics = require('./utils/diagnostics');
+require('./utils/diagnostics');
 
 const logger = require('./utils/logger');
-const fork = require('child_process').fork;
+const { fork } = require('child_process');
 
 const optionDefinitions = [
   { name: 'protocol', alias: 'p', type: String },
   { name: 'maxWallets', type: Number },
 ];
 const commandLineArgs = require('command-line-args');
-const options = commandLineArgs(optionDefinitions, {partial: true});
+
+const options = commandLineArgs(optionDefinitions, { partial: true });
 const dbServices = require('./services/dbServices');
+
 let protocol = 'Ethereum';
 let maxWalletsPerPub = 500000;
 module.exports.pubs = [];
 module.exports.subs = [];
 module.exports.index = 0;
 
-
 /**
  * Subscribe to unhandled promise rejection events in order fix any such errors
  */
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('***************************************************************');
+process.on('unhandledRejection', reason => {
+  logger.error(
+    '***************************************************************',
+  );
   logger.error('ERROR: Unhandled Rejection at MASTER:', JSON.stringify(reason));
-  logger.error('***************************************************************');
+  logger.error(
+    '***************************************************************',
+  );
 });
 
 /**
  * Function that initializes the master after validating command line arguments.
- * @param {any} options - List of command line arguments
+ * @param {any} optionsParam - List of command line arguments
  */
-module.exports.init = function (options) {
+module.exports.init = optionsParam => {
   try {
     logger.info('Started executing master.init()');
 
     // validating input parameters
-    if (options.protocol !== undefined) {
-      protocol = options.protocol;
+    if (optionsParam.protocol !== undefined) {
+      ({ protocol } = optionsParam);
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
 
-    if (options.maxWallets == undefined || options.maxWallets <= 0) {
-      throw ({ message: 'Invalid configuration parameter maxWallets' });
+    if (optionsParam.maxWallets === undefined || optionsParam.maxWallets <= 0) {
+      throw Error('Invalid configuration parameter maxWallets');
     } else {
-      logger.info(`master.init(): A new publisher will be spawned for every ${options.maxWallets} wallets..`);
-      maxWalletsPerPub = options.maxWallets;
+      logger.info(
+        `master.init(): A new publisher will be spawned for every ${
+          optionsParam.maxWallets
+        } wallets..`,
+      );
+      ({ maxWalletsPerPub } = optionsParam);
     }
     dbServices.dbConnect().then(() => {
       this.launch();
     });
-
   } catch (err) {
     logger.error(`master.init() failed: ${err.message}`);
   }
@@ -82,77 +89,121 @@ module.exports.init = function (options) {
 /**
  * Function that spawns housekeeper, publisher and subscriber.
  */
-module.exports.launch = function () {
+module.exports.launch = () => {
   try {
     logger.info('Started executing master.launch()');
 
-    module.exports.pubs[module.exports.index] = fork(`${__dirname}/publisher.js`,[`${module.exports.index}`]);
-    //notify the publisher the maximum wallets to monitor
-    module.exports.pubs[module.exports.index].send({type: 'config', message: maxWalletsPerPub});
+    module.exports.pubs[module.exports.index] = fork(
+      `${__dirname}/publisher.js`,
+      [`${module.exports.index}`],
+    );
+    // notify the publisher the maximum wallets to monitor
+    module.exports.pubs[module.exports.index].send({
+      type: 'config',
+      message: maxWalletsPerPub,
+    });
 
-    module.exports.subs[module.exports.index] = fork(`${__dirname}/subscriber.js`,[`${module.exports.index}`]);
-    logger.info(`Master has launched Publisher (PID: ${module.exports.pubs[module.exports.index].pid}) and Subscriber (PID: ${module.exports.subs[module.exports.index].pid}) processes.`);
+    module.exports.subs[module.exports.index] = fork(
+      `${__dirname}/subscriber.js`,
+      [`${module.exports.index}`],
+    );
+    logger.info(
+      `Master has launched Publisher (PID: ${
+        module.exports.pubs[module.exports.index].pid
+      }) and Subscriber (PID: ${
+        module.exports.subs[module.exports.index].pid
+      }) processes.`,
+    );
 
     // handle events associated with the publisher child processes.
-    module.exports.pubs[module.exports.index].on('message', (data) => {
+    module.exports.pubs[module.exports.index].on('message', data => {
       try {
-        logger.info(`Master received message : ${JSON.stringify(data)} from publisher`);
+        logger.info(
+          `Master received message : ${JSON.stringify(data)} from publisher`,
+        );
 
-        if(data.type === 'assets.request') {
-          //send list of assets to publisher
-          logger.info('Master Sending list of assets to monitor to each publisher');
+        if (data.type === 'assets.request') {
+          // send list of assets to publisher
+          logger.info(
+            'Master Sending list of assets to monitor to each publisher',
+          );
 
-          dbServices.contractsToMonitor('').then((assets) => {
+          dbServices.contractsToMonitor('').then(assets => {
             logger.info(`${assets.length} assets identified to be monitored`);
-            module.exports.pubs[module.exports.index - 1].send({ type: 'assets', message: assets});
+            module.exports.pubs[module.exports.index - 1].send({
+              type: 'assets',
+              message: assets,
+            });
           });
         }
         if (data.type === 'wallet.request') {
-          logger.info(`Master Received ${data.type} - ${data.message} from publisher: ${module.exports.index}`);
-          dbServices.recentAccounts(data.message).then((theWallets) => {
+          logger.info(
+            `Master Received ${data.type} - ${data.message} from publisher: ${
+              module.exports.index
+            }`,
+          );
+          dbServices.recentAccounts(data.message).then(theWallets => {
             if (theWallets !== undefined) {
               logger.info(`Master found ${theWallets.length} new accounts`);
               const message = [];
-              var i = 0;
-              var cnt = theWallets.length;
-              theWallets.forEach((theWallet) => {
-                i++;
-                var addresses = theWallet.addresses.filter((address) => {
-                  if(address.protocol === 'Ethereum') {
+              let i = 0;
+              const cnt = theWallets.length;
+              theWallets.forEach(theWallet => {
+                i += 1;
+                const addresses = theWallet.addresses.filter(address => {
+                  if (address.protocol === 'Ethereum') {
                     return address;
                   }
+                  return false;
                 });
                 logger.info(`Filtered message: ${JSON.stringify(addresses)}`);
-                addresses.forEach((address) => {
-                  message.push({ id: theWallet._id, walletId: address.address, pillarId: theWallet.pillarId });
+                addresses.forEach(address => {
+                  message.push({
+                    id: theWallet._id,
+                    walletId: address.address,
+                    pillarId: theWallet.pillarId,
+                  });
                 });
-                if(i === cnt) {
-                  logger.info(`Master found ${message.length} relevant new wallets`);
-                  module.exports.notify(message, module.exports.pubs[module.exports.index - 1]);
+                if (i === cnt) {
+                  logger.info(
+                    `Master found ${message.length} relevant new wallets`,
+                  );
+                  module.exports.notify(
+                    message,
+                    module.exports.pubs[module.exports.index - 1],
+                  );
                 }
               });
             }
           });
         }
-      } catch(e) {
+      } catch (e) {
         logger.error(`Master.launch() failed: ${e.message}`);
       }
     });
 
-    module.exports.pubs[module.exports.index].on('close', (data) => {
-      const pubId = (module.exports.index - 1);
-      logger.error(`Master: error occurred Publisher: ${pubId} (PID: ${module.exports.pubs[pubId].pid}) closed with code: ${data}`);
+    module.exports.pubs[module.exports.index].on('close', data => {
+      const pubId = module.exports.index - 1;
+      logger.error(
+        `Master: error occurred Publisher: ${pubId} (PID: ${
+          module.exports.pubs[pubId].pid
+        }) closed with code: ${data}`,
+      );
     });
 
     // handle events related to the subscriber child processes
-    module.exports.subs[module.exports.index].on('close', (data) => {
-      const subId = (module.exports.index - 1);
-      logger.error(`Master: error occurred Subscriber: ${subId} (PID: ${module.exports.subs[subId].pid}) closed with code: ${data}`);
+    module.exports.subs[module.exports.index].on('close', data => {
+      const subId = module.exports.index - 1;
+      logger.error(
+        `Master: error occurred Subscriber: ${subId} (PID: ${
+          module.exports.subs[subId].pid
+        }) closed with code: ${data}`,
+      );
     });
 
-    module.exports.index++;
+    module.exports.index += 1;
   } catch (err) {
-    logger.error('Master.launch(): exited with error ' + err);
+    logger.error(`Master.launch(): exited with error ${err}`);
   } finally {
     logger.info('Exited master.launch()');
   }
@@ -163,17 +214,18 @@ module.exports.launch = function () {
  * @param {String} idFrom - The last known pillarId corresponding to a wallet.
  * @param {any} socket - Reference to the process id corresponding to the publisher
  */
-module.exports.notify = function(message,socket) {
+module.exports.notify = (message, socket) => {
   try {
     logger.info('Started executing master.notify()');
     logger.info(`Message: ${JSON.stringify(message)}`);
     if (message.length > 0) {
-      logger.info('master.notify(): Sending IPC notification to monitor wallets.');
-      socket.send({ type: 'accounts', message: message });
+      logger.info(
+        'master.notify(): Sending IPC notification to monitor wallets.',
+      );
+      socket.send({ type: 'accounts', message });
     } else {
       logger.debug('Master nothing to notify to publisher or housekeeper');
     }
-
   } catch (err) {
     logger.error(`master.notify() failed: ${err}`);
   }

@@ -19,15 +19,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const gasInfoCtrl = require('./gasinfo_ctrl');
 
-describe('The subscribeAllDBERC20SmartContracts function tests', () => {
-  it('should have been called once', () => {
-    const spy = jest.spyOn(gasInfoCtrl, 'add');
+afterAll(() => {
+  jest.restoreAllMocks();
+});
 
-    spy.mockImplementation();
-    spy.call({});
+describe('The add function tests', () => {
+  it('should have been resolved the promise', done => {
+    jest.mock('../models/gasinfo_model.js');
 
-    expect(spy).toHaveBeenCalled();
+    const gasInfoCtrl = require('./gasinfo_ctrl');
+    return gasInfoCtrl.add('record').then(() => {
+      done();
+    });
   });
 });

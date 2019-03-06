@@ -1,3 +1,4 @@
+
 /*
 Copyright (C) 2019 Stiftung Pillar Project
 
@@ -19,61 +20,57 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 const Transactions = class Transactions {
-  save(callback){
-    callback(false)
-
+  save(callback) {
+    callback(false);
   }
-}
+};
 
-Transactions.find = function(query, callback) {
-  const returnValue = [{ _id: "pillarId", txHash: "hash", protocol: "Ethereum" }]
-  if (query && typeof query === "function" && callback == null) {
-    query('', returnValue);
-  } else if(callback != null && typeof callback === "function"){
-    callback('', returnValue);
-  }else{
-    return new Promise((resolve, reject) => {
-      resolve(returnValue)
-    })
+Transactions.find = (query, callback) => {
+  const returnValue = [
+    { _id: 'pillarId', txHash: 'hash', protocol: 'Ethereum' },
+  ];
+  if (query && typeof query === 'function' && callback == null) {
+    return query('', returnValue);
+  } else if (callback != null && typeof callback === 'function') {
+    return callback('', returnValue);
   }
-}
+  return new Promise(resolve => {
+    resolve(returnValue);
+  });
+};
 
-Transactions.findOne = function (query, callback) {
-  const returnValue = [{ _id: "pillarId", txHash: "hash", protocol: "Ethereum" }]
-  if (query && typeof query === "function" && callback == null) {
-    query('', returnValue);
-  } else if (callback != null && typeof callback === "function") {
-    callback('', returnValue);
-  } else {
-    return new Promise((resolve, reject) => {
-      resolve(returnValue)
-    })
+Transactions.findOne = (query, callback) => {
+  const returnValue = [
+    { _id: 'pillarId', txHash: 'hash', protocol: 'Ethereum' },
+  ];
+  if (query && typeof query === 'function' && callback == null) {
+    return query('', returnValue);
+  } else if (callback != null && typeof callback === 'function') {
+    return callback('', returnValue);
   }
-}
+  return new Promise(resolve => {
+    resolve(returnValue);
+  });
+};
 
-
-Transactions.aggregate = function (query, callback) {
-
-  const returnValue = [{balance : 5}]
-  if (query && typeof query === "function" && callback == null) {
-    query('', returnValue);
-  } else if (callback != null && typeof callback === "function") {
-    callback('', returnValue);
-  } else {
-    return new Promise((resolve, reject) => {
-      resolve(returnValue)
-    })
+Transactions.aggregate = (query, callback) => {
+  const returnValue = [{ balance: 5 }];
+  if (query && typeof query === 'function' && callback == null) {
+    return query('', returnValue);
+  } else if (callback != null && typeof callback === 'function') {
+    return callback('', returnValue);
   }
-}
+  return new Promise(resolve => {
+    resolve(returnValue);
+  });
+};
 
-Transactions.save = function () {
-}
+Transactions.save = () => {};
 
-Transactions.update = function () {
-}
+Transactions.update = () => {};
 
-Transactions.remove= function() {
-}
-  
+Transactions.remove = () => {};
+
 module.exports.Transactions = Transactions;
