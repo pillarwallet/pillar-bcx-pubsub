@@ -1,16 +1,13 @@
 /*
 Copyright (C) 2019 Stiftung Pillar Project
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,10 +17,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
 /** @module housekeeper.js */
 require('./utils/diagnostics');
 require('dotenv').config();
+const redis = require('redis');
+
+const client = redis.createClient();
 const time = require('unix-timestamp');
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('./abi/ERC20ABI');
@@ -39,23 +38,10 @@ const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS
   ? process.env.MAX_TOTAL_TRANSACTIONS
   : 100;
-const ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
-const PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
 const { CronJob } = require('cron');
 
 let entry = {};
 let startBlock;
-
-/**
- * Connecting to Redis
- */
-const redis = require('redis');
-const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
-let client;
-try {
-  client = redis.createClient(redisOptions);
-  logger.info("Housekeeper successfully connected to Redis server")
-} catch (e) { logger.error(e) }
 
 /**
  * Function that subscribes to redis related connection errors.
@@ -161,67 +147,24 @@ async function checkTxPool() {
 }
 module.exports.checkTxPool = checkTxPool;
 
-function generateList(number) {
-    var list = []
-    while (number > 0) {
-        list.push(number);
-        number -= PROCESS_BLOCKS_INTERVAL
-    }
-    list.push(0)
-    return list
-}
-
-module.exports.generateList = generateList;
-
-function decimalToHexString(number) {
-    if (number < 0) {
-        number = 0xFFFFFFFF + number + 1;
-    }
-
-    return "0x" + number.toString(16).toUpperCase();
-
-}
-
-module.exports.decimalToHexString = decimalToHexString;
-
-
-function getTransactions(listOfTrans, i, wallet, totalTrans, transListCount, pillarId){
-
-        var toBlock = decimalToHexString(listOfTrans[i + 1])
-        var fromBlock
-        if(i == 0){
-            fromBlock = decimalToHexString(listOfTrans[i])
-        }else{
-            fromBlock = decimalToHexString(listOfTrans[i] + 1 )
+async function recoverTransactions(startingBlock, endBlock, walletId) {
+  const transactions = [];
+  for (let i = startingBlock; i >= endBlock; i--) {
+    ethService.getBlockTx(i).then(txns => {
+      txns.transactions.forEach(async txn => {
+        if (
+          txn.from.toLowerCase() === walletId ||
+          (txn.to !== null && txn.to.toLowerCase() === walletId)
+        ) {
+          const receipt = await ethService.getTxReceipt(txn.hash);
+          transactions.push(receipt);
         }
-    logger.info(`housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`);
-        ethService.getAllTransactionsForWallet(wallet, toBlock, fromBlock).then((transactions) => {
-            if (transactions && transactions.length >0){
-
-                var totalTransactions = transactions.length
-                if (totalTransactions > 0){
-                    transListCount += totalTransactions
-                }
-                transactions.forEach((transaction) => {
-                    processTxn(transaction, wallet, pillarId)
-                })
-                logger.debug('housekeeper.getTransactions processed txns');
-                if (toBlock == "0x0") {
-                    logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
-                }else{
-                    getTransactions(listOfTrans, i + 1, wallet, totalTrans, transListCount, pillarId)
-                }
-                logger.info(`housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`);
-            }else{
-                if (toBlock == "0x0") {
-                    logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
-                }else{
-                    getTransactions(listOfTrans, i + 1, wallet, totalTrans, transListCount, pillarId)
-                }
-            }
-
-        })
-    }
+      });
+    });
+  }
+  return transactions;
+}
+module.exports.recoverTransactions = recoverTransactions;
 
 async function processTxn(transaction, wallet, pillarId) {
   const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
@@ -293,194 +236,125 @@ async function processTxn(transaction, wallet, pillarId) {
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAll(wallet, pillarId) {
-    try {
-        logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
-        var totalTransactions = await ethService.getTransactionCountForWallet(wallet)
-        logger.info(`Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`);
-        if(totalTransactions == 0){
-            return
+  try {
+    logger.info(
+      `Housekeeper.recoverAll(${wallet}) - started recovering transactions`,
+    );
+    const totalTransactions = await ethService.getTransactionCountForWallet(
+      wallet,
+    );
+    logger.info(
+      `Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`,
+    );
+    let index = 0;
+    if (totalTransactions < MAX_TOTAL_TRANSACTIONS) {
+      const transactions = await ethService.getAllTransactionsForWallet(wallet);
+      transactions.forEach(async transaction => {
+        index += 1;
+        processTxn(transaction, wallet, pillarId);
+
+        if (index === totalTransactions) {
+          logger.info(
+            `Housekeeper.recoverAll: completed processing for wallet ${wallet} and recovered ${totalTransactions}`,
+          );
         }
-        var index = 0;
-        if (totalTransactions < MAX_TOTAL_TRANSACTIONS){
-                ethService.getLastBlockNumber().then((lastBlock) => {
-                    logger.debug("lastblock is " + lastBlock)
-                    var listOfTrans = generateList(lastBlock)
-                    logger.debug("list of trans " + listOfTrans.length)
-                    getTransactions(listOfTrans, 0, wallet, totalTransactions, 0, pillarId)
-                })
-        }else{
-            saveDeferred(wallet, protocol)
-        }
+      });
+    } else {
+      dbServices.dbCollections.accounts
+        .findByAddress(wallet, protocol)
+        .then(result => {
+          if (result) {
+            result.addresses.forEach(acc => {
+              if (acc.address === wallet) {
+                logger.debug(
+                  `Housekeeper.recoverAll: matched address ${acc.address}`,
+                );
+                acc.status = 'deferred';
+                result.save(err => {
+                  if (err) {
+                    logger.info(
+                      `accounts.addAddress DB controller ERROR: ${err}`,
+                    );
+                  }
+                });
+              }
+            });
+          }
+        });
+    }
   } catch (e) {
     logger.error(`Housekeeper.recoverAll() - Recover wallets failed with ${e}`);
   }
 }
 module.exports.recoverAll = recoverAll;
 
-
-    async function saveDeferred(wallet,protocol){
-        dbServices.dbCollections.accounts.findByAddress(wallet, protocol).then((result) => {
-            if (result) {
-                result.addresses.forEach((acc) => {
-                    if (acc.address === wallet) {
-                        logger.debug('Housekeeper.recoverAll: matched address ' + acc.address);
-                        acc.status = "deferred"
-                        result.save((err) => {
-                            if (err) {
-                                logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
-                            }
-                        });
-                    }
-                })
-            }
-        });
-    }
-
-    module.exports.saveDeferred = saveDeferred;
-
-
-async function processTxn(transaction, wallet ,pillarId){
-    var entry;
-    const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
-    var asset, status, value, to, contractAddress;
-    if (transaction.action.input !== '0x' && transaction.action.input !== undefined && transaction.action.input  !== null) {
-        var theAsset = await dbServices.getAsset(transaction.action.to);
-        if (theAsset !== undefined && theAsset !== null) {
-            contractAddress = theAsset.contractAddress;
-            asset = theAsset.symbol;
-            if (fs.existsSync(abiPath + asset + '.json')) {
-                const theAbi = require(abiPath + asset + '.json');
-                abiDecoder.addABI(theAbi);
-            } else {
-                abiDecoder.addABI(ERC20ABI);
-            }
-        } else {
-            abiDecoder.addABI(ERC20ABI);
-        }
-        var data = abiDecoder.decodeMethod(transaction.action.input);
-        if ((typeof data !== 'undefined') && (transaction.action.input !== '0x')) {
-            if (data.name === 'transfer') {
-                //smart contract call hence the asset must be the token name
-                to = data.params[0].value;
-                value = data.params[1].value;
-            } else {
-                to = transaction.action.to;
-                value = transaction.action.value;
-            }
-        } else {
-            to = transaction.action.to;
-            value = transaction.action.value;
-        }
-  } else {
-    asset = 'ETH';
-    value = parseInt(transaction.action.value, 16);
-    to = transaction.action.to;
-    contractAddress = null;
-  }
-  if (transaction.error === 'Reverted') {
-    status = 'failed';
-  } else {
-    status = 'confirmed';
-  }
-  entry = {
-    protocol,
-    pillarId,
-    toAddress: to,
-    fromAddress: transaction.action.from,
-    txHash: transaction.transactionHash,
-    asset,
-    contractAddress,
-    timestamp: tmstmp.timestamp,
-    value,
-    blockNumber: transaction.blockNumber,
-    status,
-    gasUsed: transaction.result.gasUsed,
-  };
-  logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entry}`);
-  dbServices.dbCollections.transactions.addTx(entry);
-}
-
-
 /**
  * Function to process the newly registered wallets
  * @param {string} lastId - Last processed wallet Id
  */
 function processData(lastId) {
-    try {
-        connectDb().then(async () => {
-            //Update pending transactions in the db
-            await this.checkTxPool();
-            //fetch new registrations since last run
-            logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
-            await dbServices.recentAccounts(lastId).then(async (accounts) => {
-                logger.info(`Housekeeper found accounts: ${accounts.length} wallets to process.`);
-                if(accounts === null || accounts.length === 0) {
-                    entry.status = 'completed';
-                    entry.endTime = time.now();
-                    client.set('housekeeper',JSON.stringify(entry), redis.print);
-                    logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`)
-                    this.logMemoryUsage();
-                } else {
-                    var promises = [];
-                    accounts.forEach((account) => {
-                        account.addresses.forEach((acc, index) => {
-                            if(acc.protocol === protocol) {
-                                //promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
-                                //promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
-                                setTimeout( () =>{
-                                    try{
-                                        promises.push(this.recoverAll(acc.address,account.pillarId));
-                                    }catch(e){
-                                        promises.push(this.saveDeferred(acc.address, protocol))
-                                    }
-                                }, index * ACCOUNTS_WAIT_INTERVAL);
-                            }
-                        });
-                        entry.lastId = account._id;
-                    });
-                    Promise.all(promises).then(() => {
-                        entry.status = 'completed';
-                        entry.endTime = time.now();
-                        client.set('housekeeper',JSON.stringify(entry), redis.print);
-                        logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`);
-                        this.logMemoryUsage();
-                    });
-                }
+  try {
+    connectDb().then(async () => {
+      // Update pending transactions in the db
+      await this.checkTxPool();
+      // fetch new registrations since last run
+      logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
+      await dbServices.recentAccounts(lastId).then(async accounts => {
+        logger.info(
+          `Housekeeper found accounts: ${accounts.length} wallets to process.`,
+        );
+        if (accounts === null || accounts.length === 0) {
+          entry.status = 'completed';
+          entry.endTime = time.now();
+          client.set('housekeeper', JSON.stringify(entry), redis.print);
+          logger.info(
+            `Housekeeper.processData() - Completed processing ${
+              accounts.length
+            } records.`,
+          );
+          this.logMemoryUsage();
+        } else {
+          const promises = [];
+          accounts.forEach(account => {
+            account.addresses.forEach(acc => {
+              if (acc.protocol === protocol) {
+                // promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
+                // promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
+                promises.push(this.recoverAll(acc.address, account.pillarId));
+              }
             });
             entry.lastId = account._id;
-        })
+          });
+          Promise.all(promises).then(() => {
+            entry.status = 'completed';
+            entry.endTime = time.now();
+            client.set('housekeeper', JSON.stringify(entry), redis.print);
+            logger.info(
+              `Housekeeper.processData() - Completed processing ${
+                accounts.length
+              } records.`,
+            );
+            this.logMemoryUsage();
+          });
+        }
+      });
+    });
   } catch (e) {
     logger.error(`Housekeeper.processData(${lastId}): Failed with error ${e}`);
   }
 }
 module.exports.processData = processData;
 
-
-
-async function connectDb() {
-    return new Promise(async (resolve, reject) => {
-        if (dbServices.mongoose !== undefined && dbServices.dbCollections !== undefined && dbServices.mongoose.connection.readyState != 0) {
-            resolve()
-        }else{
-            dbServices.dbConnect().then(() => {
-                resolve()
-            })
-        }
-
-    })
-}
 /**
  * Function that start housekeeper cron
  */
 
-module.exports.connectDb = connectDb;
-
 async function cronInit() {
-    const job = new CronJob('0 */10 * * * *', () => {
-        module.exports.init()
-    });
-    job.start();
-    module.exports.init()
+  const job = new CronJob('*/5 * * * * *', () => {
+    module.exports.init();
+  });
+  job.start();
+  module.exports.init();
 }
 
 module.exports.cronInit = cronInit;
