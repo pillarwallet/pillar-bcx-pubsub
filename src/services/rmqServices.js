@@ -34,7 +34,6 @@ const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
 let offersChannel;
-let notificationsChannel;
 const pubSubQueue = 'bcx-pubsub';
 const offersQueue = 'bcx-offers';
 const notificationsQueue =

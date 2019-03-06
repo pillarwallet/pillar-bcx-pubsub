@@ -208,56 +208,6 @@ function subscribePendingTxn() {
 module.exports.subscribePendingTxn = subscribePendingTxn;
 
 /**
- * Gets the transaction info/receipt and returns the transaction object
- * @param {string} txHash Transaction hash
- */
-async function getTxInfo(txHash) {
-  const [txInfo, txReceipt] = await Promise.all([
-    web3.eth.getTransaction(txHash),
-    web3.eth.getTransactionReceipt(txHash),
-  ]);
-  let to;
-  let value;
-  let asset;
-  let contractAddress;
-  if (!hashMaps.assets.has(txInfo.to.toLowerCase())) {
-    ({ to } = txInfo);
-  } else {
-    const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-    ({ contractAddress } = contractDetail);
-    asset = contractDetail.symbol;
-    if (fs.existsSync(`${abiPath + asset}.json`)) {
-      const theAbi = require(`${abiPath + asset}.json`);
-      abiDecoder.addABI(theAbi);
-    } else {
-      abiDecoder.addABI(ERC20ABI);
-    }
-    const data = abiDecoder.decodeMethod(txInfo.input);
-    if (data !== undefined && data.name === 'transfer') {
-      // smart contract call hence the asset must be the token name
-      to = data.params[0].value;
-      [, { value }] = data.params;
-    } else {
-      ({ to } = txInfo);
-    }
-  }
-  return {
-    txHash: txInfo.hash,
-    fromAddress: txInfo.from,
-    toAddress: to,
-    value,
-    asset,
-    contractAddress,
-    status: txReceipt.status === '0x1' ? 'confirmed' : 'failed',
-    gasPrice: txInfo.gasPrice,
-    gasUsed: txReceipt.gasUsed,
-    blockNumber: txReceipt.blockNumber,
-  };
-}
-
-module.exports.getTxInfo = getTxInfo;
-
-/**
  * Subscribe to geth WS events corresponding to new block headers.
  */
 function subscribeBlockHeaders() {
@@ -859,7 +809,7 @@ async function getTxInfo(txHash) {
             value,
             asset,
             contractAddress,
-            status: (txReceipt.status == '0x1') ? 'confirmed' : 'failed',
+            status: (txReceipt.status === true) ? 'confirmed' : 'failed',
             gasPrice: txInfo.gasPrice,
             gasUsed: txReceipt.gasUsed,
             blockNumber: txReceipt.blockNumber
