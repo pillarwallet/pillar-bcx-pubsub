@@ -31,11 +31,7 @@ const hashMaps = require('./utils/hashMaps.js');
 const fs = require('fs');
 
 const GETH_STATUS_FILE = '/tmp/geth_status';
-const redis = require('redis');
 const { CronJob } = require('cron');
-
-const client = redis.createClient();
-bluebird.promisifyAll(redis);
 let latestId = '';
 let processCnt = 0;
 let gethCheck = 0;
