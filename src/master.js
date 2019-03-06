@@ -20,12 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-<<<<<<< HEAD
 'use strict';
-=======
-#!/usr/bin/env node */
->>>>>>> Linter changes
-/** @module master.js */
 require('./utils/diagnostics');
 
 const logger = require('./utils/logger');
