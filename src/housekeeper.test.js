@@ -38,12 +38,6 @@ describe('The recoverAll function tests less than MAX_TOTAL_TRANSACTIONS', () =>
     jest.mock('./services/dbServices.js');
     const dbServices = require('./services/dbServices.js');
     const housekeeper = require('./housekeeper.js');
-    const spy = jest.spyOn(housekeeper, 'recoverTransactions');
-    const recoverAllMockImpl = () =>
-      new Promise(resolve => {
-        resolve([{ transactionHash: 'hash' }]);
-      });
-    spy.mockImplementation(recoverAllMockImpl);
     const dbServicesAddTxMock = jest.spyOn(
       dbServices.dbCollections.transactions,
       'addTx',
