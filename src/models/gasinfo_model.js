@@ -21,14 +21,13 @@ SOFTWARE.
 */
 const Mongoose = require('../services/dbServices').mongoose;
 
-// NEW DB SCHEMA
 const gasInfoSchema = Mongoose.Schema({
-  protocol: String,
-  gasLimit: Number,
-  gasUsed: Number,
-  avgGasPrice: Number,
-  transactionCount: Number,
-  blockNumber: Number,
+  protocol: { type: String, default: null },
+  gasLimit: { type: Number, default: null },
+  gasUsed: { type: Number, default: null },
+  avgGasPrice: { type: Number, default: null },
+  transactionCount: { type: Number, default: null },
+  blockNumber: { type: Number, default: null },
 });
 
 const GasInfo = Mongoose.model('GasInfo', gasInfoSchema);
