@@ -115,7 +115,7 @@ jobs:
           command: |
             git config user.email "devops@pillar.io"
             git config user.name "Issabot"
-            npm version $(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-staging
+            npm version $(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM
       - run:
           name: Authenticate with registry
           command: |
@@ -125,12 +125,12 @@ jobs:
           name: Publish Package to Artifactory
           command: |
             npm publish --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")-staging"
+            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")"
       - run:
           name: Push txt file to S3 bucket
           command: |
             touch pillar-bcx-pubsub.txt
-            echo "$(node -e "console.log(require('./package.json').name)")@$(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM-staging" > pillar-bcx-pubsub.txt
+            echo "$(node -e "console.log(require('./package.json').name)")@$(node -e "const currentVersion=require('./package.json').version; const firstTwoDots=currentVersion.substring(0, currentVersion.lastIndexOf('.')+1); console.log(firstTwoDots);")$CIRCLE_BUILD_NUM" > pillar-bcx-pubsub.txt
             export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
             aws s3 cp pillar-bcx-pubsub.txt $QA_RELEASE_BUCKET
@@ -184,7 +184,7 @@ workflows:
           filters:
             branches:
               only:
-                  - staging
+                  - master
       - publish-prod:
           requires:
              - build
