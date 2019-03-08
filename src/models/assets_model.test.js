@@ -34,7 +34,6 @@ describe('The Assets Model', () => {
 
     // Check the default values of null have been returned
     expect(generatedModel).toMatchObject({
-      category: null,
       contractAddress: null,
       decimals: null,
       name: null,
@@ -43,6 +42,9 @@ describe('The Assets Model', () => {
       totalSupply: null,
       url: null,
     });
+
+    // The category field is not required. Check that this is undefined.
+    expect(generatedModel.category).toBeUndefined();
   });
 
   it('correctly returns a valid model when some data supplied', () => {
