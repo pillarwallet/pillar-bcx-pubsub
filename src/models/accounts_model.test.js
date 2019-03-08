@@ -20,10 +20,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-const accounts = require('./accounts_model.js');
+describe('The Accounts Model', () => {
+  jest.dontMock('mongoose');
+  jest.dontMock('./accounts_model');
 
-describe('Test accounts', () => {
-  test('accounts should be defined', () => {
-    expect(accounts.Accounts).toBeDefined();
+  const accountsModel = require('./accounts_model');
+
+  it('successfully returns a valid model when no data supplied', () => {
+    const generatedModel = new accountsModel.Accounts();
+
+    // Check the type of the ObjectID
+    expect(generatedModel._id.toString()).toEqual(expect.any(String));
+
+    // Check that we receive a null value for an unspecified Pillar ID
+    expect(generatedModel.pillarId).toEqual(null);
+
+    // Check that we receive an empty array for an unspecified set of addresses
+    expect(generatedModel.addresses).toEqual(expect.any(Array));
+  });
+
+  it('correctly returns a valid model when some data supplied', () => {
+    const generatedModel = new accountsModel.Accounts({
+      pillarId: 'abc123',
+    });
+
+    // Check the type of the ObjectID
+    expect(generatedModel._id.toString()).toEqual(expect.any(String));
+
+    // Check that the value of the pillarId is what we set it to
+    expect(generatedModel.pillarId).toBe('abc123');
+
+    // Check that an array is returned
+    expect(generatedModel.addresses).toEqual(expect.any(Array));
   });
 });

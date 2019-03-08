@@ -20,54 +20,70 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-describe('The Assets Model', () => {
+describe('The HistoricTransactions Model', () => {
   jest.dontMock('mongoose');
-  jest.dontMock('./assets_model');
+  jest.dontMock('./historic_transactions_model');
 
-  const assetsModel = require('./assets_model');
+  const historicTransactionsModel = require('./historic_transactions_model');
 
   it('successfully returns a valid model when no data supplied', () => {
-    const generatedModel = new assetsModel.Assets();
+    const generatedModel = new historicTransactionsModel.HistoricTransactions();
 
     // Check the type of the ObjectID
     expect(generatedModel._id.toString()).toEqual(expect.any(String));
 
     // Check the default values of null have been returned
     expect(generatedModel).toMatchObject({
-      category: null,
-      contractAddress: null,
-      decimals: null,
-      name: null,
-      protocol: null,
-      symbol: null,
-      totalSupply: null,
-      url: null,
+      action: {
+        from: null,
+        gas: null,
+        init: null,
+        input: null,
+        to: null,
+        value: null,
+      },
+      blockHash: null,
+      blockNumber: null,
+      result: {
+        address: null,
+        code: null,
+        gasUsed: null,
+      },
+      transactionHash: null,
+      transactionPosition: null,
+      type: null,
     });
   });
 
   it('correctly returns a valid model when some data supplied', () => {
-    const generatedModel = new assetsModel.Assets({
-      name: 'PLR',
-      totalSupply: 150000,
+    const generatedModel = new historicTransactionsModel.HistoricTransactions({
+      action: {
+        from: '0x123',
+      },
+      blockHash: '1234567890qwerty',
     });
 
     // Check the type of the ObjectID
     expect(generatedModel._id.toString()).toEqual(expect.any(String));
 
-    // Check that the value of the gasUsed is what we set it to
-    expect(generatedModel.totalSupply).toBe(150000);
+    // Check that the 'from' value of the action is what we set it to
+    expect(generatedModel.action).toBeDefined();
+    expect(generatedModel.action.from).toBe('0x123');
+
+    // Check that blockhash was the value we set it to
+    expect(generatedModel.blockHash).toBe('1234567890qwerty');
   });
 
   it('correctly attempts to convert types when incorrect data types used', () => {
-    const generatedModel = new assetsModel.Assets({
-      totalSupply: '987654321', // Should be a Number
+    const generatedModel = new historicTransactionsModel.HistoricTransactions({
+      blockNumber: '12345', // Should be a Number
     });
 
     // Check the type of the ObjectID
     expect(generatedModel._id.toString()).toEqual(expect.any(String));
 
-    // Check that the value of the gasUsed was converted from a String to a Number
-    expect(generatedModel.totalSupply).toBe(987654321);
-    expect(generatedModel.totalSupply).toEqual(expect.any(Number));
+    // Check that the value of the blockNumber was converted from a String to a Number
+    expect(generatedModel.blockNumber).toBe(12345);
+    expect(generatedModel.blockNumber).toEqual(expect.any(Number));
   });
 });

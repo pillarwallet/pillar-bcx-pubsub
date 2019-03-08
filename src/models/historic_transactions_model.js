@@ -24,23 +24,23 @@ const Mongoose = require('../services/dbServices.js').mongoose;
 // NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
   action: {
-    from: { type: String, required: false },
-    gas: { type: String, required: false },
-    init: { type: String, required: false },
-    value: { type: String, required: false },
-    input: { type: String, required: false },
-    to: { type: String, required: false },
+    from: { type: String, required: false, default: null },
+    gas: { type: String, required: false, default: null },
+    init: { type: String, required: false, default: null },
+    value: { type: String, required: false, default: null },
+    input: { type: String, required: false, default: null },
+    to: { type: String, required: false, default: null },
   },
-  blockHash: { type: String, required: true },
-  blockNumber: { type: Number, required: true },
+  blockHash: { type: String, required: true, default: null },
+  blockNumber: { type: Number, required: true, default: null },
   result: {
-    address: { type: String, required: false },
-    code: { type: String, required: false },
-    gasUsed: { type: String, required: false },
+    address: { type: String, required: false, default: null },
+    code: { type: String, required: false, default: null },
+    gasUsed: { type: String, required: false, default: null },
   },
-  transactionHash: { type: String, required: false },
-  transactionPosition: { type: Number, required: false },
-  type: { type: String, required: true },
+  transactionHash: { type: String, required: false, default: null },
+  transactionPosition: { type: Number, required: false, default: null },
+  type: { type: String, required: true, default: null },
 });
 
 const HistoricTransactions = Mongoose.model(

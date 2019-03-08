@@ -20,16 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 const Mongoose = require('../services/dbServices.js').mongoose;
-// NEW DB SCHEMA
+
 const assetsSchema = Mongoose.Schema({
-  protocol: { type: String, required: true },
-  name: { type: String, required: true },
-  symbol: { type: String, required: true },
-  decimals: { type: Number, required: true },
-  contractAddress: { type: String, required: true },
-  totalSupply: { type: Number, required: false },
-  url: { type: String, required: false },
-  category: { type: String, required: false },
+  protocol: { type: String, required: true, default: null },
+  name: { type: String, required: true, default: null },
+  symbol: { type: String, required: true, default: null },
+  decimals: { type: Number, required: true, default: null },
+  contractAddress: { type: String, required: true, default: null },
+  totalSupply: { type: Number, required: false, default: null },
+  url: { type: String, required: false, default: null },
+  category: { type: String, required: false, default: null },
 });
 
 const Assets = Mongoose.model('Assets', assetsSchema);
