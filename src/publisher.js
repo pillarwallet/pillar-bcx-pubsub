@@ -91,7 +91,7 @@ module.exports.publisherOnMessage = function() {
   process.on('message', async data => {
     try {
       const { message } = data;
-      logger.info(`Publisher has received message from master: ${data.type}`);
+      logger.debug(`Publisher has received message from master: ${data.type}`);
 
       if (data.type === 'accounts') {
         logger.info(
@@ -101,7 +101,7 @@ module.exports.publisherOnMessage = function() {
           const obj = message[i];
           if (obj !== undefined) {
             client.existsAsync(obj.walletId.toLowerCase()).then(exists => {
-              logger.info(
+              logger.debug(
                 `Wallet : ${obj.walletId} exists in redis? : ${exists}`,
               );
               client.getAsync('latestId').then(latestIdRedis => {
@@ -121,7 +121,7 @@ module.exports.publisherOnMessage = function() {
                         } , accountsSize: ${hashMaps.accounts.keys().length}`,
                       );
 
-                      logger.info(`Updated redis with latestId: ${latestId}`);
+                      logger.debug(`Updated redis with latestId: ${latestId}`);
                     });
                 }
               });
