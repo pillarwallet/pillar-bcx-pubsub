@@ -135,7 +135,8 @@ async function newPendingTran(tx, protocol) {
           }
           if (collectible) {
             tokenId = value;
-            value = 0;
+            //better UX experience on the wallet to show 1 collectible transfer
+            value = 1 * 10**18;
             tranType = 'collectible'
 
           }
