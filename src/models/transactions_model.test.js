@@ -19,32 +19,55 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-// TEST FAILING DUE TO ethTxSchema INDEXING... REPLACED WITH A DUMMY TEST BELOW
 
-/*
-const dbServices = require('../services/dbServices.js');
+describe('The Transaction Model', () => {
+  jest.dontMock('mongoose');
+  jest.dontMock('./transactions_model');
+  const transactions = require('./transactions_model');
 
-const url = 'mongodb://127.0.0.1:27017/PillarBCX';
-jest.mock('mongoose');
-const mongoose = require('mongoose');
+  it('successfully returns a valid model when no data supplied', () => {
+    const generated = new transactions.Transactions();
 
-dbServices.dbConnect(url);
+    expect(generated).toMatchObject({
+      pillarId: null,
+      protocol: null,
+      fromAddress: null,
+      toAddress: null,
+      txHash: null,
+      asset: null,
+      contractAddress: null,
+      timestamp: null,
+      blockNumber: null,
+      value: null,
+      status: null,
+      gasPrice: null,
+      gasUsed: null,
+    });
 
- const transactions = require('./transactions_model.js');
+    expect(generated._id.toString()).toEqual(expect.any(String));
+  });
 
-describe('Test transactions', () => {
+  it('correctly generate a valid model when some data is supplied', () => {
+    const generated = new transactions.Transactions({
+      pillarId: 'abc123',
+      protocol: 'eth',
+      asset: 'JEST',
+      value: 0,
+    });
 
-	test('transactions should be defined', () => {
+    // Assert the random ID
+    expect(generated._id.toString()).toEqual(expect.any(String));
 
-		// expect(transactions.Transactions).toBeDefined();
-	});
+    // Assert a value that has not been specified
+    expect(generated.timestamp).toEqual(null);
 
-});
+    // Assert the provided values
+    expect(generated.pillarId).toEqual('abc123');
+    expect(generated.protocol).toEqual('eth');
+    expect(generated.asset).toEqual('JEST');
 
-*/
-
-describe('Test transactions', () => {
-  test('transactions should be defined', () => {
-    expect(1).toEqual(1);
+    // Asset a type
+    expect(generated.value).toEqual(0);
+    expect(generated.value).toEqual(expect.any(Number));
   });
 });

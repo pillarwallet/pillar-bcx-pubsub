@@ -47,12 +47,14 @@ module.exports.getTransactionCountForWallet = () =>
     resolve(50);
   });
 
-module.exports.getAllTransactionsForWallet = () => [
+module.exports.getAllTransactionsForWallet = () => 
+  new Promise(resolve => {
+    resolve([
   {
     result: { gasUsed: 5 },
     action: { input: 'input', to: 'to', from: 'from', hash: 'hash' },
     to: 'to',
     from: 'from',
     hash: 'hash',
-  },
-];
+  }
+    ])});
