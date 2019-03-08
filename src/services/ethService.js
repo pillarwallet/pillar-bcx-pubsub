@@ -537,7 +537,8 @@ function checkPendingTx(pendingTxArray) {
                         gasUsed,
                         blockNumber: receipt.blockNumber,
                         input: item.input,
-                        tokenId: item.tokenId
+                        tokenId: item.tokenId,
+                        tranType: item.tranType
                     };
                     rmqServices.sendPubSubMessage(txMsg);
                     logger.info(
