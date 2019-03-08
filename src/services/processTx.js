@@ -63,6 +63,7 @@ async function newPendingTran(tx, protocol) {
     let data;
     let value;
     let tokenId;
+    let tranType;
     let collectible = false;
     const from = typeof tx.from !== 'undefined' ? tx.from : tx.fromAddress;
     let to = typeof tx.to !== 'undefined' ? tx.to : tx.toAddress;
@@ -93,7 +94,7 @@ async function newPendingTran(tx, protocol) {
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
-        logger.info('Contract detail category: ' + contractDetail.category);
+        logger.debug('Contract detail category: ' + contractDetail.category);
         if(typeof contractDetail.category === 'undefined') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
             const theAbi = require(`${abiPath + asset}.json`);
@@ -103,7 +104,7 @@ async function newPendingTran(tx, protocol) {
             abiDecoder.addABI(ERC20ABI);
           }
         } else {
-          logger.info('Addding erc721 abi');
+          logger.debug('Addding erc721 abi');
           abiDecoder.addABI(ERC721ABI);
           collectible = true;
         }
@@ -117,6 +118,7 @@ async function newPendingTran(tx, protocol) {
           } data is ${JSON.stringify(data)}`,
         );
         if (typeof data !== 'undefined' && tx.input !== '0x') {
+          logger.info('data: ' + JSON.stringify(data));
           if (data.name === 'transfer') {
             // smart contract call hence the asset must be the token name
             to = data.params[0].value;
@@ -133,6 +135,9 @@ async function newPendingTran(tx, protocol) {
           }
           if (collectible) {
             tokenId = value;
+            value = 0;
+            tranType = 'collectible'
+
           }
         }
       }
@@ -159,7 +164,7 @@ async function newPendingTran(tx, protocol) {
             blockNumber: tx.blockNumber,
             status: 'pending',
             input: tx.input,
-            tokenId
+            tokenId,tranType
           };
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
