@@ -124,7 +124,7 @@ module.exports.launch = () => {
 
         if (data.type === 'assets.request') {
           // send list of assets to publisher
-          logger.info(
+          logger.debug(
             'Master Sending list of assets to monitor to each publisher',
           );
 
@@ -156,7 +156,7 @@ module.exports.launch = () => {
                   }
                   return false;
                 });
-                logger.info(`Filtered message: ${JSON.stringify(addresses)}`);
+                logger.debug(`Filtered message: ${JSON.stringify(addresses)}`);
                 addresses.forEach(address => {
                   message.push({
                     id: theWallet._id,
