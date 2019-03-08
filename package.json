@@ -47,7 +47,6 @@
     "fs": "0.0.1-security",
     "hashmap": "git+https://github.com/pillarwallet/hashmap.git",
     "jshashes": "^1.0.7",
-    "memwatch-next": "^0.3.0",
     "migrate": "^1.6.2",
     "moment": "^2.22.2",
     "mongoose": "^5.3.12",

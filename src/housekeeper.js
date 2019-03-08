@@ -64,29 +64,6 @@ client.on('error', err => {
   logger.error(`Housekeeper failed with REDIS client error: ${err}`);
 });
 
-/**
- * commonon logger function that prints out memory footprint of the process
- */
-function logMemoryUsage() {
-  const mem = process.memoryUsage();
-  const rss = Math.round((mem.rss * 10.0) / (1024 * 1024 * 10.0), 2);
-  const heap = Math.round((mem.heapUsed * 10.0) / (1024 * 1024 * 10.0), 2);
-  const total = Math.round((mem.heapTotal * 10.0) / (1024 * 1024 * 10.0), 2);
-  const external = Math.round((mem.external * 10.0) / (1024 * 1024 * 10.0), 2);
-  logger.info(
-    '*****************************************************************************************************************************',
-  );
-  logger.info(
-    `Housekeeper - PID: ${
-    process.pid
-    }, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`,
-  );
-  logger.info(
-    '*****************************************************************************************************************************',
-  );
-}
-module.exports.logMemoryUsage = logMemoryUsage;
-
 async function connectDb() {
   return new Promise(async resolve => {
     if (
@@ -358,7 +335,6 @@ function processData(lastId) {
           entry.endTime = time.now();
           client.set('housekeeper', JSON.stringify(entry), redis.print);
           logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`)
-          this.logMemoryUsage();
         } else {
           var promises = [];
           accounts.forEach((account) => {
@@ -382,7 +358,7 @@ function processData(lastId) {
             entry.endTime = time.now();
             client.set('housekeeper', JSON.stringify(entry), redis.print);
             logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`);
-            this.logMemoryUsage();
+
           });
         }
       });
@@ -446,7 +422,6 @@ module.exports.launch = launch;
 
 async function init() {
   logger.info(`Housekeeper(PID: ${process.pid}) started processing.`);
-  this.logMemoryUsage();
 
   logger.debug('starting a cron to run init each 10 minutes');
   try {
