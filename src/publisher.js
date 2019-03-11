@@ -39,6 +39,12 @@ let LAST_BLOCK_NUMBER = 0;
 const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at: ' + reason.stack || reason)
+  // Recommended: send the information to sentry.io
+  // or whatever crash reporting service you use
+});
+
 /**
  * Connecting to Redis
  */
