@@ -21,21 +21,22 @@ SOFTWARE.
 */
 const Mongoose = require('../services/dbServices.js').mongoose;
 
-// NEW DB SCHEMA
 const transactionsSchema = Mongoose.Schema({
-  pillarId: { type: String, required: false },
-  protocol: { type: String, required: true },
-  fromAddress: { type: String, required: false },
-  toAddress: { type: String, required: false },
-  txHash: { type: String, required: true },
-  asset: { type: String, required: false },
-  contractAddress: { type: String, required: false },
-  timestamp: { type: Number, required: false },
-  blockNumber: { type: Number, required: false },
-  value: { type: Number, required: false },
-  status: { type: String, required: false },
-  gasPrice: { type: Number, required: false },
-  gasUsed: { type: Number, required: false },
+  pillarId: { type: String, required: false, default: null },
+  protocol: { type: String, required: true, default: null },
+  fromAddress: { type: String, required: false, default: null },
+  toAddress: { type: String, required: false, default: null },
+  txHash: { type: String, required: true, default: null },
+  asset: { type: String, required: false, default: null },
+  contractAddress: { type: String, required: false, default: null },
+  timestamp: { type: Number, required: false, default: null },
+  blockNumber: { type: Number, required: false, default: null },
+  value: { type: Number, required: false, default: null },
+  status: { type: String, required: false, default: null },
+  gasPrice: { type: Number, required: false, default: null },
+  gasUsed: { type: Number, required: false, default: null },
+  tranType: { type:String, required: false, default: null },
+  tokenId: { type: Number, required: false, default: null }
 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);

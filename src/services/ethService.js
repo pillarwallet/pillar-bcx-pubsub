@@ -336,7 +336,7 @@ module.exports.storeGasInfo = storeGasInfo;
 function subscribeTransferEvents(theContract) {
   try {
     logger.info(
-      `ethService.subscribeTransferEvents() subscribed to events for contract: ${theContract}`,
+      `ethService.subscribeTransferEvents() subscribed to events for contract: ${theContract.contractAddress}`,
     );
     if (module.exports.connect()) {
       if (web3.utils.isAddress(theContract.contractAddress)) {
@@ -537,7 +537,8 @@ function checkPendingTx(pendingTxArray) {
                         gasUsed,
                         blockNumber: receipt.blockNumber,
                         input: item.input,
-                        tokenId: item.tokenId
+                        tokenId: item.tokenId,
+                        tranType: item.tranType
                     };
                     rmqServices.sendPubSubMessage(txMsg);
                     logger.info(
@@ -708,7 +709,7 @@ async function getAllTransactionsForWallet(
   try {
     let fromBlockNumber = fromBlockNumberParam;
     let toBlockNumber = toBlockNumberParam;
-    logger.info(
+    logger.debug(
       `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
     );
     if (module.exports.connect()) {
@@ -747,7 +748,7 @@ module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
 
 async function getTransactionCountForWallet(wallet) {
   try {
-    logger.info(
+    logger.debug(
       `ethService.getTransactionCountForWallet(${wallet}) started processing`,
     );
     if (module.exports.connect()) {

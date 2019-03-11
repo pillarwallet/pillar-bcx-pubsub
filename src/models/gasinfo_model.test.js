@@ -19,10 +19,53 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const gasinfo = require('./gasinfo_model.js');
 
-describe('Test gasinfo', () => {
-  test('gasinfo should be defined', () => {
-    expect(gasinfo.GasInfo).toBeDefined();
+describe('The GasInfo Model', () => {
+  jest.dontMock('mongoose');
+  jest.dontMock('./gasinfo_model');
+
+  const gasInfoModel = require('./gasinfo_model');
+
+  it('successfully returns a valid model when no data supplied', () => {
+    const generatedModel = new gasInfoModel.GasInfo();
+
+    // Check the type of the ObjectID
+    expect(generatedModel._id.toString()).toEqual(expect.any(String));
+
+    // Check the default values of null have been returned
+    expect(generatedModel).toMatchObject({
+      avgGasPrice: null,
+      blockNumber: null,
+      gasLimit: null,
+      gasUsed: null,
+      protocol: null,
+      transactionCount: null,
+    });
+  });
+
+  it('correctly returns a valid model when some data supplied', () => {
+    const generatedModel = new gasInfoModel.GasInfo({
+      gasUsed: 12345,
+      protocol: 'pr0t0c0l',
+    });
+
+    // Check the type of the ObjectID
+    expect(generatedModel._id.toString()).toEqual(expect.any(String));
+
+    // Check that the value of the gasUsed is what we set it to
+    expect(generatedModel.gasUsed).toBe(12345);
+  });
+
+  it('correctly attempts to convert types when incorrect data types used', () => {
+    const generatedModel = new gasInfoModel.GasInfo({
+      gasUsed: '12345', // Should be a Number
+    });
+
+    // Check the type of the ObjectID
+    expect(generatedModel._id.toString()).toEqual(expect.any(String));
+
+    // Check that the value of the gasUsed was converted from a String to a Number
+    expect(generatedModel.gasUsed).toBe(12345);
+    expect(generatedModel.gasUsed).toEqual(expect.any(Number));
   });
 });

@@ -110,7 +110,7 @@ describe('Process on message', () => {
     const logger = require('./utils/logger');
     const dummyMock = jest.fn();
 
-    const stubLoggerInfo = jest.spyOn(logger, 'info');
+    const stubLoggerInfo = jest.spyOn(logger, 'debug');
 
     const ethServices = require('./services/ethService.js');
     const stubCheckDone = jest.fn(message => {

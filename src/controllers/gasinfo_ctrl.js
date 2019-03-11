@@ -29,7 +29,7 @@ function add(record) {
       const rec = new gasinfo.GasInfo(record);
       rec.save(err => {
         if (err) {
-          logger.info(`GasInfo.add DB controller ERROR: ${err}`);
+          logger.error(`GasInfo.add DB controller ERROR: ${err}`);
           reject(err);
         }
         logger.debug('GasInfo: successfully added a new record');

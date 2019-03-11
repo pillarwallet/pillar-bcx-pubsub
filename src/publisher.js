@@ -36,7 +36,6 @@ let latestId = '';
 let processCnt = 0;
 let gethCheck = 0;
 let LAST_BLOCK_NUMBER = 0;
-const memwatch = require('memwatch-next');
 const sizeof = require('sizeof');
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -65,27 +64,6 @@ client.on('error', err => {
 });
 
 /**
- * Subscribing to memory leak stats
- */
-memwatch.on('stats', stats => {
-  logger.info(`Publisher: GARBAGE COLLECTION: ${JSON.stringify(stats)}`);
-  logger.info(
-    `Size of hashmaps:  Assets= ${hashMaps.assets.keys().length}, PendingTx= ${
-      hashMaps.pendingTx.keys().length
-    }, PendingAssets= ${hashMaps.pendingAssets.keys().length}`,
-  );
-  logger.info(
-    `Hashmap size: Assets= ${sizeof.sizeof(
-      hashMaps.assets,
-      true,
-    )}, PendingTx= ${sizeof.sizeof(
-      hashMaps.pendingTx,
-      true,
-    )}, PendingAssets= ${sizeof.sizeof(hashMaps.pendingAssets, true)}`,
-  );
-});
-
-/**
  * Function handling IPC notification that are received from the master
  * @param {any} message - The IPC message that sent from the master
  * There are 4 types of IPC messages that the publisher can receive from the master, these are
@@ -97,7 +75,7 @@ module.exports.publisherOnMessage = function() {
   process.on('message', async data => {
     try {
       const { message } = data;
-      logger.info(`Publisher has received message from master: ${data.type}`);
+      logger.debug(`Publisher has received message from master: ${data.type}`);
 
       if (data.type === 'accounts') {
         logger.info(
@@ -107,7 +85,7 @@ module.exports.publisherOnMessage = function() {
           const obj = message[i];
           if (obj !== undefined) {
             client.existsAsync(obj.walletId.toLowerCase()).then(exists => {
-              logger.info(
+              logger.debug(
                 `Wallet : ${obj.walletId} exists in redis? : ${exists}`,
               );
               client.getAsync('latestId').then(latestIdRedis => {
@@ -127,7 +105,7 @@ module.exports.publisherOnMessage = function() {
                         } , accountsSize: ${hashMaps.accounts.keys().length}`,
                       );
 
-                      logger.info(`Updated redis with latestId: ${latestId}`);
+                      logger.debug(`Updated redis with latestId: ${latestId}`);
                     });
                 }
               });
@@ -249,11 +227,6 @@ module.exports.poll = function() {
   if (hashMaps.assets.count() === 0) {
     process.send({ type: 'assets.request' });
   }
-  const mem = process.memoryUsage();
-  const rss = Math.round((mem.rss * 10.0) / (1024 * 1024 * 10.0), 2);
-  const heap = Math.round((mem.heapUsed * 10.0) / (1024 * 1024 * 10.0), 2);
-  const total = Math.round((mem.heapTotal * 10.0) / (1024 * 1024 * 10.0), 2);
-  const external = Math.round((mem.external * 10.0) / (1024 * 1024 * 10.0), 2);
   // request new wallets
   logger.info(
     `Size of hashmaps: Assets= ${hashMaps.assets.keys().length}, PendingTx= ${
@@ -268,11 +241,6 @@ module.exports.poll = function() {
       hashMaps.pendingTx,
       true,
     )}, PendingAssets= ${sizeof.sizeof(hashMaps.pendingAssets, true)}`,
-  );
-  logger.info(
-    `Publisher - PID: ${
-      process.pid
-    }, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`,
   );
   logger.info(
     `LAST PROCESSED BLOCK= ${LAST_BLOCK_NUMBER}, LATEST BLOCK NUMBER= ${

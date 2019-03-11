@@ -25,12 +25,14 @@ const logger = require('../utils/logger.js');
 const accounts = require('../models/accounts_model');
 const mongoose = require('mongoose');
 
+const ACCOUNTS_NUMBER_TO_FETCH = process.env.ACCOUNTS_NUMBER_TO_FETCH ? process.env.ACCOUNTS_NUMBER_TO_FETCH : 100;
+
 function listAll() {
   return new Promise((resolve, reject) => {
     try {
       return accounts.Accounts.find((err, result) => {
         if (err) {
-          logger.info(`accounts.listAll DB controller ERROR: ${err}`);
+          logger.error(`accounts.listAll DB controller ERROR: ${err}`);
           return reject(err);
         }
         return resolve(result);
@@ -47,8 +49,8 @@ function listRecent(idFrom) {
     try {
       const oId = mongoose.Types.ObjectId(idFrom);
       // accounts.Accounts.find(query, (err, result) => {
-      // limit the number of results to 1000 records
-      const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(1000);
+      // limit the number of results to ACCOUNTS_RECENT_FETCH records
+      const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(ACCOUNTS_NUMBER_TO_FETCH);
       q.exec((err, result) => {
         if (err) {
           logger.error(`accounts.listRecent DB controller ERROR: ${err}`);
@@ -71,7 +73,7 @@ function findByAddress(address, protocol) {
         { 'addresses.address': address, 'addresses.protocol': protocol },
         (err, result) => {
           if (err) {
-            logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
+            logger.error(`accounts.findByAddress DB controller ERROR: ${err}`);
             reject(err);
           }
           resolve(result);
@@ -91,7 +93,7 @@ function findByStatus(status, protocol) {
         { 'addresses.status': status, 'addresses.protocol': protocol },
         (err, result) => {
           if (err) {
-            logger.info(`accounts.findByAddress DB controller ERROR: ${err}`);
+            logger.error(`accounts.findByAddress DB controller ERROR: ${err}`);
             reject(err);
           }
           resolve(result);
@@ -109,7 +111,7 @@ function findByWalletId(pillarId) {
     try {
       accounts.Accounts.findOne({ walletID: pillarId }, (err, result) => {
         if (err) {
-          logger.info(`accounts.findByWalletId DB controller ERROR: ${err}`);
+          logger.error(`accounts.findByWalletId DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
@@ -130,7 +132,7 @@ function addAddress(pillarId, address) {
       });
       ethAddress.save(err => {
         if (err) {
-          logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
+          logger.error(`accounts.addAddress DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve();
@@ -147,7 +149,7 @@ function removeAddress(pillarId) {
     try {
       accounts.Accounts.remove({ pillarId }, err => {
         if (err) {
-          logger.info(`accounts.removeAddress DB controller ERROR: ${err}`);
+          logger.error(`accounts.removeAddress DB controller ERROR: ${err}`);
           reject(err);
         }
         logger.info(`REMOVED ACCOUNT ${pillarId}\n`);
@@ -165,7 +167,7 @@ function emptyCollection() {
     try {
       accounts.Accounts.remove((err, result) => {
         if (err) {
-          logger.info(`accounts.emptyCollection DB controller ERROR: ${err}`);
+          logger.error(`accounts.emptyCollection DB controller ERROR: ${err}`);
           reject(err);
         }
         logger.info(
