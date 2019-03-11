@@ -23,12 +23,12 @@ const Mongoose = require('../services/dbServices').mongoose;
 
 // NEW DB SCHEMA
 const accountsSchema = Mongoose.Schema({
-  pillarId: { type: String, required: true },
+  pillarId: { type: String, required: true, default: null },
   addresses: [
     {
-      protocol: String,
-      address: String,
-      status: String,
+      protocol: { type: String, required: true, default: null },
+      address: { type: String, required: true, default: null },
+      status: { type: String, required: true, default: null },
     },
   ],
 });

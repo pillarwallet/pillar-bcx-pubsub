@@ -28,7 +28,7 @@ function listAll() {
     try {
       return assets.Assets.find((err, result) => {
         if (err) {
-          logger.info(`smartContracts.listAll DB controller ERROR: ${err}`);
+          logger.error(`smartContracts.listAll DB controller ERROR: ${err}`);
           return reject(err);
         }
 
@@ -89,7 +89,7 @@ function addContract(ERC20SmartContract) {
           const smartContract = new assets.Assets(ERC20SmartContract);
           smartContract.save(e => {
             if (e) {
-              logger.info(
+              logger.error(
                 `smartContracts.addContract DB controller ERROR: ${e}`,
               );
               reject(e);
@@ -116,7 +116,7 @@ function emptyCollection() {
     try {
       assets.Assets.remove((err, countremoved) => {
         if (err)
-          logger.info(
+          logger.error(
             `smartContracts.emptyCollection DB controller ERROR: ${err}`,
           );
         logger.info(
@@ -138,7 +138,7 @@ function findByAddress(contractAddress) {
     try {
       assets.Assets.findOne({ contractAddress }, (err, result) => {
         if (err) {
-          logger.info(
+          logger.error(
             `smartContracts.findByAddress DB controller ERROR: ${err}`,
           );
           reject(err);
