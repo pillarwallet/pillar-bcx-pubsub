@@ -64,29 +64,6 @@ client.on('error', err => {
   logger.error(`Housekeeper failed with REDIS client error: ${err}`);
 });
 
-/**
- * commonon logger function that prints out memory footprint of the process
- */
-function logMemoryUsage() {
-  const mem = process.memoryUsage();
-  const rss = Math.round((mem.rss * 10.0) / (1024 * 1024 * 10.0), 2);
-  const heap = Math.round((mem.heapUsed * 10.0) / (1024 * 1024 * 10.0), 2);
-  const total = Math.round((mem.heapTotal * 10.0) / (1024 * 1024 * 10.0), 2);
-  const external = Math.round((mem.external * 10.0) / (1024 * 1024 * 10.0), 2);
-  logger.info(
-    '*****************************************************************************************************************************',
-  );
-  logger.info(
-    `Housekeeper - PID: ${
-    process.pid
-    }, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`,
-  );
-  logger.info(
-    '*****************************************************************************************************************************',
-  );
-}
-module.exports.logMemoryUsage = logMemoryUsage;
-
 async function connectDb() {
   return new Promise(async resolve => {
     if (
@@ -194,7 +171,7 @@ function getTransactions(listOfTrans, i, wallet, totalTrans, transListCount, pil
   } else {
     fromBlock = decimalToHexString(listOfTrans[i] + 1)
   }
-  logger.info(`housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`);
+  logger.debug(`housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`);
   ethService.getAllTransactionsForWallet(wallet, toBlock, fromBlock).then((transactions) => {
     if (transactions && transactions.length > 0) {
 
@@ -211,7 +188,7 @@ function getTransactions(listOfTrans, i, wallet, totalTrans, transListCount, pil
       } else {
         getTransactions(listOfTrans, i + 1, wallet, totalTrans, transListCount, pillarId)
       }
-      logger.info(`housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`);
+      logger.debug(`housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`);
     } else {
       if (toBlock == "0x0") {
         logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
@@ -294,7 +271,7 @@ async function processTxn(transaction, wallet, pillarId) {
  */
 async function recoverAll(wallet, pillarId) {
   try {
-    logger.info(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
+    logger.debug(`Housekeeper.recoverAll(${wallet}) - started recovering transactions`);
     var totalTransactions = await ethService.getTransactionCountForWallet(wallet)
     logger.info(`Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`);
     if (totalTransactions == 0) {
@@ -327,7 +304,7 @@ async function saveDeferred(wallet, protocol) {
           acc.status = "deferred"
           result.save((err) => {
             if (err) {
-              logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
+              logger.error(`accounts.addAddress DB controller ERROR: ${err}`);
             }
           });
         }
@@ -358,7 +335,6 @@ function processData(lastId) {
           entry.endTime = time.now();
           client.set('housekeeper', JSON.stringify(entry), redis.print);
           logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`)
-          this.logMemoryUsage();
         } else {
           var promises = [];
           accounts.forEach((account) => {
@@ -382,7 +358,7 @@ function processData(lastId) {
             entry.endTime = time.now();
             client.set('housekeeper', JSON.stringify(entry), redis.print);
             logger.info(`Housekeeper.processData() - Completed processing ${accounts.length} records.`);
-            this.logMemoryUsage();
+
           });
         }
       });
@@ -446,9 +422,8 @@ module.exports.launch = launch;
 
 async function init() {
   logger.info(`Housekeeper(PID: ${process.pid}) started processing.`);
-  this.logMemoryUsage();
 
-  logger.info('starting a cron to run init each 10 minutes');
+  logger.debug('starting a cron to run init each 10 minutes');
   try {
     startBlock = await ethService.getLastBlockNumber();
     entry.blockNumber = startBlock - LOOK_BACK_BLOCKS;
