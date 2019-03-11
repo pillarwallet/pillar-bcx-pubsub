@@ -27,7 +27,6 @@ const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
 require('dotenv').config();
-const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
@@ -812,7 +811,7 @@ async function getTxInfo(txHash) {
 
       txObject.contractAddress = txInfo.to;
       const data = abiDecoder.decodeMethod(txInfo.input);
-      [to, value, ] = data.params;
+      const [to, value, ] = data.params;
       [txObject.toAddress, txObject.value] = [to.value, value.value]
     }
     return txObject;
