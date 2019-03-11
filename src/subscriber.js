@@ -22,7 +22,6 @@ SOFTWARE.
 'use strict';
 /** @module subscriber.js */
 require('./utils/diagnostics');
-const { CronJob } = require('cron');
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');
