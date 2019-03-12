@@ -41,6 +41,13 @@ function generateList(number) {
   return list;
 }
 
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at: ' + reason.stack || reason)
+  // Recommended: send the information to sentry.io
+  // or whatever crash reporting service you use
+});
+
 module.exports.generateList = generateList;
 
 function decimalToHexString(number) {
