@@ -795,7 +795,6 @@ async function getTxInfo(txHash) {
       gasUsed: txReceipt.gasUsed,
       blockNumber: txReceipt.blockNumber
     };
-
     if (txInfo.input !== '0x') {
       let jsonAbi;
       const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
