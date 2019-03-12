@@ -797,12 +797,17 @@ async function getTxInfo(txHash) {
     };
 
     if (txInfo.input !== '0x') {
-      let jsonAbi = ERC20ABI;
+      let jsonAbi;
       const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
       if (contractDetail) {
         txObject.asset = contractDetail.symbol;
-        jsonAbi = require(abiPath + txObject.asset + '.json') || ERC20ABI;
+        jsonAbi = require(abiPath + txObject.asset + '.json');
+          if (!jsonAbi) {
+              logger.error(`Asset ABI not found ${txObject.asset}`);
+              jsonAbi = ERC20ABI;
+          }
       } else {
+        jsonAbi = ERC20ABI
         var contract = new web3.eth.Contract(jsonAbi, txInfo.to);
         txObject.asset = await contract.methods.symbol().call() || null;
       }
