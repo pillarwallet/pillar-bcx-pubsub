@@ -64,6 +64,12 @@ client.on('error', err => {
   logger.error(`Housekeeper failed with REDIS client error: ${err}`);
 });
 
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at: ' + reason.stack || reason)
+  // Recommended: send the information to sentry.io
+  // or whatever crash reporting service you use
+});
+
 async function connectDb() {
   return new Promise(async resolve => {
     if (
