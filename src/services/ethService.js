@@ -799,22 +799,17 @@ async function getTxInfo(txHash) {
     if (txInfo.input !== '0x') {
       let jsonAbi;
       const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-      if (contractDetail) {
-        txObject.asset = contractDetail.symbol;
-        jsonAbi = require(abiPath + txObject.asset + '.json');
-          if (!jsonAbi) {
-              logger.error(`Asset ABI not found ${txObject.asset}`);
-              jsonAbi = ERC20ABI;
-          }
-      } else {
-        jsonAbi = ERC20ABI
-        var contract = new web3.eth.Contract(jsonAbi, txInfo.to);
-        txObject.asset = await contract.methods.symbol().call() || null;
-      }
-
-      abiDecoder.addABI(jsonAbi);
-
+      if (!contractDetail)
+        return logger.error(`Not a monitored contract: ${txInfo.to}`)
+      txObject.asset = contractDetail.symbol;
+      jsonAbi = require(abiPath + txObject.asset + '.json');
+        if (!jsonAbi) {
+            logger.error(`Asset ABI not found ${txObject.asset}, using standard ERC20`);
+            jsonAbi = ERC20ABI;
+        }
+      
       txObject.contractAddress = txInfo.to;
+      abiDecoder.addABI(jsonAbi);
       const data = abiDecoder.decodeMethod(txInfo.input);
       const [to, value, ] = data.params;
       [txObject.toAddress, txObject.value] = [to.value, value.value]
