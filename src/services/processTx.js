@@ -118,7 +118,7 @@ async function newPendingTran(tx, protocol) {
           } data is ${JSON.stringify(data)}`,
         );
         if (typeof data !== 'undefined' && tx.input !== '0x') {
-          logger.debug('data: ' + JSON.stringify(data));
+          logger.info('txHash: ' + hash + ' data: ' + JSON.stringify(data));
           if (data.name === 'transfer') {
             // smart contract call hence the asset must be the token name
             to = data.params[0].value;
