@@ -31,17 +31,18 @@ const logger = require('./utils/logger');
 const dbServices = require('./services/dbServices');
 const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
+const config = require('./config');
 
 const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService');
+const redisService = require('./services/redisService');
 
 const protocol = 'Ethereum';
-const MAX_TOTAL_TRANSACTIONS = process.env.MAX_TOTAL_TRANSACTIONS
-  ? process.env.MAX_TOTAL_TRANSACTIONS
-  : 100;
-const ACCOUNTS_WAIT_INTERVAL = process.env.ACCOUNTS_WAIT_INTERVAL ? process.env.ACCOUNTS_WAIT_INTERVAL : 1000;
-const PROCESS_BLOCKS_INTERVAL = process.env.PROCESS_BLOCKS_INTERVAL ? process.env.PROCESS_BLOCKS_INTERVAL : 50000;
+const MAX_TOTAL_TRANSACTIONS = config.get('housekeeper.totalTransactions');
+const ACCOUNTS_WAIT_INTERVAL = config.get('housekeeper.accountWaitInterval');
+const PROCESS_BLOCKS_INTERVAL = config.get('housekeeper.processBlockInterval');
 const { CronJob } = require('cron');
+const  redis = require('redis');
 
 let entry = {};
 let startBlock;
@@ -49,20 +50,15 @@ let startBlock;
 /**
  * Connecting to Redis
  */
-const redis = require('redis');
-const redisOptions = { host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW };
 let client;
 try {
-  client = redis.createClient(redisOptions);
-  logger.info("Housekeeper successfully connected to Redis server")
+  client = redisService.connectRedis()
+    logger.info("housekeeper successfully connected to Redis server")
+    client.on('error', err => {
+      logger.error(`Housekeeper failed with REDIS client error: ${err}`);
+    });
 } catch (e) { logger.error(e) }
 
-/**
- * Function that subscribes to redis related connection errors.
- */
-client.on('error', err => {
-  logger.error(`Housekeeper failed with REDIS client error: ${err}`);
-});
 
 async function connectDb() {
   return new Promise(async resolve => {

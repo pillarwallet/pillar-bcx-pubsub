@@ -29,19 +29,19 @@ const ERC721ABI = require('../abi/ERC721ABI');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
-const bluebird = require('bluebird');
+const redisService = require('./redisService');
 
 /**
  * Connecting to Redis
  */
-const redis = require('redis');
-const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
 let client;
 try {
-  client = redis.createClient(redisOptions);
+  client = redisService.connectRedis()
   logger.info("processTx successfully connected to Redis server")
+  client.on('error', err => {
+    logger.error(`processTx failed with REDIS client error: ${err}`);
+  });
 } catch (e) { logger.error(e) }
-bluebird.promisifyAll(redis);
 
 /**
  * Store the new pending transaction in memeory if the transaction corresponds
