@@ -124,7 +124,7 @@ module.exports.launch = () => {
 
         if (data.type === 'assets.request') {
           // send list of assets to publisher
-          logger.info(
+          logger.debug(
             'Master Sending list of assets to monitor to each publisher',
           );
 
@@ -156,7 +156,7 @@ module.exports.launch = () => {
                   }
                   return false;
                 });
-                logger.info(`Filtered message: ${JSON.stringify(addresses)}`);
+                logger.debug(`Filtered message: ${JSON.stringify(addresses)}`);
                 addresses.forEach(address => {
                   message.push({
                     id: theWallet._id,
@@ -189,6 +189,24 @@ module.exports.launch = () => {
           module.exports.pubs[pubId].pid
         }) closed with code: ${data}`,
       );
+      
+      module.exports.pubs[pubId] = fork(
+        `${__dirname}/publisher.js`,
+        [`${pubId}`],
+      );
+
+      logger.info(
+        `Master has launched Publisher (PID: ${
+        module.exports.pubs[pubId].pid
+        })`,
+      );
+      // notify the publisher the maximum wallets to monitor
+      module.exports.pubs[pubId].send({
+        type: 'config',
+        message: maxWalletsPerPub,
+      });
+
+
     });
 
     // handle events related to the subscriber child processes
@@ -199,6 +217,18 @@ module.exports.launch = () => {
           module.exports.subs[subId].pid
         }) closed with code: ${data}`,
       );
+
+      module.exports.subs[subId] = fork(
+        `${__dirname}/subscriber.js`,
+        [`${subId}`],
+      );
+
+      logger.info(
+        `Master has launched Subscriber (PID: ${
+        module.exports.subs[subId].pid
+        }) processes.`,
+      );
+
     });
 
     module.exports.index += 1;

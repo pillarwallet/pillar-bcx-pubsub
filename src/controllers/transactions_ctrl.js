@@ -27,12 +27,13 @@ function listAll() {
     try {
       return transactions.Transactions.find((err, result) => {
         if (err) {
-          logger.info(`transactions.listAll DB controller ERROR: ${err}`);
+          logger.error(`transactions.listAll DB controller ERROR: ${err}`);
           return reject(err);
         }
         return resolve(result);
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.listAll(): failed with error: ${e}`);
       return reject(e);
     }
   });
@@ -66,12 +67,13 @@ function listHistory() {
     try {
       transactions.Transactions.find({ status: 'history' }, (err, result) => {
         if (err) {
-          logger.info(`transactions.listHistory DB controller ERROR: ${err}`);
+          logger.error(`transactions.listHistory DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.listHistory(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -85,7 +87,7 @@ function listDbZeroConfTx() {
         { nbConfirmations: 0, status: 'pending' },
         (err, result) => {
           if (err) {
-            logger.info(
+            logger.error(
               `transactions.listDBZeroConfTx DB controller ERROR: ${err}`,
             );
             reject(err);
@@ -94,6 +96,7 @@ function listDbZeroConfTx() {
         },
       );
     } catch (e) {
+      logger.error(`transaction_ctrl.listDbZeroConfTx(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -105,12 +108,13 @@ function findById(id) {
     try {
       transactions.Transactions.findOne({ _id: id }, (err, result) => {
         if (err) {
-          logger.info(`transactions.findById DB controller ERROR: ${err}`);
+          logger.error(`transactions.findById DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.findById(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -122,12 +126,13 @@ function findByTxHash(txHash) {
     try {
       transactions.Transactions.find({ txHash }, (err, result) => {
         if (err) {
-          logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
+          logger.error(`transactions.findByTxHash DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve(result);
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.findByTxHash(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -138,7 +143,7 @@ function findOneByTxHash(txHash) {
   return new Promise((resolve, reject) => {
     transactions.Transactions.findOne({ txHash }, (err, result) => {
       if (err) {
-        logger.info(`transactions.findByTxHash DB controller ERROR: ${err}`);
+        logger.error(`transactions.findByTxHash DB controller ERROR: ${err}`);
         reject(err);
       }
       resolve(result);
@@ -154,12 +159,13 @@ function addTx(txObject) {
       const tx = new transactions.Transactions(txObject);
       tx.save(err => {
         if (err) {
-          logger.info(`transactions.addTx DB controller ERROR: ${err}`);
+          logger.error(`transactions.addTx DB controller ERROR: ${err}`);
           reject(err);
         }
         resolve();
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.addTx(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -176,7 +182,7 @@ function updateTx(txUpdatedKeys) {
             txUpdatedKeys,
             err => {
               if (err) {
-                logger.info(
+                logger.error(
                   `transactions.updateTx DB controller ERROR: ${err}`,
                 );
                 reject(err);
@@ -187,6 +193,7 @@ function updateTx(txUpdatedKeys) {
         resolve();
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.updateTx(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -201,13 +208,14 @@ function txFailed(id, failureStatus) {
         { status: failureStatus },
         err => {
           if (err) {
-            logger.info(`transactions.txFailed DB controller ERROR: ${err}`);
+            logger.error(`transactions.txFailed DB controller ERROR: ${err}`);
             reject(err);
           }
           resolve();
         },
       );
     } catch (e) {
+      logger.error(`transaction_ctrl.txFailed(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -219,7 +227,7 @@ function emptyCollection() {
     try {
       transactions.Transactions.remove((err, countremoved) => {
         if (err) {
-          logger.info(
+          logger.error(
             `transactions.emptyCollection DB controller ERROR: ${err}`,
           );
           reject(err);
@@ -232,6 +240,7 @@ function emptyCollection() {
         resolve();
       });
     } catch (e) {
+      logger.error(`transaction_ctrl.emptyCollection(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -278,7 +287,7 @@ function findMaxBlock(protocol, asset = null) {
           });
       }
     } catch (e) {
-      logger.debug(`transactions_ctrl.findMaxBlock() failed with error: ${e}`);
+      logger.error(`transactions_ctrl.findMaxBlock() failed with error: ${e}`);
       reject(e);
     }
   });
@@ -351,6 +360,7 @@ function getBalance(address, asset) {
         },
       );
     } catch (e) {
+      logger.error(`transaction_ctrl.getBalance(): failed with error: ${e}`);
       reject(e);
     }
   });
@@ -367,7 +377,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
       if (address2 === 'ALL' && asset === 'ALL') {
         transactions.Transactions.find({ to: address1 }, (err, result) => {
           if (err) {
-            logger.info(
+            logger.error(
               `transactions.getTxHistory DB controller ERROR (1): ${err}`,
             );
             reject(err);
@@ -375,7 +385,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
             txHistoryTo = result;
             transactions.Transactions.find({ from: address1 }, (e, res) => {
               if (e) {
-                logger.info(
+                logger.error(
                   `transactions.getTxHistory DB controller ERROR (2): ${e}`,
                 );
                 reject(e);
@@ -397,7 +407,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
           { to: address1, asset },
           (err, result) => {
             if (err) {
-              logger.info(
+              logger.error(
                 `transactions.getTxHistory DB controller ERROR (1): ${err}`,
               );
               reject(err);
@@ -407,7 +417,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                 { from: address1, asset },
                 (e, res) => {
                   if (e) {
-                    logger.info(
+                    logger.error(
                       `transactions.getTxHistory DB controller ERROR (2): ${e}`,
                     );
                     reject(e);
@@ -432,7 +442,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
             { to: address1, from: address2 },
             (err, result) => {
               if (err) {
-                logger.info(
+                logger.error(
                   `transactions.getTxHistory DB controller ERROR (1): ${err}`,
                 );
                 reject(err);
@@ -442,7 +452,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                   { to: address2, from: address1 },
                   (e, res) => {
                     if (err) {
-                      logger.info(
+                      logger.error(
                         `transactions.getTxHistory DB controller ERROR (2): ${e}`,
                       );
                       reject(e);
@@ -466,7 +476,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
             { to: address1, from: address2, asset },
             (err, result) => {
               if (err) {
-                logger.info(
+                logger.error(
                   `transactions.getTxHistory DB controller ERROR (1): ${err}`,
                 );
                 reject(err);
@@ -476,7 +486,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                   { to: address2, from: address1, asset },
                   (e, res) => {
                     if (e) {
-                      logger.info(
+                      logger.error(
                         `transactions.getTxHistory DB controller ERROR (2): ${e}`,
                       );
                       reject(e);
@@ -497,6 +507,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
         }
       }
     } catch (e) {
+      logger.error(`transaction_ctrl.getTxHistory(): failed with error: ${e}`);
       reject(e);
     }
   });

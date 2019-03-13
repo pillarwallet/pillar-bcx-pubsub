@@ -22,7 +22,6 @@ SOFTWARE.
 'use strict';
 /** @module subscriber.js */
 require('./utils/diagnostics');
-const { CronJob } = require('cron');
 const logger = require('./utils/logger');
 const rmqServices = require('./services/rmqServices.js');
 const dbServices = require('./services/dbServices.js');
@@ -44,23 +43,6 @@ process
   });
 
 /**
- * commonon logger function that prints out memory footprint of the process
- */
-function logMemoryUsage() {
-  const mem = process.memoryUsage();
-  const rss = Math.round((mem.rss * 10.0) / (1024 * 1024 * 10.0), 2);
-  const heap = Math.round((mem.heapUsed * 10.0) / (1024 * 1024 * 10.0), 2);
-  const total = Math.round((mem.heapTotal * 10.0) / (1024 * 1024 * 10.0), 2);
-  const external = Math.round((mem.external * 10.0) / (1024 * 1024 * 10.0), 2);
-  logger.info(
-    `Subscriber - PID: ${
-      process.pid
-    }, RSS: ${rss} MB, HEAP: ${heap} MB, EXTERNAL: ${external} MB, TOTAL AVAILABLE: ${total} MB`,
-  );
-}
-module.exports.logMemoryUsage = logMemoryUsage;
-
-/**
  * Function that initializes the subscriber service
  */
 module.exports.initServices = function() {
@@ -69,10 +51,6 @@ module.exports.initServices = function() {
     .then(() => {
       logger.info('Subscriber.initServices(): Connected to database');
       rmqServices.initSubPubMQ();
-      const job = new CronJob('*/5 * * * * *', () => {
-        module.exports.logMemoryUsage();
-      });
-      job.start();
     })
     .catch(err => {
       logger.error(err.message);

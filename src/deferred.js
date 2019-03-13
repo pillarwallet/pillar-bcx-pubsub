@@ -41,6 +41,13 @@ function generateList(number) {
   return list;
 }
 
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at: ' + reason.stack || reason)
+  // Recommended: send the information to sentry.io
+  // or whatever crash reporting service you use
+});
+
 module.exports.generateList = generateList;
 
 function decimalToHexString(number) {
@@ -63,7 +70,7 @@ function setDeferredDone(acc, result) {
   acc.status = 'deferred_done';
   result.save(err => {
     if (err) {
-      logger.info(`accounts.addAddress DB controller ERROR: ${err}`);
+      logger.error(`accounts.addAddress DB controller ERROR: ${err}`);
     } else {
       logger.info(`accounts.addAddress ${acc.address} saved ok`);
     }
@@ -118,7 +125,7 @@ function getTransactions(
               transListCount,
             );
           }
-          logger.info(
+          logger.debug(
             `deferred.getTransactions: started processing for wallet ${
               acc.address
             } and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,

@@ -336,7 +336,7 @@ module.exports.storeGasInfo = storeGasInfo;
 function subscribeTransferEvents(theContract) {
   try {
     logger.info(
-      `ethService.subscribeTransferEvents() subscribed to events for contract: ${theContract}`,
+      `ethService.subscribeTransferEvents() subscribed to events for contract: ${theContract.contractAddress}`,
     );
     if (module.exports.connect()) {
       if (web3.utils.isAddress(theContract.contractAddress)) {
@@ -709,7 +709,7 @@ async function getAllTransactionsForWallet(
   try {
     let fromBlockNumber = fromBlockNumberParam;
     let toBlockNumber = toBlockNumberParam;
-    logger.info(
+    logger.debug(
       `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
     );
     if (module.exports.connect()) {
@@ -748,7 +748,7 @@ module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
 
 async function getTransactionCountForWallet(wallet) {
   try {
-    logger.info(
+    logger.debug(
       `ethService.getTransactionCountForWallet(${wallet}) started processing`,
     );
     if (module.exports.connect()) {
@@ -778,43 +778,47 @@ module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
  * @param {string} txHash Transaction hash 
  */
 async function getTxInfo(txHash) {
+  try {
+    const [txInfo, txReceipt] = await Promise.all(
+      [web3.eth.getTransaction(txHash), 
+       web3.eth.getTransactionReceipt(txHash)
+      ])
+    
+    var txObject = {
+      txHash: txInfo.hash,
+      fromAddress: txInfo.from,
+      toAddress: txInfo.to,
+      value: txInfo.value,
+      asset: 'ETH',
+      contractAddress: null,
+      status: (txReceipt.status === true) ? 'confirmed' : 'failed',
+      gasPrice: txInfo.gasPrice,
+      gasUsed: txReceipt.gasUsed,
+      blockNumber: txReceipt.blockNumber
+    };
 
-    const [txInfo, txReceipt] = await Promise.all([web3.eth.getTransaction(txHash), web3.eth.getTransactionReceipt(txHash)])
+    if (txInfo.input !== '0x') {
+      let jsonAbi = ERC20ABI;
+      const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+      if (contractDetail) {
+        txObject.asset = contractDetail.symbol;
+        jsonAbi = require(abiPath + txObject.asset + '.json') || ERC20ABI;
+      } else {
+        var contract = new web3.eth.Contract(jsonAbi, txInfo.to);
+        txObject.asset = await contract.methods.symbol().call() || null;
+      }
 
-    var to, value, asset, contractAddress;
-    if(!hashMaps.assets.has(txInfo.to.toLowerCase())) { 
-        to = txInfo.to;
-    } else {
-        const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-        contractAddress = contractDetail.contractAddress;
-        asset = contractDetail.symbol;
-        if(fs.existsSync(abiPath + asset + '.json')) {
-            const theAbi = require(abiPath + asset + '.json');
-            abiDecoder.addABI(theAbi);
-        } else {
-            abiDecoder.addABI(ERC20ABI);
-        }
-        const data = abiDecoder.decodeMethod(txInfo.input);
-        if ((data !== undefined) && (data.name === 'transfer')) { 
-            //smart contract call hence the asset must be the token name
-            to = data.params[0].value;
-            value = data.params[1].value;
-        } else {
-            to = txInfo.to;
-        }
+      abiDecoder.addABI(jsonAbi);
+
+      txObject.contractAddress = txInfo.to;
+      const data = abiDecoder.decodeMethod(txInfo.input);
+      [to, value, ] = data.params;
+      [txObject.toAddress, txObject.value] = [to.value, value.value]
     }
-         return {
-            txHash: txInfo.hash,
-            fromAddress: txInfo.from,
-            toAddress: to,
-            value,
-            asset,
-            contractAddress,
-            status: (txReceipt.status === true) ? 'confirmed' : 'failed',
-            gasPrice: txInfo.gasPrice,
-            gasUsed: txReceipt.gasUsed,
-            blockNumber: txReceipt.blockNumber
-        };
+    return txObject;
+  } catch (e) {
+    logger.error(`getTxInfo(${txHash}) failed with error: ${e}`);
+  }
 };
 
 module.exports.getTxInfo = getTxInfo;
