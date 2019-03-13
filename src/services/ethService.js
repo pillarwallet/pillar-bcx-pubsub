@@ -27,7 +27,6 @@ const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
 require('dotenv').config();
-const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
@@ -796,23 +795,21 @@ async function getTxInfo(txHash) {
       gasUsed: txReceipt.gasUsed,
       blockNumber: txReceipt.blockNumber
     };
-
     if (txInfo.input !== '0x') {
-      let jsonAbi = ERC20ABI;
+      let jsonAbi;
       const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-      if (contractDetail) {
-        txObject.asset = contractDetail.symbol;
-        jsonAbi = require(abiPath + txObject.asset + '.json') || ERC20ABI;
-      } else {
-        var contract = new web3.eth.Contract(jsonAbi, txInfo.to);
-        txObject.asset = await contract.methods.symbol().call() || null;
-      }
-
-      abiDecoder.addABI(jsonAbi);
-
+      if (!contractDetail)
+        return logger.error(`Not a monitored contract: ${txInfo.to}`)
+      txObject.asset = contractDetail.symbol;
+      jsonAbi = require(abiPath + txObject.asset + '.json');
+        if (!jsonAbi) {
+            logger.error(`Asset ABI not found ${txObject.asset}, using standard ERC20`);
+            jsonAbi = ERC20ABI;
+        }
       txObject.contractAddress = txInfo.to;
+      abiDecoder.addABI(jsonAbi);
       const data = abiDecoder.decodeMethod(txInfo.input);
-      [to, value, ] = data.params;
+      const [to, value, ] = data.params;
       [txObject.toAddress, txObject.value] = [to.value, value.value]
     }
     return txObject;

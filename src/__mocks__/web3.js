@@ -25,6 +25,8 @@ const blockNumber = 2461146;
 const txHash =
   '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b';
 
+const ethTxHash = '0xEthTxHash';
+
 const txObject = {
   blockHash:
     '0x1182ce9f5e30c963bd876a2373ece2c5c60711c626a7e3574c4c511dac05d6bd',
@@ -482,13 +484,18 @@ const eth = {
   getTransaction(txHashParam) {
     return new Promise((resolve, reject) => {
       try {
-        if (
-          txHashParam ===
-          '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'
-        ) {
-          resolve(module.exports.txObject);
-        } else {
-          reject(new Error('Not A Tx Hash'));
+        switch(txHashParam){
+          case txHash:
+            txObject.hash = txHash;
+            resolve(module.exports.txObject);
+            break;
+          case ethTxHash:
+            txObject.hash = ethTxHash;
+            txObject.input = '0x';
+            resolve(module.exports.txObject);
+          default:
+            reject(new Error('Not A Tx Hash'));
+            break;
         }
       } catch (e) {
         reject(e);
@@ -509,10 +516,8 @@ const eth = {
   getTransactionReceipt(txHashParam) {
     return new Promise((resolve, reject) => {
       try {
-        if (
-          txHashParam ===
-          '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b'
-        ) {
+        if (txHashParam === txHash || txHashParam === ethTxHash) {
+          txReceipt.hash = txHashParam;
           resolve(module.exports.txReceipt);
         } else {
           reject(new Error('Not A Tx Hash'));
@@ -637,4 +642,5 @@ module.exports.txReceipt = txReceipt;
 module.exports.blockNumber = blockNumber;
 module.exports.emitBlock = emitBlock;
 module.exports.txHash = txHash;
+module.exports.ethTxHash = ethTxHash;
 module.exports.getBlockNumber = eth.getBlockNumber;
