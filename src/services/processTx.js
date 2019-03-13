@@ -95,7 +95,7 @@ async function newPendingTran(tx, protocol) {
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
         logger.debug('Contract detail category: ' + contractDetail.category);
-        if(typeof contractDetail.category === 'undefined') {
+        if(typeof contractDetail.category === 'undefined' || contractDetail.category === 'ERC20') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
             const theAbi = require(`${abiPath + asset}.json`);
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
