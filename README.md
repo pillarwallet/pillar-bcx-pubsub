@@ -7,14 +7,11 @@ When the application is launched in a deployed environment we make no assumption
 
 This is mentioned here as a handy guide to pointing local applications to other services, and a reminder that developers adding new requirements would be advised to update the devOps team!
 
-Required environment parameters:
-- BCX_MONGO_SERVER_ADDRESS (mongo db url)
-- BCX_MONGO_USER
-- BCX_MONGO_PASSWORD
-- BCX_MONGO_DATABASE_NAME
-- BCX_GETH_NODE_URL  - url of a geth node for the app to talk to
-- BCX_GETH_NODE_PORT - port to open a websocket on
-- BCX_CHECKSUM_KEY ???
+Required environment parameters vary per envoirement, if using pm2 you could check the following files, or the convict config on src/config
+
+For master - _startup.yml
+for housekeeper - _housekeeper.yml
+for deferred - _deferred.yml
 
 eg:
 ```bash
