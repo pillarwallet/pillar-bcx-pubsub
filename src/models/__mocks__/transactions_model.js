@@ -21,10 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-<<<<<<< HEAD
-=======
 /* eslint-disable */
->>>>>>> Added ignore to test files
 const Transactions = class Transactions {
   save(callback) {
     callback(false);

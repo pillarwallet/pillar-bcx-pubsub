@@ -94,13 +94,8 @@ async function newPendingTran(tx, protocol) {
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
-<<<<<<< HEAD
         logger.debug('Contract detail category: ' + contractDetail.category);
         if(typeof contractDetail.category === 'undefined') {
-=======
-        logger.info(`Contract detail category: ${contractDetail.category}`);
-        if (typeof contractDetail.category === 'undefined') {
->>>>>>> Lint automatic fixes
           if (fs.existsSync(`${abiPath + asset}.json`)) {
             const theAbi = require(`${abiPath + asset}.json`);
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
@@ -130,9 +125,10 @@ async function newPendingTran(tx, protocol) {
             pillarId = await client.getAsync(to);
             [, { value }] = data.params;
           } else if (
-            data.name === 'transferFrom' ||
+            data.name === 'transferFrom' 
+            || 
             data.name === 'safeTransferFrom'
-          ) {
+            ) {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
             [, , { value }] = data.params;
@@ -154,7 +150,6 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
         // send a message to the notifications queue reporting a new transactions
-<<<<<<< HEAD
         let txMsgTo = {
             type: 'newTx',
             pillarId,
@@ -172,25 +167,6 @@ async function newPendingTran(tx, protocol) {
             input: tx.input,
             tokenId,tranType
           };
-=======
-        const txMsgTo = {
-          type: 'newTx',
-          pillarId,
-          protocol,
-          fromAddress: from,
-          toAddress: to,
-          txHash: hash,
-          asset,
-          contractAddress,
-          timestamp: tmstmp,
-          value,
-          gasPrice: tx.gasPrice,
-          blockNumber: tx.blockNumber,
-          status: 'pending',
-          input: tx.input,
-          tokenId,
-        };
->>>>>>> Lint automatic fixes
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
             txMsgTo,
@@ -258,60 +234,3 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
   }
 }
 module.exports.checkTokenTransfer = checkTokenTransfer;
-<<<<<<< HEAD
-=======
-
-/**
- * Validated if the wallets involved in a monitored collectible transfer needs to be persisted in database
- * @param {any} evnt - the event associated with the token transfer
- * @param {String} theContract - the smart contract address associated with the token
- * @param {String} protocol - the protocol corresponding to the token blockchain
- */
-async function checkCollectibleTransfer(evnt, theContract, protocol) {
-  logger.info(
-    `processTx.checkCollectibleTransfer(): received event: ${JSON.stringify(
-      evnt,
-    )}`,
-  );
-  try {
-    let pillarId = '';
-    const tmstmp = time.now();
-    if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
-      pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
-    } else if (
-      await client.existsAsync(evnt.returnValues._from.toLowerCase())
-    ) {
-      pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
-    }
-    if (pillarId !== null && pillarId !== '') {
-      const txMsg = {
-        type: 'updateTx',
-        pillarId,
-        protocol,
-        fromAddress: evnt.returnValues._from,
-        toAddress: evnt.returnValues._to,
-        txHash: evnt.transactionHash,
-        asset: theContract.symbol,
-        contractAddress: theContract.contractAddress,
-        timestamp: tmstmp,
-        value: evnt.returnValues._value,
-        gasPrice: evnt.gasPrice,
-        blockNumber: evnt.blockNumber,
-        status: 'confirmed',
-        tokenId: evnt.returnValues._tokenId,
-      };
-      logger.debug(
-        `processTx.checkCollectibleTransfer(): notifying subscriber of new tran: ${JSON.stringify(
-          txMsg,
-        )}`,
-      );
-      rmqServices.sendPubSubMessage(txMsg);
-    }
-  } catch (err) {
-    logger.error(
-      `processTx.checkCollectibleTransfer failed with error - ${err}`,
-    );
-  }
-}
-module.exports.checkCollectibleTransfer = checkCollectibleTransfer;
->>>>>>> Lint automatic fixes
