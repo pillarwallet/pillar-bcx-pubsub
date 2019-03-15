@@ -26,23 +26,24 @@ const moment = require('moment');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
+const config = require("../config");
 
 const TRANSACTION_PENDING = 'transactionPendingEvent';
 const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
 const COLLECTIBLE_CONFIRMATION = 'collectibleConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
-const checksumKey = process.env.CHECKSUM_KEY;
+const checksumKey = config.get('checksumkey');
 let pubSubChannel;
 let offersChannel;
 const pubSubQueue = 'bcx-pubsub';
 const offersQueue = 'bcx-offers';
 const notificationsQueue =
-  typeof process.env.NOTIFICATIONS_QUEUE !== 'undefined'
-    ? process.env.NOTIFICATIONS_QUEUE
+  typeof config.get('mq.topic.notifications') !== 'undefined'
+    ? config.get('mq.topic.notifications')
     : 'bcx-notifications';
-const MQ_URL = `amqp://${process.env.MQ_BCX_USERNAME}:${
-  process.env.MQ_BCX_PASSWORD
-}@${process.env.RABBITMQ_SERVER}`;
+const MQ_URL = `amqp://${config.get('mq.username')}:${config.get(
+  'mq.password',
+)}@${config.get('mq.server')}`;
 const TX_MAP = {};
 moment.locale('en_GB');
 

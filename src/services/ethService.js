@@ -21,7 +21,6 @@ SOFTWARE.
 */
 
 /** @module ethService.js */
-const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
@@ -34,15 +33,23 @@ const ERC721ABI = require('../abi/ERC721ABI');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
-const redis = require('redis');
+const redisService = require('./redisService');
+const config = require("../config");
 
 const protocol = 'Ethereum';
-const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
+const gethUrl = `${config.get('geth.url')}:${config.get('geth.port')}`;
+const parityURL = `${config.get('parity.port')}:${config.get('parity.port')}`;
+const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
 let web3;
 let wsCnt = 0;
-const client = redis.createClient();
-bluebird.promisifyAll(redis);
-
+let client;
+try {
+  client = redisService.connectRedis()
+  logger.info("ethService successfully connected to Redis server")
+  client.on('error', err => {
+    logger.error(`ethService failed with REDIS client error: ${err}`);
+  });
+} catch (e) { logger.error(e) }
 /**
  * Establish connection to the geth node
  */
@@ -50,11 +57,11 @@ function connect() {
     return new Promise(((resolve, reject) => {
         try {
             if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
-                var isWebSocket =  (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
+                var isWebSocket =  (nodeUrl.indexOf("ws://") >= 0 || nodeUrl.indexOf("wss://") >= 0)
                 if (isWebSocket){
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+                    web3 = new Web3(new Web3.providers.WebsocketProvider(nodeUrl));
                 }else{
-                    web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
+                    web3 = new Web3(new Web3.providers.HttpProvider(nodeUrl));
                 }
                 /**
                 * extend Web3 functionality by including parity trace functions
@@ -117,7 +124,7 @@ function connect() {
                         module.exports.web3 = undefined;
                     });
                 }
-                logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
+                logger.info('ethService.connect(): Connection to ' + nodeUrl + ' established successfully!');
                 module.exports.web3 = web3;
                 resolve(true);
             } else {

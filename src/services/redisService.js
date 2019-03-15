@@ -19,26 +19,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const rmqServices = require('./services/rmqServices.js');
+/** @module redisService.js */
 
 
+require('dotenv').config();
+const logger = require('../utils/logger.js');
+const redis = require('redis');
+const bluebird = require('bluebird');
+const config = require("../config");
+bluebird.promisifyAll(redis);
 
-describe('Subscriber tests', () => {
-  beforeAll(() => {
-    jest.restoreAllMocks();
-  });
 
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
+/**
+ * Connecting to Redis
+ */
 
-  test('Expect initServices() to be called', done => {
-    const spy = jest.spyOn(rmqServices, 'initSubPubMQ');
-    const dummyMock = () => {
-      done();
-    };
-    const subscriber = require('./subscriber.js');
-    spy.mockImplementation(dummyMock);
-    subscriber.initServices();
-  });
-});
+function connectRedis(){
+    const redisOptions = { host: config.get('redis.host'), port: config.get('redis.port'), password: config.get('redis.password') };
+    try {
+        return redis.createClient(redisOptions);
+    } catch (e) { logger.error(e);  }
+}
+
+module.exports.connectRedis = connectRedis;
+
