@@ -318,7 +318,7 @@ function initSubPubMQ() {
                       .then(() => {
                         logger.info(`Transaction updated: ${txHash}`);
                         ch.assertQueue(notificationsQueue, { durable: true });
-                        if(typeof entry.tokenId === 'undefined') {
+                        if (typeof entry.tokenId === 'undefined') {
                           ch.sendToQueue(
                             notificationsQueue,
                             new Buffer.from(

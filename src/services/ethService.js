@@ -264,7 +264,7 @@ function subscribeBlockHeaders() {
           web3.eth.getBlock(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
               if (await client.existsAsync(transaction)) {
-                let txObject = await getTxInfo(transaction);
+                const txObject = await getTxInfo(transaction);
                 rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
@@ -370,6 +370,50 @@ function subscribeTransferEvents(theContract) {
 module.exports.subscribeTransferEvents = subscribeTransferEvents;
 
 /**
+<<<<<<< HEAD
+=======
+ * Subscribe to collectible transfer event corresponding to a given smart contract.
+ * @param {any} theContract - the smart contract address
+ */
+function subscribeCollectibleEvents(theContract) {
+  try {
+    logger.info(
+      `ethService.subscribeCollectibleEvents() subscribed to events for contract: ${theContract}`,
+    );
+    if (module.exports.connect()) {
+      if (web3.utils.isAddress(theContract.contractAddress)) {
+        const collectible = new web3.eth.Contract(
+          ERC721ABI,
+          theContract.contractAddress,
+        );
+        collectible.events.Transfer({}, async (error, result) => {
+          logger.debug(
+            `ethService: Collectible transfer event occurred for contract: ${JSON.stringify(
+              theContract,
+            )} result: ${result} error: ${error}`,
+          );
+          if (!error) {
+            processTx.checkCollectibleTransfer(result, theContract, protocol);
+          } else {
+            logger.error(
+              `ethService.subscribeCollectibleEvents() failed: ${error}`,
+            );
+          }
+        });
+      }
+    } else {
+      logger.error(
+        'ethService.subscribeCollectibleEvents(): Connection to geth failed!',
+      );
+    }
+  } catch (e) {
+    logger.error(`ethService.subscribeCollectibleEvents() failed: ${e}`);
+  }
+}
+module.exports.subscribeCollectibleEvents = subscribeCollectibleEvents;
+
+/**
+>>>>>>> Lint automatic fixes
  * Fetch transaction details corresponding to given block number
  * @param {Number} blockNumber - the block number
  */
@@ -513,6 +557,7 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.connect()) {
+<<<<<<< HEAD
             web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
                 logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
                 if (receipt !== null) {
@@ -552,6 +597,48 @@ function checkPendingTx(pendingTxArray) {
                     );
                 }
             });
+=======
+          web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+            logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+            if (receipt !== null) {
+              let status;
+              const { gasUsed } = receipt;
+              if (receipt.status === true) {
+                status = 'confirmed';
+              } else {
+                status = 'failed';
+              }
+              const txMsg = {
+                type: 'updateTx',
+                txHash: item.txHash,
+                protocol: item.protocol,
+                fromAddress: item.fromAddress,
+                toAddress: item.toAddress,
+                value: item.value,
+                asset: item.asset,
+                contractAddress: item.contractAddress,
+                status,
+                gasUsed,
+                blockNumber: receipt.blockNumber,
+                input: item.input,
+                tokenId: item.tokenId,
+              };
+              rmqServices.sendPubSubMessage(txMsg);
+              logger.info(
+                `ethService.checkPendingTx(): TRANSACTION ${
+                  item.txHash
+                } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
+              );
+              hashMaps.pendingTx.delete(item.txHash);
+            } else {
+              logger.debug(
+                `ethService.checkPendingTx(): Txn ${
+                  item.txHash
+                } is still pending.`,
+              );
+            }
+          });
+>>>>>>> Lint automatic fixes
         } else {
           reject(
             new Error(
