@@ -33,6 +33,7 @@ const COLLECTIBLE_CONFIRMATION = 'collectibleConfirmationEvent';
 const SHA256 = new jsHashes.SHA256();
 const checksumKey = process.env.CHECKSUM_KEY;
 let pubSubChannel;
+let subPubChannel;
 let offersChannel;
 const pubSubQueue = 'bcx-pubsub';
 const offersQueue = 'bcx-offers';
@@ -55,6 +56,22 @@ function calculateChecksum(payload, checksumKeyParam) {
 }
 
 module.exports.calculateChecksum = calculateChecksum;
+
+/**
+ * Function to generate the notification payload thats send to notification queue
+ * @param {any} payload -  The payload for the notification queue
+ */
+function getNotificationPayload(type, payload) {
+  const p = {
+    type,
+    payload,
+    meta: {},
+  };
+  logger.info(JSON.stringify(p));
+  return p;
+}
+
+module.exports.getNotificationPayload = getNotificationPayload;
 
 /**
  * Function that validates the checksum of the payload received.
@@ -100,9 +117,129 @@ function initializeOffersChannel(connection) {
 module.exports.initializeOffersChannel = initializeOffersChannel;
 
 /**
+ * Function that resets a given  transaction map
+ * @param {any}  txMap -  TX_MAP like param
+ */
+function resetTxMap(txMapParam) {
+  const txMap = txMapParam;
+  for (const x in txMap) {
+    logger.debug(`resetTxMap Loop: ${x}`);
+    const timestamp = moment().diff(txMap[x].timestamp, 'minutes');
+    logger.debug(`resetTxMap Loop Timestamp: ${timestamp}`);
+
+    if (timestamp >= 3) {
+      delete txMap[x];
+      logger.debug(`resetTxMap delete: ${x}`);
+    }
+  }
+  return txMap;
+}
+
+module.exports.resetTxMap = resetTxMap;
+
+/**
+ * Fuction that process messages received by the pub-sub rabbit mq.
+ */
+const onMessage = msg => {
+  logger.info(`Subscriber received rmq message: ${msg.content}`);
+  if (
+    typeof msg.content !== 'undefined' &&
+    msg.content !== '' &&
+    validatePubSubMessage(JSON.parse(msg.content), checksumKey)
+  ) {
+    const entry = JSON.parse(msg.content);
+    const { type, txHash } = entry;
+    delete entry.type;
+    delete entry.checksum;
+    switch (type) {
+      case 'newTx':
+        // Removes all txn hash's after 3 minutes.
+        resetTxMap(TX_MAP);
+
+        // Added to stop duplicate transactions.
+        if (txHash in TX_MAP) {
+          break;
+        } else {
+          TX_MAP[txHash] = { timestamp: moment() };
+        }
+
+        entry.gasUsed = null;
+
+        dbServices.dbCollections.transactions
+          .findOneByTxHash(txHash)
+          .then(tx => {
+            if (tx === null) {
+              logger.debug(`Subscriber saving transaction: ${entry}`);
+              return dbServices.dbCollections.transactions.addTx(entry);
+            }
+            return dbServices.dbCollections.transactions.updateTx(entry);
+
+            // throw new Error('newTx: Transaction already exists');
+          })
+          .then(() => {
+            logger.info(`newTx: Transaction inserted: ${txHash}`);
+            subPubChannel.assertQueue(notificationsQueue, { durable: true });
+            subPubChannel.sendToQueue(
+              notificationsQueue,
+              new Buffer.from(
+                JSON.stringify(
+                  getNotificationPayload(TRANSACTION_PENDING, entry),
+                ),
+              ),
+            );
+            logger.info(
+              `newTx: Transaction produced to: ${notificationsQueue}`,
+            );
+          })
+          .catch(e => logger.error(`${JSON.stringify(e)}`));
+        break;
+      case 'updateTx':
+        dbServices.dbCollections.transactions.updateTx(entry).then(() => {
+          logger.info(`Transaction updated: ${txHash}`);
+
+          subPubChannel.assertQueue(notificationsQueue, { durable: true });
+          if (typeof entry.tokenId === 'undefined') {
+            subPubChannel.sendToQueue(
+              notificationsQueue,
+              new Buffer.from(
+                JSON.stringify(
+                  getNotificationPayload(TRANSACTION_CONFIRMATION, entry),
+                ),
+              ),
+            );
+          } else {
+            subPubChannel.sendToQueue(
+              notificationsQueue,
+              new Buffer.from(
+                JSON.stringify(
+                  getNotificationPayload(COLLECTIBLE_CONFIRMATION, entry),
+                ),
+              ),
+            );
+          }
+          logger.info(
+            `updateTx: Transaction produced to: ${notificationsQueue}`,
+          );
+        });
+        break;
+      case 'newAsset':
+        dbServices.dbCollections.assets.addContract(entry).then(() => {
+          logger.info(`New aseet added: `);
+        });
+        break;
+      case 'tranStat':
+        logger.debug('Subscriber adding a new transaction stats entry');
+        dbServices.addTransactionStats(entry);
+        break;
+      default:
+        break;
+    }
+  }
+};
+
+/**
  * Initialize the pub-sub rabbit mq.
  */
-
 function initPubSubMQ() {
   return new Promise((resolve, reject) => {
     try {
@@ -180,43 +317,6 @@ function sendOffersMessage(payload) {
 module.exports.sendOffersMessage = sendOffersMessage;
 
 /**
- * Function to generate the notification payload thats send to notification queue
- * @param {any} payload -  The payload for the notification queue
- */
-function getNotificationPayload(type, payload) {
-  const p = {
-    type,
-    payload,
-    meta: {},
-  };
-  logger.info(JSON.stringify(p));
-  return p;
-}
-
-module.exports.getNotificationPayload = getNotificationPayload;
-
-/**
- * Function that resets a given  transaction map
- * @param {any}  txMap -  TX_MAP like param
- */
-function resetTxMap(txMapParam) {
-  const txMap = txMapParam;
-  for (const x in txMap) {
-    logger.debug(`resetTxMap Loop: ${x}`);
-    const timestamp = moment().diff(txMap[x].timestamp, 'minutes');
-    logger.debug(`resetTxMap Loop Timestamp: ${timestamp}`);
-
-    if (timestamp >= 3) {
-      delete txMap[x];
-      logger.debug(`resetTxMap delete: ${x}`);
-    }
-  }
-  return txMap;
-}
-
-module.exports.resetTxMap = resetTxMap;
-
-/**
  * Function to initialize the subscriber publisher queue befpore consumption
  */
 function initSubPubMQ() {
@@ -247,127 +347,9 @@ function initSubPubMQ() {
         logger.info('Subscriber RMQ Connected');
 
         connection.createChannel((err, ch) => {
+          subPubChannel = ch;
           ch.assertQueue(pubSubQueue, { durable: true });
-          ch.consume(
-            pubSubQueue,
-            msg => {
-              logger.info(`Subscriber received rmq message: ${msg.content}`);
-              if (
-                typeof msg.content !== 'undefined' &&
-                msg.content !== '' &&
-                validatePubSubMessage(JSON.parse(msg.content), checksumKey)
-              ) {
-                const entry = JSON.parse(msg.content);
-                const { type, txHash } = entry;
-                delete entry.type;
-                delete entry.checksum;
-                switch (type) {
-                  case 'newTx':
-                    // Removes all txn hash's after 3 minutes.
-                    resetTxMap(TX_MAP);
-
-                    // Added to stop duplicate transactions.
-                    if (txHash in TX_MAP) {
-                      break;
-                    } else {
-                      TX_MAP[txHash] = { timestamp: moment() };
-                    }
-
-                    entry.gasUsed = null;
-
-                    dbServices.dbCollections.transactions
-                      .findOneByTxHash(txHash)
-                      .then(tx => {
-                        if (tx === null) {
-                          logger.debug(
-                            `Subscriber saving transaction: ${entry}`,
-                          );
-                          return dbServices.dbCollections.transactions.addTx(
-                            entry,
-                          );
-                        }
-                        return dbServices.dbCollections.transactions.updateTx(
-                          entry,
-                        );
-
-                        // throw new Error('newTx: Transaction already exists');
-                      })
-                      .then(() => {
-                        logger.info(`newTx: Transaction inserted: ${txHash}`);
-                        ch.assertQueue(notificationsQueue, { durable: true });
-                        ch.sendToQueue(
-                          notificationsQueue,
-                          new Buffer.from(
-                            JSON.stringify(
-                              getNotificationPayload(
-                                TRANSACTION_PENDING,
-                                entry,
-                              ),
-                            ),
-                          ),
-                        );
-                        logger.info(
-                          `newTx: Transaction produced to: ${notificationsQueue}`,
-                        );
-                      })
-                      .catch(e => logger.error(`${JSON.stringify(e)}`));
-                    break;
-                  case 'updateTx':
-                    dbServices.dbCollections.transactions
-                      .updateTx(entry)
-                      .then(() => {
-                        logger.info(`Transaction updated: ${txHash}`);
-                        ch.assertQueue(notificationsQueue, { durable: true });
-                        if (typeof entry.tokenId === 'undefined') {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  TRANSACTION_CONFIRMATION,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        } else {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  COLLECTIBLE_CONFIRMATION,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        logger.info(
-                          `updateTx: Transaction produced to: ${notificationsQueue}`,
-                        );
-                      });
-                    break;
-                  case 'newAsset':
-                    dbServices.dbCollections.assets
-                      .addContract(entry)
-                      .then(() => {
-                        logger.info(`New aseet added: `);
-                      });
-                    break;
-                  case 'tranStat':
-                    logger.debug(
-                      'Subscriber adding a new transaction stats entry',
-                    );
-                    dbServices.addTransactionStats(entry);
-                    break;
-                  default:
-                    break;
-                }
-              }
-            },
-            { noAck: true },
-          );
+          ch.consume(pubSubQueue, onMessage, { noAck: true });
         });
         return undefined;
       },

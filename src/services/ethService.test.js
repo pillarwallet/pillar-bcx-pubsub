@@ -45,16 +45,6 @@ beforeAll(() => {
   });
 });
 
-describe('getWeb3 function', () => {
-  test('should have been called once', done => {
-    const ethService = require('./ethService');
-    ethService.getWeb3().then(value => {
-      expect(value).toEqual({});
-      done();
-    });
-  });
-});
-
 describe('The subscribePendingTxn function tests', () => {
   test('newPendingTran should have been called ', done => {
     const ethService = require('./ethService');

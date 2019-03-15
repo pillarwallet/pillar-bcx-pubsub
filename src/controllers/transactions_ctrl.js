@@ -22,6 +22,14 @@ SOFTWARE.
 const transactions = require('../models/transactions_model');
 const logger = require('../utils/logger.js');
 
+function handleError(err) {
+  if (err) {
+    throw new Error(err);
+  }
+}
+
+const txHistorySort = (a, b) => a.timestamp < b.timestamp;
+
 function listAll() {
   return new Promise((resolve, reject) => {
     try {
@@ -180,14 +188,7 @@ function updateTx(txUpdatedKeys) {
           transactions.Transactions.update(
             { _id: tx._id },
             txUpdatedKeys,
-            err => {
-              if (err) {
-                logger.error(
-                  `transactions.updateTx DB controller ERROR: ${err}`,
-                );
-                reject(err);
-              }
-            },
+            handleError,
           );
         });
         resolve();
@@ -393,7 +394,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                 txHistoryFrom = res;
                 txHistory = txHistoryTo.concat(txHistoryFrom);
 
-                txHistory.sort((a, b) => a.timestamp < b.timestamp);
+                txHistory.sort(txHistorySort);
                 resolve({
                   txHistory: txHistory.slice(fromIndex, endIndex),
                   txCount: txHistory.length,
@@ -425,7 +426,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                     txHistoryFrom = res;
                     txHistory = txHistoryTo.concat(txHistoryFrom);
 
-                    txHistory.sort((a, b) => a.timestamp < b.timestamp);
+                    txHistory.sort(txHistorySort);
                     resolve({
                       txHistory: txHistory.slice(fromIndex, endIndex),
                       txCount: txHistory.length,
@@ -460,7 +461,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                       txHistoryFrom = res;
                       txHistory = txHistoryTo.concat(txHistoryFrom);
 
-                      txHistory.sort((a, b) => a.timestamp < b.timestamp);
+                      txHistory.sort(txHistorySort);
                       resolve({
                         txHistory: txHistory.slice(fromIndex, endIndex),
                         txCount: txHistory.length,
@@ -493,7 +494,7 @@ function getTxHistory(address1, address2, asset, fromIndex, endIndex) {
                     } else {
                       txHistoryFrom = res;
                       txHistory = txHistoryTo.concat(txHistoryFrom);
-                      txHistory.sort((a, b) => a.timestamp < b.timestamp);
+                      txHistory.sort(txHistorySort);
                       resolve({
                         txHistory: txHistory.slice(fromIndex, endIndex),
                         txCount: txHistory.length,

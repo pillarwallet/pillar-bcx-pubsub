@@ -132,23 +132,6 @@ function connect() {
 module.exports.connect = connect;
 
 /**
- * Return an instance to the underlying web3 instance
- */
-function getWeb3() {
-  logger.info(
-    'ethService.getWeb3(): fetches the current instance of web3 object',
-  );
-  return new Promise((resolve, reject) => {
-    if (module.exports.connect()) {
-      resolve(web3);
-    } else {
-      reject();
-    }
-  });
-}
-module.exports.getWeb3 = getWeb3;
-
-/**
  * Subscribe to geth WS event corresponding to new pending transactions.
  */
 function subscribePendingTxn() {
@@ -502,22 +485,6 @@ function getBlockTransactionCount(hashStringOrBlockNumber) {
   return undefined;
 }
 module.exports.getBlockTransactionCount = getBlockTransactionCount;
-
-/**
- * Fetch the transaction corresponding to a given block and index
- * @param {String} hashStringOrBlockNumber - block hash or block number
- * @param {Number} index - index number
- */
-function getTransactionFromBlock(hashStringOrBlockNumber, index) {
-  if (module.exports.connect()) {
-    return web3.eth.getTransactionFromBlock(hashStringOrBlockNumber, index);
-  }
-  logger.error(
-    'ethService.getTransactionFromBlock(): connection to geth failed!',
-  );
-  return undefined;
-}
-module.exports.getTransactionFromBlock = getTransactionFromBlock;
 
 /**
  * Fetch all pending transactions.

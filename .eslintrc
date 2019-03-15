@@ -17,17 +17,9 @@
       "error",
       2
     ],
-    "complexity": [
-      "error",
-      2
-    ],
     "max-lines": [
       "error",
       700
-    ],
-    "max-lines-per-function": [
-    "error",
-    100
     ],
     "max-statements": [
       "error",
