@@ -364,7 +364,6 @@ function processData(lastId) {
           });
         }
       });
-      entry.lastId = account._id;
     })
   } catch (e) {
     logger.error(`Housekeeper.processData(${lastId}): Failed with error ${e}`);
