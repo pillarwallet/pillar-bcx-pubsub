@@ -47,87 +47,110 @@ bluebird.promisifyAll(redis);
  * Establish connection to the geth node
  */
 function connect() {
-    return new Promise(((resolve, reject) => {
-        try {
-            if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
-                var isWebSocket =  (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
-                if (isWebSocket){
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
-                }else{
-                    web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
-                }
-                /**
-                * extend Web3 functionality by including parity trace functions
-                */
-                web3.extend({
-                    property: 'trace',
-                    methods: [
-                    new web3.extend.Method({
-                        name: 'call',
-                        call: 'trace_call',
-                        params: 3,
-                        inputFormatter: [helpers.formatters.inputCallFormatter, null, helpers.formatters.inputDefaultBlockNumberFormatter]
-                    }),
-                    new web3.extend.Method({
-                        name: 'rawTransaction',
-                        call: 'trace_rawTransaction',
-                        params: 2
-                    }),
-                    new web3.extend.Method({
-                        name: 'replayTransaction',
-                        call: 'trace_replayTransaction',
-                        params: 2
-                    }),
-                    new web3.extend.Method({
-                        name: 'block',
-                        call: 'trace_block',
-                        params: 1,
-                        inputFormatter: [helpers.formatters.inputDefaultBlockNumberFormatter]
-                    }),
-                    new web3.extend.Method({
-                        name: 'filter',
-                        call: 'trace_filter',
-                        params: 1
-                    }),
-                    new web3.extend.Method({
-                        name: 'get',
-                        call: 'trace_get',
-                        params: 2
-                    }),
-                    new web3.extend.Method({
-                        name: 'transaction',
-                        call: 'trace_transaction',
-                        params: 1
-                    })]
-                });
-                if (isWebSocket){
-                web3._provider.on('end', (eventObj) => {
-                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                        web3 = undefined
-                        module.exports.web3 = undefined;
-                    });
-                    web3._provider.on('close',(eventObj) => {
-                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                        web3 = undefined
-                        module.exports.web3 = undefined;
-                    });
-                    web3._provider.on('error',(eventObj) => {
-                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                        web3 = undefined
-                        module.exports.web3 = undefined;
-                    });
-                }
-                logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
-                module.exports.web3 = web3;
-                resolve(true);
-            } else {
-                resolve(true);
-            }
-        } catch(e) { 
-            logger.error('ethService.connect() failed with error: ' + e);
-            reject(false); 
+  return new Promise((resolve, reject) => {
+    try {
+      if (
+        web3 === undefined ||
+        !web3._provider.connected ||
+        !web3.eth.isSyncing()
+      ) {
+        const isWebSocket =
+          gethURL.indexOf('ws://') >= 0 || gethURL.indexOf('wss://') >= 0;
+        if (isWebSocket) {
+          web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
+        } else {
+          web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
         }
-    }));
+        /**
+         * extend Web3 functionality by including parity trace functions
+         */
+        web3.extend({
+          property: 'trace',
+          methods: [
+            new web3.extend.Method({
+              name: 'call',
+              call: 'trace_call',
+              params: 3,
+              inputFormatter: [
+                helpers.formatters.inputCallFormatter,
+                null,
+                helpers.formatters.inputDefaultBlockNumberFormatter,
+              ],
+            }),
+            new web3.extend.Method({
+              name: 'rawTransaction',
+              call: 'trace_rawTransaction',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'replayTransaction',
+              call: 'trace_replayTransaction',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'block',
+              call: 'trace_block',
+              params: 1,
+              inputFormatter: [
+                helpers.formatters.inputDefaultBlockNumberFormatter,
+              ],
+            }),
+            new web3.extend.Method({
+              name: 'filter',
+              call: 'trace_filter',
+              params: 1,
+            }),
+            new web3.extend.Method({
+              name: 'get',
+              call: 'trace_get',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'transaction',
+              call: 'trace_transaction',
+              params: 1,
+            }),
+          ],
+        });
+        if (isWebSocket) {
+          web3._provider.on('end', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+          web3._provider.on('close', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+          web3._provider.on('error', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+        }
+        logger.info(
+          `ethService.connect(): Connection to ${gethURL} established successfully!`,
+        );
+        module.exports.web3 = web3;
+        resolve(true);
+      } else {
+        resolve(true);
+      }
+    } catch (e) {
+      logger.error(`ethService.connect() failed with error: ${e}`);
+      reject(false);
+    }
+  });
 }
 module.exports.connect = connect;
 
@@ -318,7 +341,9 @@ module.exports.storeGasInfo = storeGasInfo;
 function subscribeTransferEvents(theContract) {
   try {
     logger.info(
-      `ethService.subscribeTransferEvents() subscribed to events for contract: ${theContract.contractAddress}`,
+      `ethService.subscribeTransferEvents() subscribed to events for contract: ${
+        theContract.contractAddress
+      }`,
     );
     if (module.exports.connect()) {
       if (web3.utils.isAddress(theContract.contractAddress)) {
@@ -480,45 +505,47 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.connect()) {
-            web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
-                logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
-                if (receipt !== null) {
-                    let status;
-                    const { gasUsed } = receipt;
-                    if (receipt.status === true) {
-                        status = 'confirmed';
-                    } else {
-                        status = 'failed';
-                    }
-                    const txMsg = {
-                        type: 'updateTx',
-                        txHash: item.txHash,
-                        protocol: item.protocol,
-                        fromAddress: item.fromAddress,
-                        toAddress: item.toAddress,
-                        value: item.value,
-                        asset: item.asset,
-                        contractAddress: item.contractAddress,
-                        status,
-                        gasUsed,
-                        blockNumber: receipt.blockNumber,
-                        input: item.input,
-                        tokenId: item.tokenId,
-                        tranType: item.tranType
-                    };
-                    rmqServices.sendPubSubMessage(txMsg);
-                    logger.info(
-                        `ethService.checkPendingTx(): TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${
-                        receipt.blockNumber
-                        }`,
-                    );
-                    hashMaps.pendingTx.delete(item.txHash);
-                } else {
-                    logger.debug(
-                        `ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`,
-                    );
-                }
-            });
+          web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+            logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+            if (receipt !== null) {
+              let status;
+              const { gasUsed } = receipt;
+              if (receipt.status === true) {
+                status = 'confirmed';
+              } else {
+                status = 'failed';
+              }
+              const txMsg = {
+                type: 'updateTx',
+                txHash: item.txHash,
+                protocol: item.protocol,
+                fromAddress: item.fromAddress,
+                toAddress: item.toAddress,
+                value: item.value,
+                asset: item.asset,
+                contractAddress: item.contractAddress,
+                status,
+                gasUsed,
+                blockNumber: receipt.blockNumber,
+                input: item.input,
+                tokenId: item.tokenId,
+                tranType: item.tranType,
+              };
+              rmqServices.sendPubSubMessage(txMsg);
+              logger.info(
+                `ethService.checkPendingTx(): TRANSACTION ${
+                  item.txHash
+                } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
+              );
+              hashMaps.pendingTx.delete(item.txHash);
+            } else {
+              logger.debug(
+                `ethService.checkPendingTx(): Txn ${
+                  item.txHash
+                } is still pending.`,
+              );
+            }
+          });
         } else {
           reject(
             new Error(
@@ -740,49 +767,51 @@ async function getTransactionCountForWallet(wallet) {
 module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
 
 /**
- * Gets the transaction info/receipt and returns the transaction object 
- * @param {string} txHash Transaction hash 
+ * Gets the transaction info/receipt and returns the transaction object
+ * @param {string} txHash Transaction hash
  */
 async function getTxInfo(txHash) {
   try {
-    const [txInfo, txReceipt] = await Promise.all(
-      [web3.eth.getTransaction(txHash), 
-       web3.eth.getTransactionReceipt(txHash)
-      ])
-    
-    var txObject = {
+    const [txInfo, txReceipt] = await Promise.all([
+      web3.eth.getTransaction(txHash),
+      web3.eth.getTransactionReceipt(txHash),
+    ]);
+
+    const txObject = {
       txHash: txInfo.hash,
       fromAddress: txInfo.from,
       toAddress: txInfo.to,
       value: txInfo.value,
       asset: 'ETH',
       contractAddress: null,
-      status: (txReceipt.status === true) ? 'confirmed' : 'failed',
+      status: txReceipt.status === true ? 'confirmed' : 'failed',
       gasPrice: txInfo.gasPrice,
       gasUsed: txReceipt.gasUsed,
-      blockNumber: txReceipt.blockNumber
+      blockNumber: txReceipt.blockNumber,
     };
     if (txInfo.input !== '0x') {
       let jsonAbi;
       const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
       if (!contractDetail)
-        return logger.error(`Not a monitored contract: ${txInfo.to}`)
+        return logger.error(`Not a monitored contract: ${txInfo.to}`);
       txObject.asset = contractDetail.symbol;
-      jsonAbi = require(abiPath + txObject.asset + '.json');
-        if (!jsonAbi) {
-            logger.error(`Asset ABI not found ${txObject.asset}, using standard ERC20`);
-            jsonAbi = ERC20ABI;
-        }
+      jsonAbi = require(`${abiPath + txObject.asset}.json`);
+      if (!jsonAbi) {
+        logger.error(
+          `Asset ABI not found ${txObject.asset}, using standard ERC20`,
+        );
+        jsonAbi = ERC20ABI;
+      }
       txObject.contractAddress = txInfo.to;
       abiDecoder.addABI(jsonAbi);
       const data = abiDecoder.decodeMethod(txInfo.input);
-      const [to, value, ] = data.params;
-      [txObject.toAddress, txObject.value] = [to.value, value.value]
+      const [to, value] = data.params;
+      [txObject.toAddress, txObject.value] = [to.value, value.value];
     }
     return txObject;
   } catch (e) {
     logger.error(`getTxInfo(${txHash}) failed with error: ${e}`);
   }
-};
+}
 
 module.exports.getTxInfo = getTxInfo;

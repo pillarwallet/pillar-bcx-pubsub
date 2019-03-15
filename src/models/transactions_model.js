@@ -35,8 +35,8 @@ const transactionsSchema = Mongoose.Schema({
   status: { type: String, required: false, default: null },
   gasPrice: { type: Number, required: false, default: null },
   gasUsed: { type: Number, required: false, default: null },
-  tranType: { type:String, required: false, default: null },
-  tokenId: { type: Number, required: false, default: null }
+  tranType: { type: String, required: false, default: null },
+  tokenId: { type: Number, required: false, default: null },
 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);

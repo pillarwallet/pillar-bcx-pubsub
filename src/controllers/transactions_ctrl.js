@@ -104,7 +104,9 @@ function listDbZeroConfTx() {
         },
       );
     } catch (e) {
-      logger.error(`transaction_ctrl.listDbZeroConfTx(): failed with error: ${e}`);
+      logger.error(
+        `transaction_ctrl.listDbZeroConfTx(): failed with error: ${e}`,
+      );
       reject(e);
     }
   });
@@ -241,7 +243,9 @@ function emptyCollection() {
         resolve();
       });
     } catch (e) {
-      logger.error(`transaction_ctrl.emptyCollection(): failed with error: ${e}`);
+      logger.error(
+        `transaction_ctrl.emptyCollection(): failed with error: ${e}`,
+      );
       reject(e);
     }
   });

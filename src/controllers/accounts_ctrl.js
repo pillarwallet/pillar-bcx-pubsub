@@ -25,7 +25,9 @@ const logger = require('../utils/logger.js');
 const accounts = require('../models/accounts_model');
 const mongoose = require('mongoose');
 
-const ACCOUNTS_NUMBER_TO_FETCH = process.env.ACCOUNTS_NUMBER_TO_FETCH ? process.env.ACCOUNTS_NUMBER_TO_FETCH : 100;
+const ACCOUNTS_NUMBER_TO_FETCH = process.env.ACCOUNTS_NUMBER_TO_FETCH
+  ? process.env.ACCOUNTS_NUMBER_TO_FETCH
+  : 100;
 
 function listAll() {
   return new Promise((resolve, reject) => {
@@ -50,7 +52,9 @@ function listRecent(idFrom) {
       const oId = mongoose.Types.ObjectId(idFrom);
       // accounts.Accounts.find(query, (err, result) => {
       // limit the number of results to ACCOUNTS_RECENT_FETCH records
-      const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(ACCOUNTS_NUMBER_TO_FETCH);
+      const q = accounts.Accounts.find({ _id: { $gt: oId } }).limit(
+        ACCOUNTS_NUMBER_TO_FETCH,
+      );
       q.exec((err, result) => {
         if (err) {
           logger.error(`accounts.listRecent DB controller ERROR: ${err}`);

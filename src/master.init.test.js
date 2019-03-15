@@ -20,9 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 const master = require('./master');
+
 describe('Test method: master.init()', () => {
   test('Expect master.init() to be called', () => {
-    const options = {protocol: 'Ethereum', maxWallets: 500000};
+    const options = { protocol: 'Ethereum', maxWallets: 500000 };
     const spy = jest.spyOn(master, 'init');
     spy.mockImplementation();
     spy.call(options);

@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 require('./utils/diagnostics');
 require('dotenv').config();
 const bluebird = require('bluebird');
@@ -32,6 +31,7 @@ const fs = require('fs');
 
 const GETH_STATUS_FILE = '/tmp/geth_status';
 const { CronJob } = require('cron');
+
 let latestId = '';
 let processCnt = 0;
 let gethCheck = 0;
@@ -39,7 +39,7 @@ let LAST_BLOCK_NUMBER = 0;
 const sizeof = require('sizeof');
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at: ' + reason.stack || reason)
+  logger.error(`Unhandled Rejection at: ${reason.stack}` || reason);
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
 });
@@ -48,12 +48,19 @@ process.on('unhandledRejection', (reason, promise) => {
  * Connecting to Redis
  */
 const redis = require('redis');
-const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+
+const redisOptions = {
+  host: process.env.REDIS_SERVER,
+  port: process.env.REDIS_PORT,
+  password: process.env.REDIS_PW,
+};
 let client;
 try {
   client = redis.createClient(redisOptions);
-  logger.info("Publisher successfully connected to Redis server")
-} catch (e) { logger.error(e) }
+  logger.info('Publisher successfully connected to Redis server');
+} catch (e) {
+  logger.error(e);
+}
 bluebird.promisifyAll(redis);
 
 /**
@@ -122,7 +129,7 @@ module.exports.publisherOnMessage = function() {
             logger.info(
               `Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`,
             );
-            if(obj.category !== 'Collectible') {
+            if (obj.category !== 'Collectible') {
               ethService.subscribeTransferEvents(obj);
             }
           }

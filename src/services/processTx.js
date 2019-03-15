@@ -35,12 +35,19 @@ const bluebird = require('bluebird');
  * Connecting to Redis
  */
 const redis = require('redis');
-const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
+
+const redisOptions = {
+  host: process.env.REDIS_SERVER,
+  port: process.env.REDIS_PORT,
+  password: process.env.REDIS_PW,
+};
 let client;
 try {
   client = redis.createClient(redisOptions);
-  logger.info("processTx successfully connected to Redis server")
-} catch (e) { logger.error(e) }
+  logger.info('processTx successfully connected to Redis server');
+} catch (e) {
+  logger.error(e);
+}
 bluebird.promisifyAll(redis);
 
 /**
@@ -94,8 +101,8 @@ async function newPendingTran(tx, protocol) {
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
-        logger.debug('Contract detail category: ' + contractDetail.category);
-        if(typeof contractDetail.category === 'undefined') {
+        logger.debug(`Contract detail category: ${contractDetail.category}`);
+        if (typeof contractDetail.category === 'undefined') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
             const theAbi = require(`${abiPath + asset}.json`);
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
@@ -118,27 +125,25 @@ async function newPendingTran(tx, protocol) {
           } data is ${JSON.stringify(data)}`,
         );
         if (typeof data !== 'undefined' && tx.input !== '0x') {
-          logger.debug('data: ' + JSON.stringify(data));
+          logger.debug(`data: ${JSON.stringify(data)}`);
           if (data.name === 'transfer') {
             // smart contract call hence the asset must be the token name
             to = data.params[0].value;
             pillarId = await client.getAsync(to);
             [, { value }] = data.params;
           } else if (
-            data.name === 'transferFrom' 
-            || 
+            data.name === 'transferFrom' ||
             data.name === 'safeTransferFrom'
-            ) {
+          ) {
             to = data.params[1].value;
             pillarId = await client.getAsync(to);
             [, , { value }] = data.params;
           }
           if (collectible) {
             tokenId = value;
-            //better UX experience on the wallet to show 1 collectible transfer
-            value = 1 * 10**18;
-            tranType = 'collectible'
-
+            // better UX experience on the wallet to show 1 collectible transfer
+            value = 1 * 10 ** 18;
+            tranType = 'collectible';
           }
         }
       }
@@ -150,23 +155,24 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
         // send a message to the notifications queue reporting a new transactions
-        let txMsgTo = {
-            type: 'newTx',
-            pillarId,
-            protocol,
-            fromAddress: from,
-            toAddress: to,
-            txHash: hash,
-            asset,
-            contractAddress,
-            timestamp: tmstmp,
-            value,
-            gasPrice: tx.gasPrice,
-            blockNumber: tx.blockNumber,
-            status: 'pending',
-            input: tx.input,
-            tokenId,tranType
-          };
+        const txMsgTo = {
+          type: 'newTx',
+          pillarId,
+          protocol,
+          fromAddress: from,
+          toAddress: to,
+          txHash: hash,
+          asset,
+          contractAddress,
+          timestamp: tmstmp,
+          value,
+          gasPrice: tx.gasPrice,
+          blockNumber: tx.blockNumber,
+          status: 'pending',
+          input: tx.input,
+          tokenId,
+          tranType,
+        };
         logger.info(
           `processTx.newPendingTran() notifying subscriber of a new relevant transaction: ${JSON.stringify(
             txMsgTo,
