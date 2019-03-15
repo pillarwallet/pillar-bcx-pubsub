@@ -38,7 +38,7 @@ let gethCheck = 0;
 let LAST_BLOCK_NUMBER = 0;
 const sizeof = require('sizeof');
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', reason => {
   logger.error(`Unhandled Rejection at: ${reason.stack}` || reason);
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
@@ -70,6 +70,41 @@ client.on('error', err => {
   logger.error(`Publisher failed with REDIS client error: ${err}`);
 });
 
+function setLatestIdRedis(obj) {
+  client.setAsync('latestId', obj.id).then(() => {
+    latestId = obj.id;
+  });
+}
+
+function setWalletRedis(obj) {
+  client.setAsync(obj.walletId.toLowerCase(), obj.pillarId).then(() => {
+    logger.info(
+      `Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${
+        obj.pillarId
+      } , accountsSize: ${hashMaps.accounts.keys().length}`,
+    );
+
+    logger.debug(`Updated redis with latestId: ${latestId}`);
+  });
+}
+
+function processAccountMessage(message, i) {
+  const obj = message[i];
+  if (obj !== undefined) {
+    client.existsAsync(obj.walletId.toLowerCase()).then(exists => {
+      logger.debug(`Wallet : ${obj.walletId} exists in redis? : ${exists}`);
+      client.getAsync('latestId').then(latestIdRedis => {
+        latestId = latestIdRedis;
+        if (!exists || obj.id > latestId) {
+          setLatestIdRedis(obj);
+        }
+        if (!exists) {
+          setWalletRedis(obj);
+        }
+      });
+    });
+  }
+}
 /**
  * Function handling IPC notification that are received from the master
  * @param {any} message - The IPC message that sent from the master
@@ -78,7 +113,7 @@ client.on('error', err => {
  * assets - This is a set of new assets/smart contracts which the publisher should add to its internal monitoring list
  * config - This a configuration setting that determine the maximum number of wallets/accounts that a publisher to monitor.
  */
-module.exports.publisherOnMessage = function() {
+module.exports.publisherOnMessage = () => {
   process.on('message', async data => {
     try {
       const { message } = data;
@@ -89,35 +124,7 @@ module.exports.publisherOnMessage = function() {
           `Publisher received accounts: ${message.length} to monitor.`,
         );
         for (let i = 0; i < message.length; i++) {
-          const obj = message[i];
-          if (obj !== undefined) {
-            client.existsAsync(obj.walletId.toLowerCase()).then(exists => {
-              logger.debug(
-                `Wallet : ${obj.walletId} exists in redis? : ${exists}`,
-              );
-              client.getAsync('latestId').then(latestIdRedis => {
-                latestId = latestIdRedis;
-                if (!exists || obj.id > latestId) {
-                  client.setAsync('latestId', obj.id).then(() => {
-                    latestId = obj.id;
-                  });
-                }
-                if (!exists) {
-                  client
-                    .setAsync(obj.walletId.toLowerCase(), obj.pillarId)
-                    .then(() => {
-                      logger.info(
-                        `Publisher received notification to monitor: ${obj.walletId.toLowerCase()} for pillarId: ${
-                          obj.pillarId
-                        } , accountsSize: ${hashMaps.accounts.keys().length}`,
-                      );
-
-                      logger.debug(`Updated redis with latestId: ${latestId}`);
-                    });
-                }
-              });
-            });
-          }
+          processAccountMessage(message, i);
         }
       } else if (data.type === 'assets') {
         logger.info('Publisher initializing assets.');
@@ -144,8 +151,8 @@ module.exports.publisherOnMessage = function() {
 /**
  * Function that initializes inter process communication queue
  */
-module.exports.initIPC = function() {
-  return new Promise(async (resolve, reject) => {
+module.exports.initIPC = () =>
+  new Promise(async (resolve, reject) => {
     try {
       logger.info('Started executing publisher.initIPC()');
 
@@ -202,12 +209,11 @@ module.exports.initIPC = function() {
       resolve();
     }
   });
-};
 
 /**
  * Function that continuosly polls master for new wallets/assets.
  */
-module.exports.poll = function() {
+module.exports.poll = () => {
   processCnt += 1;
   if (processCnt === 12) {
     processCnt = 0;
@@ -261,7 +267,7 @@ module.exports.poll = function() {
 /**
  * Function that initializes the geth subscriptions
  */
-module.exports.initSubscriptions = function() {
+module.exports.initSubscriptions = () => {
   logger.info('Publisher subscribing to geth websocket events...');
   // subscribe to pending transactions
   ethService.subscribePendingTxn();

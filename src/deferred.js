@@ -41,7 +41,7 @@ function generateList(number) {
   return list;
 }
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', reason => {
   logger.error(`Unhandled Rejection at: ${reason.stack}` || reason);
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
@@ -148,37 +148,32 @@ function getTransactions(
     });
 }
 
+function processDeferredAddress(acc, result) {
+  if (acc.status === 'deferred') {
+    ethService.getTransactionCountForWallet(acc.address).then(totalTrans => {
+      ethService.getLastBlockNumber().then(lastBlock => {
+        logger.debug(`lastblock is ${lastBlock}`);
+        logger.debug(`totaltransacions is ${totalTrans}`);
+        const listOfTrans = generateList(lastBlock);
+        logger.debug(`list of trans ${listOfTrans.length}`);
+        getTransactions(listOfTrans, 0, acc, result, totalTrans, 0);
+      });
+    });
+  }
+}
+
+function processDeferredAccount(result) {
+  if (result) {
+    result.addresses.forEach(acc => processDeferredAddress(acc, result));
+  }
+}
+
 async function saveDefferedTransactions() {
   try {
     dbServices.dbConnect().then(async () => {
       dbServices.dbCollections.accounts
         .findByStatus('deferred', protocol)
-        .then(result => {
-          if (result) {
-            result.addresses.forEach(acc => {
-              if (acc.status === 'deferred') {
-                ethService
-                  .getTransactionCountForWallet(acc.address)
-                  .then(totalTrans => {
-                    ethService.getLastBlockNumber().then(lastBlock => {
-                      logger.debug(`lastblock is ${lastBlock}`);
-                      logger.debug(`totaltransacions is ${totalTrans}`);
-                      const listOfTrans = generateList(lastBlock);
-                      logger.debug(`list of trans ${listOfTrans.length}`);
-                      getTransactions(
-                        listOfTrans,
-                        0,
-                        acc,
-                        result,
-                        totalTrans,
-                        0,
-                      );
-                    });
-                  });
-              }
-            });
-          }
-        });
+        .then(processDeferredAccount);
     });
   } catch (e) {
     logger.error(`deferred.saveDefferedTransactions failed with error ${e}`);

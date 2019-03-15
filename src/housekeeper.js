@@ -74,7 +74,7 @@ client.on('error', err => {
   logger.error(`Housekeeper failed with REDIS client error: ${err}`);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', reason => {
   logger.error(`Unhandled Rejection at: ${reason.stack}` || reason);
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
@@ -96,6 +96,37 @@ async function connectDb() {
   });
 }
 
+function processPendingTx(item) {
+  // recheck the status of the transaction
+  ethService.getTxReceipt(item.txHash).then(receipt => {
+    if (receipt !== null) {
+      logger.debug(
+        `Housekeeper.checkTxPool(): checking status of txn : ${
+          receipt.transactionHash
+        }`,
+      );
+      // update the status of the transaction
+      let status;
+      if (receipt.status === '0x1') {
+        status = 'confirmed';
+      } else {
+        status = 'failed';
+      }
+      const { gasUsed } = receipt;
+      const entryTxn = {
+        txHash: item.txHash,
+        status,
+        gasUsed,
+        blockNumber: receipt.blockNumber,
+      };
+      dbServices.dbCollections.transactions.updateTx(entryTxn).then(() => {
+        logger.info(
+          `Housekeeper.checkTxPool(): Transaction updated: ${entryTxn.txHash}`,
+        );
+      });
+    }
+  });
+}
 /**
  * Check the transactions pool and update pending transactions.
  */
@@ -109,41 +140,7 @@ async function checkTxPool() {
             pendingTxArray.length
           }`,
         );
-        pendingTxArray.forEach(item => {
-          // recheck the status of the transaction
-          ethService.getTxReceipt(item.txHash).then(receipt => {
-            if (receipt !== null) {
-              logger.debug(
-                `Housekeeper.checkTxPool(): checking status of txn : ${
-                  receipt.transactionHash
-                }`,
-              );
-              // update the status of the transaction
-              let status;
-              if (receipt.status === '0x1') {
-                status = 'confirmed';
-              } else {
-                status = 'failed';
-              }
-              const { gasUsed } = receipt;
-              const entryTxn = {
-                txHash: item.txHash,
-                status,
-                gasUsed,
-                blockNumber: receipt.blockNumber,
-              };
-              dbServices.dbCollections.transactions
-                .updateTx(entryTxn)
-                .then(() => {
-                  logger.info(
-                    `Housekeeper.checkTxPool(): Transaction updated: ${
-                      entryTxn.txHash
-                    }`,
-                  );
-                });
-            }
-          });
-        });
+        pendingTxArray.forEach(processPendingTx);
       });
       resolve();
     } catch (e) {
@@ -155,10 +152,11 @@ async function checkTxPool() {
 module.exports.checkTxPool = checkTxPool;
 
 function generateList(number) {
+  let paramNumber = number;
   const list = [];
-  while (number > 0) {
-    list.push(number);
-    number -= PROCESS_BLOCKS_INTERVAL;
+  while (paramNumber > 0) {
+    list.push(paramNumber);
+    paramNumber -= PROCESS_BLOCKS_INTERVAL;
   }
   list.push(0);
   return list;
@@ -167,79 +165,16 @@ function generateList(number) {
 module.exports.generateList = generateList;
 
 function decimalToHexString(number) {
-  if (number < 0) {
-    number = 0xffffffff + number + 1;
+  let paramNumber = number;
+
+  if (paramNumber < 0) {
+    paramNumber = 0xffffffff + paramNumber + 1;
   }
 
-  return `0x${number.toString(16).toUpperCase()}`;
+  return `0x${paramNumber.toString(16).toUpperCase()}`;
 }
 
 module.exports.decimalToHexString = decimalToHexString;
-
-function getTransactions(
-  listOfTrans,
-  i,
-  wallet,
-  totalTrans,
-  transListCount,
-  pillarId,
-) {
-  const toBlock = decimalToHexString(listOfTrans[i + 1]);
-  let fromBlock;
-  if (i == 0) {
-    fromBlock = decimalToHexString(listOfTrans[i]);
-  } else {
-    fromBlock = decimalToHexString(listOfTrans[i] + 1);
-  }
-  logger.debug(
-    `housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
-  );
-  ethService
-    .getAllTransactionsForWallet(wallet, toBlock, fromBlock)
-    .then(transactions => {
-      if (transactions && transactions.length > 0) {
-        const totalTransactions = transactions.length;
-        if (totalTransactions > 0) {
-          transListCount += totalTransactions;
-        }
-        transactions.forEach(transaction => {
-          processTxn(transaction, wallet, pillarId);
-        });
-        logger.debug('housekeeper.getTransactions processed txns');
-        if (toBlock == '0x0') {
-          logger.info(
-            `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-          );
-        } else {
-          getTransactions(
-            listOfTrans,
-            i + 1,
-            wallet,
-            totalTrans,
-            transListCount,
-            pillarId,
-          );
-        }
-        logger.debug(
-          `housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
-        );
-      } else if (toBlock == '0x0') {
-        logger.info(
-          `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-        );
-      } else {
-        getTransactions(
-          listOfTrans,
-          i + 1,
-          wallet,
-          totalTrans,
-          transListCount,
-          pillarId,
-        );
-      }
-    });
-}
-
 async function processTxn(transaction, wallet, pillarId) {
   const tmstmp = await ethService.getBlockTx(transaction.blockNumber);
   let asset;
@@ -304,6 +239,97 @@ async function processTxn(transaction, wallet, pillarId) {
   dbServices.dbCollections.transactions.addTx(entryTxn);
 }
 
+function getTransactions(
+  listOfTrans,
+  i,
+  wallet,
+  totalTrans,
+  transListCountParam,
+  pillarId,
+) {
+  let transListCount = transListCountParam;
+  const toBlock = decimalToHexString(listOfTrans[i + 1]);
+  let fromBlock;
+  if (i === 0) {
+    fromBlock = decimalToHexString(listOfTrans[i]);
+  } else {
+    fromBlock = decimalToHexString(listOfTrans[i] + 1);
+  }
+  logger.debug(
+    `housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
+  );
+  ethService
+    .getAllTransactionsForWallet(wallet, toBlock, fromBlock)
+    .then(transactions => {
+      if (transactions && transactions.length > 0) {
+        const totalTransactions = transactions.length;
+        if (totalTransactions > 0) {
+          transListCount += totalTransactions;
+        }
+        transactions.forEach(transaction => {
+          processTxn(transaction, wallet, pillarId);
+        });
+        logger.debug('housekeeper.getTransactions processed txns');
+        if (toBlock === '0x0') {
+          logger.info(
+            `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
+          );
+        } else {
+          getTransactions(
+            listOfTrans,
+            i + 1,
+            wallet,
+            totalTrans,
+            transListCount,
+            pillarId,
+          );
+        }
+        logger.debug(
+          `housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
+        );
+      } else if (toBlock === '0x0') {
+        logger.info(
+          `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
+        );
+      } else {
+        getTransactions(
+          listOfTrans,
+          i + 1,
+          wallet,
+          totalTrans,
+          transListCount,
+          pillarId,
+        );
+      }
+    });
+}
+
+function saveDeferredLogResult(err) {
+  if (err) {
+    logger.error(`accounts.addAddress DB controller ERROR: ${err}`);
+  }
+}
+
+async function saveDeferred(wallet, protocolParam) {
+  dbServices.dbCollections.accounts
+    .findByAddress(wallet, protocolParam)
+    .then(result => {
+      if (result) {
+        result.addresses.forEach(acc => {
+          if (acc.address === wallet) {
+            logger.debug(
+              `Housekeeper.recoverAll: matched address ${acc.address}`,
+            );
+            acc.status = 'deferred';
+            result.save(saveDeferredLogResult);
+          }
+        });
+      }
+    });
+}
+
+module.exports.saveDeferred = saveDeferred;
+
 /**
  *
  * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
@@ -320,10 +346,9 @@ async function recoverAll(wallet, pillarId) {
     logger.info(
       `Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`,
     );
-    if (totalTransactions == 0) {
+    if (totalTransactions === 0) {
       return;
     }
-    const index = 0;
     if (totalTransactions < MAX_TOTAL_TRANSACTIONS) {
       ethService.getLastBlockNumber().then(lastBlock => {
         logger.debug(`lastblock is ${lastBlock}`);
@@ -340,30 +365,53 @@ async function recoverAll(wallet, pillarId) {
 }
 module.exports.recoverAll = recoverAll;
 
-async function saveDeferred(wallet, protocol) {
-  dbServices.dbCollections.accounts
-    .findByAddress(wallet, protocol)
-    .then(result => {
-      if (result) {
-        result.addresses.forEach(acc => {
-          if (acc.address === wallet) {
-            logger.debug(
-              `Housekeeper.recoverAll: matched address ${acc.address}`,
-            );
-            acc.status = 'deferred';
-            result.save(err => {
-              if (err) {
-                logger.error(`accounts.addAddress DB controller ERROR: ${err}`);
-              }
-            });
-          }
-        });
+async function processDataAddress(acc, index, account, promises) {
+  if (acc.protocol === protocol) {
+    // promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
+    // promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
+    setTimeout(() => {
+      try {
+        promises.push(this.recoverAll(acc.address, account.pillarId));
+      } catch (e) {
+        promises.push(this.saveDeferred(acc.address, protocol));
       }
-    });
+    }, index * ACCOUNTS_WAIT_INTERVAL);
+  }
 }
 
-module.exports.saveDeferred = saveDeferred;
-
+async function processDataProcessRecentAccounts(accounts) {
+  logger.info(
+    `Housekeeper found accounts: ${accounts.length} wallets to process.`,
+  );
+  if (accounts === null || accounts.length === 0) {
+    entry.status = 'completed';
+    entry.endTime = time.now();
+    client.set('housekeeper', JSON.stringify(entry), redis.print);
+    logger.info(
+      `Housekeeper.processData() - Completed processing ${
+        accounts.length
+      } records.`,
+    );
+  } else {
+    const promises = [];
+    accounts.forEach(account => {
+      account.addresses.forEach((acc, index) => {
+        processDataAddress(acc, index, account, promises);
+      });
+      entry.lastId = account._id;
+    });
+    Promise.all(promises).then(() => {
+      entry.status = 'completed';
+      entry.endTime = time.now();
+      client.set('housekeeper', JSON.stringify(entry), redis.print);
+      logger.info(
+        `Housekeeper.processData() - Completed processing ${
+          accounts.length
+        } records.`,
+      );
+    });
+  }
+}
 /**
  * Function to process the newly registered wallets
  * @param {string} lastId - Last processed wallet Id
@@ -375,52 +423,9 @@ function processData(lastId) {
       await this.checkTxPool();
       // fetch new registrations since last run
       logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
-      await dbServices.recentAccounts(lastId).then(async accounts => {
-        logger.info(
-          `Housekeeper found accounts: ${accounts.length} wallets to process.`,
-        );
-        if (accounts === null || accounts.length === 0) {
-          entry.status = 'completed';
-          entry.endTime = time.now();
-          client.set('housekeeper', JSON.stringify(entry), redis.print);
-          logger.info(
-            `Housekeeper.processData() - Completed processing ${
-              accounts.length
-            } records.`,
-          );
-        } else {
-          const promises = [];
-          accounts.forEach(account => {
-            account.addresses.forEach((acc, index) => {
-              if (acc.protocol === protocol) {
-                // promises.push(this.recoverWallet(acc.address,account.pillarId,LOOK_BACK_BLOCKS));
-                // promises.push(this.recoverAssetEvents(acc.address,account.pillarId));
-                setTimeout(() => {
-                  try {
-                    promises.push(
-                      this.recoverAll(acc.address, account.pillarId),
-                    );
-                  } catch (e) {
-                    promises.push(this.saveDeferred(acc.address, protocol));
-                  }
-                }, index * ACCOUNTS_WAIT_INTERVAL);
-              }
-            });
-            entry.lastId = account._id;
-          });
-          Promise.all(promises).then(() => {
-            entry.status = 'completed';
-            entry.endTime = time.now();
-            client.set('housekeeper', JSON.stringify(entry), redis.print);
-            logger.info(
-              `Housekeeper.processData() - Completed processing ${
-                accounts.length
-              } records.`,
-            );
-          });
-        }
-      });
-      entry.lastId = account._id;
+      await dbServices
+        .recentAccounts(lastId)
+        .then(processDataProcessRecentAccounts);
     });
   } catch (e) {
     logger.error(`Housekeeper.processData(${lastId}): Failed with error ${e}`);

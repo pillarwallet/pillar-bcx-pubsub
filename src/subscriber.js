@@ -45,7 +45,7 @@ process
 /**
  * Function that initializes the subscriber service
  */
-module.exports.initServices = function() {
+module.exports.initServices = () => {
   dbServices
     .dbConnect()
     .then(() => {

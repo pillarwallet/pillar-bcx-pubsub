@@ -17,17 +17,13 @@
       "error",
       2
     ],
-    "max-lines": [
-      "error",
-      700
-    ],
     "max-statements": [
       "error",
-      50
+      70
     ],
     "max-depth": [
       "error",
-      4
+      6
     ],
     "prettier/prettier": "error",
     "global-require": 0,

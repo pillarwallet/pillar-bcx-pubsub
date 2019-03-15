@@ -148,7 +148,7 @@ function connect() {
       }
     } catch (e) {
       logger.error(`ethService.connect() failed with error: ${e}`);
-      reject(false);
+      reject(new Error(false));
     }
   });
 }
@@ -213,6 +213,68 @@ function subscribePendingTxn() {
 module.exports.subscribePendingTxn = subscribePendingTxn;
 
 /**
+ * Gets the transaction info/receipt and returns the transaction object
+ * @param {string} txHash Transaction hash
+ */
+async function getTxInfo(txHash) {
+  try {
+    const [txInfo, txReceipt] = await Promise.all([
+      web3.eth.getTransaction(txHash),
+      web3.eth.getTransactionReceipt(txHash),
+    ]);
+
+    const txObject = {
+      txHash: txInfo.hash,
+      fromAddress: txInfo.from,
+      toAddress: txInfo.to,
+      value: txInfo.value,
+      asset: 'ETH',
+      contractAddress: null,
+      status: txReceipt.status === true ? 'confirmed' : 'failed',
+      gasPrice: txInfo.gasPrice,
+      gasUsed: txReceipt.gasUsed,
+      blockNumber: txReceipt.blockNumber,
+    };
+    if (txInfo.input !== '0x') {
+      let jsonAbi;
+      const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+      if (!contractDetail)
+        return logger.error(`Not a monitored contract: ${txInfo.to}`);
+      txObject.asset = contractDetail.symbol;
+      jsonAbi = require(`${abiPath + txObject.asset}.json`);
+      if (!jsonAbi) {
+        logger.error(
+          `Asset ABI not found ${txObject.asset}, using standard ERC20`,
+        );
+        jsonAbi = ERC20ABI;
+      }
+      txObject.contractAddress = txInfo.to;
+      abiDecoder.addABI(jsonAbi);
+      const data = abiDecoder.decodeMethod(txInfo.input);
+      const [to, value] = data.params;
+      [txObject.toAddress, txObject.value] = [to.value, value.value];
+    }
+    return txObject;
+  } catch (e) {
+    logger.error(`getTxInfo(${txHash}) failed with error: ${e}`);
+    return undefined;
+  }
+}
+
+module.exports.getTxInfo = getTxInfo;
+
+async function checkMetaMarketTransaction(blockHeader) {
+  web3.eth.getBlock(blockHeader.number).then(response => {
+    response.transactions.forEach(async transaction => {
+      if (await client.existsAsync(transaction)) {
+        const txObject = await getTxInfo(transaction);
+        rmqServices.sendOffersMessage(txObject);
+        client.del(transaction);
+      }
+    });
+  });
+}
+/**
  * Subscribe to geth WS events corresponding to new block headers.
  */
 function subscribeBlockHeaders() {
@@ -267,15 +329,7 @@ function subscribeBlockHeaders() {
           module.exports.storeGasInfo(blockHeader);
 
           // Check MarketMaker Transactions
-          web3.eth.getBlock(blockHeader.number).then(response => {
-            response.transactions.forEach(async transaction => {
-              if (await client.existsAsync(transaction)) {
-                const txObject = await getTxInfo(transaction);
-                rmqServices.sendOffersMessage(txObject);
-                client.del(transaction);
-              }
-            });
-          });
+          checkMetaMarketTransaction(blockHeader);
         }
       })
       .on('error', err => {
@@ -291,6 +345,13 @@ function subscribeBlockHeaders() {
 }
 module.exports.subscribeBlockHeaders = subscribeBlockHeaders;
 
+function calculateTotalGasPrice(gasPrices) {
+  return gasPrices.reduce((previous, current) => current.plus(previous));
+}
+
+function calculateGasPrices(trans) {
+  return trans.transactions.map(tran => BigNumber(tran.gasPrice));
+}
 /**
  * Determin the gas price and store the details.
  * @param {any} blockHeader - the event object corresponding to the current block
@@ -306,13 +367,9 @@ function storeGasInfo(blockHeader) {
     web3.eth.getBlockTransactionCount(blockHeader.number).then(txnCnt => {
       if (txnCnt !== null) {
         web3.eth.getBlock(blockHeader.number, true).then(trans => {
-          const gasPrices = trans.transactions.map(tran =>
-            BigNumber(tran.gasPrice),
-          );
+          const gasPrices = calculateGasPrices(trans);
           if (gasPrices.length > 0) {
-            const totalGasPrice = gasPrices.reduce((previous, current) =>
-              current.plus(previous),
-            );
+            const totalGasPrice = calculateTotalGasPrice(gasPrices);
             const avgGasPrice = totalGasPrice.div(txnCnt);
             entry = {
               type: 'tranStat',
@@ -765,53 +822,3 @@ async function getTransactionCountForWallet(wallet) {
   }
 }
 module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
-
-/**
- * Gets the transaction info/receipt and returns the transaction object
- * @param {string} txHash Transaction hash
- */
-async function getTxInfo(txHash) {
-  try {
-    const [txInfo, txReceipt] = await Promise.all([
-      web3.eth.getTransaction(txHash),
-      web3.eth.getTransactionReceipt(txHash),
-    ]);
-
-    const txObject = {
-      txHash: txInfo.hash,
-      fromAddress: txInfo.from,
-      toAddress: txInfo.to,
-      value: txInfo.value,
-      asset: 'ETH',
-      contractAddress: null,
-      status: txReceipt.status === true ? 'confirmed' : 'failed',
-      gasPrice: txInfo.gasPrice,
-      gasUsed: txReceipt.gasUsed,
-      blockNumber: txReceipt.blockNumber,
-    };
-    if (txInfo.input !== '0x') {
-      let jsonAbi;
-      const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-      if (!contractDetail)
-        return logger.error(`Not a monitored contract: ${txInfo.to}`);
-      txObject.asset = contractDetail.symbol;
-      jsonAbi = require(`${abiPath + txObject.asset}.json`);
-      if (!jsonAbi) {
-        logger.error(
-          `Asset ABI not found ${txObject.asset}, using standard ERC20`,
-        );
-        jsonAbi = ERC20ABI;
-      }
-      txObject.contractAddress = txInfo.to;
-      abiDecoder.addABI(jsonAbi);
-      const data = abiDecoder.decodeMethod(txInfo.input);
-      const [to, value] = data.params;
-      [txObject.toAddress, txObject.value] = [to.value, value.value];
-    }
-    return txObject;
-  } catch (e) {
-    logger.error(`getTxInfo(${txHash}) failed with error: ${e}`);
-  }
-}
-
-module.exports.getTxInfo = getTxInfo;

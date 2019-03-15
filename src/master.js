@@ -85,6 +85,38 @@ module.exports.init = optionsParam => {
   }
 };
 
+function processRecentAccounts(theWallets) {
+  if (theWallets !== undefined) {
+    logger.info(`Master found ${theWallets.length} new accounts`);
+    const message = [];
+    let i = 0;
+    const cnt = theWallets.length;
+    theWallets.forEach(theWallet => {
+      i += 1;
+      const addresses = theWallet.addresses.filter(address => {
+        if (address.protocol === 'Ethereum') {
+          return address;
+        }
+        return false;
+      });
+      logger.debug(`Filtered message: ${JSON.stringify(addresses)}`);
+      addresses.forEach(address => {
+        message.push({
+          id: theWallet._id,
+          walletId: address.address,
+          pillarId: theWallet.pillarId,
+        });
+      });
+      if (i === cnt) {
+        logger.info(`Master found ${message.length} relevant new wallets`);
+        module.exports.notify(
+          message,
+          module.exports.pubs[module.exports.index - 1],
+        );
+      }
+    });
+  }
+}
 /**
  * Function that spawns housekeeper, publisher and subscriber.
  */
@@ -141,40 +173,7 @@ module.exports.launch = () => {
               module.exports.index
             }`,
           );
-          dbServices.recentAccounts(data.message).then(theWallets => {
-            if (theWallets !== undefined) {
-              logger.info(`Master found ${theWallets.length} new accounts`);
-              const message = [];
-              let i = 0;
-              const cnt = theWallets.length;
-              theWallets.forEach(theWallet => {
-                i += 1;
-                const addresses = theWallet.addresses.filter(address => {
-                  if (address.protocol === 'Ethereum') {
-                    return address;
-                  }
-                  return false;
-                });
-                logger.debug(`Filtered message: ${JSON.stringify(addresses)}`);
-                addresses.forEach(address => {
-                  message.push({
-                    id: theWallet._id,
-                    walletId: address.address,
-                    pillarId: theWallet.pillarId,
-                  });
-                });
-                if (i === cnt) {
-                  logger.info(
-                    `Master found ${message.length} relevant new wallets`,
-                  );
-                  module.exports.notify(
-                    message,
-                    module.exports.pubs[module.exports.index - 1],
-                  );
-                }
-              });
-            }
-          });
+          dbServices.recentAccounts(data.message).then(processRecentAccounts);
         }
       } catch (e) {
         logger.error(`Master.launch() failed: ${e.message}`);
