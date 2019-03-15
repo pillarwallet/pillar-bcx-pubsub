@@ -38,7 +38,7 @@ const config = require("../config");
 
 const protocol = 'Ethereum';
 const gethUrl = `${config.get('geth.url')}:${config.get('geth.port')}`;
-const parityURL = `${config.get('parity.port')}:${config.get('parity.port')}`;
+const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
 const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
 let web3;
 let wsCnt = 0;
