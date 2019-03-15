@@ -24,3 +24,4 @@ apps:
       LOG_GZIP_ENABLED: XXXX
       LOG_PERIOD: XXXX
       LOG_THRESHOLD: XXXX
+      NODE_ENV: XXX

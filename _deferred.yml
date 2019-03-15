@@ -18,3 +18,4 @@ apps:
       BCX_ACCOUNTS_NUMBER_TO_FETCH: XXX
       LOGS_DIR: XXX
       LOGS_LEVEL: XXX
+      NODE_ENV: XXX
