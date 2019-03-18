@@ -159,6 +159,12 @@ const config = convict({
       arg: 'accountWaitInterval',
       env: 'BCX_ACCOUNTS_WAIT_INTERVAL_PROCESS_DATA',
     },
+    getTransWaitInterval: {
+      format: Number,
+      default: 500,
+      arg: 'accountTransWaitInterval',
+      env: 'BCX_ACCOUNTS_WAIT_INTERVAL_GET_TRANSACTIONS',
+    },
     processBlockInterval: {
       format: Number,
       default: 5000,

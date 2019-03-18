@@ -40,6 +40,7 @@ const protocol = 'Ethereum';
 const MAX_TOTAL_TRANSACTIONS = config.get('housekeeper.totalTransactions');
 const MAX_ACCOUNTS_CONCURRENCY = config.get('housekeeper.accountConcurrency');
 const TIME_BETWEEN_ACCOUNTS = config.get('housekeeper.accountWaitInterval');
+const TIME_BETWEEN_GET_TRANSACTIONS = config.get('housekeeper.getTransWaitInterval');
 const PROCESS_BLOCKS_INTERVAL = config.get('housekeeper.processBlockInterval');
 const { CronJob } = require('cron');
 const redis = require('redis');
@@ -174,31 +175,53 @@ function getTransactions(
   accounts,
   isLastAddress,
 ) {
-  const toBlock = decimalToHexString(listOfTrans[i + 1]);
-  let fromBlock;
-  if (i == 0) {
-    fromBlock = decimalToHexString(listOfTrans[i]);
-  } else {
-    fromBlock = decimalToHexString(listOfTrans[i] + 1);
-  }
-  logger.debug(
-    `housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
-  );
-  ethService
-    .getAllTransactionsForWallet(wallet, toBlock, fromBlock)
-    .then(transactions => {
-      if (transactions && transactions.length > 0) {
-        const totalTransactions = transactions.length;
-        if (totalTransactions > 0) {
-          transListCount += totalTransactions;
-        }
-        transactions.forEach(transaction => {
-          if (typeof transaction !== 'undefined') {
-            processTxn(transaction, wallet, pillarId);
+
+  setTimeout(() => {
+    const toBlock = decimalToHexString(listOfTrans[i + 1]);
+    let fromBlock;
+    if (i == 0) {
+      fromBlock = decimalToHexString(listOfTrans[i]);
+    } else {
+      fromBlock = decimalToHexString(listOfTrans[i] + 1);
+    }
+    logger.debug(`housekeeper.getTransactions: started processing for wallet ${wallet} and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`);
+    ethService
+      .getAllTransactionsForWallet(wallet, toBlock, fromBlock)
+      .then(transactions => {
+        if (transactions && transactions.length > 0) {
+          const totalTransactions = transactions.length;
+          if (totalTransactions > 0) {
+            transListCount += totalTransactions;
           }
-        });
-        logger.debug('housekeeper.getTransactions processed txns');
-        if (toBlock == '0x0') {
+          transactions.forEach(transaction => {
+            if (typeof transaction !== 'undefined') {
+              processTxn(transaction, wallet, pillarId);
+            }
+          });
+          logger.debug('housekeeper.getTransactions processed txns');
+          if (toBlock == '0x0') {
+            logger.info(
+              `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
+            );
+            if (isLastAddress) {
+              processAccountsData(accounts, latestProcessedIndex + 1);
+            }
+          } else {
+            getTransactions(
+              listOfTrans,
+              i + 1,
+              wallet,
+              totalTrans,
+              transListCount,
+              pillarId,
+              accounts,
+              isLastAddress,
+            );
+          }
+          logger.debug(
+            `housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
+          );
+        } else if (toBlock == '0x0') {
           logger.info(
             `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
           );
@@ -217,29 +240,8 @@ function getTransactions(
             isLastAddress,
           );
         }
-        logger.debug(
-          `housekeeper.getTransactions: started processing for wallet ${wallet} and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
-        );
-      } else if (toBlock == '0x0') {
-        logger.info(
-          `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-        );
-        if (isLastAddress) {
-          processAccountsData(accounts, latestProcessedIndex + 1);
-        }
-      } else {
-        getTransactions(
-          listOfTrans,
-          i + 1,
-          wallet,
-          totalTrans,
-          transListCount,
-          pillarId,
-          accounts,
-          isLastAddress,
-        );
-      }
-    });
+      });
+  }, TIME_BETWEEN_GET_TRANSACTIONS);
 }
 
 async function processTxn(transaction, wallet, pillarId) {
@@ -323,6 +325,9 @@ async function recoverAll(wallet, pillarId, accounts, isLastAddress) {
       `Housekeeper.recoverAll - Found ${totalTransactions} transactions for wallet - ${wallet}`,
     );
     if (totalTransactions == 0) {
+      if (isLastAddress) {
+        processAccountsData(accounts, latestProcessedIndex + 1);
+      }
       return;
     }
     const index = 0;
@@ -415,6 +420,7 @@ function processData(lastId) {
 }
 module.exports.processData = processData;
 
+
 function processAccountsData(accounts, indexParam) {
   latestProcessedIndex = indexParam;
   if (indexParam >= accounts.length - 1) {
@@ -436,15 +442,24 @@ function processAccountsData(accounts, indexParam) {
       const isLastAddress = index >= account.addresses.length - 1;
       try {
         setTimeout(() => {
-          this.recoverAll(
+          recoverAll(
             acc.address,
             account.pillarId,
             accounts,
             isLastAddress,
           );
-        }, index * TIME_BETWEEN_ACCOUNTS);
+        }, index * TIME_BETWEEN_ACCOUNTS );
       } catch (e) {
-        this.saveDeferred(acc.address, protocol, accounts, isLastAddress);
+        saveDeferred(acc.address, protocol, accounts, isLastAddress);
+        entry.lastId = account._id;
+        entry.status = 'completed';
+        entry.endTime = time.now();
+        client.set('housekeeper', JSON.stringify(entry), redis.print);
+        logger.info(
+          `Housekeeper.processData() - Failed processing, saving deferred the account and updating housekeeper ${
+          account.id
+          }.`,
+        );
       }
     }
   });
@@ -532,6 +547,7 @@ async function init() {
           );
           entry = config;
         } else {
+          latestProcessedIndex = 0;
           // the previous run was successful so start process
           logger.info(
             `Housekeeper processing records since last record: ${
