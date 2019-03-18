@@ -712,7 +712,6 @@ async function getAllTransactionsForWallet(
   fromBlockNumberParam,
   toBlockNumberParam,
 ) {
-  try {
     let fromBlockNumber = fromBlockNumberParam;
     let toBlockNumber = toBlockNumberParam;
     logger.debug(
@@ -740,16 +739,9 @@ async function getAllTransactionsForWallet(
       return transTo.concat(transFrom);
     }
     logger.error(
-      `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
-    );
-    return undefined;
-  } catch (err) {
-    logger.error(
-      `ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`,
-    );
-    return undefined;
+      `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`);
+    return new Error(`ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`)
   }
-}
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
 
 async function getTransactionCountForWallet(wallet) {

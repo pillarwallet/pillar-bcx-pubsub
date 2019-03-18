@@ -147,6 +147,12 @@ const config = convict({
       arg: 'totalTransactions',
       env: 'BCX_MAX_TOTAL_TRANSACTIONS_RECOVERALL_PROCESS_SYNC',
     },
+    accountConcurrency: {
+      format: Number,
+      default: 2,
+      arg: 'accountConcurrency',
+      env: 'BCX_ACCOUNTS_CONCURRENCY_PROCESS_DATA',
+    },
     accountWaitInterval: {
       format: Number,
       default: 500,
