@@ -430,9 +430,10 @@ function processAccountsData(accounts, indexParam) {
     latestProcessedIndex = 0;
     return;
   }
-  accounts[indexParam].addresses.forEach((acc, index) => {
+  let account = accounts[indexParam];
+  account.addresses.forEach((acc, index) => {
     if (acc.protocol === protocol) {
-      const isLastAddress = index >= accounts[indexParam].addresses.length - 1;
+      const isLastAddress = index >= account.addresses.length - 1;
       try {
         setTimeout(() => {
           this.recoverAll(
