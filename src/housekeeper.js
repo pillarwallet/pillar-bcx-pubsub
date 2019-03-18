@@ -182,8 +182,10 @@ function getTransactions(listOfTrans, i, wallet, totalTrans, transListCount, pil
         transListCount += totalTransactions
       }
       transactions.forEach((transaction) => {
-        processTxn(transaction, wallet, pillarId)
-      })
+        if(typeof transaction !== 'undefined') {
+          processTxn(transaction, wallet, pillarId)
+        }
+      });
       logger.debug('housekeeper.getTransactions processed txns');
       if (toBlock == "0x0") {
         logger.info(`finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`)
