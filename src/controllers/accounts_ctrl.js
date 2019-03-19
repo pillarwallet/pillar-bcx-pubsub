@@ -26,13 +26,7 @@ const accounts = require('../models/accounts_model');
 const mongoose = require('mongoose');
 const config = require("../config");
 
-<<<<<<< HEAD
-const ACCOUNTS_NUMBER_TO_FETCH = process.env.ACCOUNTS_NUMBER_TO_FETCH
-  ? process.env.ACCOUNTS_NUMBER_TO_FETCH
-  : 100;
-=======
 const ACCOUNTS_NUMBER_TO_FETCH = config.get("accounts.numberToFetch");
->>>>>>> develop
 
 function listAll() {
   return new Promise((resolve, reject) => {
