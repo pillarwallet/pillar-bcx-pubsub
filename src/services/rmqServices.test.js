@@ -187,7 +187,7 @@ describe('initsRMQ ', () => {
   test('expectal call done - initSubPubMQ with tranStat content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
     const message = { type: 'tranStat' };
-    message.checksum = rmqServices.calculateChecksum(message);
+    message.checksum = rmqServices.calculateChecksum(message, "checksumKey");
     const connectionMock = jest.fn((url, method) => {
       method(null, {
         createChannel(param) {
@@ -221,7 +221,7 @@ describe('initsRMQ ', () => {
   test('expectal call done - initSubPubMQ with newAsset content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
     const message = { type: 'newAsset' };
-    message.checksum = rmqServices.calculateChecksum(message);
+    message.checksum = rmqServices.calculateChecksum(message, "checksumKey");
     const connectionMock = jest.fn((url, method) => {
       method(null, {
         createChannel(param) {
@@ -253,7 +253,7 @@ describe('initsRMQ ', () => {
   test('expectal call done - initSubPubMQ with updateTx content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
     const message = { type: 'updateTx' };
-    message.checksum = rmqServices.calculateChecksum(message);
+    message.checksum = rmqServices.calculateChecksum(message, "checksumKey");
     const connectionMock = jest.fn((url, method) => {
       method(null, {
         createChannel(param) {
@@ -286,7 +286,7 @@ describe('initsRMQ ', () => {
   test('expectal call done - initSubPubMQ with newTx content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
     const message = { type: 'newTx' };
-    message.checksum = rmqServices.calculateChecksum(message);
+    message.checksum = rmqServices.calculateChecksum(message, "checksumKey");
     const connectionMock = jest.fn((url, method) => {
       method(null, {
         createChannel(param) {

@@ -25,14 +25,12 @@ SOFTWARE.
 const runId = process.argv[2];
 describe('Test init functions ', () => {
   beforeEach(() => {
-    process.argv[2] = 0;
     jest.clearAllMocks();
     jest.resetAllMocks();
     jest.resetModules();
   });
 
   afterAll(() => {
-    process.argv[2] = runId;
     jest.clearAllMocks();
     jest.resetAllMocks();
     jest.resetModules();

@@ -29,26 +29,19 @@ const ERC721ABI = require('../abi/ERC721ABI');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
-const bluebird = require('bluebird');
+const redisService = require('./redisService');
 
 /**
  * Connecting to Redis
  */
-const redis = require('redis');
-
-const redisOptions = {
-  host: process.env.REDIS_SERVER,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PW,
-};
 let client;
 try {
-  client = redis.createClient(redisOptions);
-  logger.info('processTx successfully connected to Redis server');
-} catch (e) {
-  logger.error(e);
-}
-bluebird.promisifyAll(redis);
+  client = redisService.connectRedis()
+  logger.info("processTx successfully connected to Redis server")
+  client.on('error', err => {
+    logger.error(`processTx failed with REDIS client error: ${err}`);
+  });
+} catch (e) { logger.error(e) }
 
 /**
  * Store the new pending transaction in memeory if the transaction corresponds
@@ -101,8 +94,8 @@ async function newPendingTran(tx, protocol) {
         const contractDetail = hashMaps.assets.get(to.toLowerCase());
         ({ contractAddress } = contractDetail);
         asset = contractDetail.symbol;
-        logger.debug(`Contract detail category: ${contractDetail.category}`);
-        if (typeof contractDetail.category === 'undefined') {
+        logger.debug('Contract detail category: ' + contractDetail.category);
+        if(typeof contractDetail.category === 'undefined' || contractDetail.category === 'ERC20') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
             const theAbi = require(`${abiPath + asset}.json`);
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
@@ -125,7 +118,7 @@ async function newPendingTran(tx, protocol) {
           } data is ${JSON.stringify(data)}`,
         );
         if (typeof data !== 'undefined' && tx.input !== '0x') {
-          logger.debug(`data: ${JSON.stringify(data)}`);
+          logger.info('txHash: ' + hash + ' data: ' + JSON.stringify(data));
           if (data.name === 'transfer') {
             // smart contract call hence the asset must be the token name
             to = data.params[0].value;

@@ -22,12 +22,12 @@ SOFTWARE.
 
 require('./utils/diagnostics');
 require('dotenv').config();
-const bluebird = require('bluebird');
 const logger = require('./utils/logger');
 const ethService = require('./services/ethService.js');
 const rmqServices = require('./services/rmqServices.js');
 const hashMaps = require('./utils/hashMaps.js');
 const fs = require('fs');
+const redisService = require('./services/redisService')
 
 const GETH_STATUS_FILE = '/tmp/geth_status';
 const { CronJob } = require('cron');
@@ -47,28 +47,16 @@ process.on('unhandledRejection', reason => {
 /**
  * Connecting to Redis
  */
-const redis = require('redis');
-
-const redisOptions = {
-  host: process.env.REDIS_SERVER,
-  port: process.env.REDIS_PORT,
-  password: process.env.REDIS_PW,
-};
 let client;
 try {
-  client = redis.createClient(redisOptions);
-  logger.info('Publisher successfully connected to Redis server');
-} catch (e) {
-  logger.error(e);
-}
-bluebird.promisifyAll(redis);
+  client = redisService.connectRedis()
+  logger.info("publisher successfully connected to Redis server")
+  client.on('error', err => {
+    logger.error(`publisher failed with REDIS client error: ${err}`);
+  });
+} catch (e) { logger.error(e) }
 
-/**
- * Function that subscribes to redis related connection errors.
- */
-client.on('error', err => {
-  logger.error(`Publisher failed with REDIS client error: ${err}`);
-});
+
 
 function setLatestIdRedis(obj) {
   client.setAsync('latestId', obj.id).then(() => {

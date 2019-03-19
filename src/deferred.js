@@ -27,6 +27,11 @@ const dbServices = require('./services/dbServices');
 const ethService = require('./services/ethService');
 const logger = require('./utils/logger');
 const { CronJob } = require('cron');
+const config = require('./config');
+
+const TIME_BETWEEN_GET_TRANSACTIONS = config.get(
+  'housekeeper.getTransWaitInterval',
+);
 
 const protocol = 'Ethereum';
 
@@ -84,68 +89,70 @@ function getTransactions(
   totalTrans,
   transListCnt,
 ) {
-  let transListCount = transListCnt;
-  const toBlock = decimalToHexString(listOfTrans[i + 1]);
-  let fromBlock;
-  if (i === 0) {
-    fromBlock = decimalToHexString(listOfTrans[i]);
-  } else {
-    fromBlock = decimalToHexString(listOfTrans[i] + 1);
-  }
-  logger.info(
-    `deferred.getTransactions: started processing for wallet ${
-      acc.address
-    } and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
-  );
-  ethService
-    .getAllTransactionsForWallet(acc.address, toBlock, fromBlock)
-    .then(transactions => {
-      if (transactions && transactions.length > 0) {
-        const totalTransactions = transactions.length;
-        if (totalTransactions > 0) {
-          transListCount += totalTransactions;
-        }
-        saveTransactions(transactions).then(() => {
-          logger.debug(
-            'deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added',
-          );
-          if (toBlock === '0x0') {
-            logger.info(
-              `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-            );
-            setDeferredDone(acc, result);
-          } else {
-            getTransactions(
-              listOfTrans,
-              i + 1,
-              acc,
-              result,
-              totalTrans,
-              transListCount,
-            );
+  setTimeout(() => {
+    let transListCount = transListCnt;
+    const toBlock = decimalToHexString(listOfTrans[i + 1]);
+    let fromBlock;
+    if (i === 0) {
+      fromBlock = decimalToHexString(listOfTrans[i]);
+    } else {
+      fromBlock = decimalToHexString(listOfTrans[i] + 1);
+    }
+    logger.info(
+      `deferred.getTransactions: started processing for wallet ${
+        acc.address
+      } and i ${i} fromBlock ${fromBlock} toBlock ${toBlock} transListCount ${transListCount}`,
+    );
+    ethService
+      .getAllTransactionsForWallet(acc.address, toBlock, fromBlock)
+      .then(transactions => {
+        if (transactions && transactions.length > 0) {
+          const totalTransactions = transactions.length;
+          if (totalTransactions > 0) {
+            transListCount += totalTransactions;
           }
-          logger.debug(
-            `deferred.getTransactions: started processing for wallet ${
-              acc.address
-            } and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
+          saveTransactions(transactions).then(() => {
+            logger.debug(
+              'deferred.saveDefferedTransactions dbServices.dbCollections.historicTransactions successfully added',
+            );
+            if (toBlock === '0x0') {
+              logger.info(
+                `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
+              );
+              setDeferredDone(acc, result);
+            } else {
+              getTransactions(
+                listOfTrans,
+                i + 1,
+                acc,
+                result,
+                totalTrans,
+                transListCount,
+              );
+            }
+            logger.debug(
+              `deferred.getTransactions: started processing for wallet ${
+                acc.address
+              } and recovered ${totalTransactions} fromBlock ${fromBlock} toBlock ${toBlock} length transList ${transListCount} total trans ${totalTrans}`,
+            );
+          });
+        } else if (toBlock === '0x0') {
+          logger.info(
+            `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
           );
-        });
-      } else if (toBlock === '0x0') {
-        logger.info(
-          `finished,reached 0x0 block transListCount ${transListCount} totalTrans  ${totalTrans}`,
-        );
-        setDeferredDone(acc, result);
-      } else {
-        getTransactions(
-          listOfTrans,
-          i + 1,
-          acc,
-          result,
-          totalTrans,
-          transListCount,
-        );
-      }
-    });
+          setDeferredDone(acc, result);
+        } else {
+          getTransactions(
+            listOfTrans,
+            i + 1,
+            acc,
+            result,
+            totalTrans,
+            transListCount,
+          );
+        }
+      });
+    }, TIME_BETWEEN_GET_TRANSACTIONS)
 }
 
 function processDeferredAddress(acc, result) {

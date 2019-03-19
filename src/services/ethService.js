@@ -21,7 +21,6 @@ SOFTWARE.
 */
 
 /** @module ethService.js */
-const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
@@ -34,19 +33,143 @@ const ERC721ABI = require('../abi/ERC721ABI');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
-const redis = require('redis');
+const redisService = require('./redisService');
+const config = require('../config');
 
 const protocol = 'Ethereum';
-const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
+const gethUrl = `${config.get('geth.url')}:${config.get('geth.port')}`;
+const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
+const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
 let web3;
 let wsCnt = 0;
-const client = redis.createClient();
-bluebird.promisifyAll(redis);
-
+let client;
+try {
+  client = redisService.connectRedis();
+  logger.info('ethService successfully connected to Redis server');
+  client.on('error', err => {
+    logger.error(`ethService failed with REDIS client error: ${err}`);
+  });
+} catch (e) {
+  logger.error(e);
+}
 /**
  * Establish connection to the geth node
  */
 function connect() {
+  return new Promise((resolve, reject) => {
+    try {
+      if (
+        web3 === undefined ||
+        !web3._provider.connected ||
+        !web3.eth.isSyncing()
+      ) {
+        const isWebSocket =
+          nodeUrl.indexOf('ws://') >= 0 || nodeUrl.indexOf('wss://') >= 0;
+        if (isWebSocket) {
+          web3 = new Web3(new Web3.providers.WebsocketProvider(nodeUrl));
+        } else {
+          web3 = new Web3(new Web3.providers.HttpProvider(nodeUrl));
+        }
+        /**
+         * extend Web3 functionality by including parity trace functions
+         */
+        web3.extend({
+          property: 'trace',
+          methods: [
+            new web3.extend.Method({
+              name: 'call',
+              call: 'trace_call',
+              params: 3,
+              inputFormatter: [
+                helpers.formatters.inputCallFormatter,
+                null,
+                helpers.formatters.inputDefaultBlockNumberFormatter,
+              ],
+            }),
+            new web3.extend.Method({
+              name: 'rawTransaction',
+              call: 'trace_rawTransaction',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'replayTransaction',
+              call: 'trace_replayTransaction',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'block',
+              call: 'trace_block',
+              params: 1,
+              inputFormatter: [
+                helpers.formatters.inputDefaultBlockNumberFormatter,
+              ],
+            }),
+            new web3.extend.Method({
+              name: 'filter',
+              call: 'trace_filter',
+              params: 1,
+            }),
+            new web3.extend.Method({
+              name: 'get',
+              call: 'trace_get',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'transaction',
+              call: 'trace_transaction',
+              params: 1,
+            }),
+          ],
+        });
+        if (isWebSocket) {
+          web3._provider.on('end', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+          web3._provider.on('close', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+          web3._provider.on('error', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+        }
+        logger.info(
+          `ethService.connect(): Connection to ${nodeUrl} established successfully!`,
+        );
+        module.exports.web3 = web3;
+        resolve(true);
+      } else {
+        resolve(true);
+      }
+    } catch (e) {
+      logger.error(`ethService.connect() failed with error: ${e}`);
+      reject(false);
+    }
+  });
+}
+module.exports.connect = connect;
+
+/**
+ * Return an instance to the underlying web3 instance
+ */
+function getWeb3() {
+  logger.info(
+    'ethService.getWeb3(): fetches the current instance of web3 object',
+  );
   return new Promise((resolve, reject) => {
     try {
       if (
@@ -756,43 +879,38 @@ async function getAllTransactionsForWallet(
   fromBlockNumberParam,
   toBlockNumberParam,
 ) {
-  try {
-    let fromBlockNumber = fromBlockNumberParam;
-    let toBlockNumber = toBlockNumberParam;
-    logger.debug(
-      `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
-    );
-    if (module.exports.connect()) {
-      if (!fromBlockNumber) {
-        fromBlockNumber = 'earliest';
-      }
-
-      if (!toBlockNumber) {
-        toBlockNumber = 'latest';
-      }
-
-      const transTo = await web3.trace.filter({
-        fromBlock: fromBlockNumber,
-        toBlock: toBlockNumber,
-        toAddress: [wallet.toLowerCase()],
-      });
-      const transFrom = await web3.trace.filter({
-        fromBlock: fromBlockNumber,
-        toBlock: toBlockNumber,
-        fromAddress: [wallet.toLowerCase()],
-      });
-      return transTo.concat(transFrom);
+  let fromBlockNumber = fromBlockNumberParam;
+  let toBlockNumber = toBlockNumberParam;
+  logger.debug(
+    `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
+  );
+  if (module.exports.connect()) {
+    if (!fromBlockNumber) {
+      fromBlockNumber = 'earliest';
     }
-    logger.error(
-      `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
-    );
-    return undefined;
-  } catch (err) {
-    logger.error(
-      `ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`,
-    );
-    return undefined;
+
+    if (!toBlockNumber) {
+      toBlockNumber = 'latest';
+    }
+
+    const transTo = await web3.trace.filter({
+      fromBlock: fromBlockNumber,
+      toBlock: toBlockNumber,
+      toAddress: [wallet.toLowerCase()],
+    });
+    const transFrom = await web3.trace.filter({
+      fromBlock: fromBlockNumber,
+      toBlock: toBlockNumber,
+      fromAddress: [wallet.toLowerCase()],
+    });
+    return transTo.concat(transFrom);
   }
+  logger.error(
+    `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
+  );
+  return new Error(
+    `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
+  );
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
 
@@ -822,3 +940,53 @@ async function getTransactionCountForWallet(wallet) {
   }
 }
 module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
+
+/**
+ * Gets the transaction info/receipt and returns the transaction object
+ * @param {string} txHash Transaction hash
+ */
+async function getTxInfo(txHash) {
+  try {
+    const [txInfo, txReceipt] = await Promise.all([
+      web3.eth.getTransaction(txHash),
+      web3.eth.getTransactionReceipt(txHash),
+    ]);
+
+    const txObject = {
+      txHash: txInfo.hash,
+      fromAddress: txInfo.from,
+      toAddress: txInfo.to,
+      value: txInfo.value,
+      asset: 'ETH',
+      contractAddress: null,
+      status: txReceipt.status === true ? 'confirmed' : 'failed',
+      gasPrice: txInfo.gasPrice,
+      gasUsed: txReceipt.gasUsed,
+      blockNumber: txReceipt.blockNumber,
+    };
+    if (txInfo.input !== '0x') {
+      let jsonAbi;
+      const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
+      if (!contractDetail)
+        return logger.error(`Not a monitored contract: ${txInfo.to}`);
+      txObject.asset = contractDetail.symbol;
+      jsonAbi = require(`${abiPath + txObject.asset}.json`);
+      if (!jsonAbi) {
+        logger.error(
+          `Asset ABI not found ${txObject.asset}, using standard ERC20`,
+        );
+        jsonAbi = ERC20ABI;
+      }
+      txObject.contractAddress = txInfo.to;
+      abiDecoder.addABI(jsonAbi);
+      const data = abiDecoder.decodeMethod(txInfo.input);
+      const [to, value] = data.params;
+      [txObject.toAddress, txObject.value] = [to.value, value.value];
+    }
+    return txObject;
+  } catch (e) {
+    logger.error(`getTxInfo(${txHash}) failed with error: ${e}`);
+  }
+}
+
+module.exports.getTxInfo = getTxInfo;
