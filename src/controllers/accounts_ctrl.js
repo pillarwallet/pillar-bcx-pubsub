@@ -24,9 +24,9 @@ const logger = require('../utils/logger.js');
 
 const accounts = require('../models/accounts_model');
 const mongoose = require('mongoose');
-const config = require("../config");
+const config = require('../config');
 
-const ACCOUNTS_NUMBER_TO_FETCH = config.get("accounts.numberToFetch");
+const ACCOUNTS_NUMBER_TO_FETCH = config.get('accounts.numberToFetch');
 
 function listAll() {
   return new Promise((resolve, reject) => {

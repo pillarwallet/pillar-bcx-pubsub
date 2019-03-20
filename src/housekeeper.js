@@ -310,7 +310,7 @@ async function processTxn(transaction, wallet, pillarId) {
 
 /**
  *
- * @param {string} walletId - the wallet address of the account whose transactions have to be recovered
+ * @param {string} wallet - the wallet address of the account whose transactions have to be recovered
  * @param {string} pillarId - the pillar id of the wallet being recovered.
  */
 async function recoverAll(wallet, pillarId, accounts, isLastAddress) {
@@ -394,7 +394,7 @@ function processData(lastId) {
       await this.checkTxPool();
       // fetch new registrations since last run
       logger.info(`Housekeeper fetching new registrations after ID: ${lastId}`);
-      await dbServices.recentAccounts(lastId).then(async accounts => {
+      dbServices.recentAccounts(lastId).then(async accounts => {
         logger.info(
           `Housekeeper found accounts: ${accounts.length} wallets to process.`,
         );

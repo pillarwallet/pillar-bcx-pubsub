@@ -26,7 +26,7 @@ require('./utils/diagnostics');
 const logger = require('./utils/logger');
 const { fork } = require('child_process');
 
-const config = require("./config");
+const config = require('./config');
 
 const dbServices = require('./services/dbServices');
 
@@ -58,16 +58,16 @@ module.exports.init = optionsParam => {
     logger.info('Started executing master.init()');
 
     // validating input parameters
-    if (config.get("protocol") !== undefined) {
-      protocol = config.get("protocol")
+    if (config.get('protocol') !== undefined) {
+      protocol = config.get('protocol')
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
 
-    if (config.get("maxWallets") === undefined || config.get("maxWallets") <= 0) {
+    if (config.get('maxWallets') === undefined || config.get('maxWallets') <= 0) {
       throw Error('Invalid configuration parameter maxWallets');
     } else {
-      logger.info(`master.init(): A new publisher will be spawned for every ${config.get("maxWallets")} wallets..`);
-      maxWalletsPerPub = config.get("maxWallets")
+      logger.info(`master.init(): A new publisher will be spawned for every ${config.get('maxWallets')} wallets..`);
+      maxWalletsPerPub = config.get('maxWallets')
     }
     dbServices.dbConnect().then(() => {
       this.launch();

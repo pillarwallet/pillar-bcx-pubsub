@@ -26,7 +26,7 @@ const moment = require('moment');
 const jsHashes = require('jshashes');
 const logger = require('../utils/logger.js');
 const dbServices = require('./dbServices.js');
-const config = require("../config");
+const config = require('../config');
 
 const TRANSACTION_PENDING = 'transactionPendingEvent';
 const TRANSACTION_CONFIRMATION = 'transactionConfirmationEvent';
