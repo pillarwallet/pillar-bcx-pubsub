@@ -23,7 +23,7 @@ SOFTWARE.
 const logger = require('../utils/logger.js');
 require('dotenv').config();
 const mongoose = require('mongoose');
-const config = require("../config");
+const config = require('../config');
 
 mongoose.Promise = global.Promise;
 module.exports.mongoose = mongoose;

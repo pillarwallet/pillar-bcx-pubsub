@@ -4,7 +4,7 @@ let env = '';
 
 const config = convict({
   env: {
-    format: ['development', 'test', 'qa', 'staging', 'production'],
+    format: ['development', 'test', 'qa', 'production'],
     default: 'development',
     arg: 'env',
     env: 'NODE_ENV',
