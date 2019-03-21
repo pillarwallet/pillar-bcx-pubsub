@@ -9,6 +9,14 @@ const config = convict({
     arg: 'env',
     env: 'NODE_ENV',
   },
+  logs: {
+    level: {
+      format: String,
+      default: 'info',
+      arg: 'logsLevel',
+      env: 'LOGS_LEVEL',
+    },
+  },
   protocol: {
     format: String,
     default: 'Ethereum',
