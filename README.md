@@ -7,15 +7,11 @@ When the application is launched in a deployed environment we make no assumption
 
 This is mentioned here as a handy guide to pointing local applications to other services, and a reminder that developers adding new requirements would be advised to update the devOps team!
 
-Required environment parameters:
-- SERVER (mongo db url)
-- MONGO_USER
-- MONGO_PWD
-- DBNAME
-- GETH_NODE_URL  - url of a geth node for the app to talk to
-- GETH_NODE_PORT - port to open a websocket on
-- CHECKSUM_KEY ???
-- HASH_PREFIX ???
+Required environment parameters vary per envoirement, if using pm2 you could check the following files, or the convict config on src/config
+
+For master - _startup.yml
+for housekeeper - _housekeeper.yml
+for deferred - _deferred.yml
 
 eg:
 ```bash

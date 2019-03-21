@@ -1,0 +1,29 @@
+// create a JSON file for each environment, for example development.json, production.json
+// remove these comment lines before saving
+{
+    "env": "development",
+    "db": {
+        "dialect": "sqlite",
+        "logging": false,
+        "username": "",
+        "password": "",
+        "database": "",
+        "host": ""
+    },
+    "port": "8080",
+    "bcx": {
+      "serverUrl": "http://localhost"
+    },
+    "fcm": {
+        "type": "service_account",
+        "projectId": "",
+        "privateKeyId": "",
+        "privateKey": "",
+        "clientEmail": "",
+        "clientId": "",
+        "authUri": "",
+        "tokenUri": "",
+        "authProviderX509CertUrl": "",
+        "clientX509CertUrl": ""
+    }
+}

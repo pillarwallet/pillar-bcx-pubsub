@@ -21,13 +21,11 @@ SOFTWARE.
 */
 
 /** @module ethService.js */
-const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
 require('dotenv').config();
-const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
@@ -35,100 +33,133 @@ const ERC721ABI = require('../abi/ERC721ABI');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
-const redis = require('redis');
+const redisService = require('./redisService');
+const config = require('../config');
 
 const protocol = 'Ethereum';
-const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
+const gethUrl = `${config.get('geth.url')}:${config.get('geth.port')}`;
+const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
+const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
 let web3;
 let wsCnt = 0;
-const client = redis.createClient();
-bluebird.promisifyAll(redis);
-
+let client;
+try {
+  client = redisService.connectRedis();
+  logger.info('ethService successfully connected to Redis server');
+  client.on('error', err => {
+    logger.error(`ethService failed with REDIS client error: ${err}`);
+  });
+} catch (e) {
+  logger.error(e);
+}
 /**
  * Establish connection to the geth node
  */
 function connect() {
-    return new Promise(((resolve, reject) => {
-        try {
-            if (web3 === undefined || !(web3._provider.connected) || (!web3.eth.isSyncing())) {
-                var isWebSocket =  (gethURL.indexOf("ws://") >= 0 || gethURL.indexOf("wss://") >= 0)
-                if (isWebSocket){
-                    web3 = new Web3(new Web3.providers.WebsocketProvider(gethURL));
-                }else{
-                    web3 = new Web3(new Web3.providers.HttpProvider(gethURL));
-                }
-                /**
-                * extend Web3 functionality by including parity trace functions
-                */
-                web3.extend({
-                    property: 'trace',
-                    methods: [
-                    new web3.extend.Method({
-                        name: 'call',
-                        call: 'trace_call',
-                        params: 3,
-                        inputFormatter: [helpers.formatters.inputCallFormatter, null, helpers.formatters.inputDefaultBlockNumberFormatter]
-                    }),
-                    new web3.extend.Method({
-                        name: 'rawTransaction',
-                        call: 'trace_rawTransaction',
-                        params: 2
-                    }),
-                    new web3.extend.Method({
-                        name: 'replayTransaction',
-                        call: 'trace_replayTransaction',
-                        params: 2
-                    }),
-                    new web3.extend.Method({
-                        name: 'block',
-                        call: 'trace_block',
-                        params: 1,
-                        inputFormatter: [helpers.formatters.inputDefaultBlockNumberFormatter]
-                    }),
-                    new web3.extend.Method({
-                        name: 'filter',
-                        call: 'trace_filter',
-                        params: 1
-                    }),
-                    new web3.extend.Method({
-                        name: 'get',
-                        call: 'trace_get',
-                        params: 2
-                    }),
-                    new web3.extend.Method({
-                        name: 'transaction',
-                        call: 'trace_transaction',
-                        params: 1
-                    })]
-                });
-                if (isWebSocket){
-                web3._provider.on('end', (eventObj) => {
-                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                        web3 = undefined
-                        module.exports.web3 = undefined;
-                    });
-                    web3._provider.on('close',(eventObj) => {
-                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                        web3 = undefined
-                        module.exports.web3 = undefined;
-                    });
-                    web3._provider.on('error',(eventObj) => {
-                        logger.error('Websocket disconnected!! Restarting connection....', eventObj);
-                        web3 = undefined
-                        module.exports.web3 = undefined;
-                    });
-                }
-                logger.info('ethService.connect(): Connection to ' + gethURL + ' established successfully!');
-                module.exports.web3 = web3;
-                resolve(true);
-            } else {
-                resolve(true);
-            }
-        } catch(e) { 
-            logger.error('ethService.connect() failed with error: ' + e);
-            reject(false); 
+  return new Promise((resolve, reject) => {
+    try {
+      if (
+        web3 === undefined ||
+        !web3._provider.connected ||
+        !web3.eth.isSyncing()
+      ) {
+        const isWebSocket =
+          nodeUrl.indexOf('ws://') >= 0 || nodeUrl.indexOf('wss://') >= 0;
+        if (isWebSocket) {
+          web3 = new Web3(new Web3.providers.WebsocketProvider(nodeUrl));
+        } else {
+          web3 = new Web3(new Web3.providers.HttpProvider(nodeUrl));
         }
-    }));
+        /**
+         * extend Web3 functionality by including parity trace functions
+         */
+        web3.extend({
+          property: 'trace',
+          methods: [
+            new web3.extend.Method({
+              name: 'call',
+              call: 'trace_call',
+              params: 3,
+              inputFormatter: [
+                helpers.formatters.inputCallFormatter,
+                null,
+                helpers.formatters.inputDefaultBlockNumberFormatter,
+              ],
+            }),
+            new web3.extend.Method({
+              name: 'rawTransaction',
+              call: 'trace_rawTransaction',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'replayTransaction',
+              call: 'trace_replayTransaction',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'block',
+              call: 'trace_block',
+              params: 1,
+              inputFormatter: [
+                helpers.formatters.inputDefaultBlockNumberFormatter,
+              ],
+            }),
+            new web3.extend.Method({
+              name: 'filter',
+              call: 'trace_filter',
+              params: 1,
+            }),
+            new web3.extend.Method({
+              name: 'get',
+              call: 'trace_get',
+              params: 2,
+            }),
+            new web3.extend.Method({
+              name: 'transaction',
+              call: 'trace_transaction',
+              params: 1,
+            }),
+          ],
+        });
+        if (isWebSocket) {
+          web3._provider.on('end', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+          web3._provider.on('close', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+          web3._provider.on('error', eventObj => {
+            logger.error(
+              'Websocket disconnected!! Restarting connection....',
+              eventObj,
+            );
+            web3 = undefined;
+            module.exports.web3 = undefined;
+          });
+        }
+        logger.info(
+          `ethService.connect(): Connection to ${nodeUrl} established successfully!`,
+        );
+        module.exports.web3 = web3;
+        resolve(true);
+      } else {
+        resolve(true);
+      }
+    } catch (e) {
+      logger.error(`ethService.connect() failed with error: ${e}`);
+      reject(false);
+    }
+  });
 }
 module.exports.connect = connect;
 
@@ -265,7 +296,7 @@ function subscribeBlockHeaders() {
           web3.eth.getBlock(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
               if (await client.existsAsync(transaction)) {
-                let txObject = await getTxInfo(transaction);
+                const txObject = await getTxInfo(transaction);
                 rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
@@ -336,7 +367,9 @@ module.exports.storeGasInfo = storeGasInfo;
 function subscribeTransferEvents(theContract) {
   try {
     logger.info(
-      `ethService.subscribeTransferEvents() subscribed to events for contract: ${theContract.contractAddress}`,
+      `ethService.subscribeTransferEvents() subscribed to events for contract: ${
+        theContract.contractAddress
+      }`,
     );
     if (module.exports.connect()) {
       if (web3.utils.isAddress(theContract.contractAddress)) {
@@ -514,45 +547,47 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.connect()) {
-            web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
-                logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
-                if (receipt !== null) {
-                    let status;
-                    const { gasUsed } = receipt;
-                    if (receipt.status === true) {
-                        status = 'confirmed';
-                    } else {
-                        status = 'failed';
-                    }
-                    const txMsg = {
-                        type: 'updateTx',
-                        txHash: item.txHash,
-                        protocol: item.protocol,
-                        fromAddress: item.fromAddress,
-                        toAddress: item.toAddress,
-                        value: item.value,
-                        asset: item.asset,
-                        contractAddress: item.contractAddress,
-                        status,
-                        gasUsed,
-                        blockNumber: receipt.blockNumber,
-                        input: item.input,
-                        tokenId: item.tokenId,
-                        tranType: item.tranType
-                    };
-                    rmqServices.sendPubSubMessage(txMsg);
-                    logger.info(
-                        `ethService.checkPendingTx(): TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${
-                        receipt.blockNumber
-                        }`,
-                    );
-                    hashMaps.pendingTx.delete(item.txHash);
-                } else {
-                    logger.debug(
-                        `ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`,
-                    );
-                }
-            });
+          web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+            logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+            if (receipt !== null) {
+              let status;
+              const { gasUsed } = receipt;
+              if (receipt.status === true) {
+                status = 'confirmed';
+              } else {
+                status = 'failed';
+              }
+              const txMsg = {
+                type: 'updateTx',
+                txHash: item.txHash,
+                protocol: item.protocol,
+                fromAddress: item.fromAddress,
+                toAddress: item.toAddress,
+                value: item.value,
+                asset: item.asset,
+                contractAddress: item.contractAddress,
+                status,
+                gasUsed,
+                blockNumber: receipt.blockNumber,
+                input: item.input,
+                tokenId: item.tokenId,
+                tranType: item.tranType,
+              };
+              rmqServices.sendPubSubMessage(txMsg);
+              logger.info(
+                `ethService.checkPendingTx(): TRANSACTION ${
+                  item.txHash
+                } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
+              );
+              hashMaps.pendingTx.delete(item.txHash);
+            } else {
+              logger.debug(
+                `ethService.checkPendingTx(): Txn ${
+                  item.txHash
+                } is still pending.`,
+              );
+            }
+          });
         } else {
           reject(
             new Error(
@@ -706,43 +741,38 @@ async function getAllTransactionsForWallet(
   fromBlockNumberParam,
   toBlockNumberParam,
 ) {
-  try {
-    let fromBlockNumber = fromBlockNumberParam;
-    let toBlockNumber = toBlockNumberParam;
-    logger.debug(
-      `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
-    );
-    if (module.exports.connect()) {
-      if (!fromBlockNumber) {
-        fromBlockNumber = 'earliest';
-      }
-
-      if (!toBlockNumber) {
-        toBlockNumber = 'latest';
-      }
-
-      const transTo = await web3.trace.filter({
-        fromBlock: fromBlockNumber,
-        toBlock: toBlockNumber,
-        toAddress: [wallet.toLowerCase()],
-      });
-      const transFrom = await web3.trace.filter({
-        fromBlock: fromBlockNumber,
-        toBlock: toBlockNumber,
-        fromAddress: [wallet.toLowerCase()],
-      });
-      return transTo.concat(transFrom);
+  let fromBlockNumber = fromBlockNumberParam;
+  let toBlockNumber = toBlockNumberParam;
+  logger.debug(
+    `ethService.getAllTransactionsForWallet(${wallet}) started processing`,
+  );
+  if (module.exports.connect()) {
+    if (!fromBlockNumber) {
+      fromBlockNumber = 'earliest';
     }
-    logger.error(
-      `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
-    );
-    return undefined;
-  } catch (err) {
-    logger.error(
-      `ethService.getAllTransactionsForWallet(${wallet}) - failed with error - ${err}`,
-    );
-    return undefined;
+
+    if (!toBlockNumber) {
+      toBlockNumber = 'latest';
+    }
+
+    const transTo = await web3.trace.filter({
+      fromBlock: fromBlockNumber,
+      toBlock: toBlockNumber,
+      toAddress: [wallet.toLowerCase()],
+    });
+    const transFrom = await web3.trace.filter({
+      fromBlock: fromBlockNumber,
+      toBlock: toBlockNumber,
+      fromAddress: [wallet.toLowerCase()],
+    });
+    return transTo.concat(transFrom);
   }
+  logger.error(
+    `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
+  );
+  return new Error(
+    `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
+  );
 }
 module.exports.getAllTransactionsForWallet = getAllTransactionsForWallet;
 
@@ -774,51 +804,51 @@ async function getTransactionCountForWallet(wallet) {
 module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
 
 /**
- * Gets the transaction info/receipt and returns the transaction object 
- * @param {string} txHash Transaction hash 
+ * Gets the transaction info/receipt and returns the transaction object
+ * @param {string} txHash Transaction hash
  */
 async function getTxInfo(txHash) {
   try {
-    const [txInfo, txReceipt] = await Promise.all(
-      [web3.eth.getTransaction(txHash), 
-       web3.eth.getTransactionReceipt(txHash)
-      ])
-    
-    var txObject = {
+    const [txInfo, txReceipt] = await Promise.all([
+      web3.eth.getTransaction(txHash),
+      web3.eth.getTransactionReceipt(txHash),
+    ]);
+
+    const txObject = {
       txHash: txInfo.hash,
       fromAddress: txInfo.from,
       toAddress: txInfo.to,
       value: txInfo.value,
       asset: 'ETH',
       contractAddress: null,
-      status: (txReceipt.status === true) ? 'confirmed' : 'failed',
+      status: txReceipt.status === true ? 'confirmed' : 'failed',
       gasPrice: txInfo.gasPrice,
       gasUsed: txReceipt.gasUsed,
-      blockNumber: txReceipt.blockNumber
+      blockNumber: txReceipt.blockNumber,
     };
-
     if (txInfo.input !== '0x') {
-      let jsonAbi = ERC20ABI;
+      let jsonAbi;
       const contractDetail = hashMaps.assets.get(txInfo.to.toLowerCase());
-      if (contractDetail) {
-        txObject.asset = contractDetail.symbol;
-        jsonAbi = require(abiPath + txObject.asset + '.json') || ERC20ABI;
-      } else {
-        var contract = new web3.eth.Contract(jsonAbi, txInfo.to);
-        txObject.asset = await contract.methods.symbol().call() || null;
+      if (!contractDetail)
+        return logger.error(`Not a monitored contract: ${txInfo.to}`);
+      txObject.asset = contractDetail.symbol;
+      jsonAbi = require(`${abiPath + txObject.asset}.json`);
+      if (!jsonAbi) {
+        logger.error(
+          `Asset ABI not found ${txObject.asset}, using standard ERC20`,
+        );
+        jsonAbi = ERC20ABI;
       }
-
-      abiDecoder.addABI(jsonAbi);
-
       txObject.contractAddress = txInfo.to;
+      abiDecoder.addABI(jsonAbi);
       const data = abiDecoder.decodeMethod(txInfo.input);
-      [to, value, ] = data.params;
-      [txObject.toAddress, txObject.value] = [to.value, value.value]
+      const [to, value] = data.params;
+      [txObject.toAddress, txObject.value] = [to.value, value.value];
     }
     return txObject;
   } catch (e) {
     logger.error(`getTxInfo(${txHash}) failed with error: ${e}`);
   }
-};
+}
 
 module.exports.getTxInfo = getTxInfo;
