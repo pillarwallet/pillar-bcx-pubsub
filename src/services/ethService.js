@@ -25,7 +25,6 @@ const logger = require('../utils/logger');
 const Web3 = require('web3');
 const helpers = require('web3-core-helpers');
 const BigNumber = require('bignumber.js');
-require('dotenv').config();
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
@@ -35,11 +34,12 @@ const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
 const redisService = require('./redisService');
 const config = require('../config');
-
 const protocol = 'Ethereum';
-const gethUrl = `${config.get('geth.url')}:${config.get('geth.port')}`;
+const gethUrl = `${config.get('geth.url')}`;
 const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
 const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
+const ParityTraceModule = require('@pillarwallet/pillar-parity-trace');
+const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
 let web3;
 let wsCnt = 0;
 let client;
@@ -60,7 +60,7 @@ function connect() {
     try {
       if (
         web3 === undefined ||
-        !web3._provider.connected ||
+        !web3.currentProvider ||
         !web3.eth.isSyncing()
       ) {
         const isWebSocket =
@@ -70,79 +70,22 @@ function connect() {
         } else {
           web3 = new Web3(new Web3.providers.HttpProvider(nodeUrl));
         }
-        /**
-         * extend Web3 functionality by including parity trace functions
-         */
-        web3.extend({
-          property: 'trace',
-          methods: [
-            new web3.extend.Method({
-              name: 'call',
-              call: 'trace_call',
-              params: 3,
-              inputFormatter: [
-                helpers.formatters.inputCallFormatter,
-                null,
-                helpers.formatters.inputDefaultBlockNumberFormatter,
-              ],
-            }),
-            new web3.extend.Method({
-              name: 'rawTransaction',
-              call: 'trace_rawTransaction',
-              params: 2,
-            }),
-            new web3.extend.Method({
-              name: 'replayTransaction',
-              call: 'trace_replayTransaction',
-              params: 2,
-            }),
-            new web3.extend.Method({
-              name: 'block',
-              call: 'trace_block',
-              params: 1,
-              inputFormatter: [
-                helpers.formatters.inputDefaultBlockNumberFormatter,
-              ],
-            }),
-            new web3.extend.Method({
-              name: 'filter',
-              call: 'trace_filter',
-              params: 1,
-            }),
-            new web3.extend.Method({
-              name: 'get',
-              call: 'trace_get',
-              params: 2,
-            }),
-            new web3.extend.Method({
-              name: 'transaction',
-              call: 'trace_transaction',
-              params: 1,
-            }),
-          ],
-        });
         if (isWebSocket) {
-          web3._provider.on('end', eventObj => {
+          web3.currentProvider.on('end', eventObj => {
             logger.error(
-              'Websocket disconnected!! Restarting connection....',
-              eventObj,
-            );
+              'Websocket disconnected!! Restarting connection....');
             web3 = undefined;
             module.exports.web3 = undefined;
           });
-          web3._provider.on('close', eventObj => {
+          web3.currentProvider.on('close', eventObj => {
             logger.error(
-              'Websocket disconnected!! Restarting connection....',
-              eventObj,
-            );
+              'Websocket disconnected!! Restarting connection....');
             web3 = undefined;
             module.exports.web3 = undefined;
           });
-          web3._provider.on('error', eventObj => {
+          web3.currentProvider.on('error', eventObj => {
             logger.error(
-              'Websocket disconnected!! Restarting connection....',
-              eventObj,
-            );
+              'Websocket disconnected!! Restarting connection....');
             web3 = undefined;
             module.exports.web3 = undefined;
           });
@@ -755,12 +698,12 @@ async function getAllTransactionsForWallet(
       toBlockNumber = 'latest';
     }
 
-    const transTo = await web3.trace.filter({
+    const transTo = await parityTrace.filter({
       fromBlock: fromBlockNumber,
       toBlock: toBlockNumber,
       toAddress: [wallet.toLowerCase()],
     });
-    const transFrom = await web3.trace.filter({
+    const transFrom = await parityTrace.filter({
       fromBlock: fromBlockNumber,
       toBlock: toBlockNumber,
       fromAddress: [wallet.toLowerCase()],
