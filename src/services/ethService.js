@@ -293,10 +293,10 @@ function subscribeBlockHeaders() {
           module.exports.storeGasInfo(blockHeader);
 
           // Check MarketMaker Transactions
-          web3.eth.getBlock(blockHeader.number).then(response => {
+          getBlockTx(blockHeader.number).then(response => {
             response.transactions.forEach(async transaction => {
-              if (await client.existsAsync(transaction)) {
-                const txObject = await getTxInfo(transaction);
+              if (await client.existsAsync(transaction.hash)) {
+                const txObject = await getTxInfo(transaction.hash);
                 rmqServices.sendOffersMessage(txObject);
                 client.del(transaction);
               }
@@ -331,7 +331,7 @@ function storeGasInfo(blockHeader) {
   try {
     web3.eth.getBlockTransactionCount(blockHeader.number).then(txnCnt => {
       if (txnCnt !== null) {
-        web3.eth.getBlock(blockHeader.number, true).then(trans => {
+        getBlockTx(blockHeader.number).then(trans => {
           const gasPrices = trans.transactions.map(tran =>
             BigNumber(tran.gasPrice),
           );
