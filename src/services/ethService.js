@@ -236,7 +236,7 @@ function subscribeBlockHeaders() {
           module.exports.storeGasInfo(blockHeader);
 
           // Check Offers Transactions status
-          const offersList = await client.existsAsync.keys('?'.repeat(33));
+          const offersList = await client.keys('?'.repeat(33));
           if(!offersList)
             return false;
           offersList.forEach(async transaction => {

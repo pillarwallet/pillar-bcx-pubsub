@@ -37,11 +37,6 @@ module.exports.getLastBlockNumber = () =>
     resolve(500);
   });
 
-module.exports.getPendingTxArray = () =>
-  new Promise(resolve => {
-    resolve([]);
-  });
-
 module.exports.getTransactionCountForWallet = () =>
   new Promise(resolve => {
     resolve(50);
