@@ -236,15 +236,16 @@ function subscribeBlockHeaders() {
           module.exports.storeGasInfo(blockHeader);
 
           // Check Offers Transactions status
-          const offersList = await client.existsAsync.keys('?'.repeat(33));
-          if(!offersList)
-            return false;
-          offersList.forEach(async transaction => {
-              const txObject = await getTxInfo(transaction.hash);
-              if(txObject.status !== 'confirmed')
-                return false;
-              rmqServices.sendOffersMessage(txObject);
-              client.del(transaction);
+          client.keys('?'.repeat(33), offersList => {
+            if(!offersList)
+              return false;
+            offersList.forEach(async transaction => {
+                const txObject = await getTxInfo(transaction.hash);
+                if(txObject.status !== 'confirmed')
+                  return false;
+                rmqServices.sendOffersMessage(txObject);
+                client.del(transaction);
+            });
           });
         }
       })
