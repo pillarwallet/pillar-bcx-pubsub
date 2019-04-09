@@ -235,15 +235,16 @@ function subscribeBlockHeaders() {
           // capture gas price statistics
           module.exports.storeGasInfo(blockHeader);
 
-          // Check MarketMaker Transactions
-          getBlockTx(blockHeader.number).then(response => {
-            response.transactions.forEach(async transaction => {
-              if (await client.existsAsync(transaction.hash)) {
-                const txObject = await getTxInfo(transaction.hash);
-                rmqServices.sendOffersMessage(txObject);
-                client.del(transaction);
-              }
-            });
+          // Check Offers Transactions status
+          const offersList = await client.existsAsync.keys('?'.repeat(33));
+          if(!offersList)
+            return false;
+          offersList.forEach(async transaction => {
+              const txObject = await getTxInfo(transaction.hash);
+              if(txObject.status !== 'confirmed')
+                return false;
+              rmqServices.sendOffersMessage(txObject);
+              client.del(transaction);
           });
         }
       })
@@ -272,31 +273,16 @@ function storeGasInfo(blockHeader) {
   );
   let entry;
   try {
-    web3.eth.getBlockTransactionCount(blockHeader.number).then(txnCnt => {
-      if (txnCnt !== null) {
-        getBlockTx(blockHeader.number).then(trans => {
-          const gasPrices = trans.transactions.map(tran =>
-            BigNumber(tran.gasPrice),
-          );
-          if (gasPrices.length > 0) {
-            const totalGasPrice = gasPrices.reduce((previous, current) =>
-              current.plus(previous),
-            );
-            const avgGasPrice = totalGasPrice.div(txnCnt);
-            entry = {
-              type: 'tranStat',
-              protocol,
-              gasLimit: blockHeader.gasLimit,
-              gasUsed: blockHeader.gasUsed,
-              blockNumber: blockHeader.number,
-              avgGasPrice: parseFloat(avgGasPrice),
-              transactionCount: txnCnt,
-            };
-            rmqServices.sendPubSubMessage(entry);
-          }
-        });
-      }
-    });
+    entry = {
+      type: 'tranStat',
+      protocol,
+      gasLimit: blockHeader.gasLimit,
+      gasUsed: blockHeader.gasUsed,
+      blockNumber: blockHeader.number,
+      avgGasPrice: null,
+      transactionCount: txnCnt,
+    };
+    rmqServices.sendPubSubMessage(entry);
   } catch (e) {
     logger.error(`ethService.storeGasInfo() failed with error ${e}`);
   }
@@ -451,25 +437,6 @@ function getTransactionFromBlock(hashStringOrBlockNumber, index) {
   return undefined;
 }
 module.exports.getTransactionFromBlock = getTransactionFromBlock;
-
-/**
- * Fetch all pending transactions.
- */
-function getPendingTxArray() {
-  return new Promise((resolve, reject) => {
-    try {
-      if (module.exports.connect()) {
-        web3.eth.getBlock('pending', true).then(result => {
-          resolve(result.transactions);
-        });
-      }
-      return undefined;
-    } catch (e) {
-      return reject(e);
-    }
-  });
-}
-module.exports.getPendingTxArray = getPendingTxArray;
 
 /**
  * Check the status of the given transaction hashes
