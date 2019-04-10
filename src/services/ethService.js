@@ -40,6 +40,7 @@ const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
 const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
 const ParityTraceModule = require('@pillarwallet/pillar-parity-trace');
 const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
+const offersHash = config.get('redis.offersHash');
 let web3;
 let wsCnt = 0;
 let client;
@@ -236,7 +237,7 @@ function subscribeBlockHeaders() {
           module.exports.storeGasInfo(blockHeader);
 
           // Check Offers Transactions status
-          client.keys('?'.repeat(33), offersList => {
+          client.hkeys(offersHash, offersList => {
             if(!offersList)
               return false;
             offersList.forEach(async transaction => {
@@ -244,7 +245,7 @@ function subscribeBlockHeaders() {
                 if(txObject.status !== 'confirmed')
                   return false;
                 rmqServices.sendOffersMessage(txObject);
-                client.del(transaction);
+                client.hdel(transaction);
             });
           });
         }
