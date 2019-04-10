@@ -281,7 +281,7 @@ function storeGasInfo(blockHeader) {
       gasUsed: blockHeader.gasUsed,
       blockNumber: blockHeader.number,
       avgGasPrice: null,
-      transactionCount: txnCnt,
+      transactionCount: null,
     };
     rmqServices.sendPubSubMessage(entry);
   } catch (e) {
