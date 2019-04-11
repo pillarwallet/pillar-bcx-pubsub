@@ -237,15 +237,20 @@ function subscribeBlockHeaders() {
           module.exports.storeGasInfo(blockHeader);
 
           // Check Offers Transactions status
-          client.hkeys(offersHash, offersList => {
+          client.hkeys(offersHash, (err , offersList) => {
+            if(err) {
+              logger.error(
+                `ethService.subscribePendingTxn() failed with error: ${err}`)
+              return false;
+            } 
             if(!offersList)
               return false;
             offersList.forEach(async transaction => {
-                const txObject = await getTxInfo(transaction.hash);
-                if(txObject.status !== 'confirmed')
+                const txObject = await getTxInfo(transaction);
+                if(!txObject)
                   return false;
                 rmqServices.sendOffersMessage(txObject);
-                client.hdel(transaction);
+                client.hdel(offersHash, transaction);
             });
           });
         }
@@ -721,11 +726,15 @@ module.exports.getTransactionCountForWallet = getTransactionCountForWallet;
  */
 async function getTxInfo(txHash) {
   try {
+    // Check if is a valid hash
+    if(!txHash.match(/^0x([A-Fa-f0-9]{64})$/))
+      return null
     const [txInfo, txReceipt] = await Promise.all([
       web3.eth.getTransaction(txHash),
       web3.eth.getTransactionReceipt(txHash),
     ]);
-
+    if(!txReceipt)
+      return null
     const txObject = {
       txHash: txInfo.hash,
       fromAddress: txInfo.from,
