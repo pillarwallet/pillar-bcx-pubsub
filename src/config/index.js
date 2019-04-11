@@ -120,6 +120,12 @@ const config = convict({
       env: 'BCX_REDIS_PASSWORD',
       sensitive: true,
     },
+    offersHash: {
+      format: String,
+      default: 'offers',
+      arg: 'bcxRedisOffersHash',
+      env: 'BCX_REDIS_OFFERS_HASH',
+    }
   },
   db: {
     username: {

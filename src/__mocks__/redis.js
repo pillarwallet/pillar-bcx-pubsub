@@ -56,6 +56,11 @@ const redis = {
           resolve('testValue');
         });
       },
+      hkeys() {
+        return new Promise(resolve => {
+          resolve(['0xTransaction1','0xTransaction2']);
+        });
+      },
     };
   },
 };
