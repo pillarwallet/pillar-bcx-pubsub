@@ -24,8 +24,8 @@ const config = convict({
     env: 'BCX_PROTOCOL',
   },
   maxWallets: {
-    format: String,
-    default: 'Ethereum',
+    format: Number,
+    default: 5000,
     arg: 'maxWallets',
     env: 'BCX_MAX_WALLETS',
   },
