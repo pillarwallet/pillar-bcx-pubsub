@@ -23,8 +23,6 @@ SOFTWARE.
 /** @module ethService.js */
 const logger = require('../utils/logger');
 const Web3 = require('web3');
-const helpers = require('web3-core-helpers');
-const BigNumber = require('bignumber.js');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
@@ -74,19 +72,22 @@ function connect() {
         if (isWebSocket) {
           web3.currentProvider.on('end', eventObj => {
             logger.error(
-              'Websocket disconnected!! Restarting connection....');
+              'Websocket disconnected!! Restarting connection....',
+              eventObj);
             web3 = undefined;
             module.exports.web3 = undefined;
           });
           web3.currentProvider.on('close', eventObj => {
             logger.error(
-              'Websocket disconnected!! Restarting connection....');
+              'Websocket disconnected!! Restarting connection....',
+              eventObj);
             web3 = undefined;
             module.exports.web3 = undefined;
           });
           web3.currentProvider.on('error', eventObj => {
             logger.error(
-              'Websocket disconnected!! Restarting connection....');
+              'Websocket disconnected!! Restarting connection....',
+              eventObj);
             web3 = undefined;
             module.exports.web3 = undefined;
           });
@@ -677,12 +678,13 @@ async function getAllTransactionsForWallet(
       toBlock: toBlockNumber,
       toAddress: [wallet.toLowerCase()],
     });
+
     const transFrom = await parityTrace.filter({
       fromBlock: fromBlockNumber,
       toBlock: toBlockNumber,
       fromAddress: [wallet.toLowerCase()],
     });
-    return transTo.concat(transFrom);
+    return transTo.result.concat(transFrom.result);
   }
   logger.error(
     `ethService.getAllTransactionsForWallet() - failed connecting to web3 provider`,
