@@ -25,7 +25,6 @@ module.exports.connect = connect;
 async function set(key, value){
     await module.exports.assets.set(key, value)
     await client.hset(ASSET_FIELD, key, JSON.stringify(value))
-    console.log('paso el hset');
     
 }
 
