@@ -23,9 +23,6 @@ SOFTWARE.
 /** @module ethService.js */
 const logger = require('../utils/logger');
 const Web3 = require('web3');
-const helpers = require('web3-core-helpers');
-const BigNumber = require('bignumber.js');
-require('dotenv').config();
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
 const ERC721ABI = require('../abi/ERC721ABI');
