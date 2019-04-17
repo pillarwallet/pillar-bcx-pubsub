@@ -258,7 +258,7 @@ async function processTxn(transaction, wallet, pillarId) {
     if (theAsset !== undefined) {
       asset = theAsset.symbol;
       if (fs.existsSync(`${abiPath + asset}.json`)) {
-        const theAbi = abiService.requireAbi(txObject.asset);
+        const theAbi = abiService.requireAbi(asset);
         abiDecoder.addABI(theAbi);
       } else {
         abiDecoder.addABI(ERC20ABI);
