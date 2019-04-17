@@ -19,12 +19,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const HashMap = require('hashmap');
-const assetManager = require('./assetManager');
 
-exports.accounts = new HashMap();
-exports.assets = assetManager
-exports.pendingTx = new HashMap();
-exports.pendingAssets = new HashMap();
+afterAll(() => {
+  jest.restoreAllMocks();
+});
 
-exports.LATEST_BLOCK_NUMBER = 0;
+beforeAll(() => {
+  jest.restoreAllMocks();
+});
+
+describe('Save asset on redis', () => {
+  it('should have been called', () => {
+    var hashmaps = require("./hashMaps");
+    hashmaps.assets.connect();
+    hashmaps.assets.set("2", "b");
+  });
+})
+
+describe('Save asset on redis 2', () => {
+  it('should have been called', () => {
+    var hashmaps = require("./hashMaps");
+    hashmaps.assets.loadHash();
+  })
+})
+
