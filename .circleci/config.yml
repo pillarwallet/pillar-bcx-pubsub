@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/pillar-bcx-pubsub
     docker:
-      - image: circleci/node:8.9.4
+      - image: circleci/node:8.15.1
     steps:
       - checkout
       - run:
@@ -53,18 +53,18 @@ jobs:
   publish-and-push-dev:
     working_directory: ~/pillar-bcx-pubsub
     docker:
-      - image: circleci/node:8.9.4
+      - image: circleci/node:8.15.1
     steps:
       - checkout
       - run:
           name: install python
-          command: sudo apt-get update && sudo apt-get install python
+          command: sudo apt-get update && sudo apt-get install python3
       - run:
           name: Install pip
-          command: sudo apt-get update && sudo apt-get install -y python-pip && sudo apt-get install -y libxml2-dev libxslt1-dev build-essential python-dev libssl-dev
+          command: sudo apt-get update && sudo apt-get install -y python3-pip && sudo apt-get install -y libxml2-dev libxslt1-dev build-essential python-dev libssl-dev
       - run:
           name: Install AWS CLI
-          command: sudo pip install awscli
+          command: sudo pip3 install awscli
       - run:
           name: Append circleCI build number to version
           command: |
@@ -98,18 +98,18 @@ jobs:
   publish-and-push-qa:
     working_directory: ~/pillar-bcx-pubsub
     docker:
-      - image: circleci/node:8.9.4
+      - image: circleci/node:8.15.1
     steps:
       - checkout
       - run:
           name: install python
-          command: sudo apt-get update && sudo apt-get install python
+          command: sudo apt-get update && sudo apt-get install python3
       - run:
           name: Install pip
-          command: sudo apt-get update && sudo apt-get install -y python-pip && sudo apt-get install -y libxml2-dev libxslt1-dev build-essential python-dev libssl-dev
+          command: sudo apt-get update && sudo apt-get install -y python3-pip && sudo apt-get install -y libxml2-dev libxslt1-dev build-essential python-dev libssl-dev
       - run:
           name: Install AWS CLI
-          command: sudo pip install awscli
+          command: sudo pip3 install awscli
       - run:
           name: Append circleCI build number to version
           command: |
@@ -143,7 +143,7 @@ jobs:
   publish-prod:
     working_directory: ~/pillar-bcx-pubsub
     docker:
-      - image: circleci/node:8.9.4
+      - image: circleci/node:8.15.1
     steps:
       - checkout
       - run:
@@ -177,7 +177,7 @@ workflows:
           filters:
             branches:
               only:
-                  - develop
+                  - fix/debian-errors
       - publish-and-push-qa:
           requires:
              - build
