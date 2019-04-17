@@ -65,7 +65,9 @@ module.exports.values = values;
 
 async function loadHash(){
     client.hgetall(ASSET_FIELD, function(err, obj) {
-       module.exports.assets = new HashMap(obj);
+        if(obj){
+            module.exports.assets = new HashMap(obj);
+        }
     });
 }
 
