@@ -23,7 +23,9 @@ SOFTWARE.
 /** @module ethService.js */
 const logger = require('../utils/logger');
 const Web3 = require('web3');
-const abiPath = `${require('app-root-path')}/src/abi/`;
+const helpers = require('web3-core-helpers');
+const BigNumber = require('bignumber.js');
+require('dotenv').config();
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
 const ERC721ABI = require('../abi/ERC721ABI');
@@ -32,6 +34,8 @@ const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
 const redisService = require('./redisService');
 const config = require('../config');
+const abiService = require('./abiService');
+
 const protocol = 'Ethereum';
 const gethUrl = `${config.get('geth.url')}`;
 const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
@@ -755,7 +759,7 @@ async function getTxInfo(txHash) {
       if (!contractDetail)
         return logger.error(`Not a monitored contract: ${txInfo.to}`);
       txObject.asset = contractDetail.symbol;
-      jsonAbi = require(`${abiPath + txObject.asset}.json`);
+      jsonAbi = abiService.requireAbi(txObject.asset);
       if (!jsonAbi) {
         logger.error(
           `Asset ABI not found ${txObject.asset}, using standard ERC20`,

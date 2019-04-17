@@ -31,6 +31,7 @@ const dbServices = require('./services/dbServices');
 const fs = require('fs');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const config = require('./config');
+const abiService = require("./services/abiService")
 
 const LOOK_BACK_BLOCKS = 50;
 const ethService = require('./services/ethService');
@@ -257,7 +258,7 @@ async function processTxn(transaction, wallet, pillarId) {
     if (theAsset !== undefined) {
       asset = theAsset.symbol;
       if (fs.existsSync(`${abiPath + asset}.json`)) {
-        const theAbi = require(`${abiPath + asset}.json`);
+        const theAbi = abiService.requireAbi(txObject.asset);
         abiDecoder.addABI(theAbi);
       } else {
         abiDecoder.addABI(ERC20ABI);
