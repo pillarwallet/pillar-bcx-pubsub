@@ -177,7 +177,7 @@ workflows:
           filters:
             branches:
               only:
-                  - fix/debian-errors
+                  - develop
       - publish-and-push-qa:
           requires:
              - build
