@@ -32,7 +32,7 @@ module.exports.set = set;
 
 
 async function count() {
-   return module.exports.assets.assets.count();
+   return module.exports.assets.count();
 }
 
 module.exports.count = count;
@@ -45,7 +45,7 @@ async function get(key) {
 module.exports.get = get;
 
 async function has(key) {
-  return module.exports.assets.assets.has(key)
+  return module.exports.assets.has(key)
 }
 
 module.exports.has = has;
@@ -65,7 +65,7 @@ module.exports.values = values;
 
 async function loadHash(){
     client.hgetall(ASSET_FIELD, function(err, obj) {
-       module.exports.assets = obj;
+       module.exports.assets = new HashMap(obj);
     });
 }
 
