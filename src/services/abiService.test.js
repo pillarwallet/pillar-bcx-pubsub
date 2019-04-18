@@ -19,19 +19,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-/** @module abiService.js */
-const fs = require('fs');
+const abiService = require('./abiService.js');
+const abiDecoder = require('abi-decoder');
 const abiPath = `${require('app-root-path')}/src/abi/`;
+const fs = require('fs');
 
-/**
- * Store the new pending transaction in memeory if the transaction corresponds
- * to a monitored wallet.
- * @param {any} abiFileName - the name of the abi file 
- */
- function requireAbi(abiFileName) {
 
-    let jsonAbi = fs.readFileSync(abiPath + abiFileName + ".json")
-    return JSON.parse(jsonAbi.toString());
-}
-
-module.exports.requireAbi = requireAbi;
+describe('Abi Decoding', () => {
+  test('Abi decoding', () => {
+        fs.readdirSync(abiPath).forEach(file => {
+            let theAbi = abiService.requireAbi(file.replace(".json",""));
+            let theAbi2 = require(abiPath+file);
+            expect(Array.isArray(theAbi2)).toEqual(true);
+            expect(Array.isArray(theAbi)).toEqual(true);
+            abiDecoder.addABI(theAbi);
+            abiDecoder.addABI(theAbi2);
+            
+        })
+  });
+});
