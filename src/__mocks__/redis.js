@@ -22,38 +22,45 @@ SOFTWARE.
 
 const redis = {
   createClient() {
-    return {
-      getAsync() {
+    return { getAsync() {
         return new Promise(resolve => {
           resolve(false);
         });
-      },
-      existsAsync() {
+      }, existsAsync() {
         return new Promise(resolve => {
           resolve(false);
         });
-      },
-      setAsync() {
+      }, setAsync() {
         return new Promise(resolve => {
           resolve(false);
         });
-      },
-      set() {
+      }, set() {
         return new Promise(resolve => {
           resolve(false);
         });
-      },
-      get(data, callback) {
+      }, hset() {
+        return new Promise(resolve => {
+          resolve(true);
+        });
+      }, hgetall() {
+        return new Promise(resolve => {
+          resolve(true);
+        });
+      }, get(data, callback) {
         if (typeof callback === 'function') {
           return callback(false, JSON.stringify({ status: 'completed' }));
         }
         return new Promise(resolve => {
           resolve(false);
         });
-      },
-      on() {
+      }, on() {
         return new Promise(resolve => {
           resolve('testValue');
+        });
+      },
+      hkeys() {
+        return new Promise(resolve => {
+          resolve(['0xTransaction1','0xTransaction2']);
         });
       },
     };

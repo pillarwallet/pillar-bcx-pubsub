@@ -24,8 +24,8 @@ const config = convict({
     env: 'BCX_PROTOCOL',
   },
   maxWallets: {
-    format: String,
-    default: 'Ethereum',
+    format: Number,
+    default: 5000,
     arg: 'maxWallets',
     env: 'BCX_MAX_WALLETS',
   },
@@ -120,6 +120,12 @@ const config = convict({
       env: 'BCX_REDIS_PASSWORD',
       sensitive: true,
     },
+    offersHash: {
+      format: String,
+      default: 'offers',
+      arg: 'bcxRedisOffersHash',
+      env: 'BCX_REDIS_OFFERS_HASH',
+    }
   },
   db: {
     username: {

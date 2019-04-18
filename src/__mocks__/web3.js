@@ -25,7 +25,7 @@ const blockNumber = 2461146;
 const txHash =
   '0x33e9dd7bf74433d25fedc4e9465b08f63360c413da5bc53d6493e325e7ef3c7b';
 
-const ethTxHash = '0xEthTxHash';
+const ethTxHash = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
 const txObject = {
   blockHash:

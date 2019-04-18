@@ -19,12 +19,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const HashMap = require('hashmap');
-const assetManager = require('./assetManager');
+/** @module abiService.js */
+const fs = require('fs');
+const abiPath = `${require('app-root-path')}/src/abi/`;
 
-exports.accounts = new HashMap();
-exports.assets = assetManager
-exports.pendingTx = new HashMap();
-exports.pendingAssets = new HashMap();
+/**
+ * Store the new pending transaction in memeory if the transaction corresponds
+ * to a monitored wallet.
+ * @param {any} abiFileName - the name of the abi file 
+ */
+ function requireAbi(abiFileName) {
 
-exports.LATEST_BLOCK_NUMBER = 0;
+    let jsonAbi = fs.readFileSync(abiPath + abiFileName + ".json")
+    return JSON.parse(jsonAbi.toString());
+}
+
+module.exports.requireAbi = requireAbi;

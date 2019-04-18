@@ -30,6 +30,7 @@ const abiPath = `${require('app-root-path')}/src/abi/`;
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
 const redisService = require('./redisService');
+const abiService = require('./abiService');
 
 /**
  * Connecting to Redis
@@ -97,7 +98,7 @@ async function newPendingTran(tx, protocol) {
         logger.debug('Contract detail category: ' + contractDetail.category);
         if(typeof contractDetail.category === 'undefined' || contractDetail.category === 'ERC20') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
-            const theAbi = require(`${abiPath + asset}.json`);
+            const theAbi = abiService.requireAbi(asset)
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
             abiDecoder.addABI(theAbi);
           } else {
