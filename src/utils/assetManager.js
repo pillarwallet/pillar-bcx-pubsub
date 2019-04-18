@@ -22,48 +22,48 @@ function connect(){
 module.exports.connect = connect;
 
 
-async function set(key, value){
-    await module.exports.assets.set(key, value)
-    await client.hset(ASSET_FIELD, key, JSON.stringify(value))
+function set(key, value){
+    module.exports.assets.set(key, value)
+    client.hset(ASSET_FIELD, key, JSON.stringify(value))
     
 }
 
 module.exports.set = set;
 
 
-async function count() {
+function count() {
    return module.exports.assets.count();
 }
 
 module.exports.count = count;
 
 
-async function get(key) {
+function get(key) {
     return module.exports.assets.get(key);
 }
 
 module.exports.get = get;
 
-async function has(key) {
+function has(key) {
   return module.exports.assets.has(key)
 }
 
 module.exports.has = has;
 
-async function keys() {
+function keys() {
   return module.exports.assets.keys();
 }
 
 module.exports.keys = keys;
 
 
-async function values() {
+function values() {
   return module.exports.assets.values();
 }
 
 module.exports.values = values;
 
-async function loadHash(){
+function loadHash(){
     client.hgetall(ASSET_FIELD, function(err, obj) {
         if(obj){
             module.exports.assets = new HashMap(obj);
