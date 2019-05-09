@@ -1,4 +1,5 @@
 var ethService = require("./ethService")
+const logger = require('../utils/logger');
 
 /**
  * Subscribe to geth WS event corresponding to new pending transactions.
@@ -16,7 +17,7 @@ async function getAndRetry(web3Func, param){
     let count = 0;
     while ((block = await ethService.web3.eth[web3Func](param)) == null && count < 5) {
         count++;
-        console.info(`web3 func  ${web3Func} returned null for ${param}. count: ${count} `)
+        logger.info(`web3 func  ${web3Func} returned null for ${param}. count: ${count} `)
         await sleep(2000);
     }
     if (block) {
