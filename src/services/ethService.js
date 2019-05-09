@@ -32,6 +32,7 @@ const hashMaps = require('../utils/hashMaps');
 const redisService = require('./redisService');
 const config = require('../config');
 const abiService = require('./abiService');
+const web3ApiService = require('./web3ApiService');
 
 const protocol = 'Ethereum';
 const gethUrl = `${config.get('geth.url')}`;
@@ -154,17 +155,16 @@ function subscribePendingTxn() {
           logger.debug(
             `ethService.subscribePendingTxn(): fetch txInfo for hash: ${txHash}`,
           );
-          web3.eth
-            .getTransaction(txHash)
+
+          web3ApiService
+            .getAndRetry('getTransaction', txHash)
             .then(txInfo => {
               if (txInfo !== null) {
                 processTx.newPendingTran(txInfo, protocol);
               }
             })
             .catch(e => {
-              logger.error(
-                `ethService.subscribePendingTxn() failed with error: ${e}`,
-              );
+              logger.error(`ethService.subscribePendingTxn() failed with error: ${e}`);
             });
         }
       })
@@ -409,7 +409,7 @@ module.exports.getLastBlockNumber = getLastBlockNumber;
  */
 function getTxReceipt(txHash) {
   if (module.exports.connect()) {
-    return web3.eth.getTransactionReceipt(txHash);
+    return web3ApiService.getAndRetry("getTransactionReceipt",txHash)
   }
   logger.error('ethService.getTxReceipt(): connection to geth failed!');
   return undefined;
@@ -422,7 +422,7 @@ module.exports.getTxReceipt = getTxReceipt;
  */
 function getBlockTransactionCount(hashStringOrBlockNumber) {
   if (module.exports.connect()) {
-    return web3.eth.getBlockTransactionCount(hashStringOrBlockNumber);
+    return  web3ApiService.getAndRetry("getBlockTransactionCount",hashStringOrBlockNumber)
   }
   logger.error(
     'ethService.getBlockTransactionCount(): connection to geth failed!',
@@ -466,7 +466,7 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.connect()) {
-          web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+            web3ApiService.getAndRetry("getTransactionReceipt",item.txHash).then(async receipt => {
             logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
             if (receipt !== null) {
               let status;
@@ -537,7 +537,7 @@ function checkNewAssets(pendingAssets) {
           `ethService.checkNewAssets(): Checking status of transaction: ${item}`,
         );
         if (module.exports.connect()) {
-          web3.eth.getTransactionReceipt(item).then(receipt => {
+          web3ApiService.getAndRetry("getTransactionReceipt",item).then(receipt => {
             logger.debug(
               `ethService.checkNewAssets(): receipt is ${JSON.stringify(
                 receipt,
@@ -733,8 +733,8 @@ async function getTxInfo(txHash) {
     if(!txHash.match(/^0x([A-Fa-f0-9]{64})$/))
       return null
     const [txInfo, txReceipt] = await Promise.all([
-      web3.eth.getTransaction(txHash),
-      web3.eth.getTransactionReceipt(txHash),
+      web3ApiService.getAndRetry("getTransaction",txHash),
+      web3ApiService.getAndRetry("getTransactionReceipt",txHash),
     ]);
     if(!txReceipt)
       return null
