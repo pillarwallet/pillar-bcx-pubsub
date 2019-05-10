@@ -459,7 +459,7 @@ function checkPendingTx(pendingTxArray) {
     `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.length}`,
   );
   return new Promise((resolve, reject) => {
-    if (pendingTxArray === undefined || pendingTxArray.length === 0) {
+    if (pendingTxArray === undefined || pendingTxArray.count() === 0) {
       resolve();
     } else {
       pendingTxArray.forEach(item => {
