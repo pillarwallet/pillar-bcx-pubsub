@@ -218,6 +218,7 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
     if (pillarId !== null && pillarId !== '') {
 
       try {
+        let value = evnt.returnValues._value;
         let jsonParsedValue = JSON.parse(value);
         if (typeof jsonParsedValue === 'object' && jsonParsedValue._hex) {
           value = jsonParsedValue._hex;
@@ -234,7 +235,7 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
         asset: theContract.symbol,
         contractAddress: theContract.contractAddress,
         timestamp: tmstmp,
-        value: evnt.returnValues._value,
+        value,
         gasPrice: evnt.gasPrice,
         blockNumber: evnt.blockNumber,
         status: 'confirmed',
