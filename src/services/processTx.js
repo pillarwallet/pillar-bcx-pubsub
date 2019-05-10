@@ -151,9 +151,12 @@ async function newPendingTran(tx, protocol) {
           )}`,
         );
 
-        if(typeof value === "object" && value._hex){
-          value = value._hex;
-        }
+        try {
+          let jsonParsedValue = JSON.parse(value);
+          if (typeof jsonParsedValue === 'object' && jsonParsedValue._hex) {
+            value = jsonParsedValue._hex;
+          }
+        } catch (e) {}
 
         // send a message to the notifications queue reporting a new transactions
         let txMsgTo = {
