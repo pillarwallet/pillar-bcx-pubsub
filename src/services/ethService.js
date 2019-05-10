@@ -460,6 +460,7 @@ function checkPendingTx(pendingTxArray) {
       resolve();
     } else {
       pendingTxArray.forEach(item => {
+        hashMaps.pendingTx.delete(item.txHash);
         logger.debug(
           `ethService.checkPendingTx(): Checking status of transaction: ${
             item.txHash
@@ -498,16 +499,18 @@ function checkPendingTx(pendingTxArray) {
                   item.txHash
                 } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
               );
-              hashMaps.pendingTx.delete(item.txHash);
+              
             } else {
               logger.debug(
                 `ethService.checkPendingTx(): Txn ${
                   item.txHash
                 } is still pending.`,
               );
+              hashMaps.pendingTx.set(item.txHash, item);
             }
           });
         } else {
+          hashMaps.pendingTx.set(item.txHash, item);
           reject(
             new Error(
               'ethService.checkPendingTx(): connection to geth failed!',
@@ -533,6 +536,8 @@ function checkNewAssets(pendingAssets) {
       resolve();
     } else {
       pendingAssets.forEach(item => {
+        const hash = typeof item.hash !== 'undefined' ? item.hash : item.txHash;
+        hashMaps.pendingAssets.delete(hash, item);
         logger.debug(
           `ethService.checkNewAssets(): Checking status of transaction: ${item}`,
         );
@@ -552,6 +557,8 @@ function checkNewAssets(pendingAssets) {
               logger.debug(
                 `ethService.checkPendingTx(): Txn ${item} is still pending.`,
               );
+              
+              hashMaps.pendingAssets.set(hash, item);
             }
           });
         } else {
