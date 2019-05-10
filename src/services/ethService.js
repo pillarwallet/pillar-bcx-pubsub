@@ -156,11 +156,18 @@ function subscribePendingTxn() {
             `ethService.subscribePendingTxn(): fetch txInfo for hash: ${txHash}`,
           );
 
-          web3ApiService
-            .getAndRetry('getTransaction', txHash)
-            .then(txInfo => {
+          Promise.all([
+            web3ApiService.getAndRetry('getTransaction', txHash),
+            web3ApiService.getAndRetry('getTransactionReceipt', txHash),
+          ])
+            .then(([txInfo, txReceipt]) => {
               if (txInfo !== null) {
-                processTx.newPendingTran(txInfo, protocol);
+                let txObject = txInfo;
+                if (txReceipt) {
+                  txObject.status =
+                    txReceipt.status === true ? 'confirmed' : 'failed';
+                }
+                processTx.newPendingTran(txObject, protocol);
               }
             })
             .catch(e => {
