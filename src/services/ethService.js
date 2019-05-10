@@ -229,11 +229,14 @@ function subscribeBlockHeaders() {
             } Hash = ${blockHeader.hash}`,
           );
           // Check for pending tx in database and update their status
-          module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
-            logger.debug(
-              'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
-            );
-          });
+          if(hashMaps.pendingTx.count() > 0) {
+            module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
+              logger.debug(
+                'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
+              );
+            });
+          }
+
           module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
           // capture gas price statistics
           module.exports.storeGasInfo(blockHeader);
@@ -456,7 +459,7 @@ function checkPendingTx(pendingTxArray) {
     `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.length}`,
   );
   return new Promise((resolve, reject) => {
-    if (pendingTxArray.length === 0) {
+    if (pendingTxArray === undefined || pendingTxArray.length === 0) {
       resolve();
     } else {
       pendingTxArray.forEach(item => {
