@@ -459,9 +459,6 @@ function checkPendingTx(pendingTxArray) {
     `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.length}`,
   );
   return new Promise((resolve, reject) => {
-    if (pendingTxArray === undefined || pendingTxArray.length === 0) {
-      resolve();
-    } else {
       pendingTxArray.forEach(item => {
         hashMaps.pendingTx.delete(item.txHash);
         logger.debug(
@@ -521,7 +518,6 @@ function checkPendingTx(pendingTxArray) {
           );
         }
       });
-    }
   });
 }
 module.exports.checkPendingTx = checkPendingTx;
