@@ -150,6 +150,11 @@ async function newPendingTran(tx, protocol) {
             tx,
           )}`,
         );
+
+        if(typeof value === "object" && value._hex){
+          value = value._hex;
+        }
+
         // send a message to the notifications queue reporting a new transactions
         let txMsgTo = {
             type: 'newTx',
