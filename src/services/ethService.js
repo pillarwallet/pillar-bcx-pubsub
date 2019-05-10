@@ -537,7 +537,7 @@ function checkNewAssets(pendingAssets) {
     } else {
       pendingAssets.forEach(item => {
         const hash = typeof item.hash !== 'undefined' ? item.hash : item.txHash;
-        hashMaps.pendingAssets.delete(hash, item);
+        hashMaps.pendingAssets.delete(hash);
         logger.debug(
           `ethService.checkNewAssets(): Checking status of transaction: ${item}`,
         );
