@@ -562,6 +562,7 @@ function checkNewAssets(pendingAssets) {
             }
           });
         } else {
+          hashMaps.pendingAssets.set(hash, item);
           reject(
             new Error(
               'ethService.checkPendingTx(): connection to geth failed!',
