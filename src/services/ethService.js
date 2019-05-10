@@ -229,7 +229,7 @@ function subscribeBlockHeaders() {
             } Hash = ${blockHeader.hash}`,
           );
           // Check for pending tx in database and update their status
-          if(hashMaps.pendingTx.count() > 0) {
+          if(hashMaps.pendingTx.size > 0) {
             module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
               logger.debug(
                 'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
@@ -456,12 +456,9 @@ module.exports.getTransactionFromBlock = getTransactionFromBlock;
  */
 function checkPendingTx(pendingTxArray) {
   logger.info(
-    `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.length}`,
+    `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.size}`,
   );
   return new Promise((resolve, reject) => {
-    if (pendingTxArray === undefined || pendingTxArray.length === 0) {
-      resolve();
-    } else {
       pendingTxArray.forEach(item => {
         hashMaps.pendingTx.delete(item.txHash);
         logger.debug(
@@ -521,7 +518,6 @@ function checkPendingTx(pendingTxArray) {
           );
         }
       });
-    }
   });
 }
 module.exports.checkPendingTx = checkPendingTx;
