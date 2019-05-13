@@ -35,13 +35,14 @@ const abiService = require('./abiService');
 const web3ApiService = require('./web3ApiService');
 
 const protocol = 'Ethereum';
+const localGethUrl = 'http://127.0.0.1:8545';
 const gethUrl = `${config.get('geth.url')}`;
 const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
 const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
 const ParityTraceModule = require('@pillarwallet/pillar-parity-trace');
 const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
 const offersHash = config.get('redis.offersHash');
-let web3;
+let web3,localWeb3;
 let wsCnt = 0;
 let client;
 try {
@@ -111,6 +112,28 @@ function connect() {
 module.exports.connect = connect;
 
 /**
+ * Establish connection to the local light geth node
+ */
+function localConnect() {
+  return new Promise(((resolve, reject) => {
+      try {
+          if (localWeb3 === undefined || !(localWeb3._provider.connected) || (!localWeb3.eth.isSyncing())) {
+            localWeb3 = new Web3(new Web3.providers.HttpProvider(localGethUrl)); 
+            logger.info('ethService.localConnect(): Connection to ' + localGethUrl + ' established successfully!');
+            module.exports.localWeb3 = localWeb3;
+            resolve(true);
+          } else {
+            resolve(true);
+          }
+      } catch(e) { 
+          logger.error('ethService.localConnect() failed with error: ' + e);
+          reject(false); 
+      }
+  }));
+}
+module.exports.localConnect = localConnect;
+
+/**
  * Return an instance to the underlying web3 instance
  */
 function getWeb3() {
@@ -155,24 +178,20 @@ function subscribePendingTxn() {
           logger.debug(
             `ethService.subscribePendingTxn(): fetch txInfo for hash: ${txHash}`,
           );
-
-          Promise.all([
-            web3ApiService.getAndRetry('getTransaction', txHash),
-            web3ApiService.getAndRetry('getTransactionReceipt', txHash),
-          ])
-            .then(([txInfo, txReceipt]) => {
-              if (txInfo !== null) {
-                let txObject = txInfo;
-                if (txReceipt) {
-                  txObject.status =
-                    txReceipt.status === true ? 'confirmed' : 'failed';
+          if(module.exports.localConnect()) {
+            localWeb3.eth
+              .getTransaction(txHash)
+              .then(txInfo => {
+                if (txInfo !== null) {
+                  processTx.newPendingTran(txInfo, protocol);
                 }
-                processTx.newPendingTran(txObject, protocol);
-              }
-            })
-            .catch(e => {
-              logger.error(`ethService.subscribePendingTxn() failed with error: ${e}`);
-            });
+              })
+              .catch(e => {
+                logger.error(
+                  `ethService.subscribePendingTxn() failed with error: ${e}`,
+                );
+              });
+          }
         }
       })
       .on('error', err => {
@@ -244,7 +263,8 @@ function subscribeBlockHeaders() {
             });
           }
 
-          module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+          //module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+
           // capture gas price statistics
           module.exports.storeGasInfo(blockHeader);
 
@@ -473,49 +493,46 @@ function checkPendingTx(pendingTxArray) {
             item.txHash
           }`,
         );
-        if (module.exports.connect()) {
-            web3ApiService.getAndRetry("getTransactionReceipt",item.txHash).then(async receipt => {
-            logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
-            if (receipt !== null) {
-              let status;
-              const { gasUsed } = receipt;
-              if (receipt.status === true) {
-                status = 'confirmed';
-              } else {
-                status = 'failed';
-              }
-              const txMsg = {
-                type: 'updateTx',
-                txHash: item.txHash,
-                protocol: item.protocol,
-                fromAddress: item.fromAddress,
-                toAddress: item.toAddress,
-                value: item.value,
-                asset: item.asset,
-                contractAddress: item.contractAddress,
-                status,
-                gasUsed,
-                blockNumber: receipt.blockNumber,
-                input: item.input,
-                tokenId: item.tokenId,
-                tranType: item.tranType,
-              };
-              rmqServices.sendPubSubMessage(txMsg);
-              logger.info(
-                `ethService.checkPendingTx(): TRANSACTION ${
-                  item.txHash
-                } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
-              );
-              
-            } else {
-              logger.debug(
-                `ethService.checkPendingTx(): Txn ${
-                  item.txHash
-                } is still pending.`,
-              );
-              hashMaps.pendingTx.set(item.txHash, item);
-            }
-          });
+        if (module.exports.localConnect()) {
+            localWeb3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+                logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+                if (receipt !== null) {
+                    let status;
+                    const { gasUsed } = receipt;
+                    if (receipt.status === true) {
+                        status = 'confirmed';
+                    } else {
+                        status = 'failed';
+                    }
+                    const txMsg = {
+                        type: 'updateTx',
+                        txHash: item.txHash,
+                        protocol: item.protocol,
+                        fromAddress: item.fromAddress,
+                        toAddress: item.toAddress,
+                        value: item.value,
+                        asset: item.asset,
+                        contractAddress: item.contractAddress,
+                        status,
+                        gasUsed,
+                        blockNumber: receipt.blockNumber,
+                        input: item.input,
+                        tokenId: item.tokenId,
+                        tranType: item.tranType
+                    };
+                    rmqServices.sendPubSubMessage(txMsg);
+                    logger.info(
+                        `ethService.checkPendingTx(): TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${
+                        receipt.blockNumber
+                        }`,
+                    );
+                    hashMaps.pendingTx.delete(item.txHash);
+                } else {
+                    logger.debug(
+                        `ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`,
+                    );
+                }
+            });
         } else {
           hashMaps.pendingTx.set(item.txHash, item);
           reject(
