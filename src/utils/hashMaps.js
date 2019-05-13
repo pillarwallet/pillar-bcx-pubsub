@@ -20,9 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 const HashMap = require('hashmap');
+const assetManager = require('./assetManager');
 
 exports.accounts = new HashMap();
-exports.assets = new HashMap();
+exports.assets = assetManager
 exports.pendingTx = new HashMap();
 exports.pendingAssets = new HashMap();
 

@@ -1,0 +1,35 @@
+{
+  "env": "development",
+  "checksumkey": "checksumKey",
+  "db": {
+    "username": "",
+    "password": "",
+    "database": "BCX",
+    "host": "127.0.0.1"
+  },
+  "geth": {
+    "url": "http://127.0.0.1",
+    "port": 8545
+  },
+  "parity": {
+    "url": "http://127.0.0.1",
+    "port": 8545
+  },
+  "mq": {
+    "topic": {
+      "notifications": "bcx-notifications"
+    },
+    "server": "localhost",
+    "username": "guest",
+    "password": "guest"
+  },
+  "redis": {
+    "host": "",
+    "port": ""
+  },
+  "housekeeper": {
+    "totalTransactions": 100,
+    "accountWaitInterval": 500,
+    "processBlockInterval": 5000
+  }
+}

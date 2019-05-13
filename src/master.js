@@ -26,13 +26,8 @@ require('./utils/diagnostics');
 const logger = require('./utils/logger');
 const { fork } = require('child_process');
 
-const optionDefinitions = [
-  { name: 'protocol', alias: 'p', type: String },
-  { name: 'maxWallets', type: Number },
-];
-const commandLineArgs = require('command-line-args');
+const config = require('./config');
 
-const options = commandLineArgs(optionDefinitions, { partial: true });
 const dbServices = require('./services/dbServices');
 
 let protocol = 'Ethereum';
@@ -63,20 +58,16 @@ module.exports.init = optionsParam => {
     logger.info('Started executing master.init()');
 
     // validating input parameters
-    if (optionsParam.protocol !== undefined) {
-      ({ protocol } = optionsParam);
+    if (config.get('protocol') !== undefined) {
+      protocol = config.get('protocol')
     }
     logger.info(`master.init(): Initializing master for ${protocol}`);
 
-    if (optionsParam.maxWallets === undefined || optionsParam.maxWallets <= 0) {
+    if (config.get('maxWallets') === undefined || config.get('maxWallets') <= 0) {
       throw Error('Invalid configuration parameter maxWallets');
     } else {
-      logger.info(
-        `master.init(): A new publisher will be spawned for every ${
-          optionsParam.maxWallets
-        } wallets..`,
-      );
-      ({ maxWalletsPerPub } = optionsParam);
+      logger.info(`master.init(): A new publisher will be spawned for every ${config.get('maxWallets')} wallets..`);
+      maxWalletsPerPub = config.get('maxWallets')
     }
     dbServices.dbConnect().then(() => {
       this.launch();
@@ -261,4 +252,4 @@ module.exports.notify = (message, socket) => {
   }
 };
 
-this.init(options);
+this.init();
