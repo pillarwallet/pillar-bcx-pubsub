@@ -38,6 +38,7 @@ const redis = require('redis');
 
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
+const localGethURL = 'http://127.0.0.1:8545';
 let web3, localWeb3;
 let wsCnt = 0;
 const client = redis.createClient();
@@ -138,7 +139,7 @@ function localConnect() {
   return new Promise(((resolve, reject) => {
       try {
           if (localWeb3 === undefined || !(localWeb3._provider.connected) || (!localWeb3.eth.isSyncing())) {
-            localWeb3 = new Web3(new Web3.providers.HttpProvider(gethURL)); 
+            localWeb3 = new Web3(new Web3.providers.HttpProvider(localGethURL)); 
             logger.info('ethService.localConnect(): Connection to ' + localGethURL + ' established successfully!');
             module.exports.localWeb3 = localWeb3;
             resolve(true);
@@ -281,7 +282,8 @@ function subscribeBlockHeaders() {
               'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
             );
           });
-          module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
+          //DISABLED asset monitoring list as its not used presently.
+          //module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
           // capture gas price statistics
           module.exports.storeGasInfo(blockHeader);
 
