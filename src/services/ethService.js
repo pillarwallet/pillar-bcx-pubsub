@@ -21,29 +21,39 @@ SOFTWARE.
 */
 
 /** @module ethService.js */
-const bluebird = require('bluebird');
 const logger = require('../utils/logger');
 const Web3 = require('web3');
-const helpers = require('web3-core-helpers');
-const BigNumber = require('bignumber.js');
-require('dotenv').config();
-const abiPath = `${require('app-root-path')}/src/abi/`;
 const abiDecoder = require('abi-decoder');
 const ERC20ABI = require('../abi/ERC20ABI');
 const ERC721ABI = require('../abi/ERC721ABI');
 const processTx = require('./processTx');
 const rmqServices = require('./rmqServices');
 const hashMaps = require('../utils/hashMaps');
-const redis = require('redis');
+const redisService = require('./redisService');
+const config = require('../config');
+const abiService = require('./abiService');
+const web3ApiService = require('./web3ApiService');
 
 const protocol = 'Ethereum';
-const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
-const localGethURL = 'http://127.0.0.1:8545';
-let web3, localWeb3;
+const localGethUrl = 'http://127.0.0.1:8545';
+const gethUrl = `${config.get('geth.url')}`;
+const parityURL = `${config.get('parity.url')}:${config.get('parity.port')}`;
+const nodeUrl = config.get('geth.url') ? gethUrl : parityURL;
+const ParityTraceModule = require('@pillarwallet/pillar-parity-trace');
+const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
+const offersHash = config.get('redis.offersHash');
+let web3,localWeb3;
 let wsCnt = 0;
-const client = redis.createClient();
-bluebird.promisifyAll(redis);
-
+let client;
+try {
+  client = redisService.connectRedis();
+  logger.info('ethService successfully connected to Redis server');
+  client.on('error', err => {
+    logger.error(`ethService failed with REDIS client error: ${err}`);
+  });
+} catch (e) {
+  logger.error(e);
+}
 /**
  * Establish connection to the geth node
  */
@@ -139,8 +149,8 @@ function localConnect() {
   return new Promise(((resolve, reject) => {
       try {
           if (localWeb3 === undefined || !(localWeb3._provider.connected) || (!localWeb3.eth.isSyncing())) {
-            localWeb3 = new Web3(new Web3.providers.HttpProvider(localGethURL)); 
-            logger.info('ethService.localConnect(): Connection to ' + localGethURL + ' established successfully!');
+            localWeb3 = new Web3(new Web3.providers.HttpProvider(localGethUrl)); 
+            logger.info('ethService.localConnect(): Connection to ' + localGethUrl + ' established successfully!');
             module.exports.localWeb3 = localWeb3;
             resolve(true);
           } else {
