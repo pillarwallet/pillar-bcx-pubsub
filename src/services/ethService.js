@@ -38,7 +38,7 @@ const redis = require('redis');
 
 const protocol = 'Ethereum';
 const gethURL = `${process.env.GETH_NODE_URL}:${process.env.GETH_NODE_PORT}`;
-let web3;
+let web3, localWeb3;
 let wsCnt = 0;
 const client = redis.createClient();
 bluebird.promisifyAll(redis);
@@ -132,6 +132,28 @@ function connect() {
 module.exports.connect = connect;
 
 /**
+ * Establish connection to the local light geth node
+ */
+function localConnect() {
+  return new Promise(((resolve, reject) => {
+      try {
+          if (localWeb3 === undefined || !(localWeb3._provider.connected) || (!localWeb3.eth.isSyncing())) {
+            localWeb3 = new Web3(new Web3.providers.HttpProvider(gethURL)); 
+            logger.info('ethService.localConnect(): Connection to ' + localGethURL + ' established successfully!');
+            module.exports.localWeb3 = localWeb3;
+            resolve(true);
+          } else {
+            resolve(true);
+          }
+      } catch(e) { 
+          logger.error('ethService.localConnect() failed with error: ' + e);
+          reject(false); 
+      }
+  }));
+}
+module.exports.localConnect = localConnect;
+
+/**
  * Return an instance to the underlying web3 instance
  */
 function getWeb3() {
@@ -176,18 +198,21 @@ function subscribePendingTxn() {
           logger.debug(
             `ethService.subscribePendingTxn(): fetch txInfo for hash: ${txHash}`,
           );
-          web3.eth
-            .getTransaction(txHash)
-            .then(txInfo => {
-              if (txInfo !== null) {
-                processTx.newPendingTran(txInfo, protocol);
-              }
-            })
-            .catch(e => {
-              logger.error(
-                `ethService.subscribePendingTxn() failed with error: ${e}`,
-              );
-            });
+
+          if(module.exports.localConnect()) {
+            localWeb3.eth
+              .getTransaction(txHash)
+              .then(txInfo => {
+                if (txInfo !== null) {
+                  processTx.newPendingTran(txInfo, protocol);
+                }
+              })
+              .catch(e => {
+                logger.error(
+                  `ethService.subscribePendingTxn() failed with error: ${e}`,
+                );
+              });
+          }
         }
       })
       .on('error', err => {
@@ -512,8 +537,8 @@ function checkPendingTx(pendingTxArray) {
             item.txHash
           }`,
         );
-        if (module.exports.connect()) {
-            web3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+        if (module.exports.localConnect()) {
+            localWeb3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
                 logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
                 if (receipt !== null) {
                     let status;
