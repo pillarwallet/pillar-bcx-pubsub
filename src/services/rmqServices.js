@@ -275,6 +275,9 @@ function initSubPubMQ() {
                     }
 
                     entry.gasUsed = null;
+                    if (entry.value && entry.value._hex) {
+                      entry.value = entry.value._hex;
+                    }
 
                     dbServices.dbCollections.transactions
                       .findOneByTxHash(txHash)
