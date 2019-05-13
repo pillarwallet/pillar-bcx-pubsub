@@ -19,26 +19,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const rmqServices = require('./services/rmqServices.js');
+/** @module abiService.js */
+const fs = require('fs');
+const abiPath = `${require('app-root-path')}/src/abi/`;
 
+/**
+ * Store the new pending transaction in memeory if the transaction corresponds
+ * to a monitored wallet.
+ * @param {any} abiFileName - the name of the abi file 
+ */
+ function requireAbi(abiFileName) {
 
+    let jsonAbi = fs.readFileSync(abiPath + abiFileName + ".json")
+    return JSON.parse(jsonAbi.toString());
+}
 
-describe('Subscriber tests', () => {
-  beforeAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  test('Expect initServices() to be called', done => {
-    const spy = jest.spyOn(rmqServices, 'initSubPubMQ');
-    const dummyMock = () => {
-      done();
-    };
-    const subscriber = require('./subscriber.js');
-    spy.mockImplementation(dummyMock);
-    subscriber.initServices();
-  });
-});
+module.exports.requireAbi = requireAbi;

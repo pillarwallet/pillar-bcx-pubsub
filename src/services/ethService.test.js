@@ -167,16 +167,6 @@ describe('The getBlockTransactionCount function tests', () => {
   });
 });
 
-describe('The getPendingTxArray function tests', () => {
-  test('should have been called once', done => {
-    const blockNumber = '0x0000000000000000000000000000000000000000';
-    const ethService = require('./ethService');
-    ethService.getPendingTxArray(blockNumber).then(() => {
-      done();
-    });
-  });
-});
-
 describe('The checkPendingTx function tests', () => {
   test('should have been called once', done => {
     const rmqServices = require('./rmqServices');

@@ -19,26 +19,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const rmqServices = require('./services/rmqServices.js');
+const abiService = require('./abiService.js');
+const abiDecoder = require('abi-decoder');
+const abiPath = `${require('app-root-path')}/src/abi/`;
+const fs = require('fs');
 
 
-
-describe('Subscriber tests', () => {
-  beforeAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  test('Expect initServices() to be called', done => {
-    const spy = jest.spyOn(rmqServices, 'initSubPubMQ');
-    const dummyMock = () => {
-      done();
-    };
-    const subscriber = require('./subscriber.js');
-    spy.mockImplementation(dummyMock);
-    subscriber.initServices();
+describe('Abi Decoding', () => {
+  test('Abi decoding', () => {
+        fs.readdirSync(abiPath).forEach(file => {
+            let theAbi = abiService.requireAbi(file.replace(".json",""));
+            let theAbi2 = require(abiPath+file);
+            expect(Array.isArray(theAbi2)).toEqual(true);
+            expect(Array.isArray(theAbi)).toEqual(true);
+            abiDecoder.addABI(theAbi);
+            abiDecoder.addABI(theAbi2);
+            
+        })
   });
 });

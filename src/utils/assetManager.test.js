@@ -19,26 +19,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-const rmqServices = require('./services/rmqServices.js');
 
-
-
-describe('Subscriber tests', () => {
-  beforeAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
-
-  test('Expect initServices() to be called', done => {
-    const spy = jest.spyOn(rmqServices, 'initSubPubMQ');
-    const dummyMock = () => {
-      done();
-    };
-    const subscriber = require('./subscriber.js');
-    spy.mockImplementation(dummyMock);
-    subscriber.initServices();
-  });
+afterAll(() => {
+  jest.restoreAllMocks();
 });
+
+beforeAll(() => {
+  jest.restoreAllMocks();
+});
+
+describe('Save asset on redis', () => {
+  it('should have been called', () => {
+    var hashmaps = require("./hashMaps");
+    hashmaps.assets.connect();
+    hashmaps.assets.set("2", "b");
+  });
+})
+
+describe('Save asset on redis 2', () => {
+  it('should have been called', () => {
+    var hashmaps = require("./hashMaps");
+    hashmaps.assets.loadHash();
+  })
+})
+

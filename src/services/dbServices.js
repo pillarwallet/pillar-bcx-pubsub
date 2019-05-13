@@ -23,14 +23,15 @@ SOFTWARE.
 const logger = require('../utils/logger.js');
 require('dotenv').config();
 const mongoose = require('mongoose');
+const config = require('../config');
 
 mongoose.Promise = global.Promise;
 module.exports.mongoose = mongoose;
-const mongoUser = process.env.MONGO_USER;
-const mongoPwd = process.env.MONGO_PWD;
-const serverIP = process.env.SERVER;
-const dbName = process.env.DBNAME;
-const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverIP}:27017/${dbName}?w=majority`;
+const mongoUser = config.get('db.username'); 
+const mongoPwd = config.get('db.password'); 
+const serverHost = config.get('db.host'); 
+const dbName = config.get('db.database'); 
+const mongoUrl = `mongodb://${mongoUser}:${mongoPwd}@${serverHost}:27017/${dbName}?w=majority`;
 const accounts = require('../controllers/accounts_ctrl.js');
 const assets = require('../controllers/assets_ctrl.js');
 const transactions = require('../controllers/transactions_ctrl.js');

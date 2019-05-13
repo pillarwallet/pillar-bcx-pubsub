@@ -29,19 +29,20 @@ const ERC721ABI = require('../abi/ERC721ABI');
 const abiPath = `${require('app-root-path')}/src/abi/`;
 const hashMaps = require('../utils/hashMaps.js');
 const fs = require('fs');
-const bluebird = require('bluebird');
+const redisService = require('./redisService');
+const abiService = require('./abiService');
 
 /**
  * Connecting to Redis
  */
-const redis = require('redis');
-const redisOptions = {host: process.env.REDIS_SERVER, port: process.env.REDIS_PORT, password: process.env.REDIS_PW};
 let client;
 try {
-  client = redis.createClient(redisOptions);
+  client = redisService.connectRedis()
   logger.info("processTx successfully connected to Redis server")
+  client.on('error', err => {
+    logger.error(`processTx failed with REDIS client error: ${err}`);
+  });
 } catch (e) { logger.error(e) }
-bluebird.promisifyAll(redis);
 
 /**
  * Store the new pending transaction in memeory if the transaction corresponds
@@ -97,7 +98,7 @@ async function newPendingTran(tx, protocol) {
         logger.debug('Contract detail category: ' + contractDetail.category);
         if(typeof contractDetail.category === 'undefined' || contractDetail.category === 'ERC20') {
           if (fs.existsSync(`${abiPath + asset}.json`)) {
-            const theAbi = require(`${abiPath + asset}.json`);
+            const theAbi = abiService.requireAbi(asset)
             logger.debug(`processTx - Fetched ABI for token: ${asset}`);
             abiDecoder.addABI(theAbi);
           } else {
@@ -149,6 +150,14 @@ async function newPendingTran(tx, protocol) {
             tx,
           )}`,
         );
+
+        try {
+          let jsonParsedValue = JSON.parse(value);
+          if (typeof jsonParsedValue === 'object' && jsonParsedValue._hex) {
+            value = jsonParsedValue._hex;
+          }
+        } catch (e) {}
+
         // send a message to the notifications queue reporting a new transactions
         let txMsgTo = {
             type: 'newTx',
@@ -207,6 +216,15 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
       pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
     }
     if (pillarId !== null && pillarId !== '') {
+
+      try {
+        let value = evnt.returnValues._value;
+        let jsonParsedValue = JSON.parse(value);
+        if (typeof jsonParsedValue === 'object' && jsonParsedValue._hex) {
+          value = jsonParsedValue._hex;
+        }
+      } catch (e) {}
+      
       const txMsg = {
         type: 'newTx',
         pillarId,
@@ -217,7 +235,7 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
         asset: theContract.symbol,
         contractAddress: theContract.contractAddress,
         timestamp: tmstmp,
-        value: evnt.returnValues._value,
+        value,
         gasPrice: evnt.gasPrice,
         blockNumber: evnt.blockNumber,
         status: 'confirmed',

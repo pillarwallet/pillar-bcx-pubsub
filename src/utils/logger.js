@@ -20,4 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-module.exports = console;
+
+const config= require('../config');
+const log = require('console-log-level')({ level: config.get('logs.level') });
+
+module.exports = log;
