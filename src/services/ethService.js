@@ -178,8 +178,7 @@ function subscribePendingTxn() {
           logger.debug(
             `ethService.subscribePendingTxn(): fetch txInfo for hash: ${txHash}`,
           );
-              getTransaction(txHash)
-              .then(txInfo => {
+              getTransaction(txHash).then(txInfo => {
                 if (txInfo !== null) {
                   processTx.newPendingTran(txInfo, protocol);
                 }
