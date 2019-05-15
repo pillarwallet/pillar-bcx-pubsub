@@ -117,7 +117,7 @@ module.exports.connect = connect;
 function localConnect() {
   return new Promise(((resolve, reject) => {
       try {
-          if (localWeb3 === undefined || !(localWeb3._provider.connected) || (!localWeb3.eth.isSyncing())) {
+          if (localWeb3 === undefined || (!localWeb3.eth.isSyncing())) {
             localWeb3 = new Web3(new Web3.providers.HttpProvider(localGethUrl)); 
             logger.info('ethService.localConnect(): Connection to ' + localGethUrl + ' established successfully!');
             module.exports.localWeb3 = localWeb3;
