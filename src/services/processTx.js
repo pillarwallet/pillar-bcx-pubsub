@@ -207,6 +207,7 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
   );
   try {
     let pillarId = '';
+    let value
     const tmstmp = time.now();
     if (await client.existsAsync(evnt.returnValues._to.toLowerCase())) {
       pillarId = await client.getAsync(evnt.returnValues._to.toLowerCase());
@@ -216,10 +217,7 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
       pillarId = await client.getAsync(evnt.returnValues._from.toLowerCase());
     }
     if (pillarId !== null && pillarId !== '') {
-
-      try {
-      
-      let value = evnt.returnValues._value;
+      value = evnt.returnValues._value;
       
       const txMsg = {
         type: 'newTx',
