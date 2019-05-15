@@ -15,7 +15,7 @@ async function sleep(ms) {
 async function getAndRetry(web3Func, param){
     let block = null;
     let count = 0;
-    while ((block = await ethService.web3.eth[web3Func](param)) == null && count < 5) {
+    while ((block = await ethService.web3.eth[web3Func](param)) == null && count < 20) {
         count++;
         await sleep(4000);
     }

@@ -178,9 +178,7 @@ function subscribePendingTxn() {
           logger.debug(
             `ethService.subscribePendingTxn(): fetch txInfo for hash: ${txHash}`,
           );
-          if(module.exports.localConnect()) {
-            localWeb3.eth
-              .getTransaction(txHash)
+              getTransaction(txHash)
               .then(txInfo => {
                 if (txInfo !== null) {
                   processTx.newPendingTran(txInfo, protocol);
@@ -191,7 +189,6 @@ function subscribePendingTxn() {
                   `ethService.subscribePendingTxn() failed with error: ${e}`,
                 );
               });
-          }
         }
       })
       .on('error', err => {
@@ -437,14 +434,41 @@ module.exports.getLastBlockNumber = getLastBlockNumber;
  * Fetch the transaction receipt corresponding to a given transaction hash
  * @param {String} txHash - the transaction hash
  */
-function getTxReceipt(txHash) {
-  if (module.exports.connect()) {
-    return web3ApiService.getAndRetry("getTransactionReceipt",txHash)
-  }
-  logger.error('ethService.getTxReceipt(): connection to geth failed!');
-  return undefined;
+async function getTxReceipt(txHash) {
+    if (module.exports.localConnect()) {
+      let recipt = await localWeb3.eth.getTransactionReceipt(txHash);
+      if(recipt){
+        return recipt;
+      }
+    }
+    if (module.exports.connect()) {
+      return web3ApiService.getAndRetry("getTransactionReceipt",txHash)
+    }
+    logger.error('ethService.getTxReceipt(): connection to geth failed!');
+    return undefined;
 }
 module.exports.getTxReceipt = getTxReceipt;
+
+
+/**
+ * Fetch the transaction receipt corresponding to a given transaction hash
+ * @param {String} txHash - the transaction hash
+ */
+async function getTransaction(txHash) {
+    if (module.exports.localConnect()) {
+      let txInfo = await localWeb3.eth.getTransaction(txHash);
+      if (txInfo) {
+        return txInfo;
+      }
+    }
+    if (module.exports.connect()) {
+      return web3ApiService.getAndRetry('getTransaction', txHash);
+    }
+    logger.error('ethService.getTxReceipt(): connection to geth failed!');
+    return undefined;
+}
+module.exports.getTransaction = getTransaction;
+
 
 /**
  * Fetch the total number of transactions within a given block
@@ -494,7 +518,7 @@ function checkPendingTx(pendingTxArray) {
           }`,
         );
         if (module.exports.localConnect()) {
-            localWeb3.eth.getTransactionReceipt(item.txHash).then(async receipt => {
+            getTxReceipt(item.txHash).then(async receipt => {
                 logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
                 if (receipt !== null) {
                     let status;
