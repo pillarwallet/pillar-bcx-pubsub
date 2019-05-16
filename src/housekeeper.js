@@ -251,6 +251,7 @@ async function processTxn(transaction, wallet, pillarId) {
   let status;
   let value;
   let to;
+  let gasUsed
   let contractAddress;
   if (transaction.action.input !== '0x') {
     const theAsset = await dbServices.getAsset(transaction.action.to);
@@ -291,6 +292,10 @@ async function processTxn(transaction, wallet, pillarId) {
   } else {
     status = 'confirmed';
   }
+
+  if(transaction.result){
+    gasUsed = transaction.result.gasUsed;
+  }
   const entryTxn = {
     protocol,
     pillarId,
@@ -303,7 +308,7 @@ async function processTxn(transaction, wallet, pillarId) {
     value,
     blockNumber: transaction.blockNumber,
     status,
-    gasUsed: transaction.result.gasUsed,
+    gasUsed: gasUsed,
   };
   logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entryTxn}`);
   dbServices.dbCollections.transactions.addTx(entryTxn);
