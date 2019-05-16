@@ -293,7 +293,7 @@ async function processTxn(transaction, wallet, pillarId) {
     status = 'confirmed';
   }
 
-  if(transaction.result){
+  if (transaction.result) {
     gasUsed = transaction.result.gasUsed;
   }
   const entryTxn = {
@@ -308,7 +308,7 @@ async function processTxn(transaction, wallet, pillarId) {
     value,
     blockNumber: transaction.blockNumber,
     status,
-    gasUsed: gasUsed,
+    gasUsed,
   };
   logger.info(`Housekeeper.recoverAll - Recovered transactions - ${entryTxn}`);
   dbServices.dbCollections.transactions.addTx(entryTxn);
