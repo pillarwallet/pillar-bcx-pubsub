@@ -21,11 +21,12 @@ SOFTWARE.
 */
 const diagnostics = require('@pillarwallet/common-diagnostics');
 const logger = require('./logger');
+const config = require('../config');
 
 const whitelistedEnvironments = ['staging', 'develop', 'production'];
 
 const sentryConfiguration = {
-  dsn: 'https://1qaz2wsx3edc4rfv@sentry.io/1289773',
+  dsn: config.get('sentry'),
   debug: true,
 };
 
