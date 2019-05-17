@@ -9,6 +9,12 @@ const config = convict({
     arg: 'env',
     env: 'NODE_ENV',
   },
+  sentry: {
+    format: String,
+    default: '',
+    arg: 'sentry',
+    env: 'SENTRY_KEY',
+  },
   logs: {
     level: {
       format: String,
@@ -125,7 +131,7 @@ const config = convict({
       default: 'offers',
       arg: 'bcxRedisOffersHash',
       env: 'BCX_REDIS_OFFERS_HASH',
-    }
+    },
   },
   db: {
     username: {
