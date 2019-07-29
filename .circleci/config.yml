@@ -168,9 +168,9 @@ workflows:
   test_and_publish:
     jobs:
       - build
-      - whitesource:
-          requires:
-             - build
+      #- whitesource:
+      #    requires:
+      #       - build
       - publish-and-push-dev:
           requires:
              - build
