@@ -279,6 +279,10 @@ function initSubPubMQ() {
                       entry.value = entry.value._hex;
                     }
 
+                    if (entry.value && entry.value.toString().match(/^0x[0-9a-f]+$/i)) {
+                      entry.value = parseInt(entry.value.toString(), 16);
+                    }
+
                     dbServices.dbCollections.transactions
                       .findOneByTxHash(txHash)
                       .then(tx => {
