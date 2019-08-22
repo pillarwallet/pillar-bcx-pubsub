@@ -259,7 +259,7 @@ module.exports.initSubscriptions = function() {
     // subscribe to transfer events of each monitored smart contract
     const smartContractsArray = hashMaps.assets.values();
     smartContractsArray.forEach(ERC20SmartContract => {
-      ethService.subscribeTransferEvents(ERC20SmartContract);
+      ethService.subscribeTransferEvents(ERC20SmartContract.contractAddress);
     });
   }
   logger.info('Publisher completed websocket subscriptions.');
