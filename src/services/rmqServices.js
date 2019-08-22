@@ -47,6 +47,9 @@ const MQ_URL = `amqp://${config.get('mq.username')}:${config.get(
 const TX_MAP = {};
 moment.locale('en_GB');
 
+let retryingInitSubPubMQ = false;
+let retryingInitPubSubMQ = false;
+
 /**
  * Calculate checksum of payload
  * @param {any} payload - the payload/message to calculate checksum
@@ -107,8 +110,12 @@ module.exports.initializeOffersChannel = initializeOffersChannel;
 function initPubSubMQ() {
   return new Promise((resolve, reject) => {
     try {
+      if (retryingInitPubSubMQ) {
+        resolve();
+        return;
+      }
       let connection;
-      logger.info('Executing rmqServices.initPubSubMQ()');
+      logger.debug('Executing rmqServices.initPubSubMQ()');
       amqp.connect(
         MQ_URL,
         (error, conn) => {
@@ -116,18 +123,42 @@ function initPubSubMQ() {
             logger.error(
               `Publisher failed initializing RabbitMQ, error: ${error}`,
             );
-            return setTimeout(initPubSubMQ, 5000);
+            if (retryingInitPubSubMQ) {
+              logger.info('Ignored rerun because another was scheduled');
+              return;
+            }
+            retryingInitPubSubMQ = true;
+            return setTimeout(() => {
+              retryingInitPubSubMQ = false;
+              initPubSubMQ();
+            }, 5000);
           }
           if (conn) {
             connection = conn;
           }
           connection.on('error', err => {
             logger.error(`Publisher RMQ connection errored out: ${err}`);
-            return setTimeout(initPubSubMQ, 5000);
+            if (retryingInitPubSubMQ) {
+              logger.info('Ignored rerun because another was scheduled');
+              return;
+            }
+            retryingInitPubSubMQ = true;
+            return setTimeout(() => {
+              retryingInitPubSubMQ = false;
+              initPubSubMQ();
+            }, 5000);
           });
           connection.on('close', () => {
             logger.error('Publisher RMQ Connection closed');
-            return setTimeout(initPubSubMQ, 5000);
+            if (retryingInitPubSubMQ) {
+              logger.info('Ignored rerun because another was scheduled');
+              return;
+            }
+            retryingInitPubSubMQ = true;
+            return setTimeout(() => {
+              retryingInitPubSubMQ = false;
+              initPubSubMQ();
+            }, 5000);
           });
 
           logger.info('Publisher RMQ Connected');
@@ -141,7 +172,7 @@ function initPubSubMQ() {
       logger.error('rmqServices.initPubSubMQ() failed: ', err.message);
       reject(err);
     } finally {
-      logger.info('Exited rmqServices.initPubSubMQ()');
+      logger.debug('Exited rmqServices.initPubSubMQ()');
     }
   });
 }
@@ -222,6 +253,10 @@ module.exports.resetTxMap = resetTxMap;
  */
 function initSubPubMQ() {
   try {
+    if (retryingInitSubPubMQ) {
+      resolve();
+      return;
+    }
     let connection;
     logger.info('Subscriber Started executing initSubPubMQ()');
     amqp.connect(
@@ -231,18 +266,42 @@ function initSubPubMQ() {
           logger.error(
             `Subscriber failed initializing RabbitMQ, error: ${error}`,
           );
-          return setTimeout(initSubPubMQ, 5000);
+          if (retryingInitSubPubMQ) {
+            logger.info('Ignored rerun because another was scheduled');
+            return;
+          }
+          retryingInitSubPubMQ = true;
+          return setTimeout(() => {
+            retryingInitSubPubMQ = false;
+            initSubPubMQ();
+          }, 5000);
         }
         if (conn) {
           connection = conn;
         }
         connection.on('error', err => {
           logger.error(`Subscriber RMQ connection errored out: ${err}`);
-          return setTimeout(initSubPubMQ, 5000);
+          if (retryingInitSubPubMQ) {
+            logger.info('Ignored rerun because another was scheduled');
+            return;
+          }
+          retryingInitSubPubMQ = true;
+          return setTimeout(() => {
+            retryingInitSubPubMQ = false;
+            initSubPubMQ();
+          }, 5000);
         });
         connection.on('close', () => {
           logger.error('Subscriber RMQ Connection closed');
-          return setTimeout(initSubPubMQ, 5000);
+          if (retryingInitSubPubMQ) {
+            logger.info('Ignored rerun because another was scheduled');
+            return;
+          }
+          retryingInitSubPubMQ = true;
+          return setTimeout(() => {
+            retryingInitSubPubMQ = false;
+            initSubPubMQ();
+          }, 5000);
         });
 
         logger.info('Subscriber RMQ Connected');
@@ -279,7 +338,10 @@ function initSubPubMQ() {
                       entry.value = entry.value._hex;
                     }
 
-                    if (entry.value && entry.value.toString().match(/^0x[0-9a-f]+$/i)) {
+                    if (
+                      entry.value &&
+                      entry.value.toString().match(/^0x[0-9a-f]+$/i)
+                    ) {
                       entry.value = parseInt(entry.value.toString(), 16);
                     }
 
@@ -326,7 +388,7 @@ function initSubPubMQ() {
                       .then(() => {
                         logger.info(`Transaction updated: ${txHash}`);
                         ch.assertQueue(notificationsQueue, { durable: true });
-                        if(typeof entry.tokenId === 'undefined') {
+                        if (typeof entry.tokenId === 'undefined') {
                           ch.sendToQueue(
                             notificationsQueue,
                             new Buffer.from(
