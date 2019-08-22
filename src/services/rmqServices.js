@@ -271,7 +271,7 @@ function initSubPubMQ() {
           retryingInitSubPubMQ = true;
           return setTimeout(() => {
             retryingInitSubPubMQ = false;
-            initPubSubMQ();
+            initSubPubMQ();
           }, 5000);
         }
         if (conn) {
@@ -286,7 +286,7 @@ function initSubPubMQ() {
           retryingInitSubPubMQ = true;
           return setTimeout(() => {
             retryingInitSubPubMQ = false;
-            initPubSubMQ();
+            initSubPubMQ();
           }, 5000);
         });
         connection.on('close', () => {
@@ -298,7 +298,7 @@ function initSubPubMQ() {
           retryingInitSubPubMQ = true;
           return setTimeout(() => {
             retryingInitSubPubMQ = false;
-            initPubSubMQ();
+            initSubPubMQ();
           }, 5000);
         });
 
