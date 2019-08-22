@@ -150,7 +150,7 @@ function initPubSubMQ() {
           });
           connection.on('close', () => {
             logger.error('Publisher RMQ Connection closed');
-            if ((retryingInitPubSubMQ = true)) {
+            if (retryingInitPubSubMQ) {
               logger.info('Ignored rerun because another was scheduled');
               return;
             }
