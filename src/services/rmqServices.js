@@ -162,6 +162,8 @@ function initPubSubMQ() {
           });
 
           logger.info('Publisher RMQ Connected');
+          initializePubSubChannel(connection);
+          initializeOffersChannel(connection);
           return undefined;
         },
       );
