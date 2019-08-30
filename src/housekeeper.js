@@ -65,7 +65,10 @@ try {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error(`Unhandled Rejection at: ${reason.stack}` || reason);
+    logger.error('***************************************************************');
+    logger.error('ERROR: Unhandled Rejection at housekeeper:', JSON.stringify(reason));
+    logger.error('***************************************************************');
+  );
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
 });
