@@ -274,6 +274,7 @@ describe('initsRMQ ', () => {
     const dbServiceSaveMockImpl = jest.fn(
       () =>
         new Promise(resolve => {
+          done();
           resolve(null);
         }),
     );
@@ -307,6 +308,7 @@ describe('initsRMQ ', () => {
     const dbServiceSaveMockFindeOneByTxImpl = jest.fn(
       () =>
         new Promise(resolve => {
+          done()
           resolve(true);
         }),
     );
