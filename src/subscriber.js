@@ -36,7 +36,6 @@ process
     logger.error('***************************************************************');
     logger.error('ERROR: Unhandled Rejection at subscriber:', JSON.stringify(reason));
     logger.error('***************************************************************');
-    );
   })
   .on('uncaughtException', err => {
     logger.error(`Subscriber - Uncaught Exception thrown error - ${err}`);
