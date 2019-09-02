@@ -33,9 +33,9 @@ const dbServices = require('./services/dbServices.js');
 
 process
   .on('unhandledRejection', (reason, p) => {
-    logger.error(
-      `Subscriber - Unhandled Rejection at Promise reason - ${reason}, p - ${p}`,
-    );
+    logger.error('***************************************************************');
+    logger.error('ERROR: Unhandled Rejection at subscriber:', JSON.stringify(reason));
+    logger.error('***************************************************************');
   })
   .on('uncaughtException', err => {
     logger.error(`Subscriber - Uncaught Exception thrown error - ${err}`);
