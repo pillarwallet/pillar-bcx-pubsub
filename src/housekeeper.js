@@ -112,7 +112,7 @@ async function checkTxPool() {
               );
               // update the status of the transaction
               let status;
-              if (receipt.status === '0x1') {
+              if (receipt.status === '0x1' || receipt.status === true) {
                 status = 'confirmed';
               } else {
                 status = 'failed';
