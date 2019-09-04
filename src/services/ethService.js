@@ -634,7 +634,7 @@ async function addERC20(receipt) {
     const decimals = await contract.methods.decimals().call();
     const totalSupply = await contract.methods.totalSupply().call();
 
-    if (receipt.status === '0x1') {
+    if (receipt.status === '0x1' || receipt.status === true) {
       const txMsg = {
         type: 'newAsset',
         name,
@@ -677,7 +677,7 @@ async function addERC721(receipt) {
     const symbol = await contract.methods.symbol().call();
     const name = await contract.methods.name().call();
 
-    if (receipt.status === '0x1') {
+    if (receipt.status === '0x1' || receipt.status === true) {
       const txMsg = {
         type: 'newAsset',
         name,
@@ -799,7 +799,8 @@ async function getTxInfo(txHash) {
       value: txInfo.value,
       asset: 'ETH',
       contractAddress: null,
-      status: txReceipt.status === true ? 'confirmed' : 'failed',
+      status: (txReceipt.status === true
+               || txReceipt.status === '0x1') ? 'confirmed' : 'failed',
       gasPrice: txInfo.gasPrice,
       gasUsed: txReceipt.gasUsed,
       blockNumber: txReceipt.blockNumber,
