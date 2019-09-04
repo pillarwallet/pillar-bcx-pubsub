@@ -200,8 +200,9 @@ module.exports.newPendingTran = newPendingTran;
  * @param {any} evnt - the event associated with the token transfer
  * @param {String} theContract - the smart contract address associated with the token
  * @param {String} protocol - the protocol corresponding to the token blockchain
+ * @param {object} web3 - the web3 instance
  */
-async function checkTokenTransfer(evnt, theContract, protocol) {
+async function checkTokenTransfer(evnt, theContract, protocol, web3) {
   logger.debug(
     `processTx.checkTokenTransfer(): received event: ${JSON.stringify(evnt)}`,
   );
@@ -221,7 +222,9 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
       try {
         value = value._hex;
       } catch (e) {}
-      
+
+      const receipt = await web3.eth.getTransactionReceipt(evnt.transactionHash);
+
       const txMsg = {
         type: 'newTx',
         pillarId,
@@ -234,6 +237,7 @@ async function checkTokenTransfer(evnt, theContract, protocol) {
         timestamp: tmstmp,
         value,
         gasPrice: evnt.gasPrice,
+        gasUsed: receipt.gasUsed,
         blockNumber: evnt.blockNumber,
         status: 'confirmed',
       };
