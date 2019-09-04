@@ -347,8 +347,8 @@ function subscribeTransferEvents(theContract) {
               theContract,
             )} result: ${result} error: ${error}`,
           );
-          if (!error) {
-            processTx.checkTokenTransfer(result, theContract, protocol, web3);
+          if (!error || localWeb3) {
+            processTx.checkTokenTransfer(result, theContract, protocol, localWeb3);
           } else {
             logger.error(
               `ethService.subscribeTransferEvents() failed: ${error}`,
