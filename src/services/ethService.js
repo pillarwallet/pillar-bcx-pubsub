@@ -347,7 +347,12 @@ function subscribeTransferEvents(theContract) {
               theContract,
             )} result: ${result} error: ${error}`,
           );
-          if (!error || localWeb3) {
+          if (!error) {
+            if (!localWeb3) {
+              localConnect().then(() => {
+                processTx.checkTokenTransfer(result, theContract, protocol, localWeb3);
+              });
+            }
             processTx.checkTokenTransfer(result, theContract, protocol, localWeb3);
           } else {
             logger.error(
