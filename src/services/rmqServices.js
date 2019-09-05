@@ -333,7 +333,6 @@ function initSubPubMQ() {
                       TX_MAP[txHash] = { timestamp: moment() };
                     }
 
-                    entry.gasUsed = null;
                     if (entry.value && entry.value._hex) {
                       entry.value = entry.value._hex;
                     }
