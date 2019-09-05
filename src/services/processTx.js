@@ -224,6 +224,11 @@ async function checkTokenTransfer(evnt, theContract, protocol, web3) {
       } catch (e) {}
 
       const receipt = await web3.eth.getTransactionReceipt(evnt.transactionHash);
+      logger.debug(
+        `processTx.checkTokenTransfer(): Transaction receipt - ${JSON.stringify(
+          receipt,
+        )}`,
+      );
 
       const txMsg = {
         type: 'newTx',
