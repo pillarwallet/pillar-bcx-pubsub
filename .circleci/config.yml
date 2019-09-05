@@ -108,7 +108,6 @@ jobs:
           name: Publish Package to Artifactory
           command: |
             npm publish --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")"
       - run:
           name: Push txt file to S3 bucket
           command: |
