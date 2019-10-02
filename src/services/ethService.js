@@ -550,6 +550,7 @@ function checkPendingTx(pendingTxArray, blockNumber) {
               tranType: item.tranType,
             };
             rmqServices.sendPubSubMessage(txMsg);
+            hashMaps.pendingTxBlockNumber.delete(item.txHash);
             logger.info(
               `ethService.checkPendingTx(): TRANSACTION ${
                 item.txHash
