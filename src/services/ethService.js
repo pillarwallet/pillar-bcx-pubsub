@@ -551,15 +551,13 @@ function checkPendingTx(pendingTxArray, blockNumber) {
               } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
             );
           } else {
-            logger.debug(
-              `ethService.checkPendingTx(): Txn ${
-                item.txHash
-              } is still pending.`,
-            );
+
             if (blockNumber - item.blockNumber >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
               const txMsg = { type: 'updateTx', txHash: item.txHash, protocol: item.protocol, fromAddress: item.fromAddress, toAddress: item.toAddress, value: item.value, asset: item.asset, contractAddress: item.contractAddress, status: 'replaced', input: item.input, tokenId: item.tokenId, tranType: item.tranType };
               rmqServices.sendPubSubMessage(txMsg);
+              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} will be replaced.`);
             } else {
+              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`);
               hashMaps.pendingTx.set(item.txHash, item);
             }
           }
