@@ -556,21 +556,8 @@ function checkPendingTx(pendingTxArray, blockNumber) {
                 item.txHash
               } is still pending.`,
             );
-            if ((item.blockNumber - blockNumber) >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
-              const txMsg = {
-                type: 'updateTx',
-                txHash: item.txHash,
-                protocol: item.protocol,
-                fromAddress: item.fromAddress,
-                toAddress: item.toAddress,
-                value: item.value,
-                asset: item.asset,
-                contractAddress: item.contractAddress,
-                status: 'replaced',
-                input: item.input,
-                tokenId: item.tokenId,
-                tranType: item.tranType,
-              };
+            if (blockNumber - item.blockNumber >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
+              const txMsg = { type: 'updateTx', txHash: item.txHash, protocol: item.protocol, fromAddress: item.fromAddress, toAddress: item.toAddress, value: item.value, asset: item.asset, contractAddress: item.contractAddress, status: 'replaced', input: item.input, tokenId: item.tokenId, tranType: item.tranType };
               rmqServices.sendPubSubMessage(txMsg);
             } else {
               hashMaps.pendingTx.set(item.txHash, item);
