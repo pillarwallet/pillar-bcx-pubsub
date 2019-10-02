@@ -44,6 +44,7 @@ const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
 const offersHash = config.get('redis.offersHash');
 let web3,localWeb3;
 let wsCnt = 0;
+const BLOCKS_TO_WAIT_BEFORE_REPLACED = 60;
 let client;
 try {
   client = redisService.connectRedis();
@@ -504,67 +505,85 @@ module.exports.getTransactionFromBlock = getTransactionFromBlock;
  * Check the status of the given transaction hashes
  * @param {any} pendingTxArray - an array of transaction hashes
  */
-function checkPendingTx(pendingTxArray) {
+function checkPendingTx(pendingTxArray, blockNumber) {
   logger.info(
     `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.size}`,
   );
   return new Promise((resolve, reject) => {
-      pendingTxArray.forEach(item => {
-        hashMaps.pendingTx.delete(item.txHash);
-        logger.debug(
-          `ethService.checkPendingTx(): Checking status of transaction: ${
-            item.txHash
-          }`,
+    pendingTxArray.forEach(item => {
+      hashMaps.pendingTx.delete(item.txHash);
+      logger.debug(
+        `ethService.checkPendingTx(): Checking status of transaction: ${
+          item.txHash
+        }`,
+      );
+      if (module.exports.localConnect()) {
+        getTxReceipt(item.txHash).then(async receipt => {
+          logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+          if (receipt !== null) {
+            let status;
+            const { gasUsed } = receipt;
+            if (receipt.status === true) {
+              status = 'confirmed';
+            } else {
+              status = 'failed';
+            }
+            const txMsg = {
+              type: 'updateTx',
+              txHash: item.txHash,
+              protocol: item.protocol,
+              fromAddress: item.fromAddress,
+              toAddress: item.toAddress,
+              value: item.value,
+              asset: item.asset,
+              contractAddress: item.contractAddress,
+              status,
+              gasUsed,
+              blockNumber: receipt.blockNumber,
+              input: item.input,
+              tokenId: item.tokenId,
+              tranType: item.tranType,
+            };
+            rmqServices.sendPubSubMessage(txMsg);
+            logger.info(
+              `ethService.checkPendingTx(): TRANSACTION ${
+                item.txHash
+              } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
+            );
+          } else {
+            logger.debug(
+              `ethService.checkPendingTx(): Txn ${
+                item.txHash
+              } is still pending.`,
+            );
+            if ((item.blockNumber - blockNumber) >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
+              const txMsg = {
+                type: 'updateTx',
+                txHash: item.txHash,
+                protocol: item.protocol,
+                fromAddress: item.fromAddress,
+                toAddress: item.toAddress,
+                value: item.value,
+                asset: item.asset,
+                contractAddress: item.contractAddress,
+                status: 'replaced',
+                input: item.input,
+                tokenId: item.tokenId,
+                tranType: item.tranType,
+              };
+              rmqServices.sendPubSubMessage(txMsg);
+            } else {
+              hashMaps.pendingTx.set(item.txHash, item);
+            }
+          }
+        });
+      } else {
+        hashMaps.pendingTx.set(item.txHash, item);
+        reject(
+          new Error('ethService.checkPendingTx(): connection to geth failed!'),
         );
-        if (module.exports.localConnect()) {
-            getTxReceipt(item.txHash).then(async receipt => {
-                logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
-                if (receipt !== null) {
-                    let status;
-                    const { gasUsed } = receipt;
-                    if (receipt.status === true) {
-                        status = 'confirmed';
-                    } else {
-                        status = 'failed';
-                    }
-                    const txMsg = {
-                        type: 'updateTx',
-                        txHash: item.txHash,
-                        protocol: item.protocol,
-                        fromAddress: item.fromAddress,
-                        toAddress: item.toAddress,
-                        value: item.value,
-                        asset: item.asset,
-                        contractAddress: item.contractAddress,
-                        status,
-                        gasUsed,
-                        blockNumber: receipt.blockNumber,
-                        input: item.input,
-                        tokenId: item.tokenId,
-                        tranType: item.tranType
-                    };
-                    rmqServices.sendPubSubMessage(txMsg);
-                    logger.info(
-                        `ethService.checkPendingTx(): TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${
-                        receipt.blockNumber
-                        }`,
-                    );
-                    hashMaps.pendingTx.delete(item.txHash);
-                } else {
-                    logger.debug(
-                        `ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`,
-                    );
-                }
-            });
-        } else {
-          hashMaps.pendingTx.set(item.txHash, item);
-          reject(
-            new Error(
-              'ethService.checkPendingTx(): connection to geth failed!',
-            ),
-          );
-        }
-      });
+      }
+    });
   });
 }
 module.exports.checkPendingTx = checkPendingTx;
