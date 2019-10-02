@@ -44,7 +44,7 @@ const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
 const offersHash = config.get('redis.offersHash');
 let web3,localWeb3;
 let wsCnt = 0;
-const BLOCKS_TO_WAIT_BEFORE_REPLACED = 60;
+const BLOCKS_TO_WAIT_BEFORE_REPLACED = parseInt(config.get('blocksToWaitBeforeReplace'));
 let client;
 try {
   client = redisService.connectRedis();
@@ -253,11 +253,16 @@ function subscribeBlockHeaders() {
           );
           // Check for pending tx in database and update their status
           if(hashMaps.pendingTx.size > 0) {
-            module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
-              logger.debug(
-                'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
-              );
-            });
+            module.exports
+              .checkPendingTx(
+                hashMaps.pendingTx,
+                blockHeader.number
+              )
+              .then(() => {
+                logger.debug(
+                  'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
+                );
+              });
           }
 
           //module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
@@ -551,13 +556,14 @@ function checkPendingTx(pendingTxArray, blockNumber) {
               } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
             );
           } else {
-
-            if (blockNumber - item.blockNumber >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
+            let itemAddedBlockNumber = hashMaps.pendingTxBlockNumber.get(item.txHash);
+            if (blockNumber - itemAddedBlockNumber >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
               const txMsg = { type: 'updateTx', txHash: item.txHash, protocol: item.protocol, fromAddress: item.fromAddress, toAddress: item.toAddress, value: item.value, asset: item.asset, contractAddress: item.contractAddress, status: 'replaced', input: item.input, tokenId: item.tokenId, tranType: item.tranType };
               rmqServices.sendPubSubMessage(txMsg);
-              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} will be replaced.`);
+              hashMaps.pendingTxBlockNumber.delete(item.txHash);
+              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} will be replaced. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
             } else {
-              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`);
+              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} is still pending. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
               hashMaps.pendingTx.set(item.txHash, item);
             }
           }

@@ -25,6 +25,7 @@ const assetManager = require('./assetManager');
 exports.accounts = new HashMap();
 exports.assets = assetManager
 exports.pendingTx = new HashMap();
+exports.pendingTxBlockNumber = new HashMap();
 exports.pendingAssets = new HashMap();
 
 exports.LATEST_BLOCK_NUMBER = 0;

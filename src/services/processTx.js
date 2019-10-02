@@ -185,6 +185,7 @@ async function newPendingTran(tx, protocol) {
         rmqServices.sendPubSubMessage(txMsgTo);
         // PENDING TX IS STORED IN HASH MAP AND WILL BE CHECKED AT NEXT BLOCK FOR TX CONFIRMATION
         hashMaps.pendingTx.set(tx.hash, txMsgTo);
+        hashMaps.pendingTxBlockNumber.set(tx.hash, hashMaps.LATEST_BLOCK_NUMBER);
       }
     }
   } catch (e) {
