@@ -40,7 +40,8 @@ const sizeof = require('sizeof');
 
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('***************************************************************');
-    logger.error('ERROR: Unhandled Rejection at publisher:', JSON.stringify(reason));
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    
     logger.error('***************************************************************');
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use

@@ -53,6 +53,9 @@ try {
   client.on('error', err => {
     logger.error(`ethService failed with REDIS client error: ${err}`);
   });
+  dbServices.dbConnect().then(() => {
+    logger.info('ethService successfully connected to db');
+  });
 } catch (e) {
   logger.error(e);
 }
