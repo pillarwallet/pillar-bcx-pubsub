@@ -27,16 +27,18 @@ const transactionsSchema = Mongoose.Schema({
   fromAddress: { type: String, required: false, default: null },
   toAddress: { type: String, required: false, default: null },
   txHash: { type: String, required: true, default: null },
+  txHashReplaced: { type: String, required: false, default: null },
   asset: { type: String, required: false, default: null },
   contractAddress: { type: String, required: false, default: null },
   timestamp: { type: Number, required: false, default: null },
   blockNumber: { type: Number, required: false, default: null },
+  nonce: { type: Number, required: false, default: null },
   value: { type: Number, required: false, default: null },
   status: { type: String, required: false, default: null },
   gasPrice: { type: Number, required: false, default: null },
   gasUsed: { type: Number, required: false, default: null },
-  tranType: { type:String, required: false, default: null },
-  tokenId: { type: Number, required: false, default: null }
+  tranType: { type: String, required: false, default: null },
+  tokenId: { type: Number, required: false, default: null },
 });
 
 const Transactions = Mongoose.model('Transactions', transactionsSchema);

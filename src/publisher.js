@@ -40,7 +40,8 @@ const sizeof = require('sizeof');
 
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('***************************************************************');
-    logger.error('ERROR: Unhandled Rejection at publisher:', JSON.stringify(reason));
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    
     logger.error('***************************************************************');
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
@@ -225,20 +226,8 @@ module.exports.poll = function() {
     process.send({ type: 'assets.request' });
   }
   // request new wallets
-  logger.info(
-    `Size of hashmaps: Assets= ${hashMaps.assets.keys().length}, PendingTx= ${
-      hashMaps.pendingTx.keys().length
-    }, PendingAssets= ${hashMaps.pendingAssets.keys().length}`,
-  );
-  logger.info(
-    `Hashmap size: Assets= ${sizeof.sizeof(
-      hashMaps.assets,
-      true,
-    )}, PendingTx= ${sizeof.sizeof(
-      hashMaps.pendingTx,
-      true,
-    )}, PendingAssets= ${sizeof.sizeof(hashMaps.pendingAssets, true)}`,
-  );
+  logger.info(`Size of hashmaps: Assets= ${hashMaps.assets.keys().length}, PendingTx= ${hashMaps.pendingTx.pendingTx.keys().length}, PendingTxBlockNumber= ${hashMaps.pendingTxBlockNumber.pendingTxBlockNumber.keys().length}, PendingAssets= ${hashMaps.pendingAssets.keys().length}`);
+  logger.info(`Hashmap size: Assets= ${sizeof.sizeof(hashMaps.assets, true)}, PendingTx= ${sizeof.sizeof(hashMaps.pendingTx.pendingTx, true)}, PendingTxBlockNumber= ${sizeof.sizeof(hashMaps.pendingTxBlockNumber.pendingTxBlockNumber, true)}, PendingAssets= ${sizeof.sizeof(hashMaps.pendingAssets, true)}`);
   logger.info(
     `LAST PROCESSED BLOCK= ${LAST_BLOCK_NUMBER}, LATEST BLOCK NUMBER= ${
       hashMaps.LATEST_BLOCK_NUMBER

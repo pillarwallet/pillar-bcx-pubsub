@@ -9,6 +9,11 @@ const config = convict({
     arg: 'env',
     env: 'NODE_ENV',
   },
+  blocksToWaitBeforeReplace: {
+    default: 60,
+    arg: 'blocksToWaitBeforeReplace',
+    env: 'BLOCKS_TO_WAIT_BEFORE_REPLACE',
+  },
   sentry: {
     format: String,
     default: '',
