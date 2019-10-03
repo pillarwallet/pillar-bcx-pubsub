@@ -121,6 +121,28 @@ function findById(id) {
 }
 module.exports.findById = findById;
 
+
+function findByAddressAndNounce(address, nonce) {
+  return new Promise((resolve, reject) => {
+    try {
+      transactions.Transactions.findOne(
+        { from: address, nonce },
+        (err, result) => {
+          if (err) {
+            logger.error(`transactions.findByAddressAndNounce DB controller ERROR: ${err}`);
+            reject(err);
+          }
+          resolve(result);
+        },
+      );
+    } catch (e) {
+      logger.error(`transaction_ctrl.findByAddressAndNounce(): failed with error: ${e}`);
+      reject(e);
+    }
+  });
+}
+module.exports.findByAddressAndNounce = findByAddressAndNounce;
+
 function findByTxHash(txHash) {
   return new Promise((resolve, reject) => {
     try {

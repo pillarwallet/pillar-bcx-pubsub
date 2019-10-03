@@ -33,6 +33,7 @@ const redisService = require('./redisService');
 const config = require('../config');
 const abiService = require('./abiService');
 const web3ApiService = require('./web3ApiService');
+const dbServices = require('../services/dbServices.js');
 
 const protocol = 'Ethereum';
 const localGethUrl = 'http://127.0.0.1:8545';
@@ -44,12 +45,16 @@ const parityTrace = new ParityTraceModule({HTTPProvider: parityURL});
 const offersHash = config.get('redis.offersHash');
 let web3,localWeb3;
 let wsCnt = 0;
+const BLOCKS_TO_WAIT_BEFORE_REPLACED = parseInt(config.get('blocksToWaitBeforeReplace'));
 let client;
 try {
   client = redisService.connectRedis();
   logger.info('ethService successfully connected to Redis server');
   client.on('error', err => {
     logger.error(`ethService failed with REDIS client error: ${err}`);
+  });
+  dbServices.dbConnect().then(() => {
+    logger.info('ethService successfully connected to db');
   });
 } catch (e) {
   logger.error(e);
@@ -251,12 +256,17 @@ function subscribeBlockHeaders() {
             } Hash = ${blockHeader.hash}`,
           );
           // Check for pending tx in database and update their status
-          if(hashMaps.pendingTx.size > 0) {
-            module.exports.checkPendingTx(hashMaps.pendingTx).then(() => {
-              logger.debug(
-                'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
-              );
-            });
+          if(hashMaps.pendingTx.pendingTx.size > 0) {
+            module.exports
+              .checkPendingTx(
+                hashMaps.pendingTx.pendingTx,
+                blockHeader.number,
+              )
+              .then(() => {
+                logger.debug(
+                  'ethService.subscribeBlockHeaders(): Finished validating pending transactions.',
+                );
+              });
           }
 
           //module.exports.checkNewAssets(hashMaps.pendingAssets.keys());
@@ -504,67 +514,83 @@ module.exports.getTransactionFromBlock = getTransactionFromBlock;
  * Check the status of the given transaction hashes
  * @param {any} pendingTxArray - an array of transaction hashes
  */
-function checkPendingTx(pendingTxArray) {
+function checkPendingTx(pendingTxArray, blockNumber) {
   logger.info(
     `ethService.checkPendingTx(): pending tran count: ${pendingTxArray.size}`,
   );
   return new Promise((resolve, reject) => {
-      pendingTxArray.forEach(item => {
-        hashMaps.pendingTx.delete(item.txHash);
-        logger.debug(
-          `ethService.checkPendingTx(): Checking status of transaction: ${
-            item.txHash
-          }`,
-        );
-        if (module.exports.localConnect()) {
-            getTxReceipt(item.txHash).then(async receipt => {
-                logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
-                if (receipt !== null) {
-                    let status;
-                    const { gasUsed } = receipt;
-                    if (receipt.status === true) {
-                        status = 'confirmed';
-                    } else {
-                        status = 'failed';
-                    }
-                    const txMsg = {
-                        type: 'updateTx',
-                        txHash: item.txHash,
-                        protocol: item.protocol,
-                        fromAddress: item.fromAddress,
-                        toAddress: item.toAddress,
-                        value: item.value,
-                        asset: item.asset,
-                        contractAddress: item.contractAddress,
-                        status,
-                        gasUsed,
-                        blockNumber: receipt.blockNumber,
-                        input: item.input,
-                        tokenId: item.tokenId,
-                        tranType: item.tranType
-                    };
-                    rmqServices.sendPubSubMessage(txMsg);
-                    logger.info(
-                        `ethService.checkPendingTx(): TRANSACTION ${item.txHash} CONFIRMED @ BLOCK # ${
-                        receipt.blockNumber
-                        }`,
-                    );
-                    hashMaps.pendingTx.delete(item.txHash);
-                } else {
-                    logger.debug(
-                        `ethService.checkPendingTx(): Txn ${item.txHash} is still pending.`,
-                    );
+    pendingTxArray.forEach(item => {
+      logger.debug(
+        `ethService.checkPendingTx(): Checking status of transaction: ${
+          item.txHash
+        }`,
+      );
+      if (module.exports.localConnect()) {
+        getTxReceipt(item.txHash).then(async receipt => {
+          logger.debug(`ethService.checkPendingTx(): receipt is ${receipt}`);
+          if (receipt !== null) {
+            let status;
+            const { gasUsed } = receipt;
+            if (receipt.status === '0x1' || receipt.status === true) {
+              status = 'confirmed';
+            } else {
+              status = 'failed';
+            }
+            const txMsg = {
+              type: 'updateTx',
+              txHash: item.txHash,
+              protocol: item.protocol,
+              fromAddress: item.fromAddress,
+              toAddress: item.toAddress,
+              value: item.value,
+              asset: item.asset,
+              contractAddress: item.contractAddress,
+              status,
+              gasUsed,
+              blockNumber: receipt.blockNumber,
+              input: item.input,
+              tokenId: item.tokenId,
+              tranType: item.tranType,
+              nonce: item.nonce
+            };
+            rmqServices.sendPubSubMessage(txMsg);
+            hashMaps.pendingTxBlockNumber.delete(item.txHash);
+            hashMaps.pendingTx.delete(item.txHash);
+            logger.info(
+              `ethService.checkPendingTx(): TRANSACTION ${
+                item.txHash
+              } CONFIRMED @ BLOCK # ${receipt.blockNumber}`,
+            );
+          } else {
+            let itemAddedBlockNumber = hashMaps.pendingTxBlockNumber.get(item.txHash);
+            if (blockNumber - itemAddedBlockNumber >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
+              dbServices.dbCollections.transactions.findByAddressAndNounce(item.fromAddress, item.nonce).then(tx => {
+                let txMsg = { type: 'updateTx', txHash: item.txHash, protocol: item.protocol, fromAddress: item.fromAddress, toAddress: item.toAddress, value: item.value, asset: item.asset, contractAddress: item.contractAddress, input: item.input, tokenId: item.tokenId, tranType: item.tranType };
+                let txStatus = "dropped"
+                if (tx != null) {
+                  txStatus = "replaced"
+                  txMsg.txHashReplaced = tx.txHash;
                 }
-            });
-        } else {
-          hashMaps.pendingTx.set(item.txHash, item);
-          reject(
-            new Error(
-              'ethService.checkPendingTx(): connection to geth failed!',
-            ),
-          );
-        }
-      });
+                
+                txMsg.status = txStatus;
+
+                
+                rmqServices.sendPubSubMessage(txMsg);
+                hashMaps.pendingTxBlockNumber.delete(item.txHash);
+                hashMaps.pendingTx.delete(item.txHash);
+                logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} will be ${txStatus}. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
+              })
+            } else {
+              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} is still pending. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
+            }
+          }
+        });
+      } else {
+        reject(
+          new Error('ethService.checkPendingTx(): connection to geth failed!'),
+        );
+      }
+    });
   });
 }
 module.exports.checkPendingTx = checkPendingTx;
