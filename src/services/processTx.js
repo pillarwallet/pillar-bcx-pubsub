@@ -174,7 +174,8 @@ async function newPendingTran(tx, protocol) {
             blockNumber: tx.blockNumber,
             status: 'pending',
             input: tx.input,
-            tokenId,tranType,
+            tokenId,
+            tranType,
             nonce: tx.nonce
           };
         logger.info(
