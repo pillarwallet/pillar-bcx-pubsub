@@ -21,11 +21,13 @@ SOFTWARE.
 */
 const HashMap = require('hashmap');
 const assetManager = require('./assetManager');
+const pendingTxManager = require('./pendingTxManager');
+const pendingTxBlockNumberManager = require('./pendingTxBlockNumberManager');
 
 exports.accounts = new HashMap();
 exports.assets = assetManager
-exports.pendingTx = new HashMap();
-exports.pendingTxBlockNumber = new HashMap();
+exports.pendingTx = pendingTxManager;
+exports.pendingTxBlockNumber = pendingTxBlockNumberManager;
 exports.pendingAssets = new HashMap();
 
 exports.LATEST_BLOCK_NUMBER = 0;

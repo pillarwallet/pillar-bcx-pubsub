@@ -33,6 +33,7 @@ const redisService = require('./redisService');
 const config = require('../config');
 const abiService = require('./abiService');
 const web3ApiService = require('./web3ApiService');
+const dbServices = require('../services/dbServices.js');
 
 const protocol = 'Ethereum';
 const localGethUrl = 'http://127.0.0.1:8545';
@@ -252,11 +253,11 @@ function subscribeBlockHeaders() {
             } Hash = ${blockHeader.hash}`,
           );
           // Check for pending tx in database and update their status
-          if(hashMaps.pendingTx.size > 0) {
+          if(hashMaps.pendingTx.pendingTx.size > 0) {
             module.exports
               .checkPendingTx(
-                hashMaps.pendingTx,
-                blockHeader.number
+                hashMaps.pendingTx.pendingTx,
+                blockHeader.number,
               )
               .then(() => {
                 logger.debug(
@@ -516,7 +517,6 @@ function checkPendingTx(pendingTxArray, blockNumber) {
   );
   return new Promise((resolve, reject) => {
     pendingTxArray.forEach(item => {
-      hashMaps.pendingTx.delete(item.txHash);
       logger.debug(
         `ethService.checkPendingTx(): Checking status of transaction: ${
           item.txHash
@@ -548,9 +548,11 @@ function checkPendingTx(pendingTxArray, blockNumber) {
               input: item.input,
               tokenId: item.tokenId,
               tranType: item.tranType,
+              nonce: item.nonce
             };
             rmqServices.sendPubSubMessage(txMsg);
             hashMaps.pendingTxBlockNumber.delete(item.txHash);
+            hashMaps.pendingTx.delete(item.txHash);
             logger.info(
               `ethService.checkPendingTx(): TRANSACTION ${
                 item.txHash
@@ -559,18 +561,28 @@ function checkPendingTx(pendingTxArray, blockNumber) {
           } else {
             let itemAddedBlockNumber = hashMaps.pendingTxBlockNumber.get(item.txHash);
             if (blockNumber - itemAddedBlockNumber >= BLOCKS_TO_WAIT_BEFORE_REPLACED) {
-              const txMsg = { type: 'updateTx', txHash: item.txHash, protocol: item.protocol, fromAddress: item.fromAddress, toAddress: item.toAddress, value: item.value, asset: item.asset, contractAddress: item.contractAddress, status: 'replaced', input: item.input, tokenId: item.tokenId, tranType: item.tranType };
-              rmqServices.sendPubSubMessage(txMsg);
-              hashMaps.pendingTxBlockNumber.delete(item.txHash);
-              logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} will be replaced. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
+              dbServices.dbCollections.transactions.findByAddressAndNounce(item.fromAddress, item.nonce).then(tx => {
+                let txMsg = { type: 'updateTx', txHash: item.txHash, protocol: item.protocol, fromAddress: item.fromAddress, toAddress: item.toAddress, value: item.value, asset: item.asset, contractAddress: item.contractAddress, input: item.input, tokenId: item.tokenId, tranType: item.tranType };
+                let txStatus = "dropped"
+                if (tx != null) {
+                  txStatus = "replaced"
+                  txMsg.txHashReplaced = tx.txHash;
+                }
+                
+                txMsg.status = txStatus;
+
+                
+                rmqServices.sendPubSubMessage(txMsg);
+                hashMaps.pendingTxBlockNumber.delete(item.txHash);
+                hashMaps.pendingTx.delete(item.txHash);
+                logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} will be ${txStatus}. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
+              })
             } else {
               logger.debug(`ethService.checkPendingTx(): Txn ${item.txHash} is still pending. blockNumber: ${blockNumber} txBlock: ${itemAddedBlockNumber}`);
-              hashMaps.pendingTx.set(item.txHash, item);
             }
           }
         });
       } else {
-        hashMaps.pendingTx.set(item.txHash, item);
         reject(
           new Error('ethService.checkPendingTx(): connection to geth failed!'),
         );
