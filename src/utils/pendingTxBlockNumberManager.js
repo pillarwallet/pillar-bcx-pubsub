@@ -13,7 +13,6 @@ function connect() {
       logger.error(`ethService failed with REDIS client error: ${err}`);
     });
     loadHash();
-    
   } catch (e) {
     logger.error(e);
   }
@@ -69,9 +68,11 @@ function loadHash() {
   client.hgetall(PENDING_TX_BLOCK_NUMBER, function(err, obj) {
     if (obj) {
       let resultObj = Object.keys(obj).map(function(key) {
-        return [Number(key),  JSON.parse(obj[key])];
+        return [key,  Number(obj[key])];
       });
+      console.log(resultObj);
       module.exports.pendingTxBlockNumber = new HashMap(resultObj);
+      console.log(pendingTxBlockNumber.keys());
     }
   });
 }
