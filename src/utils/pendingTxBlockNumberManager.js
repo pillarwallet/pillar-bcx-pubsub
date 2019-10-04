@@ -69,7 +69,7 @@ function loadHash() {
   client.hgetall(PENDING_TX_BLOCK_NUMBER, function(err, obj) {
     if (obj) {
       let resultObj = Object.keys(obj).map(function(key) {
-        return [Number(key), obj[key]];
+        return [Number(key),  JSON.parse(obj[key])];
       });
       module.exports.pendingTxBlockNumber = new HashMap(resultObj);
     }
