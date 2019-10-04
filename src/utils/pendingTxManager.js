@@ -69,7 +69,7 @@ function loadHash() {
   client.hgetall(PENDING_TX, function(err, obj) {
     if (obj) {
       let resultObj = Object.keys(obj).map(function(key) {
-        return [Number(key), JSON.parse(obj[key])];
+        return [key, JSON.parse(obj[key])];
       });
       module.exports.pendingTx = new HashMap(resultObj);
     }
