@@ -70,9 +70,7 @@ function loadHash() {
       let resultObj = Object.keys(obj).map(function(key) {
         return [key,  Number(obj[key])];
       });
-      console.log(resultObj);
       module.exports.pendingTxBlockNumber = new HashMap(resultObj);
-      console.log(pendingTxBlockNumber.keys());
     }
   });
 }
