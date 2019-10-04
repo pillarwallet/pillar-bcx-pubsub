@@ -68,7 +68,10 @@ module.exports.values = values;
 function loadHash() {
   client.hgetall(PENDING_TX, function(err, obj) {
     if (obj) {
-      module.exports.pendingTx = new HashMap(obj);
+      let resultObj = Object.keys(obj).map(function(key) {
+        return [Number(key), obj[key]];
+      });
+      module.exports.pendingTx = new HashMap(resultObj);
     }
   });
 }
