@@ -449,9 +449,7 @@ async function getTxReceipt(txHash) {
       if(recipt){
         return recipt;
       }
-    }
-    if (module.exports.connect()) {
-      return web3ApiService.getAndRetry("getTransactionReceipt",txHash)
+      return null;
     }
     logger.error('ethService.getTxReceipt(): connection to geth failed!');
     return undefined;
