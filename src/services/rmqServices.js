@@ -362,22 +362,22 @@ function initSubPubMQ() {
                         // throw new Error('newTx: Transaction already exists');
                       })
                       .then(() => {
-                        logger.info(`newTx: Transaction inserted: ${txHash}`);
-                        ch.assertQueue(notificationsQueue, { durable: true });
-                        ch.sendToQueue(
-                          notificationsQueue,
-                          new Buffer.from(
-                            JSON.stringify(
-                              getNotificationPayload(
-                                TRANSACTION_PENDING,
-                                entry,
-                              ),
-                            ),
-                          ),
-                        );
-                        logger.info(
-                          `newTx: Transaction produced to: ${notificationsQueue}`,
-                        );
+                        // logger.info(`newTx: Transaction inserted: ${txHash}`);
+                        // ch.assertQueue(notificationsQueue, { durable: true });
+                        // ch.sendToQueue(
+                        //   notificationsQueue,
+                        //   new Buffer.from(
+                        //     JSON.stringify(
+                        //       getNotificationPayload(
+                        //         TRANSACTION_PENDING,
+                        //         entry,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // );
+                        // logger.info(
+                        //   `newTx: Transaction produced to: ${notificationsQueue}`,
+                        // );
                       })
                       .catch(e => logger.error(`${JSON.stringify(e)}`));
                     break;
@@ -385,36 +385,36 @@ function initSubPubMQ() {
                     dbServices.dbCollections.transactions
                       .updateTx(entry)
                       .then(() => {
-                        logger.info(`Transaction updated: ${txHash}`);
-                        ch.assertQueue(notificationsQueue, { durable: true });
-                        if (typeof entry.tokenId === 'undefined') {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  TRANSACTION_CONFIRMATION,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        } else {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  COLLECTIBLE_CONFIRMATION,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        logger.info(
-                          `updateTx: Transaction produced to: ${notificationsQueue}`,
-                        );
+                        // logger.info(`Transaction updated: ${txHash}`);
+                        // ch.assertQueue(notificationsQueue, { durable: true });
+                        // if (typeof entry.tokenId === 'undefined') {
+                        //   ch.sendToQueue(
+                        //     notificationsQueue,
+                        //     new Buffer.from(
+                        //       JSON.stringify(
+                        //         getNotificationPayload(
+                        //           TRANSACTION_CONFIRMATION,
+                        //           entry,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   );
+                        // } else {
+                        //   ch.sendToQueue(
+                        //     notificationsQueue,
+                        //     new Buffer.from(
+                        //       JSON.stringify(
+                        //         getNotificationPayload(
+                        //           COLLECTIBLE_CONFIRMATION,
+                        //           entry,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   );
+                        // }
+                        // logger.info(
+                        //   `updateTx: Transaction produced to: ${notificationsQueue}`,
+                        // );
                       });
                     break;
                   case 'newAsset':
