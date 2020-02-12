@@ -37,10 +37,10 @@ let pubSubChannel;
 let offersChannel;
 const pubSubQueue = 'bcx-pubsub';
 const offersQueue = 'bcx-offers';
-const notificationsQueue =
-  typeof config.get('mq.topic.notifications') !== 'undefined'
-    ? config.get('mq.topic.notifications')
-    : 'bcx-notifications';
+// const notificationsQueue =
+//   typeof config.get('mq.topic.notifications') !== 'undefined' ?
+//   config.get('mq.topic.notifications') :
+//   'bcx-notifications';
 const MQ_URL = `amqp://${config.get('mq.username')}:${config.get(
   'mq.password',
 )}@${config.get('mq.server')}`;
@@ -66,7 +66,9 @@ module.exports.calculateChecksum = calculateChecksum;
  */
 function validatePubSubMessage(payloadParam, checksumKeyParam) {
   const payload = payloadParam;
-  const { checksum } = payload;
+  const {
+    checksum
+  } = payload;
   delete payload.checksum;
   if (calculateChecksum(payload, checksumKeyParam) === checksum) {
     return true;
@@ -83,7 +85,9 @@ module.exports.validatePubSubMessage = validatePubSubMessage;
 function initializePubSubChannel(connection) {
   connection.createChannel((err, ch) => {
     pubSubChannel = ch;
-    ch.assertQueue(pubSubQueue, { durable: true });
+    ch.assertQueue(pubSubQueue, {
+      durable: true
+    });
     // Note: on Node 6 Buffer.from(msg) should be used
   });
 }
@@ -97,7 +101,9 @@ module.exports.initializePubSubChannel = initializePubSubChannel;
 function initializeOffersChannel(connection) {
   connection.createChannel((err, ch) => {
     offersChannel = ch;
-    ch.assertQueue(offersQueue, { durable: true });
+    ch.assertQueue(offersQueue, {
+      durable: true
+    });
   });
 }
 
@@ -307,7 +313,9 @@ function initSubPubMQ() {
         logger.info('Subscriber RMQ Connected');
 
         connection.createChannel((err, ch) => {
-          ch.assertQueue(pubSubQueue, { durable: true });
+          ch.assertQueue(pubSubQueue, {
+            durable: true
+          });
           ch.consume(
             pubSubQueue,
             msg => {
@@ -318,7 +326,10 @@ function initSubPubMQ() {
                 validatePubSubMessage(JSON.parse(msg.content), checksumKey)
               ) {
                 const entry = JSON.parse(msg.content);
-                const { type, txHash } = entry;
+                const {
+                  type,
+                  txHash
+                } = entry;
                 delete entry.type;
                 delete entry.checksum;
                 switch (type) {
@@ -330,7 +341,9 @@ function initSubPubMQ() {
                     if (txHash in TX_MAP) {
                       break;
                     } else {
-                      TX_MAP[txHash] = { timestamp: moment() };
+                      TX_MAP[txHash] = {
+                        timestamp: moment()
+                      };
                     }
 
                     if (entry.value && entry.value._hex) {
@@ -363,21 +376,23 @@ function initSubPubMQ() {
                       })
                       .then(() => {
                         logger.info(`newTx: Transaction inserted: ${txHash}`);
-                        ch.assertQueue(notificationsQueue, { durable: true });
-                        ch.sendToQueue(
-                          notificationsQueue,
-                          new Buffer.from(
-                            JSON.stringify(
-                              getNotificationPayload(
-                                TRANSACTION_PENDING,
-                                entry,
-                              ),
-                            ),
-                          ),
-                        );
-                        logger.info(
-                          `newTx: Transaction produced to: ${notificationsQueue}`,
-                        );
+                        // ch.assertQueue(notificationsQueue, {
+                        //   durable: true
+                        // });
+                        // ch.sendToQueue(
+                        //   notificationsQueue,
+                        //   new Buffer.from(
+                        //     JSON.stringify(
+                        //       getNotificationPayload(
+                        //         TRANSACTION_PENDING,
+                        //         entry,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // );
+                        // logger.info(
+                        //   `newTx: Transaction produced to: ${notificationsQueue}`,
+                        // );
                       })
                       .catch(e => logger.error(`${JSON.stringify(e)}`));
                     break;
@@ -386,35 +401,35 @@ function initSubPubMQ() {
                       .updateTx(entry)
                       .then(() => {
                         logger.info(`Transaction updated: ${txHash}`);
-                        ch.assertQueue(notificationsQueue, { durable: true });
-                        if (typeof entry.tokenId === 'undefined') {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  TRANSACTION_CONFIRMATION,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        } else {
-                          ch.sendToQueue(
-                            notificationsQueue,
-                            new Buffer.from(
-                              JSON.stringify(
-                                getNotificationPayload(
-                                  COLLECTIBLE_CONFIRMATION,
-                                  entry,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        logger.info(
-                          `updateTx: Transaction produced to: ${notificationsQueue}`,
-                        );
+                        // ch.assertQueue(notificationsQueue, { durable: true });
+                        // if (typeof entry.tokenId === 'undefined') {
+                        //   ch.sendToQueue(
+                        //     notificationsQueue,
+                        //     new Buffer.from(
+                        //       JSON.stringify(
+                        //         getNotificationPayload(
+                        //           TRANSACTION_CONFIRMATION,
+                        //           entry,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   );
+                        // } else {
+                        //   ch.sendToQueue(
+                        //     notificationsQueue,
+                        //     new Buffer.from(
+                        //       JSON.stringify(
+                        //         getNotificationPayload(
+                        //           COLLECTIBLE_CONFIRMATION,
+                        //           entry,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   );
+                        // }
+                        // logger.info(
+                        //   `updateTx: Transaction produced to: ${notificationsQueue}`,
+                        // );
                       });
                     break;
                   case 'newAsset':
@@ -434,8 +449,9 @@ function initSubPubMQ() {
                     break;
                 }
               }
+            }, {
+              noAck: true
             },
-            { noAck: true },
           );
         });
         return undefined;

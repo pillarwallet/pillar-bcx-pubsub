@@ -31,7 +31,9 @@ const fs = require('fs');
 const redisService = require('./services/redisService')
 
 const GETH_STATUS_FILE = '/tmp/geth_status';
-const { CronJob } = require('cron');
+const {
+  CronJob
+} = require('cron');
 let latestId = '';
 let processCnt = 0;
 let gethCheck = 0;
@@ -39,10 +41,10 @@ let LAST_BLOCK_NUMBER = 0;
 const sizeof = require('sizeof');
 
 process.on('unhandledRejection', (reason, promise) => {
-    logger.error('***************************************************************');
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    
-    logger.error('***************************************************************');
+  logger.error('***************************************************************');
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+
+  logger.error('***************************************************************');
   // Recommended: send the information to sentry.io
   // or whatever crash reporting service you use
 });
@@ -57,7 +59,9 @@ try {
   client.on('error', err => {
     logger.error(`publisher failed with REDIS client error: ${err}`);
   });
-} catch (e) { logger.error(e) }
+} catch (e) {
+  logger.error(e)
+}
 
 
 
@@ -69,10 +73,12 @@ try {
  * assets - This is a set of new assets/smart contracts which the publisher should add to its internal monitoring list
  * config - This a configuration setting that determine the maximum number of wallets/accounts that a publisher to monitor.
  */
-module.exports.publisherOnMessage = function() {
+module.exports.publisherOnMessage = function () {
   process.on('message', async data => {
     try {
-      const { message } = data;
+      const {
+        message
+      } = data;
       logger.debug(`Publisher has received message from master: ${data.type}`);
 
       if (data.type === 'accounts') {
@@ -120,7 +126,7 @@ module.exports.publisherOnMessage = function() {
             logger.info(
               `Publisher received notification to monitor a new asset: ${obj.contractAddress.toLowerCase()}`,
             );
-            if(obj.category !== 'Collectible') {
+            if (obj.category !== 'Collectible') {
               ethService.subscribeTransferEvents(obj);
             }
           }
@@ -135,7 +141,7 @@ module.exports.publisherOnMessage = function() {
 /**
  * Function that initializes inter process communication queue
  */
-module.exports.initIPC = function() {
+module.exports.initIPC = function () {
   return new Promise(async (resolve, reject) => {
     try {
       logger.info('Started executing publisher.initIPC()');
@@ -155,7 +161,9 @@ module.exports.initIPC = function() {
       );
 
       // request master for a list of assets to be monitored
-      process.send({ type: 'assets.request' });
+      process.send({
+        type: 'assets.request'
+      });
       setTimeout(() => {
         logger.info('Publisher Initializing RMQ.');
         rmqServices.initPubSubMQ().then(err => {
@@ -198,7 +206,7 @@ module.exports.initIPC = function() {
 /**
  * Function that continuosly polls master for new wallets/assets.
  */
-module.exports.poll = function() {
+module.exports.poll = function () {
   processCnt += 1;
   if (processCnt === 12) {
     processCnt = 0;
@@ -223,7 +231,9 @@ module.exports.poll = function() {
     }
   }
   if (hashMaps.assets.count() === 0) {
-    process.send({ type: 'assets.request' });
+    process.send({
+      type: 'assets.request'
+    });
   }
   // request new wallets
   logger.info(`Size of hashmaps: Assets= ${hashMaps.assets.keys().length}, PendingTx= ${hashMaps.pendingTx.pendingTx.keys().length}, PendingTxBlockNumber= ${hashMaps.pendingTxBlockNumber.pendingTxBlockNumber.keys().length}, PendingAssets= ${hashMaps.pendingAssets.keys().length}`);
@@ -233,14 +243,17 @@ module.exports.poll = function() {
       hashMaps.LATEST_BLOCK_NUMBER
     }`,
   );
-  process.send({ type: 'wallet.request', message: latestId });
+  process.send({
+    type: 'wallet.request',
+    message: latestId
+  });
   LAST_BLOCK_NUMBER = hashMaps.LATEST_BLOCK_NUMBER;
 };
 
 /**
  * Function that initializes the geth subscriptions
  */
-module.exports.initSubscriptions = function() {
+module.exports.initSubscriptions = function () {
   logger.info('Publisher subscribing to geth websocket events...');
   // subscribe to pending transactions
   ethService.subscribePendingTxn();
