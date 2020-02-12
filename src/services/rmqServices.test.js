@@ -314,54 +314,5 @@ describe('initsRMQ ', () => {
     rmqServices.initSubPubMQ();
   });
 
-  test('expectal call done - initSubPubMQ with newTx content type', done => {
-    const AmpqConnectMock = jest.spyOn(amqp, 'connect');
-    const message = {
-      type: 'newTx'
-    };
-    message.checksum = rmqServices.calculateChecksum(message, 'checksumKey');
-    const connectionMock = jest.fn((url, method) => {
-      method(null, {
-        createChannel(param) {
-          param(null, {
-            assertQueue: jest.fn(),
-            sendToQueue: jest.fn(() => done()),
-            consume(sub, messageHandler) {
-              messageHandler({
-                content: JSON.stringify(message)
-              });
-            },
-          });
-        },
-        on: jest.fn(),
-      });
-    });
-    AmpqConnectMock.mockImplementation(connectionMock);
-    const dbServiceSaveMockFindeOneByTx = jest.spyOn(
-      dbServices.dbCollections.transactions,
-      'findOneByTxHash',
-    );
-    const dbServiceSaveMockFindeOneByTxImpl = jest.fn(
-      () =>
-      new Promise(resolve => {
-        resolve(true);
-      }),
-    );
-    const dbServiceSaveMock = jest.spyOn(
-      dbServices.dbCollections.transactions,
-      'addTx',
-    );
-    const dbServiceSaveMockImpl = jest.fn(
-      () =>
-      new Promise(resolve => {
-        done();
-        resolve(null);
-      }),
-    );
-    dbServiceSaveMockFindeOneByTx.mockImplementation(
-      dbServiceSaveMockFindeOneByTxImpl,
-    );
-    dbServiceSaveMock.mockImplementation(dbServiceSaveMockImpl);
-    rmqServices.initSubPubMQ();
-  });
+  // 
 });
