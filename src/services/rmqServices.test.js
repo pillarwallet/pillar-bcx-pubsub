@@ -177,6 +177,7 @@ describe('initsRMQ ', () => {
     });
     AmpqConnectMock.mockImplementation(connectionMock);
     rmqServices.initPubSubMQ();
+    done();
   });
 
   test('expectal call done - initSubPubMQ with dummy content type', done => {
