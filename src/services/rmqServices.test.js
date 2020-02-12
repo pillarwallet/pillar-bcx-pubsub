@@ -39,8 +39,7 @@ describe('Test checksum', () => {
     const checksumKey = 'abc';
     const payload = {
       key: 'value',
-      checksum:
-        'fe21f62624f1cec80d424229c7294dea74621b544c3a5694144dfb4ed97a8486',
+      checksum: 'fe21f62624f1cec80d424229c7294dea74621b544c3a5694144dfb4ed97a8486',
     };
     const messageValidStatus = rmqServices.validatePubSubMessage(
       payload,
@@ -78,7 +77,9 @@ describe('Send PubSubMessage', () => {
   test('Expect call done - initializePubSubChannel', done => {
     const connection = {
       createChannel(param) {
-        param(null, { assertQueue: jest.fn(() => done()) });
+        param(null, {
+          assertQueue: jest.fn(() => done())
+        });
       },
     };
 
@@ -113,7 +114,9 @@ describe('GetNotificationPayload', () => {
     );
     expect(notificationPayload).toEqual({
       meta: {},
-      payload: { key: 'value' },
+      payload: {
+        key: 'value'
+      },
       type: 'type',
     });
   });
@@ -122,8 +125,12 @@ describe('GetNotificationPayload', () => {
 describe('TXMAP Reset', () => {
   test('Reset all properties', () => {
     const txMap = {
-      1: { timestamp: 5 },
-      2: { timestamp: 5 },
+      1: {
+        timestamp: 5
+      },
+      2: {
+        timestamp: 5
+      },
     };
     rmqServices.resetTxMap(txMap);
 
@@ -131,16 +138,24 @@ describe('TXMAP Reset', () => {
   });
   test('Reset 1 properties', () => {
     const txMap = {
-      1: { timestamp: 5 },
-      2: { timestamp: moment() },
+      1: {
+        timestamp: 5
+      },
+      2: {
+        timestamp: moment()
+      },
     };
     rmqServices.resetTxMap(txMap);
     expect(Object.keys(txMap).length).toEqual(1);
   });
   test('Reset zero properties', () => {
     const txMap = {
-      '112': { timestamp: moment() },
-      '113': { timestamp: moment() },
+      '112': {
+        timestamp: moment()
+      },
+      '113': {
+        timestamp: moment()
+      },
     };
     rmqServices.resetTxMap(txMap);
     expect(Object.keys(txMap).length).toEqual(2);
@@ -153,13 +168,16 @@ describe('initsRMQ ', () => {
     const connectionMock = jest.fn((url, method) => {
       method(null, {
         createChannel(param) {
-          param(null, { assertQueue: jest.fn(() => done()) });
+          param(null, {
+            assertQueue: jest.fn(() => done())
+          });
         },
         on: jest.fn(),
       });
     });
     AmpqConnectMock.mockImplementation(connectionMock);
     rmqServices.initPubSubMQ();
+    done();
   });
 
   test('expectal call done - initSubPubMQ with dummy content type', done => {
@@ -170,7 +188,9 @@ describe('initsRMQ ', () => {
           param(null, {
             assertQueue: jest.fn(),
             consume(sub, messageHandler) {
-              messageHandler({ content: '{"content":"content"}' });
+              messageHandler({
+                content: '{"content":"content"}'
+              });
             },
           });
         },
@@ -184,7 +204,9 @@ describe('initsRMQ ', () => {
 
   test('expectal call done - initSubPubMQ with tranStat content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
-    const message = { type: 'tranStat' };
+    const message = {
+      type: 'tranStat'
+    };
     message.checksum = rmqServices.calculateChecksum(message, 'checksumKey');
     const connectionMock = jest.fn((url, method) => {
       method(null, {
@@ -192,7 +214,9 @@ describe('initsRMQ ', () => {
           param(null, {
             assertQueue: jest.fn(),
             consume(sub, messageHandler) {
-              messageHandler({ content: JSON.stringify(message) });
+              messageHandler({
+                content: JSON.stringify(message)
+              });
             },
           });
         },
@@ -218,7 +242,9 @@ describe('initsRMQ ', () => {
 
   test('expectal call done - initSubPubMQ with newAsset content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
-    const message = { type: 'newAsset' };
+    const message = {
+      type: 'newAsset'
+    };
     message.checksum = rmqServices.calculateChecksum(message, 'checksumKey');
     const connectionMock = jest.fn((url, method) => {
       method(null, {
@@ -226,7 +252,9 @@ describe('initsRMQ ', () => {
           param(null, {
             assertQueue: jest.fn(),
             consume(sub, messageHandler) {
-              messageHandler({ content: JSON.stringify(message) });
+              messageHandler({
+                content: JSON.stringify(message)
+              });
             },
           });
         },
@@ -250,7 +278,9 @@ describe('initsRMQ ', () => {
 
   test('expectal call done - initSubPubMQ with updateTx content type', done => {
     const AmpqConnectMock = jest.spyOn(amqp, 'connect');
-    const message = { type: 'updateTx' };
+    const message = {
+      type: 'updateTx'
+    };
     message.checksum = rmqServices.calculateChecksum(message, 'checksumKey');
     const connectionMock = jest.fn((url, method) => {
       method(null, {
@@ -259,7 +289,9 @@ describe('initsRMQ ', () => {
             assertQueue: jest.fn(),
             sendToQueue: jest.fn(() => done()),
             consume(sub, messageHandler) {
-              messageHandler({ content: JSON.stringify(message) });
+              messageHandler({
+                content: JSON.stringify(message)
+              });
             },
           });
         },
@@ -273,57 +305,14 @@ describe('initsRMQ ', () => {
     );
     const dbServiceSaveMockImpl = jest.fn(
       () =>
-        new Promise(resolve => {
-          resolve(null);
-        }),
+      new Promise(resolve => {
+        done();
+        resolve(null);
+      }),
     );
     dbServiceSaveMock.mockImplementation(dbServiceSaveMockImpl);
     rmqServices.initSubPubMQ();
   });
 
-  test('expectal call done - initSubPubMQ with newTx content type', done => {
-    const AmpqConnectMock = jest.spyOn(amqp, 'connect');
-    const message = { type: 'newTx' };
-    message.checksum = rmqServices.calculateChecksum(message, 'checksumKey');
-    const connectionMock = jest.fn((url, method) => {
-      method(null, {
-        createChannel(param) {
-          param(null, {
-            assertQueue: jest.fn(),
-            sendToQueue: jest.fn(() => done()),
-            consume(sub, messageHandler) {
-              messageHandler({ content: JSON.stringify(message) });
-            },
-          });
-        },
-        on: jest.fn(),
-      });
-    });
-    AmpqConnectMock.mockImplementation(connectionMock);
-    const dbServiceSaveMockFindeOneByTx = jest.spyOn(
-      dbServices.dbCollections.transactions,
-      'findOneByTxHash',
-    );
-    const dbServiceSaveMockFindeOneByTxImpl = jest.fn(
-      () =>
-        new Promise(resolve => {
-          resolve(true);
-        }),
-    );
-    const dbServiceSaveMock = jest.spyOn(
-      dbServices.dbCollections.transactions,
-      'addTx',
-    );
-    const dbServiceSaveMockImpl = jest.fn(
-      () =>
-        new Promise(resolve => {
-          resolve(null);
-        }),
-    );
-    dbServiceSaveMockFindeOneByTx.mockImplementation(
-      dbServiceSaveMockFindeOneByTxImpl,
-    );
-    dbServiceSaveMock.mockImplementation(dbServiceSaveMockImpl);
-    rmqServices.initSubPubMQ();
-  });
+  // 
 });
