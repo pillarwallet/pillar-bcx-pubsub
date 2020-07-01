@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@0.1.17
   slack: circleci/slack@3.4.2
+  discord: antonioned/discord@0.0.4
 
 jobs:
   tests:
@@ -41,6 +42,10 @@ jobs:
           fail_only: true
           failure_message: "Triggered by: *${CIRCLE_USERNAME}* \n\n *$CIRCLE_JOB* have failed! :circleci-fail:"
           webhook: "${SLACK_WEBHOOK_URL}"
+      - discord/status:
+          fail_only: true
+          failure_message: "Triggered by: **${CIRCLE_USERNAME}** \\n\\n **$CIRCLE_JOB** have failed!"
+          webhook: "${DISCORD_WEBHOOK_URL}"
 
   publish-and-push-qa:
     working_directory: ~/pillar-bcx-pubsub
@@ -83,11 +88,17 @@ jobs:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
+            chmod +x .circleci/announceDiscord.sh
             .circleci/announceDeployment.sh "BCX-PUBSUB" "QA" "$(cat ./pillar-bcx-pubsub.txt)"
+            .circleci/announceDiscord.sh "BCX-PUBSUB" "QA" "$(cat ./pillar-bcx-pubsub.txt)"
       - slack/status:
           fail_only: true
           failure_message: "Triggered by: *${CIRCLE_USERNAME}* \n\n *$CIRCLE_JOB* has failed, no deploy to QA. :circleci-fail:"
           webhook: "${SLACK_WEBHOOK_URL}"
+      - discord/status:
+          fail_only: true
+          failure_message: "Triggered by: **${CIRCLE_USERNAME}** \\n\\n **$CIRCLE_JOB** has failed, no deploy to QA."
+          webhook: "${DISCORD_WEBHOOK_URL}"
 
   publish-prod:
     working_directory: ~/pillar-bcx-pubsub
@@ -111,10 +122,15 @@ jobs:
           command: |
             npm publish --registry https://pillarproject.jfrog.io/pillarproject/api/npm/npm/
             chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")"
+            chmod +x .circleci/announceDiscordProd.sh && .circleci/announceDiscordProd.sh "BCX-PUBSUB" "$(node -e "console.log(require('./package.json').name)"):$(node -e "console.log($CIRCLE_BUILD_NUM)")"
       - slack/status:
           fail_only: true
           failure_message: "Triggered by: *${CIRCLE_USERNAME}* \n\n *$CIRCLE_JOB* has failed. :circleci-fail:"
           webhook: "${SLACK_WEBHOOK_URL}"
+      - discord/status:
+          fail_only: true
+          failure_message: "Triggered by: **${CIRCLE_USERNAME}** \\n\\n **$CIRCLE_JOB** has failed."
+          webhook: "${DISCORD_WEBHOOK_URL}"
 
 workflows:
   version: 2.1
